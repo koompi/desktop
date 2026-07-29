@@ -27,6 +27,7 @@ cava
 pavucontrol-qt
 wireplumber
 pipewire-pulse
+sound-theme-freedesktop
 libdbusmenu-gtk3-4
 playerctl
 

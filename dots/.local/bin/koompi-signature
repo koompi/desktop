@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP="$HOME/.local/share/koompi/signature"
+OUT_DIR="$HOME/.config/koompi/assets/signatures"
+RAW=/tmp/koompi-sig-raw.jpg
+PREVIEW=/tmp/koompi-sig-preview.png
+NAME=${2:-signature}
+LAT_PCT=${LAT_PCT:-8}
+
+extract() {
+    magick "$1" \
+        -colorspace Gray \
+        -normalize \
+        -despeckle \
+        -blur 0x0.8 \
+        -lat "25x25-${LAT_PCT}%" \
+        -negate \
+        -morphology Open Disk:1 \
+        -morphology Close Disk:1 \
+        -background "${INK:-black}" -alpha shape \
+        -trim +repage \
+        -bordercolor none -border 12 \
+        "$2"
+}
+
+blank() {
+    read -r mean sdev < <(magick "$1" -format "%[fx:mean*255] %[fx:standard_deviation*255]" info:)
+    (( $(echo "$sdev < 4 || $mean < 40" | bc -l) ))
+}
+
+review_loop() {
+    local src=$1 rc
+    while :; do
+        extract "$src" "$PREVIEW"
+        set +e; qml6 "$APP/Review.qml" >/dev/null 2>&1; rc=$?; set -e
+        case $rc in
+        0) return 0 ;;
+        2) return 2 ;;
+        3) LAT_PCT=$(( LAT_PCT > 3 ? LAT_PCT - 3 : 1 )) ;;
+        4) LAT_PCT=$(( LAT_PCT < 28 ? LAT_PCT + 3 : 30 )) ;;
+        *) return 1 ;;
+        esac
+    done
+}
+
+cmd_capture() {
+    mkdir -p "$OUT_DIR"
+    local rc
+    while :; do
+        set +e; qml6 "$APP/Capture.qml" >/dev/null 2>&1; rc=$?; set -e
+        [ $rc -ne 0 ] && { echo "cancelled" >&2; return 1; }
+        if blank "$RAW"; then
+            echo "that frame is blank - the lens is covered or the room is too dark" >&2
+            continue
+        fi
+        set +e; review_loop "$RAW"; rc=$?; set -e
+        case $rc in
+        0) break ;;
+        2) continue ;;
+        *) echo "cancelled" >&2; return 1 ;;
+        esac
+    done
+    cp "$PREVIEW" "$OUT_DIR/$NAME.png"
+    rm -f "$RAW" "$PREVIEW"
+    echo "$OUT_DIR/$NAME.png"
+}
+
+cmd_from() {
+    mkdir -p "$OUT_DIR"
+    [ -f "${1:-}" ] || { echo "no such file: ${1:-}" >&2; exit 1; }
+    review_loop "$1" || { echo "cancelled" >&2; exit 1; }
+    cp "$PREVIEW" "$OUT_DIR/${2:-signature}.png"
+    rm -f "$PREVIEW"
+    echo "$OUT_DIR/${2:-signature}.png"
+}
+
+cmd_install_okular() {
+    local png="$OUT_DIR/${1:-signature}.png"
+    [ -f "$png" ] || { echo "no signature yet - run: koompi-signature capture" >&2; exit 1; }
+    pgrep -x okular >/dev/null && {
+        echo "close Okular first, it rewrites its config on exit" >&2; exit 1; }
+
+    python - "$png" <<'PY'
+import re, subprocess, sys
+png = sys.argv[1]
+src = open("/usr/share/okular/tools.xml").read()
+tools = re.findall(r"<tool\b.*?</tool>|<tool\b[^>]*/>", src, re.S)
+tools = [re.sub(r"\s+", " ", t).replace("> <", "><").strip() for t in tools]
+sig = ('<tool id="900" type="stamp" name="Signature">'
+       '<engine type="PickPoint" size="64" block="true" hoverIcon="%s">'
+       '<annotation type="Stamp" icon="%s"/></engine></tool>' % (png, png))
+tools = [t for t in tools if 'id="900"' not in t] + [sig]
+esc = ",".join(t.replace("\\", "\\\\").replace(",", "\\,") for t in tools)
+subprocess.run(["kwriteconfig6", "--file", "okularpartrc", "--group", "Reviews",
+                "--key", "BuiltinAnnotationTools", esc], check=True)
+print("registered %d tools, signature is the last one" % len(tools))
+PY
+    echo "open Okular, press F6, the signature is at the end of the annotation bar"
+}
+
+case ${1:-} in
+capture)        cmd_capture ;;
+from)           cmd_from "${2:-}" "${3:-signature}" ;;
+install-okular) cmd_install_okular "${2:-signature}" ;;
+list)           ls -1 "$OUT_DIR"/*.png 2>/dev/null || echo "none yet" ;;
+*)
+    echo "koompi-signature capture [name]        camera viewfinder, then save"
+    echo "                 from <photo> [name]   use a phone photo or scan"
+    echo "                 install-okular [name] add it to Okular's annotation bar"
+    echo "                 list"
+    exit 1 ;;
+esac

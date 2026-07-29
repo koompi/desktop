@@ -33,7 +33,7 @@ hl.env("QT_QPA_PLATFORM", "xcb")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
 -- Cursor
-hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_THEME", "Adwaita")
 hl.env("XCURSOR_SIZE", "24")
 
 -- Virtual environment

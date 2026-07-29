@@ -5,6 +5,13 @@
 hl.window_rule({match = {class = ".*" }, no_blur = true })
 
 -- Floating
+-- Signature capture/review are transient dialogs; tiled they leave dead space.
+hl.window_rule({match = {title = "^(Capture signature)$" },                  center = true})
+hl.window_rule({match = {title = "^(Capture signature)$" },                  float = true})
+hl.window_rule({match = {title = "^(Capture signature)$" },                  size = {960, 660} })
+hl.window_rule({match = {title = "^(Signature preview)$" },                  center = true})
+hl.window_rule({match = {title = "^(Signature preview)$" },                  float = true})
+hl.window_rule({match = {title = "^(Signature preview)$" },                  size = {900, 600} })
 hl.window_rule({match = {title = "^(Open File)(.*)$" },                      center = true})
 hl.window_rule({match = {title = "^(Open File)(.*)$" },                      float = true})
 hl.window_rule({match = {title = "^(Select a File)(.*)$" },                  center = true})
@@ -131,7 +138,6 @@ hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)
 hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, keep_aspect_ratio = true})
 hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, move = {"(monitor_w*0.73)", "(monitor_h*0.72)"} })
 hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, size = {"(monitor_w*0.25)", "(monitor_h*0.25)"} })
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, float = true})
 hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, pin = true})
 
 -- Screen sharing
@@ -194,8 +200,6 @@ hl.layer_rule({ match = { namespace = "sideright[0-9]*" }, blur = true})
 hl.layer_rule({ match = { namespace = "sideright[0-9]*" }, ignore_alpha = 0.6})
 hl.layer_rule({ match = { namespace = "sideleft[0-9]*" }, blur = true})
 hl.layer_rule({ match = { namespace = "sideleft[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "indicator.*" }, blur = true})
-hl.layer_rule({ match = { namespace = "indicator.*" }, ignore_alpha = 0.6})
 hl.layer_rule({ match = { namespace = "osk[0-9]*" }, blur = true})
 hl.layer_rule({ match = { namespace = "osk[0-9]*" }, ignore_alpha = 0.6})
 
@@ -215,6 +219,7 @@ hl.layer_rule({ match = { namespace = "quickshell:launchpad" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:launchpad" }, ignore_alpha = 0.05})
 hl.layer_rule({ match = { namespace = "quickshell:lockWindowPusher" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:notificationPopup" }, animation = "fade"})
+hl.layer_rule({ match = { namespace = "quickshell:onScreenDisplay" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:overlay" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:overlay" }, ignore_alpha = 1})
 hl.layer_rule({ match = { namespace = "quickshell:overview" }, no_anim = true})

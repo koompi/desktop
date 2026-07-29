@@ -131,6 +131,9 @@ Column {
     }
 
     function transformKey(key) {
+        if (/code:201$/i.test(key))
+            return "AI";
+
         const replaced = root.keySubstitutions[key] || key;
         const denumbered = replaced.replace("1", "<Number>");
         const dedirectioned = denumbered.replace("Left", "<Direction>");

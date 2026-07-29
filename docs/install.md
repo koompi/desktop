@@ -99,7 +99,7 @@ What this step installs is exactly what makes those lists resolve the way KOOMPI
 | Office | `libreoffice` | `variables.lua` prefers WPS then OnlyOffice then LibreOffice. Only LibreOffice is packaged on every supported distro, so it is the one the installer guarantees; install either of the others and it wins. |
 | System | `btop`, `gnome-system-monitor`, `nm-connection-editor` | The sysmon scratchpad runs btop; the network widget's advanced settings open `nm-connection-editor`. |
 | Phone | `kdeconnect` | The shell's KDE Connect integration does nothing without the daemon. |
-| Agent workbench | `herdr`, `claude`, `codex`, `pi`, `nvim` | `Super+Shift+Return` opens Herdr in the preferred terminal. Each agent remains usable directly. |
+| Agent workbench | `herdr`, `claude`, `codex`, `pi`, `nvim` | Launch KOOMPI Workbench to open Herdr in the preferred terminal. Each agent remains usable directly. |
 | CLI toolkit | `git`, `gh`, `ripgrep`, `fd`, `fzf`, `jq`, `bat`, `eza`, `zoxide`, `direnv`, `shellcheck`, `shfmt`, `just` | A compact, modern terminal baseline for coding and automation. |
 
 Kitty is **not** in this list, despite being the KOOMPI terminal in several places.
@@ -139,8 +139,8 @@ command once to complete its own authentication.
 
 `koompi-workbench` launches Herdr in `~/Projects`, then `~/workspace`, then
 `~`, choosing the first directory that exists. It prefers WezTerm and falls
-back through kitty, Konsole and foot. Use `Super+Shift+Return` or launch
-**KOOMPI Workbench** from the application launcher.
+back through kitty, Konsole and foot. Launch **KOOMPI Workbench** from the
+application launcher.
 
 ### 3. Setups
 
@@ -199,6 +199,15 @@ It works out how this machine got its desktop and does the matching thing:
 
 The checkout's path is read from `~/.local/state/koompi/repo-path`, written at install time.
 An install from before that file existed still works: the command looks in the usual places, and tells you how to record the path if it cannot find the checkout.
+
+If the install is old enough not to have `koompi-update`, rerun the bootstrap.
+It refreshes (or recreates) the managed checkout from `main`, installs newly
+required dependencies, reapplies the desktop files, and does not re-offer the
+optional application set:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash -s -- --no-apps --yes
+```
 
 The dependency metapackages are what tells the two apart, and they deliberately do not count as a packaged install.
 `./setup install` puts those same metas on an ordinary Arch machine, so treating them as the signal would upgrade the system while leaving the `$HOME` copy that actually owns the config untouched.

@@ -7,8 +7,9 @@ end
 local qsScripts = "$HOME/.config/quickshell/$qsConfig/scripts"
 local hyprScripts = "$HOME/.config/hypr/hyprland/scripts"
 local appScratch = hyprScripts .. "/toggle_app_scratchpad.sh"
-local qsIpcCall = "qs -c $qsConfig ipc call"
+local qsIpcCall = "qs -c $qsConfig ipc --any-display call"
 local qsIsAlive = qsIpcCall .. " TEST_ALIVE"
+local volumeFeedback = "pw-play --volume=0.8 /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga >/dev/null 2>&1"
 
 hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchToggleRelease"), { description = "Shell: Toggle search" })
 hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchToggleRelease"))
@@ -22,19 +23,21 @@ hl.bind("SUPER_L", hl.dsp.global("quickshell:workspaceNumber"),
 hl.bind("SUPER_R", hl.dsp.global("quickshell:workspaceNumber"),
     { ignore_mods = true, transparent = true, release = true })
 hl.bind("SUPER + Tab", hl.dsp.global("quickshell:overviewWorkspacesToggle"), { description = "Shell: Toggle overview" })
-hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("quickshell:launchpadToggle"), { description = "Shell: Toggle launchpad" })
 hl.bind("SUPER + V", hl.dsp.global("quickshell:overviewClipboardToggle"))
 hl.bind("SUPER + Period", hl.dsp.global("quickshell:overviewEmojiToggle"))
 hl.bind("SUPER + A", hl.dsp.global("quickshell:sidebarLeftToggle"), { description = "Shell: Toggle left sidebar" })
 hl.bind("SUPER + ALT + A", hl.dsp.global("quickshell:sidebarLeftToggleDetach"))
--- Both classes, for the same reason the Telegram window rules match both: under
--- QT_QPA_PLATFORM=xcb Telegram reports the X11 WM_CLASS, not the Wayland app_id.
-hl.bind("SUPER + B", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' Telegram"), { description = "App: Telegram widget" })
+hl.bind("SUPER + B", hl.dsp.exec_cmd("brave"), { description = "App: Brave browser" })
+-- Okular has no plugin API, so enrolment cannot live in its menus; a global
+-- bind is the nearest thing that works while a PDF is focused.
+hl.bind("SUPER + SHIFT + E", hl.dsp.exec_cmd("koompi-signature capture"), { description = "App: Capture signature" })
 hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(appScratch .. " discord 'discord' discord"), { description = "App: Discord widget" })
 hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd(appScratch .. " whatsapp 'web.whatsapp.com' " .. hyprScripts .. "/launch_whatsapp_web.sh"), { description = "App: WhatsApp widget" })
-hl.bind("SUPER + grave", hl.dsp.exec_cmd(appScratch .. " term 'term-scratch' 'kitty --class term-scratch'"), { description = "App: Terminal widget" })
-hl.bind("SUPER + SHIFT + Escape", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scratch' " .. hyprScripts .. "/launch_sysmon.sh"), { description = "App: System monitor widget" })
-hl.bind("SUPER + O", hl.dsp.global("quickshell:sidebarLeftToggle"))
+hl.bind("SUPER + Y", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' Telegram"), { description = "App: Telegram widget" })
+hl.bind("SUPER + grave", hl.dsp.exec_cmd(appScratch .. " term 'term-scratch' 'wezterm start --class term-scratch'"), { description = "App: Terminal widget" })
+hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scratch' " .. hyprScripts .. "/launch_sysmon.sh"), { description = "App: System monitor widget" })
+-- SUPER + O is reserved for Quickwork and stays unbound until it exists.
+-- The left sidebar keeps SUPER + A.
 hl.bind("SUPER + N", hl.dsp.global("quickshell:sidebarRightToggle"), { description = "Shell: Toggle right sidebar" })
 hl.bind("SUPER + Slash", hl.dsp.global("quickshell:cheatsheetToggle"), { description = "Shell: Toggle cheatsheet" })
 hl.bind("SUPER + K", hl.dsp.global("quickshell:oskToggle"), { description = "Shell: Toggle on-screen keyboard" })
@@ -49,9 +52,11 @@ hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd(qsIpcCall .. " brightness increme
     { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd(qsIpcCall .. " brightness decrement || brightnessctl s 5%-"),
     { locked = true, repeating = true })
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5"),
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(
+        "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5; " .. volumeFeedback),
     { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"),
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(
+        "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-; " .. volumeFeedback),
     { locked = true, repeating = true })
 
 hl.bind("SUPER + Space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next"),
@@ -378,8 +383,6 @@ hl.bind("CTRL + SHIFT + ALT + SUPER + Delete", hl.dsp.exec_cmd("systemctl powero
 
 --##! Apps
 hl.bind("SUPER + Return", hl.dsp.exec_cmd(terminal), { description = "App: Terminal" })
-hl.bind("SUPER + SHIFT + Return", hl.dsp.exec_cmd("koompi-workbench"),
-    { description = "App: KOOMPI Workbench (Herdr + agents)" })
 hl.bind("SUPER + T", hl.dsp.exec_cmd(terminal))
 hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd(terminal))
 hl.bind("SUPER + E", hl.dsp.exec_cmd(fileManager), { description = "App: File manager" })

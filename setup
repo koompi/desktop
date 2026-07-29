@@ -236,7 +236,7 @@ main() {
   Later on, ${C_BOLD}koompi-update${C_RST} (or ${C_BOLD}./setup update${C_RST}) brings you up to date.
 
   ${C_BOLD}Super + /${C_RST}       keybind cheatsheet
-  ${C_BOLD}Super + Shift + Return${C_RST} KOOMPI Workbench (Herdr)
+  ${C_BOLD}App launcher${C_RST}      KOOMPI Workbench (Herdr)
   ${C_BOLD}Ctrl + Super + T${C_RST} pick a wallpaper (this also generates the colour scheme)
 
   Group changes need a fresh login before ddcutil and ydotool work.

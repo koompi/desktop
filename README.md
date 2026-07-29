@@ -71,6 +71,15 @@ On a machine that already runs KOOMPI, one command, from anywhere:
 koompi-update
 ```
 
+For an older install that predates `koompi-update`, send the bootstrap
+one-liner again. It refreshes (or recreates) the managed checkout from `main`,
+installs new dependencies, reapplies the desktop files, and keeps the existing
+application choices:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash -s -- --no-apps --yes
+```
+
 It works out how this machine got its desktop.
 On KOOMPI OS, where the desktop comes from packages, that is a `pacman -Syu`.
 On an install from a checkout it is a `git pull` followed by `./setup update`,
@@ -99,16 +108,15 @@ intends:
 | Agent workbench | Herdr orchestrating Claude Code, Codex and Pi; Neovim available directly |
 | CLI toolkit | Git/GitHub CLI, ripgrep, fd, fzf, jq, bat, eza, zoxide, direnv, ShellCheck, shfmt and just |
 
-Press `Super+Shift+Return` (or launch **KOOMPI Workbench**) to open Herdr in
+Launch **KOOMPI Workbench** to open Herdr in
 the preferred terminal. The agent installers are user-local and authentication
 is deliberately left to each user; KOOMPI does not copy or manage credentials.
 
 None of it is load-bearing.
 Install something else and it wins as soon as it is earlier in the list, or set your own order in `~/.config/hypr/custom/variables.lua`.
 
-Kitty is a *dependency* rather than an application here.
-The terminal scratchpad, the system-monitor scratchpad and the shell's own terminal actions name it directly instead of dispatching, and the colour pipeline generates a theme for it.
-WezTerm is what the terminal keybind opens.
+Kitty remains a shell dependency and a fallback for machines without WezTerm;
+the terminal keybind and both terminal scratchpads use WezTerm.
 
 On Arch this set is the `koompi-apps` metapackage, so KOOMPI OS images get the same programs through `koompi-desktop-experience`.
 Chrome and Brave come from the AUR there, and from Google's and Brave's own signed repositories on Fedora, Debian and Ubuntu.
