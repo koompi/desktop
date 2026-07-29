@@ -11,6 +11,24 @@ local qsIpcCall = "qs -c $qsConfig ipc --any-display call"
 local qsIsAlive = qsIpcCall .. " TEST_ALIVE"
 local volumeFeedback = "pw-play --volume=0.8 /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga >/dev/null 2>&1"
 
+-- Search opens when Super is released, so pressing anything else while Super is
+-- held has to cancel that pending toggle. The plain config format spells this
+-- `binditn = SUPER, catchall`, but hl.bind rejects `catchall` as a keysym, so
+-- every Super chord gets a companion bind carrying the interrupt instead. This
+-- wrapper stays installed for the rest of the config, so custom binds get one
+-- too.
+local searchToggleReleaseInterrupt = hl.dsp.global("quickshell:searchToggleReleaseInterrupt")
+local bindWithoutInterrupt = hl.bind
+hl.bind = function(keys, dispatcher, opts)
+    local keybind = bindWithoutInterrupt(keys, dispatcher, opts)
+    local chord = keys:upper()
+    -- Super's own key press is what arms the toggle; it must not cancel it.
+    if chord:match("SUPER") and not chord:match("SUPER_[LR]") and not chord:match("MOUSE:") then
+        bindWithoutInterrupt(keys, searchToggleReleaseInterrupt, { transparent = true })
+    end
+    return keybind
+end
+
 hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchToggleRelease"), { description = "Shell: Toggle search" })
 hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchToggleRelease"))
 hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd(qsIsAlive .. " || pkill fuzzel || fuzzel"))
