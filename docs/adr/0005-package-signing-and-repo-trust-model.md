@@ -11,8 +11,9 @@ because the `Server=` URL is a one-line swap — **low lock-in**.
 
 **Signing key = a dedicated RSA-4096 GPG key.** The custody model is the real decision (package
 signing is **high lock-in**: rotating a key requires re-trusting it on every existing install).
-For **v1 (pre-GA)** the private key lives as a CI secret enabling automated sign/publish, gated
-by four guardrails:
+For **v1 (pre-GA)** an export of the dedicated **signing subkey** lives as a protected CI
+environment secret enabling automated sign/publish; the certification-capable primary key
+remains offline. This is gated by four guardrails:
 
 1. **Dedicated key** — not reused for any other purpose.
 2. **Revocation certificate generated at key-gen and stored offline.**
@@ -36,3 +37,5 @@ the key is generated. A signing key with no named owner is how distributions get
 - Unblocks G-8 (flip the commented-out sign/publish steps in `build-packages.yml`) → G-2
   (installer + every `koompi-*` package on the ISO) → shipping the Rust daemons
   ([[0004-rust-daemons-zig-installer-dual-toolchain]]).
+- The operational procedure is maintained in
+  [Publishing and signing the `[koompi]` package repository](../package-repository-publishing.md).

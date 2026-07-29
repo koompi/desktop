@@ -1,0 +1,7 @@
+diff --git a/src/platform/cairo/graphic_cairo.cpp b/src/platform/cairo/graphic_cairo.cpp
+index 28ba29d..96bc4ee 100644
+--- a/src/platform/cairo/graphic_cairo.cpp
++++ b/src/platform/cairo/graphic_cairo.cpp
+@@ -7,1 +7,2 @@
+ #include <fontconfig/fontconfig.h>
++#include <fontconfig/fcfreetype.h>

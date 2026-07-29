@@ -2,7 +2,7 @@ groups=(koompi)
 pkgname=koompi-microtex-git
 _pkgname=MicroTeX
 pkgver=r494.0e3707f
-pkgrel=3
+pkgrel=4
 pkgdesc='MicroTeX for koompi dotfiles.'
 #pkgdesc="A dynamic, cross-platform, and embeddable LaTeX rendering library"
 arch=("x86_64")
@@ -13,13 +13,21 @@ depends=(
   gtkmm3
   gtksourceviewmm
   cairomm
+  fontconfig
 )
 makedepends=("git" "cmake")
-source=("git+${url}.git")
-sha256sums=("SKIP")
+source=(
+  "git+${url}.git"
+  "microtex-fontconfig-2.18.patch"
+)
+sha256sums=(
+  "SKIP"
+  "9bd4105985dbeae3259247c60fc3de9156a0832cc8bc90631da9e37ff948c003"
+)
 
 prepare() {
   cd $_pkgname
+  patch -Np1 -i "$srcdir/microtex-fontconfig-2.18.patch"
   sed -i 's/gtksourceviewmm-3.0/gtksourceviewmm-4.0/' CMakeLists.txt
   sed -i 's/tinyxml2.so.10/tinyxml2.so.11/' CMakeLists.txt
 }
