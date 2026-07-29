@@ -184,10 +184,14 @@ pub fn tidy(gpa: std.mem.Allocator, items: []Item) []Item {
 
 /// The shell reads one JSON object per line. Keys are short because this runs
 /// on every focus change.
-pub fn writeJson(writer: *std.Io.Writer, items: []const Item) !void {
+///
+/// `gen` names the id space these ids belong to. Ids are handed out per payload
+/// and reused, so the shell echoes this back on every command and the daemon
+/// refuses anything stamped with a generation it has already replaced.
+pub fn writeJson(writer: *std.Io.Writer, items: []const Item, generation: u32) !void {
     try writer.writeAll("{\"items\":");
     try writeArrayJson(writer, items);
-    try writer.writeAll("}\n");
+    try writer.print(",\"gen\":{d}}}\n", .{generation});
 }
 
 pub fn writeArrayJson(writer: *std.Io.Writer, items: []const Item) std.Io.Writer.Error!void {
@@ -320,11 +324,11 @@ test "writeJson emits the shell wire format" {
 
     var out = std.Io.Writer.Allocating.init(gpa);
     defer out.deinit();
-    try writeJson(&out.writer, &.{root});
+    try writeJson(&out.writer, &.{root}, 7);
 
     try std.testing.expectEqualStrings(
         "{\"items\":[{\"label\":\"File\",\"id\":1,\"enabled\":true,\"sep\":false,\"sub\":true," ++
-            "\"items\":[{\"label\":\"Quit \\\"now\\\"\",\"id\":2,\"enabled\":true,\"sep\":false,\"shortcut\":\"Ctrl+Q\"}]}]}\n",
+            "\"items\":[{\"label\":\"Quit \\\"now\\\"\",\"id\":2,\"enabled\":true,\"sep\":false,\"shortcut\":\"Ctrl+Q\"}]}],\"gen\":7}\n",
         out.written(),
     );
 }
@@ -350,7 +354,7 @@ test "writeJson marks a childless submenu as one" {
 
     var out = std.Io.Writer.Allocating.init(gpa);
     defer out.deinit();
-    try writeJson(&out.writer, &.{ lazy, leaf });
+    try writeJson(&out.writer, &.{ lazy, leaf }, 1);
 
     const parsed = try std.json.parseFromSlice(std.json.Value, gpa, out.written(), .{});
     defer parsed.deinit();

@@ -7,16 +7,21 @@
 // application expects.
 //
 // Wire protocol, shell -> daemon (one command per line):
-//   activate <id>   invoke the item
-//   open <id>       tell the app a submenu is opening; may answer with a patch
-//   close <id>      tell the app the submenu closed
-//   refresh         re-resolve the focused window
+//   activate <id> <gen>   invoke the item
+//   open <id> <gen>       tell the app a submenu is opening; may answer with a patch
+//   close <id> <gen>      tell the app the submenu closed
+//   refresh               re-resolve the focused window
 //   gtk <bus> <menu_path> [app_path] [win_path]   (--test only)
 //   dbusmenu <bus> <path>                          (--test only)
 //
 // daemon -> shell:
-//   {"items":[...]}              the full menu for the focused window
-//   {"patch":<id>,"items":[...]} replacement children for one item
+//   {"items":[...],"gen":<n>}              the full menu for the focused window
+//   {"patch":<id>,"gen":<n>,"items":[...]} replacement children for one item
+//
+// Ids are handed out per payload and reused, so every id-bearing command names
+// the generation its id came from and is refused if that generation is no
+// longer the current one. Without it, a click queued against one application's
+// menu lands on whatever now holds that id in the next application's.
 
 const std = @import("std");
 const linux = std.os.linux;
@@ -55,15 +60,22 @@ const Daemon = struct {
     stdin_buf: std.ArrayListUnmanaged(u8) = .empty,
     hypr_buf: std.ArrayListUnmanaged(u8) = .empty,
     refresh_scheduled: bool = false,
+    /// The id space the shell is currently holding. Bumped on every full
+    /// payload, never 0, so a shell that has not received one yet cannot match.
+    generation: u32 = 0,
     /// Set by --test: no compositor, the shell drives the source directly.
     manual: bool = false,
 
     // ── Output ────────────────────────────────────────────────────────────
 
     fn emit(self: *Daemon, items: []const menu.Item) void {
+        // A full payload replaces the table, so every id the shell was holding
+        // is void from here on. Skipping 0 on wrap keeps it distinguishable
+        // from a shell that has not seen a payload yet.
+        self.generation = if (self.generation == std.math.maxInt(u32)) 1 else self.generation + 1;
         var out = std.Io.Writer.Allocating.init(self.gpa);
         defer out.deinit();
-        menu.writeJson(&out.writer, items) catch return;
+        menu.writeJson(&out.writer, items, self.generation) catch return;
         writeStdout(out.written());
     }
 
@@ -71,7 +83,9 @@ const Daemon = struct {
         var out = std.Io.Writer.Allocating.init(self.gpa);
         defer out.deinit();
         const w = &out.writer;
-        w.print("{{\"patch\":{d},\"items\":", .{id}) catch return;
+        // A patch appends to the table the current payload owns, so it carries
+        // that generation rather than starting a new one.
+        w.print("{{\"patch\":{d},\"gen\":{d},\"items\":", .{ id, self.generation }) catch return;
         menu.writeArrayJson(w, items) catch return;
         w.writeAll("}\n") catch return;
         writeStdout(out.written());
@@ -286,13 +300,15 @@ const Daemon = struct {
         const verb = it.next() orelse return;
 
         if (std.mem.eql(u8, verb, "activate")) {
-            const id = std.fmt.parseInt(u32, it.next() orelse return, 10) catch return;
-            self.activate(id);
+            const cmd = parseTargeted(it.rest()) orelse return;
+            if (cmd.generation != self.generation) return;
+            self.activate(cmd.id);
             return;
         }
         if (std.mem.eql(u8, verb, "open") or std.mem.eql(u8, verb, "close")) {
-            const id = std.fmt.parseInt(u32, it.next() orelse return, 10) catch return;
-            self.setOpen(id, std.mem.eql(u8, verb, "open"));
+            const cmd = parseTargeted(it.rest()) orelse return;
+            if (cmd.generation != self.generation) return;
+            self.setOpen(cmd.id, std.mem.eql(u8, verb, "open"));
             return;
         }
         if (std.mem.eql(u8, verb, "refresh")) {
@@ -384,6 +400,24 @@ const Daemon = struct {
         self.command(std.mem.trim(u8, line, " \r\t"));
     }
 };
+
+/// An id-bearing command, with the id space it was issued against.
+const Targeted = struct {
+    id: u32,
+    generation: u32,
+};
+
+/// Parses the "<id> <gen>" tail of an activate/open/close command. The
+/// generation is required: an unversioned command cannot be checked for
+/// staleness, and running it anyway is exactly the wrong-command-fires bug the
+/// guard exists to stop, so it is refused rather than trusted.
+fn parseTargeted(args: []const u8) ?Targeted {
+    var it = std.mem.tokenizeScalar(u8, args, ' ');
+    const id = std.fmt.parseInt(u32, it.next() orelse return null, 10) catch return null;
+    const generation = std.fmt.parseInt(u32, it.next() orelse return null, 10) catch return null;
+    if (it.next() != null) return null;
+    return .{ .id = id, .generation = generation };
+}
 
 fn sameSource(a: MenuSource, b: MenuSource) bool {
     return switch (a) {
@@ -483,6 +517,10 @@ pub fn main(init: std.process.Init) !void {
     };
     daemon.reg.on_change = onRegistrarChange;
     daemon.reg.on_change_ctx = &daemon;
+    // Lets the registrar mirror its table somewhere that outlives this process
+    // but not this session, so a daemon restart does not cost every application
+    // its menu.
+    daemon.reg.runtime_dir = init.environ_map.get("XDG_RUNTIME_DIR") orelse "/run/user/1000";
 
     if (!registrar.publish(&daemon.reg)) {
         logLine("global-menu: could not publish the AppMenu registrar\n");
@@ -515,4 +553,21 @@ test {
     _ = x11;
     _ = hypr;
     _ = gtkmenu;
+}
+
+test "parseTargeted reads the id and the generation it was issued against" {
+    const got = parseTargeted("12 3").?;
+    try std.testing.expectEqual(@as(u32, 12), got.id);
+    try std.testing.expectEqual(@as(u32, 3), got.generation);
+}
+
+// An id on its own used to be the whole command. Accepting it now would leave
+// the shell one forgotten call site away from the stale-click bug, with nothing
+// to detect it, so a command that names no generation is not executed.
+test "parseTargeted refuses a command with no generation" {
+    try std.testing.expect(parseTargeted("12") == null);
+    try std.testing.expect(parseTargeted("") == null);
+    try std.testing.expect(parseTargeted("12 ") == null);
+    try std.testing.expect(parseTargeted("12 abc") == null);
+    try std.testing.expect(parseTargeted("12 3 4") == null);
 }

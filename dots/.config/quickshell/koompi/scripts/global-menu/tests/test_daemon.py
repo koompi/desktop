@@ -46,6 +46,7 @@ def find(items, label):
 
 class Daemon:
     def __init__(self):
+        self.generation = 0
         self.proc = subprocess.Popen(
             [DAEMON, "--test"],
             stdin=subprocess.PIPE,
@@ -60,12 +61,21 @@ class Daemon:
         self.proc.stdin.write(line + "\n")
         self.proc.stdin.flush()
 
+    def send_item(self, verb, item_id, generation=None):
+        """Drives an item the way the shell does: ids are only valid inside the
+        payload they arrived in, so the generation goes back with them."""
+        gen = self.generation if generation is None else generation
+        self.send("%s %d %d" % (verb, item_id, gen))
+
     def read(self, timeout=10.0):
         deadline = time.time() + timeout
         while time.time() < deadline:
             line = self.proc.stdout.readline()
             if line.strip():
-                return json.loads(line)
+                payload = json.loads(line)
+                if "gen" in payload:
+                    self.generation = payload["gen"]
+                return payload
         raise AssertionError("daemon produced no payload")
 
     def stop(self):
@@ -135,8 +145,8 @@ def test_gtk(daemon, log):
         check(items[0].get("sub") is True, "a GTK submenu is marked as one")
         check(find(items, "Quit").get("sub") is None, "a GTK leaf is not")
 
-        daemon.send("activate %d" % find(items, "Quit")["id"])
-        daemon.send("activate %d" % find(items, "List")["id"])
+        daemon.send_item("activate", find(items, "Quit")["id"])
+        daemon.send_item("activate", find(items, "List")["id"])
         content = wait_for(log, lambda c: "quit" in c and "layout" in c)
         check("quit -\n" in content, "clicking Quit invoked app.quit")
         check("layout 'list'\n" in content, "clicking List invoked win.layout('list')")
@@ -187,9 +197,13 @@ def test_dbusmenu(daemon, log):
         check(items[0].get("sub") is True, "a populated submenu says so too")
         check(find(items, "New").get("sub") is None, "a leaf is not marked as a submenu")
 
-        daemon.send("open %d" % tools["id"])
+        daemon.send_item("open", tools["id"])
         patch = daemon.read()
         check(patch.get("patch") == tools["id"], "opening it produces a patch for that item")
+        check(
+            patch.get("gen") == payload.get("gen"),
+            "a patch stays inside the payload's id space rather than opening a new one",
+        )
         check(
             [i["label"] for i in patch["items"]] == ["Preferences"],
             "the patch carries the entries the app built on AboutToShow",
@@ -198,16 +212,62 @@ def test_dbusmenu(daemon, log):
         check(pref["toggle"] and pref["checked"], "toggle state survives the patch")
         check(pref.get("sub") is None, "a patched leaf is not marked as a submenu")
 
-        daemon.send("activate %d" % pref["id"])
+        daemon.send_item("activate", pref["id"])
         content = wait_for(log, lambda c: "event 7 clicked" in c)
         check("event 7 clicked" in content, "clicking a patched entry sends Event(clicked)")
 
-        daemon.send("activate %d" % find(items, "New")["id"])
+        daemon.send_item("activate", find(items, "New")["id"])
         content = wait_for(log, lambda c: "event 2 clicked" in c)
         check("event 2 clicked" in content, "clicking a top-level entry sends Event(clicked)")
+
+        test_stale_generation(daemon, log, items)
     finally:
         app.terminate()
         app.wait(timeout=5)
+
+
+def test_stale_generation(daemon, log, items):
+    """A click the user made just before focus moved must not land on the menu
+    that replaced it. Ids are per-payload and reused, so "activate 2" against
+    the old File menu would otherwise invoke whatever is now item 2."""
+    print("commands queued against a menu that has been replaced")
+    new_id = find(items, "New")["id"]
+    stale_gen = daemon.generation
+
+    # Re-publish. Same application, but the table is rebuilt from scratch, so
+    # every id the shell was holding now belongs to the previous generation.
+    daemon.send("dbusmenu org.koompi.test.QtApp /MenuBar")
+    daemon.read()
+    check(daemon.generation != stale_gen, "a replacement payload carries a new generation")
+
+    with open(log) as fh:
+        before = fh.read().count("event 2 clicked")
+
+    # The stale click first, then a current one. Commands are processed in
+    # order, so once the second has landed the first has had its chance.
+    daemon.send_item("activate", new_id, generation=stale_gen)
+    daemon.send_item("activate", new_id)
+    wait_for(log, lambda c: c.count("event 2 clicked") > before)
+
+    with open(log) as fh:
+        after = fh.read().count("event 2 clicked")
+    check(
+        after == before + 1,
+        "the stale click is dropped and only the current one reaches the app "
+        "(%d click(s) landed, expected 1)" % (after - before),
+    )
+
+    # An unversioned command cannot be checked at all, so it is refused too.
+    daemon.send("activate %d" % new_id)
+    daemon.send_item("activate", new_id)
+    wait_for(log, lambda c: c.count("event 2 clicked") > after)
+    with open(log) as fh:
+        final = fh.read().count("event 2 clicked")
+    check(
+        final == after + 1,
+        "a command naming no generation is refused "
+        "(%d click(s) landed, expected 1)" % (final - after),
+    )
 
 
 def test_no_menu(daemon):
@@ -215,6 +275,82 @@ def test_no_menu(daemon):
     daemon.send("dbusmenu org.koompi.test.Nothing /MenuBar")
     payload = daemon.read()
     check(payload["items"] == [], "an app that does not answer yields an empty menu, not a stall: %r" % payload)
+
+
+def get_menus():
+    return subprocess.run(
+        [
+            "gdbus", "call", "--session",
+            "--dest", "com.canonical.AppMenu.Registrar",
+            "--object-path", "/com/canonical/AppMenu/Registrar",
+            "--method", "com.canonical.AppMenu.Registrar.GetMenus",
+        ],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def test_restart_recovery(daemon):
+    """An application registers once, when it first sees somebody own the name.
+    If a daemon restart lost the table, every menu would stay missing until the
+    user restarted the application itself, which is not an acceptable ask."""
+    print("recovering registrations across a daemon restart")
+    app = start_mock("mock_dbusmenu_app.py", os.devnull, 4243)
+    try:
+        before = get_menus()
+        check("4243" in before, "the application is registered before the restart: %s" % before)
+
+        # Kill the daemon the way a crash or a shell reload would, and bring up
+        # a replacement against the same bus. The application is never touched.
+        daemon.proc.kill()
+        daemon.proc.wait(timeout=5)
+        replacement = Daemon()
+        try:
+            deadline = time.time() + 5.0
+            after = ""
+            while time.time() < deadline:
+                after = get_menus()
+                if "4243" in after:
+                    break
+                time.sleep(0.1)
+            check(
+                "4243" in after,
+                "the registration is recovered without restarting the app: %s" % after,
+            )
+            check(
+                app.poll() is None,
+                "the application really was left running the whole time",
+            )
+        finally:
+            replacement.stop()
+    finally:
+        app.terminate()
+        app.wait(timeout=5)
+
+
+def test_stale_registration_dropped():
+    """The mirrored table must not resurrect an application that has exited."""
+    print("registrations of applications that exited")
+    app = start_mock("mock_dbusmenu_app.py", os.devnull, 4244)
+    daemon = Daemon()
+    try:
+        check("4244" in get_menus(), "registered while the app was alive")
+    finally:
+        daemon.stop()
+    app.terminate()
+    app.wait(timeout=5)
+
+    revived = Daemon()
+    try:
+        deadline = time.time() + 3.0
+        while time.time() < deadline and "4244" in get_menus():
+            time.sleep(0.1)
+        check(
+            "4244" not in get_menus(),
+            "a dead application is dropped rather than restored: %s" % get_menus(),
+        )
+    finally:
+        revived.stop()
 
 
 def main():

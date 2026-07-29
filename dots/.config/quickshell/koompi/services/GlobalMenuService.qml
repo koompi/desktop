@@ -19,6 +19,11 @@ Singleton {
     property var menuItems: []
     // Lazy submenu contents keyed by the stable daemon item id.
     property var patchedChildren: ({})
+    // The id space menuItems belongs to. Item ids are handed out per payload and
+    // reused, so the daemon stamps every payload with one and refuses any
+    // command carrying a generation it has already replaced. Zero means nothing
+    // has arrived yet, which the daemon never issues.
+    property int generation: 0
 
     // Renderers use this to close local popup state before adopting a new
     // focused application's menu tree.
@@ -27,6 +32,13 @@ Singleton {
     function send(command) {
         if (daemon.running)
             daemon.write(command + "\n");
+    }
+
+    /// Sends a command that names an item id. The generation the id came from
+    /// goes with it, so a click the user made just before focus moved cannot
+    /// land on the menu that replaced it.
+    function sendForItem(command) {
+        root.send(command + " " + root.generation);
     }
 
     function childrenOf(entry) {
@@ -57,6 +69,10 @@ Singleton {
                     return;
                 }
                 if (payload.patch !== undefined) {
+                    // A patch extends the payload it was requested for. If the
+                    // menu has been replaced since, its ids mean nothing here.
+                    if (payload.gen !== root.generation)
+                        return;
                     const next = Object.assign({}, root.patchedChildren);
                     next[payload.patch] = payload.items ?? [];
                     root.patchedChildren = next;
@@ -64,6 +80,9 @@ Singleton {
                 }
                 root.menuReset();
                 root.patchedChildren = ({});
+                // Adopt the new id space before the items that live in it, so
+                // nothing reacting to menuItems can send against the old one.
+                root.generation = payload.gen ?? 0;
                 root.menuItems = payload.items ?? [];
             }
         }
@@ -72,6 +91,7 @@ Singleton {
             if (!running) {
                 root.menuReset();
                 root.patchedChildren = ({});
+                root.generation = 0;
                 root.menuItems = [];
                 restartTimer.start();
             }

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs
 import qs.services
 import qs.modules.common
@@ -20,9 +21,42 @@ Item {
     readonly property bool menuOpen: openIdx !== -1
     property int openedTopId: 0
 
+    /// The window that was focused when the current popup chain opened. A popup
+    /// belongs to that window, and outlives its usefulness the moment another
+    /// one takes over.
+    property var openedUnder: null
+
     onMenuOpenChanged: {
-        if (root.menuOpen)
+        if (root.menuOpen) {
+            root.openedUnder = ToplevelManager.activeToplevel;
             root.forceActiveFocus();
+        } else {
+            root.openedUnder = null;
+        }
+    }
+
+    // The daemon re-resolves on focus changes too, but only after a blocking
+    // D-Bus fetch has returned, and it deliberately says nothing at all when the
+    // new window resolves to the same menu. Watching focus here closes the popup
+    // on the shell's own signal instead, so it never outlives its window.
+    Connections {
+        target: ToplevelManager
+        function onActiveToplevelChanged() {
+            if (!root.menuOpen)
+                return;
+            const next = ToplevelManager.activeToplevel;
+            // Our own popup is a layer surface rather than a toplevel, and a
+            // grab reads as no active toplevel at all. Neither is another
+            // application taking focus, so neither may close the menu.
+            if (!next)
+                return;
+            if (!root.openedUnder) {
+                root.openedUnder = next;
+                return;
+            }
+            if (next !== root.openedUnder)
+                root.closeMenu();
+        }
     }
 
     /// Width the bar can spare. A negative value means nobody has measured yet,
@@ -41,10 +75,14 @@ Item {
         const floor = root.menuItems.length > 0 ? overflowButton.implicitWidth : 0;
         return Math.min(itemRow.implicitWidth, Math.max(root.widthBudget, floor));
     }
-    implicitHeight: 22
+    // Full bar height, so each menu title carries a bar-height pointer target
+    // rather than the height of the text row it sits on.
+    implicitHeight: Appearance.sizes.baseBarHeight
 
+    // Every command the shell sends names an item id, so they all carry the
+    // generation that id came from and the daemon refuses the stale ones.
     function send(command) {
-        GlobalMenuService.send(command);
+        GlobalMenuService.sendForItem(command);
     }
 
     function childrenOf(entry) {
@@ -298,15 +336,16 @@ Item {
         signal toggle
         signal hoverSwitch
 
-        // A menu title is a small target; 10px of padding either side keeps it
-        // clickable without the bar looking like a toolbar.
-        implicitWidth: buttonLabel.implicitWidth + 20
-        implicitHeight: Math.max(20, root.height)
+        // A menu title is a small target. The hit region is a full bar-height
+        // square at minimum; the highlight below stays text-sized so the bar
+        // still reads as a menubar rather than a toolbar.
+        implicitWidth: Math.max(Appearance.sizes.baseBarHeight, buttonLabel.implicitWidth + 20)
+        implicitHeight: Math.max(Appearance.sizes.baseBarHeight, root.height)
 
         Rectangle {
-            anchors.fill: parent
-            anchors.topMargin: 1
-            anchors.bottomMargin: 1
+            anchors.centerIn: parent
+            width: parent.width
+            height: Math.min(parent.height, 26)
             radius: Appearance.rounding.small
             color: button.opened || hoverHandler.hovered ? Appearance.colors.colLayer1Hover : "transparent"
 

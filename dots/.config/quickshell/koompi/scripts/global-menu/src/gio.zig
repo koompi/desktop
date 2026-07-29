@@ -31,6 +31,7 @@ pub const CALL_FLAGS_NONE: c_int = 0;
 pub const CALL_FLAGS_NO_AUTO_START: c_int = 1 << 0;
 
 pub const NAME_OWNER_FLAGS_NONE: c_int = 0;
+pub const NAME_OWNER_FLAGS_ALLOW_REPLACEMENT: c_int = 1 << 0;
 pub const NAME_OWNER_FLAGS_REPLACE: c_int = 1 << 1;
 
 pub const IO_IN: c_int = 1;
