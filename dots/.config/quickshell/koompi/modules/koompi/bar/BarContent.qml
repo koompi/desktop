@@ -1,4 +1,3 @@
-import qs.modules.koompi.bar.weather
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -180,9 +179,12 @@ Item { // Bar content region
                 // off true center whenever the timer was visible.
                 id: pomodoroGroup
                 Layout.alignment: Qt.AlignVCenter
-                visible: root.useShortenedForm === 0
+                // Only while a lap is actually under way. An untouched timer is
+                // started from the overflow control instead of sitting here.
+                visible: root.useShortenedForm === 0 && pomodoro.inSession
 
                 Pomodoro {
+                    id: pomodoro
                     Layout.fillHeight: true
                 }
             }
@@ -297,31 +299,12 @@ Item { // Bar content region
                 invertSide: Config?.options.bar.bottom
             }
 
-            BarGroup { // Utility icons, one group between tray and media
+            BarGroup { // One overflow control in place of the utility, weather and media slots
                 visible: root.useShortenedForm === 0
                 Layout.alignment: Qt.AlignVCenter
-                UtilButtons {
+                BarOverflow {
                     Layout.alignment: Qt.AlignVCenter
                 }
-            }
-
-            // Weather
-            Loader {
-                Layout.leftMargin: 4
-                active: Config.options.bar.weather.enable
-
-                sourceComponent: BarGroup {
-                    WeatherBar {}
-                }
-            }
-
-            Media { // Grouped on the right with the utilities; shrinks/elides so it never overruns workspaces
-                visible: root.useShortenedForm < 2 && MprisController.hasActiveMedia
-                Layout.leftMargin: 4
-                Layout.fillWidth: true
-                Layout.minimumWidth: 24 // icon-only floor when crowded
-                Layout.maximumWidth: 180
-                Layout.alignment: Qt.AlignVCenter
             }
 
             Item { // Leftmost in RTL: absorbs slack so the cluster pins to the right edge

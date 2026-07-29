@@ -10,7 +10,9 @@ RippleButton {
     property bool extraActiveCondition: false
     property string tooltipText: ""
 
-    implicitHeight: Math.max(content.implicitHeight, 26, content.implicitHeight)
+    // A bar-height square, so the icon inside is never the limit of what is
+    // clickable.
+    implicitHeight: Math.max(content.implicitHeight, Appearance.sizes.baseBarHeight)
     implicitWidth: implicitHeight
     contentItem: content
 

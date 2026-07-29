@@ -10,6 +10,13 @@ MouseArea {
     property bool borderless: Config.options.bar.borderless
 
     readonly property bool running: TimerService.pomodoroRunning
+    /// A timer nobody has started yet is not worth permanent bar space. Once it
+    /// runs, or has been left part-way through a lap, it is in session and the
+    /// bar shows it.
+    readonly property bool inSession: running || TimerService.pomodoroSecondsLeft !== TimerService.pomodoroLapDuration
+    /// Off when this instance is already inside a popup, which cannot usefully
+    /// own a second popup window of its own.
+    property bool detailPopup: true
     readonly property bool isBreak: TimerService.pomodoroBreak
     readonly property color phaseColor: running
         ? (isBreak ? Appearance.colors.colTertiary : Appearance.colors.colPrimary)
@@ -71,6 +78,6 @@ MouseArea {
     }
 
     PomodoroPopup {
-        hoverTarget: root
+        hoverTarget: root.detailPopup ? root : null
     }
 }

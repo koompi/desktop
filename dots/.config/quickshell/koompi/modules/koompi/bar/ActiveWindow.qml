@@ -55,6 +55,12 @@ Item { // Faux global menu: app icon + bold app name + window title
         return t;
     }
 
+    /// Cap on the app-identity block, so a very long window title elides instead
+    /// of growing the left region under the centered workspaces. Derived from the
+    /// screen rather than from this item's own width, which would bind back into
+    /// the layout that sizes it.
+    readonly property real identityMaxWidth: Math.max(160, Math.round((root.QsWindow.window?.screen?.width ?? 1920) * 0.18))
+
     implicitWidth: rowLayout.implicitWidth
 
     RowLayout {
@@ -70,44 +76,59 @@ Item { // Faux global menu: app icon + bold app name + window title
             implicitSize: 22
             Layout.alignment: Qt.AlignVCenter
             visible: root.appClass.length > 0 && status === Image.Ready
+            opacity: root.focusingThisMonitor ? 1 : 0.5
             source: Quickshell.iconPath(AppSearch.guessIcon(root.appClass), "")
         }
 
-        ColumnLayout { // Two stacked rows: app name + menu over window title
-            Layout.fillWidth: true
+        ColumnLayout { // App name stacked over window title, as one bounded block
+            id: identityColumn
+            // Pinned rather than left to the row's spare-space sharing, which
+            // grew the block to its cap and pushed the menu away from a short
+            // app name. Wide enough for the text, never wider than the cap.
+            // Without an explicit floor the column inherits a minimum width from
+            // its text children, which outranks the cap and is why the title
+            // used to run on instead of eliding.
+            Layout.minimumWidth: 0
+            Layout.maximumWidth: root.identityMaxWidth
+            Layout.preferredWidth: Math.min(identityColumn.implicitWidth, root.identityMaxWidth)
             spacing: -4
 
-            RowLayout { // App name followed by inline global menu items
+            StyledText { // App name, menubar-style
+                id: appName
                 Layout.fillWidth: true
-                spacing: 6
-
-                StyledText { // App name, menubar-style
-                    id: appName
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    font.weight: Font.Bold
-                    color: Appearance.colors.colOnLayer0
-                    elide: Text.ElideRight
-                    text: root.prettyName(root.appClass)
-                }
-
-                GlobalMenu { // Inline File/Edit/View menu buttons
-                    id: globalMenu
-                    Layout.fillHeight: true
-                    visible: root.focusingThisMonitor && menuItems.length > 0
-                    // On a narrow bar the menu yields to the app name and icon;
-                    // whatever is left over goes into its overflow button.
-                    maxWidth: root.width - appIcon.width - appName.implicitWidth - 24
-                }
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                font.weight: Font.Bold
+                // An unfocused monitor still shows its window, dimmed, so the
+                // focused one is tellable apart at a glance.
+                color: root.focusingThisMonitor ? Appearance.colors.colOnLayer0 : Appearance.colors.colOnLayer1Inactive
+                elide: Text.ElideRight
+                text: root.prettyName(root.appClass)
             }
 
             StyledText { // Window title, dimmed
                 Layout.fillWidth: true
                 visible: text.length > 0
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
+                color: root.focusingThisMonitor ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1Inactive
                 elide: Text.ElideRight
                 text: root.cleanTitle(root.windowTitle)
             }
+        }
+
+        GlobalMenu { // Inline File/Edit/View menu buttons, full bar height
+            id: globalMenu
+            Layout.fillHeight: true
+            visible: root.focusingThisMonitor && menuItems.length > 0
+            // On a narrow bar the menu yields to the app name and icon;
+            // whatever is left over goes into its overflow button. Measured from
+            // the column's implicit width, which does not depend on the layout.
+            maxWidth: root.width - appIcon.width - Math.min(identityColumn.implicitWidth, root.identityMaxWidth) - 24
+        }
+
+        Item { // Absorbs the leftover width, which a row of stretch-free items
+            // would otherwise share out and open a gap between name and menu.
+            Layout.fillWidth: true
+            Layout.fillHeight: true
         }
     }
 }

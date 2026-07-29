@@ -19,14 +19,19 @@ Item {
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
     readonly property int effectiveActiveWorkspaceId: monitor?.activeWorkspace?.id ?? 1
+    readonly property bool focusingThisMonitor: Hyprland.focusedMonitor?.id === root.monitor?.id
     
     readonly property int workspacesShown: Config.options.bar.workspaces.shown
     readonly property int workspaceGroup: Math.floor((effectiveActiveWorkspaceId - 1) / root.workspacesShown)
     property list<bool> workspaceOccupied: []
     property int widgetPadding: 4
-    property int workspaceButtonWidth: 26
+    // Pitch, and therefore the pointer target, of one workspace button. A bar
+    // height wide so every button is a bar-height square to click; the pills
+    // drawn inside stay `workspaceVisualSize` so the bar looks unchanged.
+    property int workspaceButtonWidth: 40
+    property int workspaceVisualSize: 26
     property real activeWorkspaceMargin: 2
-    property real workspaceIconSize: workspaceButtonWidth * 0.69
+    property real workspaceIconSize: workspaceVisualSize * 0.69
     property int workspaceIndexInGroup: (effectiveActiveWorkspaceId - 1) % root.workspacesShown
 
     property bool showNumbers: false
@@ -118,12 +123,12 @@ Item {
             Rectangle {
                 z: 1
                 implicitWidth: workspaceButtonWidth
-                implicitHeight: workspaceButtonWidth
-                radius: (width / 2)
+                implicitHeight: root.workspaceVisualSize
+                radius: (height / 2)
                 property var previousOccupied: (workspaceOccupied[index-1] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index))
                 property var rightOccupied: (workspaceOccupied[index+1] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index+2))
-                property var radiusPrev: previousOccupied ? 0 : (width / 2)
-                property var radiusNext: rightOccupied ? 0 : (width / 2)
+                property var radiusPrev: previousOccupied ? 0 : (height / 2)
+                property var radiusNext: rightOccupied ? 0 : (height / 2)
 
                 topLeftRadius: radiusPrev
                 bottomLeftRadius: root.vertical ? radiusNext : radiusPrev
@@ -155,7 +160,9 @@ Item {
         z: 2
         // Make active ws indicator, which has a brighter color, smaller to look like it is of the same size as ws occupied highlight
         radius: Appearance.rounding.full
-        color: Appearance.colors.colPrimary
+        // Dimmed on a monitor that does not hold focus, so the focused one's
+        // active workspace is the one that reads as active.
+        color: root.focusingThisMonitor ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1Inactive
 
         anchors {
             verticalCenter: vertical ? undefined : parent.verticalCenter
@@ -168,7 +175,7 @@ Item {
         }
         property real indicatorPosition: Math.min(idxPair.idx1, idxPair.idx2) * workspaceButtonWidth + root.activeWorkspaceMargin
         property real indicatorLength: Math.abs(idxPair.idx1 - idxPair.idx2) * workspaceButtonWidth + workspaceButtonWidth - root.activeWorkspaceMargin * 2
-        property real indicatorThickness: workspaceButtonWidth - root.activeWorkspaceMargin * 2
+        property real indicatorThickness: root.workspaceVisualSize - root.activeWorkspaceMargin * 2
 
         x: root.vertical ? null : indicatorPosition
         implicitWidth: root.vertical ? indicatorThickness : indicatorLength
@@ -205,14 +212,17 @@ Item {
                     implicitWidth: workspaceButtonWidth
                     implicitHeight: workspaceButtonWidth
                     property var biggestWindow: HyprlandData.biggestWindowForWorkspace(button.workspaceValue)
-                    property var mainAppIconSource: Quickshell.iconPath(AppSearch.guessIcon(biggestWindow?.class), "image-missing")
+                    property string mainAppIconName: AppSearch.guessIcon(biggestWindow?.class)
+                    property var mainAppIconSource: Quickshell.iconPath(mainAppIconName, "image-missing")
                     readonly property bool showLabel: root.showNumbers || Config.options?.bar.workspaces.alwaysShowNumbers
                     readonly property bool showIcon: !showLabel
                         && Config.options?.bar.workspaces.showAppIcons
                         && !!biggestWindow
+                        && AppSearch.iconExists(mainAppIconName)
 
                     StyledText { // Workspace number text
                         opacity: workspaceButtonBackground.showLabel ? 1 : 0
+                        visible: opacity > 0
                         z: 3
 
                         anchors.centerIn: parent
@@ -238,7 +248,7 @@ Item {
                         opacity: (!workspaceButtonBackground.showLabel && !workspaceButtonBackground.showIcon) ? 1 : 0
                         visible: opacity > 0
                         anchors.centerIn: parent
-                        width: workspaceButtonWidth * 0.18
+                        width: root.workspaceVisualSize * 0.18
                         height: width
                         radius: width / 2
                         color: (root.effectiveActiveWorkspaceId == button.workspaceValue) ? 
@@ -252,16 +262,16 @@ Item {
                     }
                     Item { // Main app icon
                         anchors.centerIn: parent
-                        width: workspaceButtonWidth
-                        height: workspaceButtonWidth
+                        width: root.workspaceVisualSize
+                        height: root.workspaceVisualSize
                         opacity: workspaceButtonBackground.showIcon ? 1 : 0
                         visible: opacity > 0
                         IconImage {
                             id: mainAppIcon
                             anchors.bottom: parent.bottom
                             anchors.right: parent.right
-                            anchors.bottomMargin: (workspaceButtonWidth - workspaceIconSize) / 2
-                            anchors.rightMargin: (workspaceButtonWidth - workspaceIconSize) / 2
+                            anchors.bottomMargin: (root.workspaceVisualSize - workspaceIconSize) / 2
+                            anchors.rightMargin: (root.workspaceVisualSize - workspaceIconSize) / 2
 
                             source: workspaceButtonBackground.mainAppIconSource
                             implicitSize: workspaceIconSize

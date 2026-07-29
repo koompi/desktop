@@ -50,6 +50,15 @@ LazyLoader {
 
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
+
+        /// A popup should clear the bar by exactly as much as a tiled window
+        /// does, so the two read as one system: Hyprland's gaps_out plus its
+        /// 1px border. The elevation margin is shadow allowance held inside
+        /// this window, so it comes out of the offset instead of adding to it.
+        readonly property real barEdgeGap: Appearance.sizes.hyprlandGapsOut + 1
+        function barEdgeOffset(barExtent) {
+            return barExtent - Appearance.sizes.elevationMargin + barEdgeGap;
+        }
         margins {
             left: {
                 if (!Config.options.bar.vertical) return root.QsWindow?.mapFromItem(
@@ -59,14 +68,14 @@ LazyLoader {
                 return Appearance.sizes.verticalBarWidth
             }
             top: {
-                if (!Config.options.bar.vertical) return Appearance.sizes.barHeight;
+                if (!Config.options.bar.vertical) return popupWindow.barEdgeOffset(Appearance.sizes.barHeight);
                 return root.QsWindow?.mapFromItem(
                     root.hoverTarget,
                     (root.hoverTarget.height - popupBackground.implicitHeight) / 2, 0
                 ).y;
             }
-            right: Appearance.sizes.verticalBarWidth
-            bottom: Appearance.sizes.barHeight
+            right: popupWindow.barEdgeOffset(Appearance.sizes.verticalBarWidth)
+            bottom: popupWindow.barEdgeOffset(Appearance.sizes.barHeight)
         }
         WlrLayershell.namespace: "quickshell:popup"
         WlrLayershell.layer: WlrLayer.Overlay

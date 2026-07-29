@@ -15,8 +15,9 @@ RippleButton {
     visible: aiChatEnabled || translatorEnabled || animeEnabled
 
     property real buttonPadding: 5
-    implicitWidth: distroIcon.width + buttonPadding * 2
-    implicitHeight: distroIcon.height + buttonPadding * 2
+    // Padding alone leaves a 34px target on a 40px bar; floor it at bar height.
+    implicitWidth: Math.max(Appearance.sizes.baseBarHeight, distroIcon.width + buttonPadding * 2)
+    implicitHeight: Math.max(Appearance.sizes.baseBarHeight, distroIcon.height + buttonPadding * 2)
     buttonRadius: Appearance.rounding.full
     colBackgroundHover: Appearance.colors.colLayer1Hover
     colRipple: Appearance.colors.colLayer1Active
