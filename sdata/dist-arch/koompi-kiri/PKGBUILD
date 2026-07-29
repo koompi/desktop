@@ -1,0 +1,114 @@
+# koompi-kiri — Kiri, the voice-to-text assistant behind the AI/Copilot key.
+#
+# The shipped Hyprland keybinds (dots/.config/hypr/custom/keybinds.lua) call
+# `kiri voice`, `kiri voice --lang km`, `kiri cancel` and `kiri-gui` by bare
+# name. koompi-session prepends ~/.local/bin to PATH, so a hand-built copy
+# there still wins and this package is the always-present fallback in /usr/bin
+# — the same arrangement koompi-shell uses for the koompi-* tools.
+#
+# BUILD NOTE: unlike koompi-shell and koompi-session, this package sources an
+# external git repo, so it does not read ../../../dots through $startdir and
+# builds unchanged in a clean chroot.
+#
+# PKGVER NOTE: sdata/dist-arch/README.md asks for no pkgver() because makepkg
+# rewrites the tracked PKGBUILD. That only happens when pkgver() disagrees with
+# the recorded pkgver. Here `source` is pinned to $_commit and pkgver() derives
+# the version from that same commit, so it always reproduces the value below and
+# makepkg never writes the file. Bump _commit and pkgver together.
+#
+# MODELS: none are shipped. Kiri keeps them per user under
+# ~/.local/share/kiri/models and they are hundreds of MB, so they are not
+# package payload.
+#   - Default backend (settings stt_backend=parakeet): the Parakeet TDT English
+#     model, ~460MB, from https://blob.handy.computer/parakeet-v3-int8.tar.gz,
+#     extracted to ~/.local/share/kiri/models/parakeet-tdt-0.6b-v3-int8/, gated
+#     by Silero VAD, ~2MB, from https://blob.handy.computer/silero_vad_v4.onnx.
+#   - Whisper ggml models (Khmer and fallback) come from huggingface.co and are
+#     the only ones the binary itself knows how to fetch (`kiri model list`,
+#     `kiri model download <name>`).
+# WHAT A FRESH USER GETS ON FIRST RUN: `kiri` with no settings file runs the
+# built-in setup wizard, which offers only the Whisper ggml models. Upstream
+# ships the blob.handy.computer URLs in install.sh, not in the binary, so a
+# package-only install has no parakeet-tdt-0.6b-v3-int8 or silero_vad_v4.onnx
+# and the default parakeet backend fails with "encoder-model.int8.onnx not found
+# in <models dir>". Until upstream teaches `kiri model` about those two, a
+# packaged user must either fetch them by hand or run
+# `kiri config set stt_backend whisper` and let the wizard download a ggml model.
+groups=(koompi)
+pkgname=koompi-kiri
+_pkgname=kiri
+_commit='ccb4800ce01e63899579c393e193a9bcf0bc5f05'
+pkgver=0.1.0.r60.gccb4800
+pkgrel=1
+pkgdesc='Kiri — voice-to-text assistant for the KOOMPI AI/Copilot key'
+arch=(x86_64 aarch64)
+url='https://github.com/koompiai/kiri'
+# Upstream ships no LICENSE file and no license field in Cargo.toml; there is no
+# grant to name. Recorded as a reference until KOOMPI declares one upstream.
+license=('LicenseRef-koompi-kiri-undeclared')
+depends=(
+  # GTK4 voice popup and its layer-shell surface. Upstream's install.sh also
+  # pulls libadwaita, but ldd on the built binary shows it is not linked.
+  gtk4
+  gtk4-layer-shell
+  # Microphone capture through cpal's ALSA backend.
+  alsa-lib
+  # whisper-rs is built with the vulkan feature, so the binary links
+  # libvulkan.so.1 and needs a working ICD at runtime.
+  vulkan-icd-loader
+  # reqwest resolves to native-tls, so the model downloader links libssl/libcrypto.
+  openssl
+  # Pasting the transcript. src/output/paste.rs prefers ydotool (uinput level,
+  # reaches native-Wayland Qt apps) and falls back to wtype; without one of them
+  # it bails with "No paste tool available".
+  ydotool
+)
+makedepends=(
+  git
+  rust
+  cmake
+  # whisper.cpp's vulkan backend compiles its shaders with glslc, from shaderc,
+  # against the Vulkan headers.
+  vulkan-headers
+  shaderc
+  # whisper-rs generates its bindings with bindgen, which needs libclang.
+  clang
+)
+provides=("$_pkgname=$pkgver")
+conflicts=("$_pkgname")
+# whisper-rs-sys builds whisper.cpp through cmake with makepkg's CFLAGS. With
+# makepkg's default lto option those archives carry no usable symbols for the
+# Rust link step, which then fails on every whisper_* symbol. Same build with
+# LTOFLAGS out of the environment links.
+options=('!lto')
+
+source=("$_pkgname::git+$url.git#commit=$_commit")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$_pkgname"
+  printf '0.1.0.r%s.g%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+build() {
+  cd "$_pkgname"
+  export CARGO_HOME="$srcdir/cargo-home"
+  # Upstream's .cargo/config.toml bakes an $ORIGIN rpath for a sherpa-onnx build
+  # that this configuration does not produce; a /usr/bin binary must not carry it.
+  rm -f .cargo/config.toml
+  cargo build --release --locked
+}
+
+package() {
+  cd "$_pkgname"
+  install -Dm755 target/release/kiri "$pkgdir/usr/bin/kiri"
+
+  # The Tauri settings GUI (gui/, binary kiri-gui) is NOT built here: it needs
+  # bun, a `bunx tauri build` npm install, and webkit2gtk-4.1, which is a second
+  # toolchain inside one package. Super+Alt+K opens kiri-gui and will do nothing
+  # for a packaged user; every setting is reachable with `kiri config set`.
+  # Upstream's packaging/kiri.desktop is not installed either: its Exec names
+  # `kiri-popup`, a binary this repo does not build. Same for
+  # packaging/systemd/kiri-sync.*, which run a `kiri-sync` that does not exist,
+  # and kiri-daemon.service, which hardcodes %h/.cargo/bin/kiri.
+}

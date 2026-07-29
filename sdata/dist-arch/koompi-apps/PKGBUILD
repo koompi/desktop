@@ -98,6 +98,13 @@ depends=(
   # Phone pairing, clipboard sync and notification mirroring. The shell's
   # KDE Connect integration is dead weight without the daemon.
   kdeconnect
+
+  # --- voice -----------------------------------------------------------------
+  # Kiri backs the five "Kiri: ..." binds in
+  # dots/.config/hypr/custom/keybinds.lua, including the AI/Copilot key. It
+  # belongs here rather than in a dependency meta by this package's own rule:
+  # the session runs perfectly well without it, the keys just do nothing.
+  koompi-kiri
 )
 
 package() {
