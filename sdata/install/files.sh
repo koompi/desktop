@@ -34,6 +34,67 @@ readonly SYNC_DIRS=(
     ".config/quickshell/koompi-quicklook"
 )
 
+# Older KOOMPI/II configs could persist both workspace flags as true. The bar's
+# number branch intentionally wins that conflict, so app icons disappear even
+# after an installer update ships the corrected default. Fix that legacy state
+# once, then leave the setting entirely user-owned: after the marker exists, a
+# user who deliberately enables numbers will never be second-guessed.
+migrate_workspace_app_icons() {
+    local config="${XDG_CONFIG_HOME}/koompi/config.json"
+    local marker="${KOOMPI_STATE_DIR}/migrations/workspace-app-icons-v1"
+
+    [[ -e "$marker" ]] && return 0
+
+    if [[ ! -e "$config" ]]; then
+        info "new config will use workspace app icons"
+        if [[ "$DRY_RUN" != true ]]; then
+            mkdir -p "$(dirname "$marker")"
+            : > "$marker"
+        fi
+        return 0
+    fi
+
+    if ! have jq; then
+        warn "jq is unavailable; cannot check the legacy workspace icon setting"
+        return 0
+    fi
+    if ! jq -e . "$config" >/dev/null 2>&1; then
+        warn "$config is not valid JSON; leaving it untouched"
+        return 0
+    fi
+
+    if jq -e '
+        .bar.workspaces.showAppIcons == true
+        and .bar.workspaces.alwaysShowNumbers == true
+    ' "$config" >/dev/null; then
+        info "migrating the legacy workspace-number setting so app icons remain visible"
+        if [[ "$DRY_RUN" == true ]]; then
+            return 0
+        fi
+
+        local backup_dir tmp
+        backup_dir="${BACKUP_ROOT}/$(date +%Y%m%d-%H%M%S)"
+        mkdir -p "$backup_dir/.config/koompi"
+        cp -a "$config" "$backup_dir/.config/koompi/config.json" \
+            || { err "could not back up $config"; return 1; }
+
+        tmp="$(mktemp "${config}.tmp.XXXXXX")"
+        if ! jq '.bar.workspaces.alwaysShowNumbers = false' "$config" > "$tmp"; then
+            rm -f "$tmp"
+            err "could not migrate $config"
+            return 1
+        fi
+        chmod --reference="$config" "$tmp"
+        mv -f "$tmp" "$config"
+        ok "workspace app icons restored; backup saved under $backup_dir"
+    fi
+
+    if [[ "$DRY_RUN" != true ]]; then
+        mkdir -p "$(dirname "$marker")"
+        : > "$marker"
+    fi
+}
+
 # Copy aside every path in $HOME that this install is about to *change*.
 # Driven off the contents of dots/, so it can never miss a file we install and
 # never hoards files we do not touch.
@@ -103,6 +164,8 @@ install_files() {
     for d in "$XDG_BIN_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME"; do
         [[ -d "$d" ]] || run mkdir -p "$d"
     done
+
+    migrate_workspace_app_icons
 
     if [[ "$SKIP_BACKUP" != true ]]; then
         backup_existing

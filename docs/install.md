@@ -176,6 +176,14 @@ Before writing anything it copies every file it is about to *change* into `~/.ko
 A file that already matches what is about to be written is left alone, so re-running the installer does not pile up another full copy of the tree.
 `--no-backup` skips the backup entirely; there is no good reason to use it.
 
+The installer also performs one narrow user-config migration for older
+installations where both workspace app icons and permanent workspace numbers
+were enabled. That legacy conflict hides the icons, so the first updated
+install disables permanent numbers, backs up `config.json`, and records
+`~/.local/state/koompi/migrations/workspace-app-icons-v1`. After that marker
+exists, workspace display settings are fully user-owned again and later
+installer runs do not override them.
+
 Everything written is appended to `~/.local/state/koompi/installed-files`.
 
 The user-level copy of `koompi.desktop` points at the user's launcher as a
