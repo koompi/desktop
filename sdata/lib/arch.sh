@@ -6,6 +6,23 @@
 #
 # Nothing here has a side effect at source time.
 
+# Print only candidate package names that are literally present in pacman's
+# installed-name list. A targeted `pacman -Qq <name>` is not an exact-name
+# check: it also resolves `provides=`, so asking for `quickshell-git` can succeed
+# and print `illogical-impulse-quickshell-git`. Passing the queried alias to
+# `pacman -R` then fails with "target not found".
+arch_exact_installed_packages() {
+    local installed candidate
+    installed="$(pacman -Qq)" || return 1
+
+    for candidate in "$@"; do
+        if grep -Fxq -- "$candidate" <<< "$installed"; then
+            printf '%s\n' "$candidate"
+        fi
+    done
+    return 0
+}
+
 arch_install_yay() {
     have yay && return 0
     info "yay not found; building it (needed for the AUR dependencies)"

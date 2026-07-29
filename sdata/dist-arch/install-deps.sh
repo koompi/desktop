@@ -45,10 +45,11 @@ arch_drop_deprecated() {
         {hyprland-qtutils,hyprlock,xdg-desktop-portal-hyprland,hyprcursor}-git
         {hyprwayland-scanner,hyprland}-git
     )
-    local present=() pkg
-    for pkg in "${stale[@]}"; do
-        pacman -Qq "$pkg" >/dev/null 2>&1 && present+=("$pkg")
-    done
+    local exact
+    exact="$(arch_exact_installed_packages "${stale[@]}")" ||
+        die "could not read the installed pacman package database"
+    local present=()
+    [[ -z "$exact" ]] || mapfile -t present <<< "$exact"
     (( ${#present[@]} )) || return 0
     warn "removing ${#present[@]} superseded package(s): ${present[*]}"
     # -Rdd: they are replaced by the metas installed immediately after, so the
