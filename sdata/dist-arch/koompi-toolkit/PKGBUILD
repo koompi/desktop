@@ -1,0 +1,12 @@
+groups=(koompi)
+pkgname=koompi-toolkit
+pkgver=1.0
+pkgrel=3
+pkgdesc='KOOMPI Toolkit Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  upower
+  wtype
+  ydotool
+)

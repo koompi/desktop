@@ -1,0 +1,228 @@
+<section class="section" id="agent-memory-impl">
+  <div class="section-header">
+    <h2>Agent Memory Blueprint</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    The implementation design for the <code style="color:var(--accent)">memory engine inside koompi-assistantd</code> (Rust, per ADR-0004 — memory shares the one per-user SQLite DB with L1, arch §7; there is no separate memory daemon). The Rust core owns the durable substrate, the four-layer logic, the IPC, and the encryption key. Two invariants govern everything: <strong style="color:#047857">the durability split</strong> (forget the index, never the record) and <strong style="color:#B45309">embedding-model obsolescence</strong> (raw episodic text is immortal so the index can be re-embedded under future models). Forgetting is a ranking property; remembering is reconstruction with citations. v1 arch: the store, the struct schemas, and the D-Bus interface below.
+  </p>
+
+  <!-- ───────────────────────── 1. SYSTEM ARCHITECTURE DIAGRAM ───────────────────────── -->
+  <div style="background:#0D1117;border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+    <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="display:flex;gap:6px;">
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+      </div>
+      <span style="margin-left:8px;font-size:12px;color:rgba(255,255,255,0.4);">assistantd · memory engine topology</span>
+    </div>
+    <div style="padding:22px 28px;font-size:11.5px;line-height:1.85;color:rgba(255,255,255,0.6);white-space:pre;overflow-x:auto;">
+<span style="color:#6366F1;">┌─────────────────────────────────────────────────────────────────────┐</span>
+<span style="color:#6366F1;">│</span>  <span style="color:#22D3EE;">Quickshell / QML</span>   MemoryService.qml · AskBar · Timeline widget       <span style="color:#6366F1;">│</span>
+<span style="color:#6366F1;">└────────────────────────────────┬────────────────────────────────────┘</span>
+                                 <span style="color:#F59E0B;">│</span>  D-Bus  <span style="color:rgba(255,255,255,0.35);">org.koompi.Assistant1  (session bus)</span>
+                                 <span style="color:#F59E0B;">│</span>  + Unix socket fallback  <span style="color:rgba(255,255,255,0.35);">$XDG_RUNTIME_DIR/koompi/assistantd.sock</span>
+<span style="color:#10B981;">┌────────────────────────────────▼────────────────────────────────────┐</span>
+<span style="color:#10B981;">│</span>  <span style="color:#10B981;">koompi-assistantd · memory engine</span>  <span style="color:rgba(255,255,255,0.45);">(Rust — owns sockets, store, crypto)</span>  <span style="color:#10B981;">│</span>
+<span style="color:#10B981;">│</span>    ├─ ipc.rs         newline-JSON / D-Bus (zbus) router, backpressure  <span style="color:#10B981;">│</span>
+<span style="color:#10B981;">│</span>    ├─ store.rs       sqlite-vec + FTS5 + graph tables (one per-user DB)<span style="color:#10B981;">│</span>
+<span style="color:#10B981;">│</span>    ├─ graph.rs       in-proc weighted traversal (no Neo4j)             <span style="color:#10B981;">│</span>
+<span style="color:#10B981;">│</span>    ├─ crypto.rs      per-object AEAD at-rest seal (O-1, koompi-vault)  <span style="color:#10B981;">│</span>
+<span style="color:#10B981;">│</span>    └─ sched.rs       S0..S3 sleep-cycle stages, AC/idle/temp gating    <span style="color:#10B981;">│</span>
+<span style="color:#10B981;">└──────┬─────────────────────────────────────────────┬─────────────────┘</span>
+       <span style="color:#F59E0B;">│</span> four cognitive layers, one store             <span style="color:#F59E0B;">│</span> local LLM (gguf) / ONNX
+<span style="color:#6366F1;">┌──────▼──────────────────────────────┐</span>      <span style="color:#22D3EE;">┌───────▼──────────────┐</span>
+<span style="color:#6366F1;">│</span> <span style="color:#6366F1;">assistantd memory core</span> <span style="color:rgba(255,255,255,0.4);">(Rust)</span>       <span style="color:#6366F1;">│</span>      <span style="color:#22D3EE;">│</span> BGE-M3 (ADR-0006)     <span style="color:#22D3EE;">│</span>
+<span style="color:#6366F1;">│</span>   ① Working   (PFC · RAM ring)       <span style="color:#6366F1;">│</span>      <span style="color:#22D3EE;">│</span> + local LLM (gguf)    <span style="color:#22D3EE;">│</span>
+<span style="color:#6366F1;">│</span>   ② Episodic  (Hippocampus · @data)  <span style="color:#6366F1;">│</span>      <span style="color:#22D3EE;">└──────────────────────┘</span>
+<span style="color:#6366F1;">│</span>   ③ Semantic  (Temporal · graph)     <span style="color:#6366F1;">│</span>   <span style="color:rgba(255,255,255,0.35);">NEVER egresses to cloud.</span>
+<span style="color:#6366F1;">│</span>   ④ Procedural(Basal · DAG)          <span style="color:#6366F1;">│</span>
+<span style="color:#6366F1;">└─────────────────────────────────────┘</span>
+   <span style="color:#10B981;">episodic</span> <span style="color:rgba(255,255,255,0.35);">$XDG_DATA_HOME/koompi (per-user, under @home — §2.1 settled) ← durable, encrypted, synced opt-in (E2EE)</span>
+   <span style="color:#F59E0B;">index</span> <span style="color:rgba(255,255,255,0.35);">$XDG_STATE_HOME/koompi (chattr +C) ← DISPOSABLE, rebuildable, never synced</span>
+    </div>
+  </div>
+
+  <p class="desc" style="margin-bottom:16px;">
+    The Rust core is the only code path that touches disk, sockets, and the encryption key. The four cognitive layers below live as namespaces in one per-user SQLite store owned by <code>assistantd</code> (ADR-0004) — Working in a RAM ring, Episodic/Semantic/Procedural on disk. Every vector carries an <code style="color:#0E7490">embed_model_id</code> so a future model never silently re-interprets an older record. The struct schemas, IPC surface, and scoring math below are the buildable v1 contract.
+  </p>
+
+  <!-- ───────────────────────── 3. DATA SCHEMA PER LAYER ───────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+
+    <!-- Working -->
+    <div style="background:#0D1117;border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:16px 18px;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="font-size:12px;color:#6366F1;font-weight:600;margin-bottom:4px;">① Working Memory <span style="color:rgba(255,255,255,0.3);font-weight:400;">· PFC · RAM ring</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">no disk · evicted on token-budget pressure</div>
+      <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre;overflow-x:auto;"><span style="color:#FF7B72;">struct</span> Slot {
+  node_id:    <span style="color:#79C0FF;">u64</span>,
+  token_cost: <span style="color:#79C0FF;">u32</span>,   <span style="color:#6A737D;">// attention budget</span>
+  salience:   <span style="color:#79C0FF;">f32</span>,   <span style="color:#6A737D;">// novelty+arousal</span>
+  last_touch: <span style="color:#79C0FF;">i64</span>,   <span style="color:#6A737D;">// epoch ms</span>
+}</div>
+    </div>
+
+    <!-- Episodic -->
+    <div style="background:#0D1117;border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:16px 18px;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="font-size:12px;color:#10B981;font-weight:600;margin-bottom:4px;">② Episodic <span style="color:rgba(255,255,255,0.3);font-weight:400;">· Hippocampus · @data</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">IMMORTAL · WAL · encrypted · synced opt-in</div>
+      <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre;overflow-x:auto;"><span style="color:#FF7B72;">struct</span> EpisodicEvent {
+  id:        <span style="color:#79C0FF;">u64</span>,
+  ts:        <span style="color:#79C0FF;">i64</span>,
+  source:    []<span style="color:#79C0FF;">u8</span>,  <span style="color:#6A737D;">// editor/web/...</span>
+  raw_text:  []<span style="color:#79C0FF;">u8</span>,  <span style="color:#6A737D;">// verbatim →re-embed</span>
+  context:   Json,    <span style="color:#6A737D;">// app/ws/file</span>
+  valence:   <span style="color:#79C0FF;">f32</span>,    <span style="color:#6A737D;">// -1..1</span>
+  arousal:   <span style="color:#79C0FF;">f32</span>,    <span style="color:#6A737D;">// 0..1</span>
+  device_id: []<span style="color:#79C0FF;">u8</span>,
+}</div>
+    </div>
+
+    <!-- Semantic -->
+    <div style="background:#0D1117;border:1px solid rgba(34,211,238,0.3);border-radius:10px;padding:16px 18px;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="font-size:12px;color:#22D3EE;font-weight:600;margin-bottom:4px;">③ Semantic <span style="color:rgba(255,255,255,0.3);font-weight:400;">· Temporal · graph</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">DERIVED · rebuildable · wiped by --full</div>
+      <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre;overflow-x:auto;"><span style="color:#FF7B72;">struct</span> SemanticNode {
+  id:            <span style="color:#79C0FF;">u64</span>,
+  name:          []<span style="color:#79C0FF;">u8</span>,
+  ntype:         Enum,   <span style="color:#6A737D;">//person|tool..</span>
+  vector:        []<span style="color:#79C0FF;">f32</span>,
+  embed_model_id:[]<span style="color:#79C0FF;">u8</span>, <span style="color:#6A737D;">//PROVENANCE</span>
+  salience:      <span style="color:#79C0FF;">f32</span>,
+  stability:     <span style="color:#79C0FF;">f32</span>,    <span style="color:#6A737D;">// Ebbinghaus S</span>
+  access_count:  <span style="color:#79C0FF;">u32</span>,
+  episodic_refs: []<span style="color:#79C0FF;">u64</span>, <span style="color:#6A737D;">//back-ptr</span>
+}
+<span style="color:#FF7B72;">struct</span> Edge { src, dst: <span style="color:#79C0FF;">u64</span>,
+  pred: <span style="color:#79C0FF;">Predicate</span>, <span style="color:#6A737D;">// causal|temporal</span>
+  weight: <span style="color:#79C0FF;">f32</span>,      <span style="color:#6A737D;">// Hebbian/STDP</span>
+  superseded_at: ?<span style="color:#79C0FF;">i64</span> } <span style="color:#6A737D;">//reconcile</span></div>
+    </div>
+
+    <!-- Procedural -->
+    <div style="background:#0D1117;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:16px 18px;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="font-size:12px;color:#F59E0B;font-weight:600;margin-bottom:4px;">④ Procedural <span style="color:rgba(255,255,255,0.3);font-weight:400;">· Basal Ganglia · DAG</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">reinforcement-weighted habit chains</div>
+      <div style="font-size:11px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre;overflow-x:auto;"><span style="color:#FF7B72;">struct</span> HabitEdge {
+  from_action: []<span style="color:#79C0FF;">u8</span>, <span style="color:#6A737D;">//open(VSCode)</span>
+  to_action:   []<span style="color:#79C0FF;">u8</span>, <span style="color:#6A737D;">//open(Term)</span>
+  workspace:   <span style="color:#79C0FF;">u8</span>,
+  weight:      <span style="color:#79C0FF;">f32</span>,   <span style="color:#6A737D;">// reinforced</span>
+  observed:    <span style="color:#79C0FF;">u32</span>,   <span style="color:#6A737D;">// count</span>
+  predicted:   <span style="color:#79C0FF;">bool</span>,  <span style="color:#6A737D;">// &gt; threshold</span>
+}</div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────── 4. IPC INTERFACE ───────────────────────── -->
+  <div style="background:#0D1117;border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+    <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <span style="font-size:12px;color:rgba(255,255,255,0.4);">IPC · Quickshell/QML ↔ assistantd memory engine</span>
+      <span style="font-size:10px;color:var(--amber);">D-Bus primary · Unix socket fallback</span>
+    </div>
+    <div style="padding:18px 24px;font-size:11.5px;line-height:1.7;color:rgba(255,255,255,0.75);white-space:pre;overflow-x:auto;">
+<span style="color:#6A737D;"># D-Bus interface — session bus, introspectable, no root (assistantd's memory object)</span>
+<span style="color:#79C0FF;">org.koompi.Assistant1</span> <span style="color:rgba(255,255,255,0.4);">@ /org/koompi/Assistant1/Memory</span>
+  <span style="color:#FF7B72;">method</span> <span style="color:#D2A8FF;">Perceive</span>(s:event_json)            -&gt; ()           <span style="color:#6A737D;"># fire-and-forget, async</span>
+  <span style="color:#FF7B72;">method</span> <span style="color:#D2A8FF;">Reconstruct</span>(s:context_json)       -&gt; s:result_json <span style="color:#6A737D;"># narrative + sources[]</span>
+  <span style="color:#FF7B72;">method</span> <span style="color:#D2A8FF;">AuditTrail</span>(x:since_ts, u:limit)   -&gt; s:entries_json<span style="color:#6A737D;"># every read/write logged</span>
+  <span style="color:#FF7B72;">signal</span> <span style="color:#D2A8FF;">ConsolidationDone</span>(x:ts, u:nodes_added)        <span style="color:#6A737D;"># UI nudge after sleep</span>
+
+<span style="color:#6A737D;"># QML caller — MemoryService.qml (Quickshell)</span>
+DBusInterface {
+  service: <span style="color:#A5D6FF;">"org.koompi.Assistant1"</span>; path: <span style="color:#A5D6FF;">"/org/koompi/Assistant1/Memory"</span>
+  function ask(goal) {
+    Reconstruct(JSON.stringify({ goal, era: timeline.cursor }),
+      function(res) { askBar.render(JSON.parse(res)) })   <span style="color:#6A737D;"># spans: recorded|inferred</span>
+  }
+}
+
+<span style="color:#6A737D;"># Fallback path when no bus (TTY / headless / early boot):</span>
+<span style="color:#F59E0B;">$XDG_RUNTIME_DIR/koompi/assistantd.sock</span>  <span style="color:rgba(255,255,255,0.4);">— newline-delimited JSON, same verbs</span>
+  &gt; {<span style="color:#A5D6FF;">"op"</span>:<span style="color:#A5D6FF;">"reconstruct"</span>,<span style="color:#A5D6FF;">"goal"</span>:<span style="color:#A5D6FF;">"how did I get better at Rust"</span>}
+  &lt; {<span style="color:#A5D6FF;">"narrative"</span>:[...],<span style="color:#A5D6FF;">"sources"</span>:[8841,9007],<span style="color:#A5D6FF;">"reconstructed"</span>:true}
+    </div>
+  </div>
+
+  <!-- ───────────────────────── 5+7. SCORING ALGORITHM ───────────────────────── -->
+  <div style="background:#0D1117;border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+    <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <span style="font-size:12px;color:rgba(255,255,255,0.4);">reconstruct_memory · scoring formula</span>
+      <span style="font-size:10px;color:var(--accent);">constructive, not top-k</span>
+    </div>
+    <div style="padding:18px 24px;font-size:11.5px;line-height:1.85;color:rgba(255,255,255,0.75);white-space:pre;overflow-x:auto;">
+<span style="color:#6A737D;"># ── Query blend (mood-/goal-/era-congruent recall) ──────────────</span>
+query_vector = <span style="color:#79C0FF;">w_g</span>·goal_emb  +  <span style="color:#79C0FF;">w_e</span>·valence_bias  +  <span style="color:#79C0FF;">w_t</span>·temporal_anchor  +  <span style="color:#79C0FF;">w_a</span>·active_set
+               <span style="color:rgba(255,255,255,0.4);">w_g=.50        w_e=.15           w_t=.20             w_a=.15</span>
+
+<span style="color:#6A737D;"># ── Ebbinghaus retention (per node) ─────────────────────────────</span>
+S(n)  = <span style="color:#79C0FF;">S₀</span>·(1 + <span style="color:#79C0FF;">β</span>·access_count)         <span style="color:#6A737D;"># stability grows w/ recall  β=0.3</span>
+R(n)  = <span style="color:#79C0FF;">e</span>^(−Δt / S(n))                <span style="color:#6A737D;"># forgetting curve</span>
+
+<span style="color:#6A737D;"># ── Final retrieval rank ────────────────────────────────────────</span>
+<span style="color:#10B981;">rank(n)</span> = <span style="color:#22D3EE;">salience(n)</span> · <span style="color:#22D3EE;">log(1+access_count)</span> · <span style="color:#22D3EE;">R(n)</span> · <span style="color:#22D3EE;">goal_align(n)</span>
+          └ PageRank   └ testing effect      └ decay   └ cos(n.vec, query_vector)
+
+<span style="color:#6A737D;"># salience seeded by intrinsic importance (amygdala-modulated):</span>
+salience(n) = (1−<span style="color:#79C0FF;">d</span>)·base(n) + <span style="color:#79C0FF;">d</span>·Σ_{m→n}[ w(m,n)/Σw · salience(m) ]   <span style="color:rgba(255,255,255,0.4);">d=0.85</span>
+base(n)     = emotional_intensity(n) · novelty(n)
+    </div>
+  </div>
+
+  <!-- ───────────────────────── 5. PRIVACY + 6. PERFORMANCE ───────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+
+    <!-- Privacy -->
+    <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div style="width:8px;height:8px;background:var(--emerald);border-radius:50%;"></div>
+        <span style="font-size:13px;color:#047857;font-weight:600;">Privacy Guarantees</span>
+      </div>
+      <div style="font-size:11.5px;line-height:1.9;color:rgba(255,255,255,0.65);">
+        <div style="margin-bottom:8px;"><span style="color:#047857;">✓ All processing local.</span> Embedding + LLM + graph run on-device. Episodic data <strong>never</strong> egresses for consolidation — S2/S3 defer until a capable local session exists.</div>
+        <div style="margin-bottom:8px;"><span style="color:#047857;">✓ Encryption at rest.</span> Per-object AEAD via <code>koompi-vault</code> (O-1); key in the per-user keyring, TPM-sealed where hardware exists. Honest residual: a session-unlocked keyring is readable by same-UID code (arch §9).</div>
+        <div style="margin-bottom:8px;"><span style="color:#047857;">✓ User audit trail.</span> <code>AuditTrail()</code> exposes every read/write/inference the engine made — who asked, what surfaced, which sources cited.</div>
+        <div><span style="color:#047857;">✓ Sovereignty.</span> Sync is opt-in E2EE; index decay never touches episodic; <code>--full</code> (hand-off) wipes <em>both</em> for the leaving user — destruction is real when asked (§30, §73); Lifeboat exports episodic at will.</div>
+      </div>
+    </div>
+
+    <!-- Performance -->
+    <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:18px 20px;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;"></div>
+        <span style="font-size:13px;color:var(--accent);font-weight:600;font-family:system-ui,sans-serif;">Performance Budget</span>
+      </div>
+      <div style="font-size:11.5px;line-height:1.95;color:rgba(255,255,255,0.7);">
+        <div style="display:flex;justify-content:space-between;"><span>working mem read/evict</span><span style="color:#047857;">&lt; 1 ms</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>episodic append (WAL)</span><span style="color:#047857;">&lt; 5 ms</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>semantic query (vec⊕FTS)</span><span style="color:#047857;">&lt; 50 ms</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>graph_expand depth-2</span><span style="color:#0E7490;">&lt; 20 ms</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>full reconstruct (+LLM)</span><span style="color:#B45309;">≈ goal_lat</span></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);margin-top:6px;padding-top:6px;"><span>sleep cycle S2/S3</span><span style="color:var(--accent);">async · non-blocking</span></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:8px;font-family:system-ui,sans-serif;">Latency targets, to be measured on the Floor (8 GB, ADR-0006). On T0 (4 GB) the retrieval hot path still runs; LLM-dependent consolidation and narration defer or stay extractive — never silent cloud.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────── CALLOUTS ───────────────────────── -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">The durability split <span class="badge new">invariant</span></div>
+      <p>Decay, pruning, and the Ebbinghaus curve govern the <em>derived index</em> — edge weights, salience, working-memory eviction. They never touch raw episodic records. Forgetting is a retrieval property, not a storage operation: a pruned memory rebuilds from the immortal <code>@data</code> substrate given the right cue.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Re-embeddable across decades <span class="badge new">2050-proof</span></div>
+      <p><code>BGE-M3</code> will not exist in 2050 — its first credible successor appeared within a year of the pin (§87, G-EMB-2). Because raw text is immortal and every vector carries <code>embed_model_id</code>, the index re-embeds under future models via a runbook exercised in CI — and "who you were at 25" is reconstructed from era-correct vectors, never silently re-framed by a 2050 lens.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Recorded vs inferred, always</div>
+      <p>Every reconstructed span is tagged <code style="color:#047857">recorded</code> (an episodic row, clickable + timestamped) or <code style="color:#B45309">inferred</code> (LLM reconstruction, flagged). Confabulation is a betrayal; this is auditable down to the timestamped row.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "lifetime companion that models a mind across decades" ambition stays on the horizon shelf (<code>horizon.md</code>); v1 arch is the Rust store, the four struct schemas, the D-Bus surface, and the scoring math — no autonomous agent, no cloud path.</p>
+    </div>
+  </div>
+</section>

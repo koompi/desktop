@@ -1,0 +1,325 @@
+<section class="section" id="display-color">
+  <div class="section-header">
+    <h2>Display &amp; Color</h2>
+    <span class="tag sys">Hardware</span>
+  </div>
+  <p class="desc">
+    Multi-monitor arrangement, fractional/HiDPI scaling, ICC color profiles, HDR tone-mapping, and location-aware night modes on the Wayland stack. This is the full surface that <strong>§29 Settings</strong> only links to, and the per-output basis that <strong>§34 Window Management</strong> binds workspaces against. Beautiful by default starts here: a pixel that is the wrong color is a broken promise.
+  </p>
+
+  <!-- ============ PANEL 1: MULTI-MONITOR ARRANGEMENT CANVAS ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Arrangement</span>
+      <span style="font-size:11px;color:var(--text-subtle);margin-left:auto;">Drag a display to reposition · changes apply with a 12s revert timer</span>
+    </div>
+
+    <!-- The drag canvas -->
+    <div style="position:relative;background:var(--surface2);background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:18px 18px;padding:34px;min-height:240px;">
+
+      <!-- Display 1 — primary, 4K HiDPI -->
+      <div style="position:absolute;left:60px;top:46px;width:228px;height:128px;border:2px solid var(--accent);border-radius:8px;background:linear-gradient(135deg,#241F19,#2D3652);box-shadow:0 6px 22px rgba(99,102,241,.28);cursor:grab;display:flex;flex-direction:column;justify-content:space-between;padding:10px 12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;font-weight:700;color:#fff;">DP-1</span>
+          <span style="font-size:9px;font-weight:700;color:#fff;background:var(--accent);padding:2px 6px;border-radius:4px;">PRIMARY</span>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#fff;">Dell U2723QE · 27&quot;</div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,.62);">3840×2160 · 60Hz · scale 1.5×</div>
+        </div>
+      </div>
+
+      <!-- Display 2 — laptop panel, rotated, fractional scale -->
+      <div style="position:absolute;left:312px;top:64px;width:140px;height:96px;border:2px solid var(--border);border-radius:8px;background:var(--surface);box-shadow:0 4px 14px rgba(0,0,0,.08);cursor:grab;display:flex;flex-direction:column;justify-content:space-between;padding:9px 11px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text);">eDP-1</span>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text);">Built-in · 14&quot;</div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);">2880×1800 · 90Hz · 1.75×</div>
+        </div>
+      </div>
+
+      <!-- Display 3 — vertical secondary -->
+      <div style="position:absolute;left:472px;top:30px;width:78px;height:140px;border:2px dashed var(--cyan);border-radius:8px;background:var(--cyan-glow);cursor:grab;display:flex;flex-direction:column;justify-content:space-between;padding:9px;">
+        <span style="font-size:10px;font-weight:700;color:var(--text);">HDMI-A-1</span>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text);">LG · 24&quot;</div>
+          <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-muted);">90° rot · 1.0×</div>
+        </div>
+      </div>
+
+      <!-- snap hint -->
+      <div style="position:absolute;left:288px;top:80px;width:24px;height:64px;border-left:2px dotted var(--accent);"></div>
+    </div>
+
+    <!-- selected-output inspector strip -->
+    <div style="display:flex;gap:0;border-top:1px solid var(--border2);">
+      <div style="flex:1;padding:14px 18px;border-right:1px solid var(--border2);">
+        <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Resolution &amp; Refresh — DP-1</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:var(--font-mono);font-size:11px;padding:5px 9px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:5px;color:var(--accent);">3840×2160 @60</span>
+          <span style="font-family:var(--font-mono);font-size:11px;padding:5px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text-muted);">2560×1440 @60</span>
+          <span style="font-family:var(--font-mono);font-size:11px;padding:5px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text-muted);">1920×1080 @60</span>
+        </div>
+      </div>
+      <div style="flex:1;padding:14px 18px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Orientation</div>
+        <div style="display:flex;gap:6px;">
+          <span style="font-size:11px;padding:5px 11px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:5px;color:var(--accent);">0°</span>
+          <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text-muted);">90°</span>
+          <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text-muted);">180°</span>
+          <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;color:var(--text-muted);">270°</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 2: FRACTIONAL SCALING PREVIEW ============ -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Scaling — DP-1</span>
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">150%</span>
+      </div>
+      <!-- scale slider w/ fractional stops -->
+      <div style="position:relative;height:4px;background:var(--surface3);border-radius:2px;margin:18px 4px 10px;">
+        <div style="position:absolute;left:0;width:50%;height:100%;background:var(--accent);border-radius:2px;"></div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:var(--accent);border-radius:50%;box-shadow:0 0 0 3px var(--accent-glow);"></div>
+        <div style="position:absolute;left:0;top:12px;font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);">100</div>
+        <div style="position:absolute;left:25%;top:12px;font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);transform:translateX(-50%);">125</div>
+        <div style="position:absolute;left:50%;top:12px;font-family:var(--font-mono);font-size:9px;color:var(--accent);transform:translateX(-50%);">150</div>
+        <div style="position:absolute;left:75%;top:12px;font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);transform:translateX(-50%);">175</div>
+        <div style="position:absolute;left:100%;top:12px;font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);transform:translateX(-100%);">200</div>
+      </div>
+      <!-- crispness note -->
+      <div style="margin-top:24px;display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:var(--emerald-glow);border:1px solid var(--emerald);border-radius:8px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M2 7.5L5.5 11L12 3.5" stroke="var(--emerald)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-size:11px;color:var(--text);line-height:1.5;"><strong>Crisp.</strong> 150% maps the 3840-px panel to a 2560-px logical surface. Wayland clients render natively at scale 1.5 — no GPU-upscale blur. Toolkit-aware: Qt/GTK apps get the integer-buffer hint; legacy XWayland apps fall back to bilinear and are flagged below.</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:flex-start;padding:10px 12px;background:var(--amber-glow);border:1px solid var(--amber);border-radius:8px;">
+        <span style="font-size:13px;flex-shrink:0;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div style="font-size:11px;color:var(--text);line-height:1.5;"><strong>1 app may blur:</strong> <span style="font-family:var(--font-mono);">Zoom (XWayland)</span> does not honor fractional scale. KOOMPI renders it at 100% + composited upscale to stay sharp on text.</div>
+      </div>
+    </div>
+
+    <!-- side-by-side crispness preview -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;">
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Crispness preview</span>
+      <div style="display:flex;gap:12px;margin-top:14px;">
+        <div style="flex:1;">
+          <div style="border:1px solid var(--emerald);border-radius:8px;padding:14px;background:var(--surface2);text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em;">Aᵏ ក</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">native scale 1.5</div>
+          </div>
+          <div style="text-align:center;font-size:10px;color:#047857;font-weight:700;margin-top:6px;">SHARP</div>
+        </div>
+        <div style="flex:1;">
+          <div style="border:1px solid var(--amber);border-radius:8px;padding:14px;background:var(--surface2);text-align:center;filter:blur(.6px);">
+            <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.02em;">Aᵏ ក</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">upscaled 1.0→1.5</div>
+          </div>
+          <div style="text-align:center;font-size:10px;color:#B45309;font-weight:700;margin-top:6px;">SOFT</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.5;">Khmer glyphs are tall and stacked — sub-pixel softness that English tolerates is unreadable in <span style="font-family:var(--font-mono);">ក/ខ/គ</span>. KOOMPI treats Khmer legibility as the crispness benchmark, not Latin.</div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 3: COLOR — ICC + HDR ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Color Management</span>
+      <span style="font-size:10px;font-weight:700;color:#0E7490;background:var(--cyan-glow);padding:2px 7px;border-radius:4px;">DP-1</span>
+      <span style="font-size:11px;color:var(--text-subtle);margin-left:auto;">Drives §53 theme engine — generated palettes are gamut-clamped to this profile</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;">
+      <!-- ICC assignment -->
+      <div style="flex:1;min-width:280px;padding:18px;border-right:1px solid var(--border2);">
+        <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">ICC Profile</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface2);border:1px solid var(--emerald);border-radius:8px;margin-bottom:8px;">
+          <div style="width:30px;height:30px;border-radius:6px;background:conic-gradient(from 0deg,#ef4444,#f59e0b,#10b981,#22d3ee,#6366f1,#ec4899,#ef4444);flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:600;color:var(--text);">U2723QE_factory_D65.icc</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">98% DCI-P3 · ΔE&lt;1.2 · calibrated 2026-04-02</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5L5.5 11L12 3.5" stroke="var(--emerald)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Per-output. Stored under <span style="font-family:var(--font-mono);">~/.local/share/icc/</span> and re-applied on hotplug by EDID serial — not by connector index, so swapping cables never silently mis-colors a screen.</div>
+      </div>
+      <!-- color-accuracy mode -->
+      <div style="flex:1;min-width:280px;padding:18px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Rendering Intent</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:7px;">
+            <span style="font-size:12px;color:var(--text);font-weight:600;">Accurate <span style="font-size:10px;color:var(--text-muted);font-weight:400;">— relative colorimetric</span></span>
+            <span style="font-size:10px;font-weight:700;color:var(--accent);">ON</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;">
+            <span style="font-size:12px;color:var(--text-muted);">Vivid <span style="font-size:10px;font-weight:400;">— saturated, perceptual</span></span>
+            <span style="font-size:10px;color:var(--text-subtle);">OFF</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;">
+            <span style="font-size:12px;color:var(--text-muted);">sRGB clamp <span style="font-size:10px;font-weight:400;">— for design work</span></span>
+            <span style="font-size:10px;color:var(--text-subtle);">OFF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HDR row -->
+    <div style="padding:18px;border-top:1px solid var(--border2);background:var(--surface2);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">HDR</span>
+        <div style="width:38px;height:21px;background:var(--accent);border-radius:11px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;right:2px;top:2px;width:17px;height:17px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);"></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:var(--accent);">Enabled · HDR10 · 600 nits peak</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="flex:2;min-width:260px;display:flex;gap:8px;align-items:flex-start;padding:11px 13px;background:var(--surface);border:1px solid var(--cyan);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:4px;flex-shrink:0;"></div>
+          <div style="font-size:11px;color:var(--text);line-height:1.5;"><strong>SDR tone-mapping is active.</strong> The shell, text, and your wallpaper are SDR — KOOMPI maps them to ~200 nits inside the HDR signal so white UI never blasts at 600 nits and burns aging eyes. Only HDR video and games use the full range. This is the single bug every other Wayland HDR stack ships with.</div>
+        </div>
+        <div style="flex:1;min-width:180px;padding:11px 13px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">SDR content brightness</div>
+          <div style="position:relative;height:4px;background:var(--surface3);border-radius:2px;margin:10px 2px;">
+            <div style="position:absolute;left:0;width:38%;height:100%;background:var(--cyan);border-radius:2px;"></div>
+            <div style="position:absolute;left:38%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:var(--cyan);border-radius:50%;box-shadow:0 0 0 3px var(--cyan-glow);"></div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:#0E7490;text-align:right;">203 nits</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 4: NIGHT MODE / BLUE LIGHT ============ -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Night Light</span>
+        <span style="font-size:11px;color:#B45309;font-weight:600;">Active · 3400K</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Location-aware curve · Phnom Penh (11.56°N) · sunset 18:21</div>
+      <!-- the curve -->
+      <div style="position:relative;height:92px;background:linear-gradient(90deg,#dbeafe 0%,#dbeafe 40%,#fde68a 62%,#fb923c 100%);border-radius:8px;overflow:hidden;border:1px solid var(--border2);">
+        <svg viewBox="0 0 300 92" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;">
+          <path d="M0 18 L120 18 Q150 18 165 50 L210 74 Q225 80 240 80 L300 80" stroke="var(--amber)" stroke-width="2.5" fill="none"/>
+        </svg>
+        <!-- now marker -->
+        <div style="position:absolute;left:70%;top:0;bottom:0;width:2px;background:var(--text);opacity:.55;"></div>
+        <div style="position:absolute;left:70%;top:4px;transform:translateX(-50%);font-size:9px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 5px;border-radius:4px;">now 20:14</div>
+        <div style="position:absolute;left:6px;bottom:4px;font-family:var(--font-mono);font-size:9px;color:var(--text);">6500K</div>
+        <div style="position:absolute;right:6px;bottom:4px;font-family:var(--font-mono);font-size:9px;color:#7c2d12;">2700K</div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-muted);line-height:1.5;">Warms over a 90-min ramp, not a hard 18:21 cut — the eye adapts to gradients, not steps. Sunset time is computed on-device from latitude; <strong>no location is ever sent off the device</strong>.</div>
+    </div>
+
+    <!-- DALTONIZE / color accessibility -->
+    <div style="flex:1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Color Accessibility</span>
+        <span style="font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-glow);padding:2px 6px;border-radius:4px;">↔ §38 a11y</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Daltonize — GPU shader on the final composited frame, per-output</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:11px;padding:5px 11px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:6px;color:var(--accent);">Deuteranopia</span>
+        <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text-muted);">Protanopia</span>
+        <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text-muted);">Tritanopia</span>
+        <span style="font-size:11px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text-muted);">Off</span>
+      </div>
+      <!-- before/after swatch -->
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <div style="display:flex;border-radius:7px;overflow:hidden;border:1px solid var(--border2);">
+            <div style="flex:1;height:30px;background:#10B981;"></div>
+            <div style="flex:1;height:30px;background:#EF4444;"></div>
+            <div style="flex:1;height:30px;background:#F59E0B;"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-subtle);text-align:center;margin-top:5px;">source palette</div>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;border-radius:7px;overflow:hidden;border:1px solid var(--accent);">
+            <div style="flex:1;height:30px;background:#0ea5e9;"></div>
+            <div style="flex:1;height:30px;background:#a16207;"></div>
+            <div style="flex:1;height:30px;background:#facc15;"></div>
+          </div>
+          <div style="font-size:10px;color:var(--accent);text-align:center;margin-top:5px;font-weight:600;">corrected</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-muted);line-height:1.5;">The §53 theme engine reads this state too: generated accent palettes are <em>chosen</em> to survive the active daltonize transform, so semantic colors (emerald=safe, amber=consent) never collapse into one hue.</div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 5: MIRROR vs EXTEND + WORKSPACE REBIND ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Mirror vs Extend</span>
+      <span style="font-size:11px;color:var(--text-subtle);margin-left:auto;">Switching modes re-binds Hyprland workspaces — §34 shows the consequence before you commit</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;padding:18px;border-right:1px solid var(--border2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text);">Extend</span>
+          <span style="font-size:9px;font-weight:700;color:#fff;background:var(--accent);padding:2px 6px;border-radius:4px;">CURRENT</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1;border:1px solid var(--accent);border-radius:6px;padding:8px;text-align:center;background:var(--accent-glow);">
+            <div style="font-size:10px;font-weight:700;color:var(--accent);">DP-1</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">ws 1–5</div>
+          </div>
+          <div style="flex:1;border:1px solid var(--border2);border-radius:6px;padding:8px;text-align:center;background:var(--surface2);">
+            <div style="font-size:10px;font-weight:700;color:var(--text);">eDP-1</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">ws 6–8</div>
+          </div>
+          <div style="flex:1;border:1px solid var(--border2);border-radius:6px;padding:8px;text-align:center;background:var(--surface2);">
+            <div style="font-size:10px;font-weight:700;color:var(--text);">HDMI</div>
+            <div style="font-size:9px;color:var(--text-muted);margin-top:2px;">ws 9</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Each output owns its workspace set. Per-monitor scale + ICC stay independent.</div>
+      </div>
+      <div style="flex:1;min-width:260px;padding:18px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Mirror DP-1 → eDP-1</span>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:flex-start;padding:11px 13px;background:var(--amber-glow);border:1px solid var(--amber);border-radius:8px;">
+          <span style="font-size:13px;flex-shrink:0;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+          <div style="font-size:11px;color:var(--text);line-height:1.5;"><strong>Workspaces 6–8 will move to DP-1.</strong> 4 open windows on eDP-1 re-flow. Mirroring forces a shared mode — KOOMPI picks the <em>greatest common resolution</em> (2880×1800→matched to 1.5×) and warns that eDP-1's 90Hz drops to 60Hz to sync. <span style="color:var(--text-muted);">Nothing is lost; revert timer applies.</span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <span style="font-size:11px;padding:7px 16px;background:var(--accent);color:#fff;border-radius:6px;font-weight:600;">Apply (12s revert)</span>
+          <span style="font-size:11px;padding:7px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);border-radius:6px;">Cancel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EDGE CASE: NO-SIGNAL / HOTPLUG RECOVERY ============ -->
+  <div style="background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:16px 18px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;">
+    <div style="width:34px;height:34px;border-radius:8px;background:var(--amber-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">⏿</div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;">Edge case — display vanished mid-session</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.55;">HDMI-A-1 stopped responding (cable yank or KVM switch). Its 3 windows did <strong>not</strong> get destroyed — they migrated to DP-1 and KOOMPI parked the workspace binding. When the same EDID returns, windows snap back to their original output and rotation, automatically. A dead monitor is never a reason to lose work.</div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Color is a functional guarantee <span class="badge new">§53</span></div>
+      <p>Beautiful by default is not subjective here. Every generated palette is gamut-clamped to the live ICC profile and verified against the active daltonize transform, so "emerald = safe" and "amber = consent" hold their meaning on a calibrated 4K, a cheap TN panel, and for color-blind users alike — measurably, ΔE-checked.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">SDR-in-HDR done right</div>
+      <p>macOS and Windows let SDR UI ride HDR peak brightness, scorching white menus at 600+ nits. KOOMPI tone-maps SDR to ~200 nits inside the HDR signal — comfortable for aging eyes, the core of a <em>Lifetime OS</em>. The full range is reserved for video and games that actually authored for it.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Bound by EDID, not connector</div>
+      <p>Scaling, ICC, rotation, and workspace bindings key off each panel's EDID serial — not the connector index. Swap a DisplayPort cable, dock and undock, change a KVM input: your color and layout follow the physical screen, not the port. A detail that only bites you after ten years of hardware churn.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Location curve never leaves the device</div>
+      <p>Night Light's sunset ramp is computed on-device from latitude alone — no geolocation API, no network call. Data sovereignty extends down to the color temperature of your screen at 8pm. Auto-comfort without auto-surveillance.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer is the crispness benchmark</div>
+      <p>Fractional scaling is validated against stacked Khmer glyphs, not Latin text. Sub-pixel softness English shrugs off makes <span style="font-family:var(--font-mono);">ក ខ គ</span> unreadable. Khmer-native means the hard rendering case is the default test, so every script the OS shows stays sharp.</p>
+    </div>
+  </div>
+</section>

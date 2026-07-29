@@ -1,0 +1,434 @@
+<section class="section" id="implementation-stack">
+  <div class="section-header">
+    <h2>Implementation Stack</h2>
+    <span class="tag sys">Stack</span>
+  </div>
+  <p class="desc">
+    Two toolchains, one shell language, one model runtime — decided, not vibed. <strong>QML/Quickshell</strong> draws it, <strong>Rust</strong> daemons think and guard it (ADR-0004: chosen for ecosystem — zbus, rustls, rusqlite + sqlite-vec, Automerge), <strong>Zig</strong> stays where it already works (installer, restore), and <strong>llama.cpp</strong> runs signed, locally-stored weights (ADR-0014). This is the wiring map — real binaries, real <code>org.koompi.*</code> D-Bus names — and where a number is unknown it says so instead of inventing one: resource budgets live in <code>architecture.md §11</code>, measured, not promised.
+  </p>
+
+  <!-- ============ LAYERED STACK OVERVIEW ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span>
+        Stack Overview <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);font-weight:400;">6 layers · kernel → shell</span>
+      </div>
+      <span style="font-size:11px;color:var(--text-subtle);">budgets: architecture.md §11 — measured, not promised</span>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
+
+      <!-- Layer 5: QML shell -->
+      <div style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.28);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:var(--accent);color:#0c0d1a;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">5</span>QML / Quickshell · Shell UI</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">Qt6 · hot-reload · thin D-Bus client, never the engine</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">Bar.qml</span>
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">Launcher.qml</span>
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">PartnerRail.qml</span>
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">Notifications.qml</span>
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">QuickSettings.qml</span>
+          <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#5159c9;">PrivacyCenter.qml</span>
+        </div>
+      </div>
+
+      <!-- Layer 4: Rust thinks-stack daemons -->
+      <div style="background:rgba(244,114,96,0.07);border:1px solid rgba(244,114,96,0.28);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:#B3402E;display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:#F47260;color:#1a0c08;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">4</span>Rust · Thinks-Stack Daemons</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">tokio · zbus · rusqlite + sqlite-vec · ADR-0004</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-contextd</span>
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-assistantd</span>
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-busd</span>
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-policyd</span>
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-syncd</span>
+          <span style="background:rgba(244,114,96,0.12);border:1px solid rgba(244,114,96,0.3);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B3402E;">koompi-vault</span>
+        </div>
+      </div>
+
+      <!-- Layer 3: model plane -->
+      <div style="background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.26);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:#0E7490;display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:var(--cyan);color:#06222a;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">3</span>Model Plane · llama.cpp</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">localhost only · signed weights · ADR-0014</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#0E7490;">llama-server (chat + embed)</span>
+          <span style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#0E7490;">[koompi] weight packages</span>
+          <span style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#0E7490;">whisper.cpp (gated, 1.x)</span>
+          <span style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#0E7490;">NPU backends (G-NPU-1)</span>
+        </div>
+      </div>
+
+      <!-- Layer 2: Zig leaf tools -->
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.28);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:#B45309;display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:var(--amber);color:#2a1c04;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">2</span>Zig · Installer &amp; Restore</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">static binaries · already built · ADR-0004 keeps them</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B45309;">koompi-installer</span>
+          <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#B45309;">koompi-restore</span>
+        </div>
+      </div>
+
+      <!-- Layer 1: Hyprland -->
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.26);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:#047857;display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:var(--emerald);color:#06291c;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">1</span>Hyprland · Wayland Compositor</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">C++ · KDE edition rides vanilla Plasma</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#047857;">hyprland.conf overlay</span>
+          <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#047857;">hyprctl IPC socket</span>
+          <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.28);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:#047857;">event socket2</span>
+        </div>
+      </div>
+
+      <!-- Layer 0: kernel -->
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;gap:7px;"><span style="width:18px;height:18px;border-radius:5px;background:var(--text-subtle);color:var(--surface);font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;">0</span>Linux Kernel · systemd · Arch</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">rolling · btrfs + snapper · systemd --user per user</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span style="background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">linux</span>
+          <span style="background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">systemd --user</span>
+          <span style="background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">pacman · [koompi] signed repo</span>
+          <span style="background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:3px 9px;font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">pipewire · wayland</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ RUST DAEMON CARDS ============ -->
+  <div style="font-size:12px;font-weight:700;color:var(--text);margin:0 0 10px 2px;display:flex;align-items:center;gap:8px;"><span style="width:7px;height:7px;border-radius:50%;background:#F47260;"></span>Rust Daemon Cards <span style="font-weight:400;color:var(--text-subtle);font-size:11px;">Layer 4 · one systemd --user instance per logged-in user</span></div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;">
+
+    <!-- contextd -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-contextd</span>
+        <span style="font-size:9px;color:var(--text-subtle);background:var(--surface2);padding:2px 7px;border-radius:4px;">L1 · always-on</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">D-Bus</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">org.koompi.ContextEngine</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">store</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">$XDG_STATE_HOME/koompi/index.db</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">vector</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">sqlite-vec · brute-force KNN, no ANN claims</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">idle RSS</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">tens of MB (arch §11)</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">heavy work</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">extract/embed · gated on AC + idle + temp</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> the per-user index — watch → extract → embed → FTS5 + vectors. "Never find files again," honestly scaled: BM25 first, vectors rerank.</div>
+      </div>
+    </div>
+
+    <!-- assistantd -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-assistantd</span>
+        <span style="font-size:9px;color:var(--text-subtle);background:var(--surface2);padding:2px 7px;border-radius:4px;">L2 · always-on</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">D-Bus</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">org.koompi.Assistant1</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">loop</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">bounded ReAct · hard caps · MockModel-testable</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">tools</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">READ / WRITE / DANGER · grammar-constrained</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">approval</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">Approve(callId, nonce) · never self-callable</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">idle RSS</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">single-digit MB — the model dominates (arch §11)</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> the agent runtime — RAG over L1, memory, model router, the one uniform tool gate. <code>Ai.qml</code> is its thin client; headless (L4) runs are READ-only.</div>
+      </div>
+    </div>
+
+    <!-- busd -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-busd</span>
+        <span style="font-size:9px;color:var(--text-subtle);background:var(--surface2);padding:2px 7px;border-radius:4px;">L3 · 1.x</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">D-Bus</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">org.koompi.Bus</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">protocol</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">MCP host, policy-leashed (ADR-0013)</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">QML link</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">$XDG_RUNTIME_DIR/koompi/busd.sock</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">idle RSS</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">~8–15 MB (arch §11)</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> the capability plane — apps register MCP servers; every call carries a broker-minted consent token. KOOMPI invents the leash, not the protocol.</div>
+      </div>
+    </div>
+
+    <!-- policyd -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-policyd</span>
+        <span style="font-size:9px;color:#B3402E;background:rgba(244,114,96,0.12);padding:2px 7px;border-radius:4px;">fail-closed</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">D-Bus</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">org.koompi.Policy (system + per-user)</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">answers</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">CanRead · CanEgress · RequestConsent</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">precedence</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">floor &gt; constitution &gt; app &gt; session</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">enforcement</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">v1 systemd IPAddressDeny · 1.x netns/nftables (P-2)</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> the one policy authority. A session-bus daemon is advice; the kernel-level allowlist it drives is the enforcement (arch §9).</div>
+      </div>
+    </div>
+
+    <!-- syncd -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-syncd</span>
+        <span style="font-size:9px;color:#B3402E;background:rgba(244,114,96,0.12);padding:2px 7px;border-radius:4px;">sole egress</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">role</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">the audited data-egress path (opt-in E2EE sync)</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">carries</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">ciphertext only · one named host</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">ledger</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">append-only · hash-chained (§28)</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> the receipts. The honest v1 claim: the AI plane has no route out but this door and the consented cloud-LLM door — both logged, both refusable.</div>
+      </div>
+    </div>
+
+    <!-- vault -->
+    <div style="background:var(--surface);border:1px solid rgba(244,114,96,0.25);border-radius:11px;overflow:hidden;">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#B3402E;">koompi-vault</span>
+        <span style="font-size:9px;color:var(--text-subtle);background:var(--surface2);padding:2px 7px;border-radius:4px;">keys &amp; crypto</span>
+      </div>
+      <div style="padding:12px 14px;font-size:10px;color:var(--text-muted);line-height:1.7;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">ABI</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">vault_unlock · encrypt/decrypt · rotate_master</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">crypto</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">per-object AEAD · ed25519 device keys</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-subtle);">honest gap</span><span style="font-family:var(--font-mono);color:var(--text);font-size:9px;">same-UID keyring exposure — arch §9 residual</span></div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border2);color:var(--text-muted);"><strong style="color:var(--text);">Produces:</strong> at-rest encryption (O-1) and the signing surface the Web3 layer (§85) and Selendra anchoring (ADR-0009, opt-in) build on.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ZIG LEAF TOOLS ============ -->
+  <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 17px;margin-bottom:16px;">
+    <span style="font-size:20px;"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+    <div style="flex:1;font-size:11px;color:var(--text-muted);line-height:1.7;">
+      <strong style="color:var(--text);">Zig keeps the metal:</strong> <code>koompi-installer</code> (VT100 TUI, partitions, pacstrap, tier detection — §32) and <code>koompi-restore</code> (btrfs snapshots, factory reset — §30) are already built in Zig and stay in Zig. ADR-0004 names the reason honestly: the daemons moved to Rust for its <em>ecosystem</em>, not its language properties — and rewriting working leaf tools would be waste in the other direction.
+    </div>
+  </div>
+
+  <!-- ============ IPC WIRING DIAGRAM ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span>IPC Wiring <span style="font-weight:400;color:var(--text-subtle);font-size:11px;">who talks to whom, over what protocol</span>
+    </div>
+    <div style="padding:20px 18px;">
+      <div style="display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;">
+
+        <!-- Hyprland -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:9px;padding:12px 10px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:#047857;">Hyprland</div>
+            <div style="font-size:9px;color:var(--text-subtle);font-family:var(--font-mono);margin-top:3px;">compositor</div>
+          </div>
+        </div>
+
+        <!-- arrow 1 -->
+        <div style="flex:0.7;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px;">
+          <div style="font-size:8px;color:#047857;font-family:var(--font-mono);background:rgba(16,185,129,0.08);padding:2px 5px;border-radius:4px;">hyprland-ipc</div>
+          <div style="width:100%;height:1px;background:linear-gradient(90deg,var(--emerald),#F47260);position:relative;">
+            <span style="position:absolute;right:-2px;top:-4px;color:#B3402E;font-size:10px;">▸</span>
+          </div>
+          <div style="font-size:8px;color:var(--text-subtle);font-family:var(--font-mono);">socket2 events</div>
+        </div>
+
+        <!-- Rust daemons -->
+        <div style="flex:1.1;min-width:0;display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(244,114,96,0.08);border:1px solid rgba(244,114,96,0.3);border-radius:9px;padding:12px 10px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:#B3402E;">Rust daemons</div>
+            <div style="font-size:9px;color:var(--text-subtle);font-family:var(--font-mono);margin-top:3px;">contextd · assistantd · policyd</div>
+          </div>
+        </div>
+
+        <!-- arrow 2 -->
+        <div style="flex:0.7;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px;">
+          <div style="font-size:8px;color:#0E7490;font-family:var(--font-mono);background:rgba(34,211,238,0.08);padding:2px 5px;border-radius:4px;">HTTP · localhost</div>
+          <div style="width:100%;height:1px;background:linear-gradient(90deg,#F47260,var(--cyan));position:relative;">
+            <span style="position:absolute;right:-2px;top:-4px;color:#0E7490;font-size:10px;">▸</span>
+            <span style="position:absolute;left:-2px;top:-4px;color:#B3402E;font-size:10px;">◂</span>
+          </div>
+          <div style="font-size:8px;color:var(--text-subtle);font-family:var(--font-mono);">chat · embed · stream</div>
+        </div>
+
+        <!-- llama-server -->
+        <div style="flex:1.1;min-width:0;display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.3);border-radius:9px;padding:12px 10px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:#0E7490;">llama-server</div>
+            <div style="font-size:9px;color:var(--text-subtle);font-family:var(--font-mono);margin-top:3px;">signed weights, read-only store</div>
+          </div>
+        </div>
+
+        <!-- arrow 3 -->
+        <div style="flex:0.7;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px;">
+          <div style="font-size:8px;color:var(--accent);font-family:var(--font-mono);background:rgba(99,102,241,0.1);padding:2px 5px;border-radius:4px;">D-Bus org.koompi.*</div>
+          <div style="width:100%;height:1px;background:linear-gradient(90deg,var(--cyan),var(--accent));position:relative;">
+            <span style="position:absolute;right:-2px;top:-4px;color:var(--accent);font-size:10px;">▸</span>
+            <span style="position:absolute;left:-2px;top:-4px;color:#0E7490;font-size:10px;">◂</span>
+          </div>
+          <div style="font-size:8px;color:var(--text-subtle);font-family:var(--font-mono);">signals · streams · approvals</div>
+        </div>
+
+        <!-- Quickshell -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;">
+          <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.35);border-radius:9px;padding:12px 10px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);">Quickshell</div>
+            <div style="font-size:9px;color:var(--text-subtle);font-family:var(--font-mono);margin-top:3px;">QML UI · thin client</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- secondary wiring notes -->
+      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;">Quickshell ↔ daemons</div>
+          <div style="font-size:10px;color:var(--text-muted);line-height:1.6;"><strong>D-Bus</strong> on the session bus (<code>org.koompi.ContextEngine</code>, <code>org.koompi.Assistant1</code>) plus <code>busd.sock</code> (NDJSON-RPC) for high-rate streams. QML binds reactively — no polling, no engine in the shell.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:10px;font-weight:700;color:#0E7490;margin-bottom:4px;">Daemons ↔ model</div>
+          <div style="font-size:10px;color:var(--text-muted);line-height:1.6;"><strong>HTTP to localhost only.</strong> <code>llama-server</code> serves chat + embeddings from the signed read-only weight store (ADR-0014); it has no registry, no updater, no route off-box.</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:10px;font-weight:700;color:#B3402E;margin-bottom:4px;">Daemons → world</div>
+          <div style="font-size:10px;color:var(--text-muted);line-height:1.6;">Two doors, both consented, both ledgered: the cloud-LLM request and <code>koompi-syncd</code>. v1: the AI-plane units carry <code>IPAddressDeny=any</code> (kernel-enforced); P-2 (1.x) extends containment per-app via netns + nftables.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TECHNOLOGY DECISION MATRIX ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span>Technology Decision Matrix <span style="font-weight:400;color:var(--text-subtle);font-size:11px;">why each tool earns its layer — ADR-0004's dual-toolchain line</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 0.5fr 0.5fr 0.5fr 0.5fr 2.4fr;gap:0;font-size:11px;">
+      <div style="padding:9px 14px;background:var(--surface2);color:var(--text-subtle);font-weight:600;border-bottom:1px solid var(--border2);">Component</div>
+      <div style="padding:9px 8px;background:var(--surface2);color:var(--accent);font-weight:600;border-bottom:1px solid var(--border2);text-align:center;">QML</div>
+      <div style="padding:9px 8px;background:var(--surface2);color:#B3402E;font-weight:600;border-bottom:1px solid var(--border2);text-align:center;">Rust</div>
+      <div style="padding:9px 8px;background:var(--surface2);color:#B45309;font-weight:600;border-bottom:1px solid var(--border2);text-align:center;">Zig</div>
+      <div style="padding:9px 8px;background:var(--surface2);color:#0E7490;font-weight:600;border-bottom:1px solid var(--border2);text-align:center;">Py</div>
+      <div style="padding:9px 14px;background:var(--surface2);color:var(--text-subtle);font-weight:600;border-bottom:1px solid var(--border2);">Why</div>
+
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text);">Shell UI / widgets</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text-muted);font-size:10px;">Declarative, GPU-accelerated, hot-reloadable. Designers edit text files; no recompile to restyle.</div>
+
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text);">Thinks-stack daemons (L1–L4)</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text-muted);font-size:10px;"><strong>Ecosystem, not language properties</strong> (ADR-0004): async D-Bus (zbus), TLS (rustls/reqwest), SQLite + vectors (rusqlite + sqlite-vec), CRDT (Automerge) — all first-class in Rust, all hand-rolled or FFI'd anywhere else.</div>
+
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text);">Installer &amp; restore</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text-muted);font-size:10px;">Already built, static, working. The dual-toolchain cost (~5 years of two CIs) is accepted in writing rather than rewriting either side.</div>
+
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text);">Vault / DID signing</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text-muted);font-size:10px;">Memory safety is non-negotiable for crypto; mature ed25519/AEAD crates; the Selendra client is already Rust.</div>
+
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text);">Vector index</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;border-bottom:1px solid var(--border2);text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border2);color:var(--text-muted);font-size:10px;"><code>sqlite-vec</code> (C, MIT) rides in-process via rusqlite — brute-force KNN in the one per-user DB, bit-quantized. Honest about scale: no ANN claims; LanceDB is the optional heavier tier, never a default.</div>
+
+      <div style="padding:8px 14px;color:var(--text);">ML training / eval pipelines</div>
+      <div style="padding:8px 8px;text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;text-align:center;color:var(--text-subtle);">·</div>
+      <div style="padding:8px 8px;text-align:center;color:#047857;">●</div>
+      <div style="padding:8px 14px;color:var(--text-muted);font-size:10px;">Python rides the ML ecosystem where it belongs — KOOMPI's eval suites (G-KM-*) and fine-tuning, on dev machines. <strong>Never a resident service on user hardware</strong>: a CPython + transformers process would eat the Floor's entire AI budget.</div>
+    </div>
+  </div>
+
+  <!-- ============ BUILD + DEV WORKFLOW ============ -->
+  <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+
+    <!-- Build system -->
+    <div style="flex:1;min-width:340px;background:#0D1117;border-radius:12px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;gap:6px;"><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div></div>
+        <span style="margin-left:8px;font-size:11px;color:rgba(255,255,255,0.4);">build · packaging</span>
+      </div>
+      <div style="padding:16px 18px;font-size:11px;line-height:1.9;">
+        <div style="color:#6366F1;">## Quickshell / QML</div>
+        <div style="color:rgba(255,255,255,0.85);">paru -S quickshell</div>
+        <div style="color:rgba(255,255,255,0.4);">→ QML loaded at runtime, no build</div>
+        <div style="height:8px;"></div>
+        <div style="color:#F47260;">## Rust daemons</div>
+        <div style="color:rgba(255,255,255,0.85);">cargo build --release && cargo deny check</div>
+        <div style="color:rgba(255,255,255,0.4);">→ /usr/lib/koompi/*  · systemd --user units</div>
+        <div style="height:8px;"></div>
+        <div style="color:#F59E0B;">## Zig installer / restore</div>
+        <div style="color:rgba(255,255,255,0.85);">zig build -Doptimize=ReleaseSmall</div>
+        <div style="color:rgba(255,255,255,0.4);">→ ISO + /usr/bin/koompi-restore (static)</div>
+        <div style="height:8px;"></div>
+        <div style="color:#22D3EE;">## Model weights</div>
+        <div style="color:rgba(255,255,255,0.85);">pacman -S koompi-model-embed koompi-model-chat-t1</div>
+        <div style="color:rgba(255,255,255,0.4);">→ signed packages → read-only store (ADR-0014)</div>
+        <div style="color:rgba(255,255,255,0.4);">→ license gate runs at packaging (ADR-0006)</div>
+        <div style="height:10px;"></div>
+        <div style="color:rgba(255,255,255,0.3);"># dual-toolchain CI: cargo + zig — accepted in ADR-0004</div>
+      </div>
+    </div>
+
+    <!-- Dev workflow -->
+    <div style="flex:1;min-width:340px;background:#0D1117;border-radius:12px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+      <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;gap:6px;"><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div><div style="width:11px;height:11px;border-radius:50%;background:#3A3A3A;"></div></div>
+        <span style="margin-left:8px;font-size:11px;color:rgba(255,255,255,0.4);">dev · iterate per layer</span>
+      </div>
+      <div style="padding:16px 18px;font-size:11px;line-height:1.9;">
+        <div style="color:#6366F1;"># QML — live reload, no restart</div>
+        <div style="color:rgba(255,255,255,0.85);">$ vim Bar.qml   <span style="color:rgba(255,255,255,0.4);"># save → repaints</span></div>
+        <div style="color:rgba(255,255,255,0.5);">Quickshell watches the tree; the UI repaints live.</div>
+        <div style="height:9px;"></div>
+        <div style="color:#F47260;"># Rust — rebuild + restart one unit</div>
+        <div style="color:rgba(255,255,255,0.85);">$ cargo build && \</div>
+        <div style="color:rgba(255,255,255,0.85);">&nbsp;&nbsp;systemctl --user restart koompi-contextd</div>
+        <div style="color:rgba(255,255,255,0.5);">The bar reconnects over D-Bus automatically.</div>
+        <div style="height:9px;"></div>
+        <div style="color:#22D3EE;"># Model — local server, local weights</div>
+        <div style="color:rgba(255,255,255,0.85);">$ llama-server -m /path/to/chat-t1.gguf</div>
+        <div style="color:rgba(255,255,255,0.5);">assistantd points at localhost; nothing fetches.</div>
+        <div style="height:9px;"></div>
+        <div style="color:#10B981;"># Integration — fully local harness</div>
+        <div style="color:rgba(255,255,255,0.85);">$ dbus-run-session -- ./scripts/dev.sh</div>
+        <div style="color:rgba(255,255,255,0.5);">private session bus + mock hyprland socket;</div>
+        <div style="color:rgba(255,255,255,0.5);">MockModel makes the agent loop unit-testable.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Two toolchains, by decision — not monoculture, not sprawl <span class="badge new">KOOMPI</span></div>
+      <p>QML for pixels, Rust for the daemons that think and guard, Zig where it already works. ADR-0004 names the reason honestly: Rust won on <em>ecosystem</em> — zbus, rustls, rusqlite, Automerge — not on language ideology. The boundaries are protocols (D-Bus, sockets, localhost HTTP), not shared memory, so any layer can be rewritten without touching the others.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Privacy is enforced by topology</div>
+      <p>The AI plane has two doors out — the consented cloud-LLM request and <code>koompi-syncd</code> — and v1 makes that kernel-true with <code>IPAddressDeny</code> on every other unit. A session-bus daemon that components merely consult is advice, not enforcement (arch §9); the wiring diagram, not a promise, is what keeps bytes home.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The AI runs on your silicon</div>
+      <p><code>llama-server</code> loads signed weights from a read-only store and binds localhost. No registry pulls, no silent updates, no per-user copies bloating a shared lab machine (ADR-0014). The default works fully offline, in a village with no fibre, exactly as it does anywhere else — and honest tiering (§43) says what each machine can actually run.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Built to be rebuilt in 2046</div>
+      <p>Plain-text QML, reproducible cargo builds, static Zig binaries, GGUF weights in documented packages — bootstrappable from source with no proprietary toolchain. LIFETIME OS: a KOOMPI machine compiles its own shell two decades from now because nothing here depends on a vendor staying alive.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,171 @@
+# Guards the cross-distro installer. Not a full install - that needs a Wayland
+# session and a GPU - but enough to catch the failures that actually happen:
+# a shell syntax error, a distro that stops being detected, and a files step
+# that writes outside $HOME or forgets to record what it wrote.
+name: Installer
+
+on:
+  push:
+    paths:
+      - 'setup'
+      - 'sdata/lib/**'
+      - 'sdata/install/**'
+      - 'sdata/dist-*/install-deps.sh'
+      - 'sdata/dist-*/install-apps.sh'
+      - 'install.sh'
+      - 'dots/**'
+      - '.github/workflows/installer.yml'
+  pull_request:
+    paths:
+      - 'setup'
+      - 'sdata/lib/**'
+      - 'sdata/install/**'
+      - 'sdata/dist-*/install-deps.sh'
+      - 'sdata/dist-*/install-apps.sh'
+      - 'install.sh'
+      - 'dots/**'
+      - '.github/workflows/installer.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint the installer
+        run: |
+          shellcheck -x setup install.sh sdata/install/*.sh
+          shellcheck -x -s bash sdata/lib/*.sh
+      - name: Lint the per-distro recipes
+        # Sourced, not executed, so shellcheck needs to be told the dialect.
+        run: shellcheck -x -s bash sdata/dist-*/install-deps.sh sdata/dist-*/install-apps.sh
+
+  package-lists:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package lists parse to bare names
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in sdata/dist-*/packages*.list; do
+            n=0
+            while IFS= read -r pkg; do
+              n=$((n + 1))
+              case "$pkg" in
+                *[[:space:]]*) echo "FAIL $f: '$pkg' contains whitespace"; fail=1 ;;
+              esac
+            done < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' -e 's/[[:space:]]*$//' "$f")
+            if [ "$n" -eq 0 ]; then
+              echo "FAIL $f: parsed to zero packages"; fail=1
+            else
+              echo "ok   $f: $n packages"
+            fi
+          done
+          # The one name that must never appear on Debian/Ubuntu: apt's `yq` is
+          # a Python jq wrapper, not the Go tool the shell scripts call.
+          if grep -qx 'yq' sdata/dist-debian/packages*.list; then
+            echo "FAIL sdata/dist-debian: bare 'yq' is the wrong tool, use yq-go"; fail=1
+          fi
+          exit $fail
+
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every supported distro resolves to a recipe
+        run: |
+          set -uo pipefail
+          fail=0
+          # name | ID | ID_LIKE | expected group ('-' means no recipe)
+          while IFS='|' read -r name id like want; do
+            [ -n "$name" ] || continue
+            : > /tmp/os-release
+            echo "ID=$id" >> /tmp/os-release
+            [ "$like" = '-' ] || echo "ID_LIKE=\"$like\"" >> /tmp/os-release
+            [ "$want" = '-' ] && want=''
+            got="$(KOOMPI_OS_RELEASE=/tmp/os-release bash -c '
+              source sdata/lib/common.sh
+              source sdata/lib/distro.sh
+              detect_distro
+              printf "%s" "$OS_GROUP_ID"
+            ')"
+            if [ "$got" = "$want" ]; then
+              echo "ok   $name -> ${got:-<none>}"
+            else
+              echo "FAIL $name -> '${got}' (expected '${want}')"
+              fail=1
+            fi
+          done <<'CASES'
+          arch|arch|-|arch
+          koompi|koompi|-|arch
+          endeavouros|endeavouros|arch|arch
+          cachyos|cachyos|arch|arch
+          manjaro|manjaro|arch|arch
+          fedora|fedora|-|fedora
+          nobara|nobara|fedora|fedora
+          debian|debian|-|debian
+          ubuntu|ubuntu|debian|debian
+          mint|linuxmint|ubuntu debian|debian
+          popos|pop|ubuntu debian|debian
+          unsupported|void|-|-
+          CASES
+          exit $fail
+
+  files-step:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install into a throwaway HOME
+        run: |
+          set -euo pipefail
+          fake="$(mktemp -d)"
+          env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_STATE_HOME \
+              -u XDG_BIN_HOME -u XDG_CACHE_HOME \
+              HOME="$fake" ./setup install --only-files -y
+          test -f "$fake/.config/hypr/hyprland.lua"
+          test -d "$fake/.config/quickshell/koompi"
+          test -x "$fake/.local/bin/koompi-session"
+          test -s "$fake/.local/state/koompi/installed-files"
+          echo "$fake" > /tmp/fakehome
+
+      - name: Nothing was written outside HOME
+        run: |
+          fake="$(cat /tmp/fakehome)"
+          if grep -v "^$fake/" "$fake/.local/state/koompi/installed-files"; then
+            echo "manifest contains paths outside the install root"; exit 1
+          fi
+
+      - name: Build artefacts did not leak into HOME
+        run: |
+          fake="$(cat /tmp/fakehome)"
+          if find "$fake" \( -name 'zig-out' -o -name '.zig-cache' -o -name '__pycache__' -o -name '.claude' \) -print | grep .; then
+            echo "build artefacts were installed"; exit 1
+          fi
+
+      - name: Re-running keeps user overrides and stays idempotent
+        run: |
+          set -euo pipefail
+          fake="$(cat /tmp/fakehome)"
+          echo '-- mine' >> "$fake/.config/hypr/custom/keybinds.lua"
+          env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_STATE_HOME \
+              -u XDG_BIN_HOME -u XDG_CACHE_HOME \
+              HOME="$fake" ./setup install --only-files -y
+          tail -1 "$fake/.config/hypr/custom/keybinds.lua" | grep -qx -- '-- mine'
+
+      - name: Uninstall leaves nothing of ours behind
+        run: |
+          set -euo pipefail
+          fake="$(cat /tmp/fakehome)"
+          env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_STATE_HOME \
+              -u XDG_BIN_HOME -u XDG_CACHE_HOME \
+              HOME="$fake" ./setup uninstall -y
+          test ! -e "$fake/.config/quickshell/koompi"
+          test ! -e "$fake/.local/bin/koompi-session"
+          test -d "$fake/.koompi-dots-backup" || true

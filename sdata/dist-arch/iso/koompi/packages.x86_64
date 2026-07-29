@@ -1,0 +1,60 @@
+# KOOMPI OS — LIVE-ISO package set.  *** SKELETON ***
+#
+# These packages go INTO the live/installer environment only.  The TARGET edition
+# the user picks at install time — koompi-desktop-hyprland OR koompi-desktop-kde —
+# is pacstrapped onto the disk BY the Zig installer (archinstall engine).  Do NOT
+# list the edition metas here; the live ISO stays small and DE-agnostic.
+#
+# One package per line.  Full-line comments only (inline `# ...` leaves trailing
+# whitespace in the package name and breaks pacstrap).
+
+# --- Base system + kernel -----------------------------------------------------
+base
+linux
+linux-firmware
+mkinitcpio
+# archiso runtime initramfs hook — finds + mounts the live squashfs at boot
+mkinitcpio-archiso
+
+# --- Live-ISO bootloader + shell ----------------------------------------------
+# BIOS boot modules (isolinux.bin + *.c32) for the syslinux bootmodes; UEFI
+# systemd-boot comes from `base`. mkarchiso reads these from the airootfs.
+syslinux
+# live root shell — archiso autostarts the installer via root's ~/.zlogin (zsh)
+zsh
+
+# --- Installer: FACE + ENGINE -------------------------------------------------
+# archinstall is the dangerous-20% engine (partition/LUKS/pacstrap/bootloader/btrfs).
+# PIN a known-good archinstall version on the ISO — its user_configuration.json
+# schema drifts between releases (locked decision).  Pinning is done at repo/build
+# level, not expressible in this flat list — see README.md.
+archinstall
+
+# The Zig FACE (libvaxis TUI) — a thin orchestrator that collects answers, emits
+# archinstall JSON, selects the KOOMPI profile, and runs the post-install hook.
+# PLACEHOLDER: this is built from installer/ in this repo and dropped into the
+# airootfs as /usr/local/bin/koompi-installer (it is NOT yet a packaged binary in
+# the [koompi] repo).  Once packaged, replace this comment with:  koompi-installer
+#koompi-installer
+
+# --- Live-environment tooling the installer needs -----------------------------
+# fetch profiles / post-install assets
+git
+# network in the live session (installer needs connectivity)
+networkmanager
+# btrfs subvolume layout (@, @home, @var_log, @baseline ...)
+btrfs-progs
+# snapshot mgmt on the target (semi-immutable / resettable)
+snapper
+# auto pre/post pacman-txn snapshots (configured on target)
+snap-pac
+# target bootloader (grub-btrfs needs GRUB)
+grub
+# bootable snapshot menu in GRUB
+grub-btrfs
+# mkfs.fat for the ESP
+dosfstools
+sudo
+# edit configs in the live session
+nano
+vim

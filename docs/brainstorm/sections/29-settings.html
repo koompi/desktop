@@ -1,0 +1,137 @@
+<section class="section" id="settings">
+  <div class="section-header">
+    <h2>Settings App</h2>
+    <span class="tag sys">System</span>
+  </div>
+  <p class="desc">
+    KOOMPI Settings — a sidebar-driven native QML app. Organized around the user's actual concerns: appearance, AI behavior, privacy, displays, input, and system. No hidden menus, no telemetry toggles buried five levels deep.
+  </p>
+
+  <!-- Settings mockup -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;display:flex;min-height:480px;">
+    <!-- Settings sidebar -->
+    <div style="width:200px;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border2);padding:12px 0;display:flex;flex-direction:column;gap:2px;">
+      <!-- Search -->
+      <div style="margin:0 10px 10px 10px;background:var(--surface3);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="var(--text-subtle)" stroke-width="1.2"/><line x1="8" y1="8" x2="11" y2="11" stroke="var(--text-subtle)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span style="font-size:12px;color:var(--text-subtle);">Search settings…</span>
+      </div>
+      <div style="padding:4px 12px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;">Appearance</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--accent);background:var(--accent-glow);border-radius:6px;margin:0 8px;cursor:pointer;">Theme & Colors</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Shell Style</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Fonts</div>
+      <div style="padding:4px 12px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-top:8px;">Intelligence</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">AI Model</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Context Engine</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Memory</div>
+      <div style="padding:4px 12px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-top:8px;">Privacy</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Privacy Dashboard</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Egress Rules</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Selendra ID</div>
+      <div style="padding:4px 12px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-top:8px;">System</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Displays</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Audio</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Input Devices</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">Language & Region</div>
+      <div style="padding:7px 14px;font-size:13px;color:var(--text-muted);border-radius:6px;margin:0 8px;cursor:pointer;">About KOOMPI</div>
+    </div>
+
+    <!-- Settings content: Theme & Colors -->
+    <div style="flex:1;padding:28px 32px;overflow-y:auto;">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">Theme & Colors</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">Personalize the look of KOOMPI OS</div>
+
+      <!-- Color scheme -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Color Scheme</div>
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;border:2px solid var(--accent);border-radius:10px;overflow:hidden;cursor:pointer;">
+            <div style="height:48px;background:linear-gradient(135deg,#241F19 0%,#2D3652 100%);display:flex;align-items:flex-end;padding:6px;gap:4px;">
+              <div style="width:28px;height:6px;background:#6366F1;border-radius:3px;"></div>
+              <div style="width:16px;height:6px;background:rgba(255,255,255,.3);border-radius:3px;"></div>
+            </div>
+            <div style="padding:6px 10px;background:var(--surface);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--text);">Dark</span>
+              <div style="width:14px;height:14px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.5 6L6.5 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;border:2px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;">
+            <div style="height:48px;background:linear-gradient(135deg,#F0F2F7 0%,#E2E8F0 100%);display:flex;align-items:flex-end;padding:6px;gap:4px;">
+              <div style="width:28px;height:6px;background:#6366F1;border-radius:3px;"></div>
+              <div style="width:16px;height:6px;background:rgba(0,0,0,.15);border-radius:3px;"></div>
+            </div>
+            <div style="padding:6px 10px;background:var(--surface);">
+              <span style="font-size:12px;color:var(--text-muted);">Light</span>
+            </div>
+          </div>
+          <div style="flex:1;border:2px solid var(--border2);border-radius:10px;overflow:hidden;cursor:pointer;">
+            <div style="height:48px;background:linear-gradient(135deg,#241F19 0%,#F0F2F7 100%);display:flex;align-items:flex-end;padding:6px;gap:4px;">
+              <div style="width:28px;height:6px;background:#6366F1;border-radius:3px;"></div>
+              <div style="width:16px;height:6px;background:rgba(128,128,128,.3);border-radius:3px;"></div>
+            </div>
+            <div style="padding:6px 10px;background:var(--surface);">
+              <span style="font-size:12px;color:var(--text-muted);">Auto</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accent color -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Accent Color</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="width:28px;height:28px;border-radius:50%;background:#6366F1;border:3px solid white;box-shadow:0 0 0 2px #6366F1;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#22D3EE;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#10B981;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#F59E0B;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#EC4899;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#EF4444;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:28px;height:28px;border-radius:50%;border:1.5px dashed var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="5" y1="2" x2="5" y2="8" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="5" x2="8" y2="5" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shell style -->
+      <div style="margin-bottom:24px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Shell Bar Style</div>
+        <div style="display:flex;gap:8px;">
+          <div style="padding:6px 14px;background:var(--accent-glow);border:1.5px solid var(--accent);border-radius:6px;font-size:12px;color:var(--accent);cursor:pointer;">Hug</div>
+          <div style="padding:6px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;font-size:12px;color:var(--text-muted);cursor:pointer;">Dock</div>
+          <div style="padding:6px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;font-size:12px;color:var(--text-muted);cursor:pointer;">Taskbar</div>
+        </div>
+      </div>
+
+      <!-- Rounding -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Corner Radius</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:11px;color:var(--text-subtle);">Square</span>
+          <div style="flex:1;height:4px;background:var(--surface3);border-radius:2px;position:relative;">
+            <div style="position:absolute;left:0;width:60%;height:100%;background:var(--accent);border-radius:2px;"></div>
+            <div style="position:absolute;left:60%;width:14px;height:14px;background:var(--accent);border-radius:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 0 0 3px var(--accent-glow);"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text-subtle);">Round</span>
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);width:32px;">12px</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Settings as QML app <span class="badge new">Native</span></div>
+      <p>Settings is a first-party QML application rendered via Quickshell. Same design system as the shell — consistent typography, spacing, and animations across all panels.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Privacy settings are top-level</div>
+      <p>Privacy, AI, and data controls are surfaced at the same level as appearance — not buried under "Advanced". The assumption is these matter to every KOOMPI user.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Deep-link from notifications</div>
+      <p>Any system notification can carry a settings deep-link. "An app wants network access" opens directly to Egress Rules for that app. No path memorization required.</p>
+    </div>
+  </div>
+</section>

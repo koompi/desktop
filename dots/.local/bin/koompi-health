@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# koompi-health - read-only preflight for the KOOMPI desktop session.
+# Reports whether the compositor, shell, portals, and support tools are present
+# and running. Changes nothing except appending one summary line to the log.
+set -uo pipefail
+
+LOG_DIR="${KOOMPI_LOG_DIR:-$HOME/.local/state/koompi/logs}"
+LOG_FILE="$LOG_DIR/health.log"
+CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$HOME/.config/koompi/config.json}"
+SHELL_DIR="$HOME/.config/quickshell/koompi"
+[[ -d "$SHELL_DIR" ]] || SHELL_DIR="/etc/xdg/quickshell/koompi"
+
+if [[ -t 1 ]]; then
+    C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_FAIL=$'\e[31m'; C_DIM=$'\e[2m'; C_RST=$'\e[0m'
+else
+    C_OK=; C_WARN=; C_FAIL=; C_DIM=; C_RST=
+fi
+
+fails=0; warns=0; oks=0
+
+ok()      { oks=$((oks + 1));   printf '  %s✓%s %s\n' "$C_OK" "$C_RST" "$*"; }
+warn()    { warns=$((warns + 1)); printf '  %s!%s %s\n' "$C_WARN" "$C_RST" "$*"; }
+bad()     { fails=$((fails + 1)); printf '  %s✗%s %s\n' "$C_FAIL" "$C_RST" "$*"; }
+section() { printf '\n%s%s%s\n' "$C_DIM" "$*" "$C_RST"; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# check_cmd <command> <core|opt> [label]
+check_cmd() {
+    local c="$1" sev="${2:-core}" label="${3:-$1}"
+    if have "$c"; then
+        ok "$label"
+    elif [[ "$sev" == core ]]; then
+        bad "$label missing: '$c' not in PATH"
+    else
+        warn "$label missing (optional): '$c'"
+    fi
+}
+
+# check_proc <pgrep-args...> -- <label>
+check_proc() {
+    local label="${*: -1}"
+    set -- "${@:1:$(($# - 2))}"
+    if pgrep "$@" >/dev/null 2>&1; then
+        ok "$label running"
+    else
+        warn "$label not running"
+    fi
+}
+
+# check_env <VAR> [expected-substring]
+check_env() {
+    local var="$1" want="${2:-}" val="${!1:-}"
+    if [[ -z "$val" ]]; then
+        warn "$var is unset (run inside the KOOMPI session)"
+    elif [[ -n "$want" && "$val" != *"$want"* ]]; then
+        warn "$var=$val (expected to contain '$want')"
+    else
+        ok "$var=$val"
+    fi
+}
+
+printf '%sKOOMPI desktop health%s\n' "$C_DIM" "$C_RST"
+
+section "Compositor & shell"
+check_cmd Hyprland core "Hyprland compositor"
+check_cmd hyprctl  core "hyprctl"
+check_cmd qs       core "Quickshell (qs)"
+check_cmd hypridle core "hypridle"
+check_cmd hyprlock core "hyprlock"
+
+section "Session environment"
+check_env XDG_CURRENT_DESKTOP
+check_env XDG_SESSION_TYPE wayland
+check_env WAYLAND_DISPLAY
+check_env HYPRLAND_INSTANCE_SIGNATURE
+
+section "Running processes"
+check_proc -f "qs -c koompi" -- "KOOMPI shell (qs -c koompi)"
+check_proc -x hypridle -- "hypridle"
+check_proc -f xdg-desktop-portal-hyprland -- "portal backend (hyprland)"
+check_proc -f "xdg-desktop-portal$" -- "xdg-desktop-portal"
+
+# Every one of these failing looks identical from the bar: no menu at all.
+section "Global menu"
+check_cmd xprop core "xprop (reads menu addresses off XWayland windows)"
+menu_daemon="$SHELL_DIR/scripts/global-menu/zig-out/bin/global-menu-daemon"
+if [[ -x "$menu_daemon" ]]; then
+    ok "daemon built"
+elif have zig; then
+    bad "daemon not built: cd '$SHELL_DIR/scripts/global-menu' && zig build -Doptimize=ReleaseSafe"
+else
+    bad "daemon not built and zig is not installed; the menu stays empty"
+fi
+check_proc -f global-menu-daemon -- "global-menu daemon"
+if have busctl; then
+    if busctl --user list 2>/dev/null | grep -q 'com\.canonical\.AppMenu\.Registrar'; then
+        ok "AppMenu registrar owned"
+    else
+        bad "nobody owns com.canonical.AppMenu.Registrar; Qt apps cannot publish a menu"
+    fi
+fi
+# Qt exports its menubar over D-Bus only on X11, so a wayland-first setting here
+# leaves every Qt app menuless no matter what the daemon does.
+case "${QT_QPA_PLATFORM:-}" in
+    xcb) ok "QT_QPA_PLATFORM=xcb" ;;
+    "")  warn "QT_QPA_PLATFORM is unset; Qt apps default to Wayland and export no menu" ;;
+    wayland) ok "QT_QPA_PLATFORM=wayland (expected inside the shell itself)" ;;
+    *)   bad "QT_QPA_PLATFORM=$QT_QPA_PLATFORM starts on Wayland; Qt apps will export no menu" ;;
+esac
+
+section "Portals & secrets"
+if have gnome-keyring-daemon || have kwalletd6; then
+    ok "Secret Service provider present"
+else
+    warn "no Secret Service provider (gnome-keyring-daemon / kwalletd6)"
+fi
+
+section "Support tools"
+check_cmd matugen core "matugen (theming)"
+check_cmd fuzzel  opt  "fuzzel (launcher fallback)"
+check_cmd wl-paste core "wl-paste (clipboard)"
+check_cmd cliphist core "cliphist (clipboard history)"
+check_cmd dbus-update-activation-environment core "dbus activation environment"
+
+section "KOOMPI config & data"
+if [[ -f "$CONFIG_FILE" ]]; then
+    if have jq && jq empty "$CONFIG_FILE" >/dev/null 2>&1; then
+        ok "config.json present and valid JSON"
+    elif have jq; then
+        bad "config.json is not valid JSON: $CONFIG_FILE"
+    else
+        ok "config.json present (jq absent, not validated)"
+    fi
+else
+    bad "config.json missing: $CONFIG_FILE"
+fi
+if [[ -d "$SHELL_DIR" ]]; then
+    ok "shell config dir present: $SHELL_DIR"
+else
+    bad "shell config dir missing: ~/.config/quickshell/koompi and /etc/xdg/quickshell/koompi"
+fi
+if [[ -d "$HOME/.local/state/koompi" ]]; then
+    ok "state dir present"
+else
+    warn "state dir missing: ~/.local/state/koompi"
+fi
+if [[ -d "$HOME/.cache/koompi" ]]; then
+    ok "cache dir present"
+else
+    warn "cache dir missing: ~/.cache/koompi"
+fi
+if find "$HOME/.local/share/icons/hicolor" -name 'koompi.png' 2>/dev/null | grep -q .; then
+    ok "KOOMPI logo icon installed"
+else
+    warn "KOOMPI logo icon not found (iconPath('koompi') will be blank)"
+fi
+
+section "wallpaper"
+if [[ -x "$HOME/.config/hypr/custom/scripts/koompi-wallpaper.sh" ]]; then
+    ok "koompi-wallpaper helper present"
+else
+    warn "koompi-wallpaper helper missing"
+fi
+
+summary="$oks ok, $warns warn, $fails fail"
+printf '\n%s%s%s\n' "$C_DIM" "$summary" "$C_RST"
+
+mkdir -p "$LOG_DIR" 2>/dev/null
+printf '[%s] health: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$summary" >> "$LOG_FILE" 2>/dev/null || true
+
+# Non-zero exit only when a core check failed, so it is usable as a gate.
+[[ "$fails" -eq 0 ]]

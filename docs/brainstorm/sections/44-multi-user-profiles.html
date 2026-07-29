@@ -1,0 +1,287 @@
+<section class="section" id="multi-user-profiles">
+  <div class="section-header">
+    <h2>Profiles &amp; Sharing</h2>
+    <span class="tag priv">Isolation</span>
+  </div>
+  <p class="desc">
+    A KOOMPI machine is usually one person's — but plenty are shared: a family laptop, a classroom device, a hand-me-down. The personal machine is the primary deployment; shared use is a first-class case the design handles from day one (prd §2). The OS that thinks about you must <strong>never think about you to someone else</strong>. Every profile is a cryptographic island: its Memory Palace, its cognitive inferences, its file index — sealed under a key only that person's credential can derive. Isolation here is not a feature. It is a privacy primitive.
+  </p>
+
+  <!-- ════════ 1 · GREETER PROFILE PICKER ════════ -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin:4px 0 12px;">1 · Greeter — profile picker with privacy posture</div>
+  <div style="background:linear-gradient(160deg,#241F19 0%,#2D3652 100%);border-radius:16px;padding:36px 28px;margin-bottom:24px;position:relative;overflow:hidden;">
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:4px;">KOOMPI OS · ល្ងាចសួស្តី</div>
+    <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:24px;">Who is using this device?</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <!-- Rithy — full profile, AI on -->
+      <div style="background:rgba(255,255,255,.07);border:2px solid var(--accent);border-radius:14px;padding:18px 16px;width:150px;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#22D3EE);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;">R</div>
+        <div style="font-size:14px;font-weight:600;color:#fff;">Rithy</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;">Owner</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:var(--accent-glow);border-radius:20px;padding:3px 9px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></div>
+          <span style="font-size:10px;color:var(--accent);font-weight:600;">AI · Memory active</span>
+        </div>
+      </div>
+      <!-- Sophea — full profile, idle -->
+      <div style="background:rgba(255,255,255,.05);border:2px solid transparent;border-radius:14px;padding:18px 16px;width:150px;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#10B981,#22D3EE);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;">S</div>
+        <div style="font-size:14px;font-weight:600;color:#fff;">Sophea</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;">Standard</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border-radius:20px;padding:3px 9px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--text-subtle);"></div>
+          <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;">Locked · session held</span>
+        </div>
+      </div>
+      <!-- Dara — child profile -->
+      <div style="background:rgba(255,255,255,.05);border:2px solid transparent;border-radius:14px;padding:18px 16px;width:150px;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#EC4899);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;">ដ</div>
+        <div style="font-size:14px;font-weight:600;color:#fff;">Dara</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;">Child · age 9</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:var(--amber-glow);border-radius:20px;padding:3px 9px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);"></div>
+          <span style="font-size:10px;color:#B45309;font-weight:600;">Guardrails · 47m left</span>
+        </div>
+      </div>
+      <!-- Guest -->
+      <div style="background:rgba(255,255,255,.04);border:2px dashed rgba(255,255,255,.18);border-radius:14px;padding:18px 16px;width:150px;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,.6)" stroke-width="1.6"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" stroke="rgba(255,255,255,.6)" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#fff;">Guest</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;">Ephemeral</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:var(--cyan-glow);border-radius:20px;padding:3px 9px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--cyan);"></div>
+          <span style="font-size:10px;color:#0E7490;font-weight:600;">Nothing remembered</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:22px;font-size:11px;color:rgba(255,255,255,.35);font-family:var(--font-mono);">greetd · koompi-greeter.qml — every account is listed; KOOMPI ships no hidden or decoy profiles (see §8)</div>
+  </div>
+
+  <!-- ════════ 2 · FAST USER SWITCH ════════ -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin:4px 0 12px;">2 · Fast switch — locked AI/session state preserved</div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Switch User <span style="font-size:11px;color:var(--text-subtle);font-weight:400;">— Super+L then ⟶</span></div>
+      <span style="font-size:11px;color:#047857;background:var(--emerald-glow);border-radius:20px;padding:2px 10px;">Current session stays warm</span>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <!-- active session card -->
+      <div style="flex:1;border:1.5px solid var(--accent);border-radius:10px;padding:12px;background:var(--accent-glow);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700;">R</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Rithy <span style="font-size:11px;color:var(--accent);font-weight:500;">· you</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">
+          14 windows · assistantd memory <span style="color:var(--accent);">paused &amp; sealed</span><br>
+          contextd index → flushed to encrypted store<br>
+          GPU VRAM (Sailor2 8B) → swapped to host RAM
+        </div>
+      </div>
+      <!-- target session card -->
+      <div style="flex:1;border:1.5px solid var(--border2);border-radius:10px;padding:12px;background:var(--surface2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#10B981,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700;">S</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Sophea</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">
+          Session held since 21:14 · 6 windows<br>
+          Memory store <span style="color:#047857;">remains sealed</span> until her unlock<br>
+          <span style="color:var(--text-subtle);">Enter password to resume →</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">No model unload — VRAM is keyed; Rithy's KV-cache is never visible to Sophea's inference context.</div>
+  </div>
+
+  <!-- ════════ 3 · GUEST MODE + 6 · HANDOFF (split row) ════════ -->
+  <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+    <!-- 3 Guest -->
+    <div style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">3 · Guest — ephemeral, auto-wiped</div>
+      <div style="background:var(--cyan-glow);border-radius:10px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v6m0 0l-3-3m3 3l3-3" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="10" width="16" height="11" rx="2" stroke="var(--cyan)" stroke-width="1.6"/></svg>
+          <span style="font-size:13px;font-weight:600;color:var(--text);">Guest session · tmpfs overlay</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
+          ✓ Home mounted on RAM-backed overlay<br>
+          ✓ assistantd started with <code style="font-family:var(--font-mono);color:#0E7490;">--no-persist</code><br>
+          ✓ contextd indexing disabled<br>
+          ✓ No Selendra DID attached
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--emerald);display:flex;align-items:center;justify-content:center;"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7 2.5" stroke="var(--emerald)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        On logout: overlay discarded, RAM zeroed. <strong style="color:#047857;">0 bytes written to disk.</strong>
+      </div>
+    </div>
+    <!-- 6 Handoff -->
+    <div style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">6 · Handoff — AI baseline swaps cleanly</div>
+      <div style="position:relative;padding-left:18px;">
+        <div style="position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border);"></div>
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="position:absolute;left:-17px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--accent);"></div>
+          <div style="font-size:12px;color:var(--text);"><strong>21:40</strong> Rithy locks. assistantd dumps memory working set → <code style="font-family:var(--font-mono);font-size:11px;">sealed</code></div>
+        </div>
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="position:absolute;left:-17px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--amber);"></div>
+          <div style="font-size:12px;color:var(--text);"><strong>21:41</strong> Sophea authenticates. Her key unseals <em>her</em> palace only.</div>
+        </div>
+        <div style="position:relative;">
+          <div style="position:absolute;left:-17px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--emerald);"></div>
+          <div style="font-size:12px;color:var(--text);"><strong>21:41</strong> AI greets <em>Sophea</em>. Zero carry-over: it does not know Rithy's investor call exists.</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);background:var(--surface2);border-radius:6px;padding:8px;">cold-context guarantee: prompt assembly reads only $XDG_RUNTIME_DIR/$UID/memd.sock</div>
+    </div>
+  </div>
+
+  <!-- ════════ 4 · CHILD PROFILE GUARDRAILS ════════ -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin:4px 0 12px;">4 · Child profile — content &amp; screen-time guardrails <span style="color:var(--text-subtle);font-weight:400;text-transform:none;letter-spacing:0;">(ties to §47 Wellbeing)</span></div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:24px;">
+    <div style="background:var(--amber-glow);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#EC4899);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700;">ដ</div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--text);">Dara · age 9</div><div style="font-size:11px;color:var(--text-muted);">Managed by Rithy &amp; Sophea</div></div>
+      </div>
+      <span style="font-size:11px;color:#B45309;font-weight:600;">Guardrails enforced in-kernel (eBPF)</span>
+    </div>
+    <div style="padding:16px 18px;display:flex;gap:18px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Screen time — today</div>
+        <div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-bottom:6px;"><div style="width:73%;height:100%;background:linear-gradient(90deg,#10B981,#F59E0B);"></div></div>
+        <div style="font-size:12px;color:var(--text-muted);">1h 13m of 2h 00m · <strong style="color:#B45309;">47m left</strong> · winds down at 20:00</div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Content posture</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><span>Web filter</span><span style="color:#047857;">SafeSearch · curated</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><span>App installs</span><span style="color:#B45309;">Ask a parent</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><span>AI assistant</span><span style="color:#047857;">Khmer tutor mode</span></div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px;background:var(--surface2);border-radius:10px;padding:12px;">
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Local AI — age-shaped</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
+          The on-device model answers in <strong style="color:var(--text);">informal Khmer register</strong>, refuses adult topics locally — no cloud call, no log shipped to a parent dashboard. Dara's chats are <strong style="color:#047857;">private to Dara</strong>; parents set <em>rules</em>, not surveillance.
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#B45309;background:var(--amber-glow);border-radius:6px;padding:8px;">Parents see aggregate time &amp; categories — never message contents. Guardrails ≠ a wiretap.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 5 · MEMORY / PALACE ISOLATION DIAGRAM ════════ -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin:4px 0 12px;">5 · "Whose memory is this?" — cryptographic boundary enforcement</div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:24px;">
+    <div style="display:flex;gap:16px;justify-content:center;align-items:stretch;flex-wrap:wrap;">
+      <!-- Rithy island -->
+      <div style="flex:1;min-width:200px;border:2px solid var(--accent);border-radius:12px;padding:14px;background:var(--accent-glow);">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;"><i class="fa-solid fa-lock"></i> Rithy's Palace</div>
+        <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);line-height:1.7;">
+          ~/.local/memd/rithy.vault<br>
+          key = Argon2id(passwd, hw-TPM)<br>
+          contextd embeddings: 41,802<br>
+          inferences: "prefers mornings"
+        </div>
+      </div>
+      <!-- boundary -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;">
+        <div style="width:2px;flex:1;background:repeating-linear-gradient(var(--border) 0 6px,transparent 6px 12px);"></div>
+        <div style="font-size:10px;color:var(--red,#EF4444);font-weight:700;background:var(--red-glow);border-radius:20px;padding:4px 8px;margin:6px 0;white-space:nowrap;">NO CROSS-READ</div>
+        <div style="width:2px;flex:1;background:repeating-linear-gradient(var(--border) 0 6px,transparent 6px 12px);"></div>
+      </div>
+      <!-- Sophea island -->
+      <div style="flex:1;min-width:200px;border:2px solid var(--emerald);border-radius:12px;padding:14px;background:var(--emerald-glow);">
+        <div style="font-size:12px;font-weight:700;color:#047857;margin-bottom:8px;"><i class="fa-solid fa-lock"></i> Sophea's Palace</div>
+        <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);line-height:1.7;">
+          ~/.local/memd/sophea.vault<br>
+          key = Argon2id(passwd, hw-TPM)<br>
+          contextd embeddings: 12,440<br>
+          inferences: "studies at night"
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text-muted);text-align:center;line-height:1.7;">
+      Even <code style="font-family:var(--font-mono);color:var(--text);">root</code> reads only ciphertext at rest. The key lives in the <strong style="color:var(--text);">kernel keyring of the unlocked session</strong> and is dropped on lock. koompi-assistantd and koompi-contextd run <strong>per-UID, never shared</strong>. There is no global memory.
+    </div>
+  </div>
+
+  <!-- ════════ 7 · PER-PROFILE FOOTPRINT + 8 · HIDDEN PROFILE ════════ -->
+  <div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+    <!-- 7 storage -->
+    <div style="flex:1.4;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">7 · Per-profile model &amp; data footprint</div>
+      <!-- Rithy row -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);margin-bottom:6px;"><span style="font-weight:600;">Rithy</span><span style="font-family:var(--font-mono);color:var(--text-muted);">58.4 GB</span></div>
+        <div style="height:10px;border-radius:5px;overflow:hidden;display:flex;">
+          <div style="width:36%;background:var(--accent);" title="Models"></div>
+          <div style="width:30%;background:var(--cyan);" title="Memory + index"></div>
+          <div style="width:34%;background:var(--surface4);" title="Files"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:4px;font-family:var(--font-mono);">Sailor2 8B Q5 21GB · palace+index 17GB · files 20GB</div>
+      </div>
+      <!-- Sophea row -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);margin-bottom:6px;"><span style="font-weight:600;">Sophea</span><span style="font-family:var(--font-mono);color:var(--text-muted);">9.1 GB</span></div>
+        <div style="height:10px;border-radius:5px;overflow:hidden;display:flex;background:var(--surface3);">
+          <div style="width:8%;background:var(--accent);"></div>
+          <div style="width:22%;background:var(--cyan);"></div>
+          <div style="width:30%;background:var(--surface4);"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:4px;font-family:var(--font-mono);">shares Rithy's base model (dedup) · palace 2GB · files 5GB</div>
+      </div>
+      <!-- Dara row -->
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text);margin-bottom:6px;"><span style="font-weight:600;">Dara <span style="font-size:10px;color:#B45309;">· child</span></span><span style="font-family:var(--font-mono);color:var(--text-muted);">3.2 GB</span></div>
+        <div style="height:10px;border-radius:5px;overflow:hidden;display:flex;background:var(--surface3);">
+          <div style="width:6%;background:var(--accent);"></div>
+          <div style="width:14%;background:var(--cyan);"></div>
+          <div style="width:20%;background:var(--surface4);"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:4px;font-family:var(--font-mono);">tutor LoRA 0.4GB · palace 0.8GB · files 2GB</div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;font-size:11px;color:var(--text-subtle);">
+        <span>Base model shared via CoW dedup · counted once.</span>
+        <span style="font-family:var(--font-mono);">Disk 512GB · 71GB used · 441GB free</span>
+      </div>
+    </div>
+
+    <!-- 8 hidden profile -->
+    <div style="flex:1;min-width:260px;background:#241F19;border:1px solid #2D3652;border-radius:12px;padding:16px 18px;">
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">8 · Coercion case — no deniability theater</div>
+      <div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:12px;color:#FCA5A5;font-weight:600;margin-bottom:6px;"><i class="fa-solid fa-triangle-exclamation"></i> Threat: someone forces the device open</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.7;">An earlier draft offered a hidden profile + decoy passphrase — "a second login that opens a plausible empty life." It is <strong style="color:#fff;">cut</strong>, on the same grounds as §37 and §41 Backup.</div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);line-height:2;">
+        <div>✗ A hidden account and a decoy volume are <strong style="color:#fff;">forensically visible</strong> to competent examination</div>
+        <div>✗ Fake deniability is worse than none — it fails exactly when it matters</div>
+        <div>✗ A discovered decoy can turn a search into an <strong style="color:#fff;">obstruction charge</strong></div>
+        <div>✓ Instead: per-user FDE at rest (the islands above) protects a powered-off, confiscated device</div>
+        <div>✓ Lockout throttling on unlock attempts; nothing readable while sealed</div>
+      </div>
+      <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,.35);font-family:var(--font-mono);">No software protects you once an adversary knows it exists. KOOMPI does not ship protections that only work if the adversary is careless.</div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Isolation is cryptographic, not just permissions <span class="badge new">Primitive</span></div>
+      <p>Filesystem permissions stop a curious sibling; they don't stop root or a stolen disk. Each profile's Memory Palace and contextd index are sealed under a key derived from that user's credential via Argon2id bound to the TPM. At rest, every other profile — including the OS itself — sees only ciphertext. This single decision makes guest-wipe, the memory boundary, and the hidden profile one coherent guarantee instead of three drawings.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The OS thinks about you, never to someone else</div>
+      <p>macOS Fast User Switching and GNOME both share a system-wide assistant and search index — your Siri suggestions and tracker results can bleed across logins. KOOMPI runs koompi-assistantd and koompi-contextd per-UID. There is no global memory to leak from. A second user's AI greets a cold context that has never heard of you.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Guardrails are rules, not wiretaps</div>
+      <p>A child profile enforces screen-time and content posture in-kernel (eBPF), but the parent dashboard exposes aggregate time and categories — never message contents. Dara's chats with the local Khmer tutor stay private to Dara. We refuse the surveillance-parenting default: a Lifetime OS that raises a child must earn that child's trust too.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shared devices are first-class, not the default <span class="badge new">Supported case</span></div>
+      <p>Single-user is the primary deployment, but a shared machine — a family laptop, a school device — is handled from day one. Base models are shared by copy-on-write dedup (counted once in storage), so multiple profiles don't mean multiple full downloads. Yet each person's memory stays an island. A device shared over years ages gracefully — a child profile graduates to standard at 13 without losing a byte of their own history.</p>
+    </div>
+  </div>
+</section>

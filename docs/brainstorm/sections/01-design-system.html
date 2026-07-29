@@ -1,0 +1,139 @@
+<section class="section" id="design-system">
+  <div class="section-header">
+    <h2>Design System</h2>
+    <span class="tag">Tokens</span>
+  </div>
+  <p class="desc">
+    Color tokens, typography, and spacing that every Quickshell component shares. Derived from KOOMPI's
+    "data ownership in the AI era" positioning — indigo for intelligence, cyan for data, emerald for private/safe,
+    amber for consent, red for violation.
+  </p>
+
+  <div class="card-label">Color Palette</div>
+  <div class="token-grid">
+    <div class="token-swatch">
+      <div class="color" style="background:#070B13"></div>
+      <div class="info"><div class="name">--bg</div><div class="hex">#070B13</div><div class="role">Desktop background</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#0D1422"></div>
+      <div class="info"><div class="name">--surface</div><div class="hex">#0D1422</div><div class="role">Panels, popups</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#131E30"></div>
+      <div class="info"><div class="name">--surface2</div><div class="hex">#131E30</div><div class="role">Cards, inputs</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#1C2A3E"></div>
+      <div class="info"><div class="name">--surface3</div><div class="hex">#1C2A3E</div><div class="role">Hover states</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#6366F1"></div>
+      <div class="info"><div class="name">--accent</div><div class="hex">#6366F1</div><div class="role">AI / intelligence</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#22D3EE"></div>
+      <div class="info"><div class="name">--cyan</div><div class="hex">#22D3EE</div><div class="role">Data streams</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#10B981"></div>
+      <div class="info"><div class="name">--emerald</div><div class="hex">#10B981</div><div class="role">Private / safe</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#F59E0B"></div>
+      <div class="info"><div class="name">--amber</div><div class="hex">#F59E0B</div><div class="role">Consent needed</div></div>
+    </div>
+    <div class="token-swatch">
+      <div class="color" style="background:#EF4444"></div>
+      <div class="info"><div class="name">--red</div><div class="hex">#EF4444</div><div class="role">Danger / violation</div></div>
+    </div>
+  </div>
+
+  <div class="card-label">Glow Tints — every accent ships a 12–25% wash for chips, fills, and focus</div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px;">
+    <div style="flex:1; min-width:120px; height:40px; border-radius:var(--radius); background:var(--accent-glow); border:1px solid rgba(99,102,241,0.25); display:flex; align-items:center; justify-content:center; font-size:10px; font-family:var(--font-mono); color:var(--accent);">--accent-glow</div>
+    <div style="flex:1; min-width:120px; height:40px; border-radius:var(--radius); background:var(--cyan-glow); border:1px solid rgba(34,211,238,0.25); display:flex; align-items:center; justify-content:center; font-size:10px; font-family:var(--font-mono); color:#0E7490;">--cyan-glow</div>
+    <div style="flex:1; min-width:120px; height:40px; border-radius:var(--radius); background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.25); display:flex; align-items:center; justify-content:center; font-size:10px; font-family:var(--font-mono); color:#047857;">--emerald-glow</div>
+    <div style="flex:1; min-width:120px; height:40px; border-radius:var(--radius); background:var(--amber-glow); border:1px solid rgba(245,158,11,0.25); display:flex; align-items:center; justify-content:center; font-size:10px; font-family:var(--font-mono); color:#B45309;">--amber-glow</div>
+    <div style="flex:1; min-width:120px; height:40px; border-radius:var(--radius); background:var(--red-glow); border:1px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; font-size:10px; font-family:var(--font-mono); color:#B91C1C;">--red-glow</div>
+  </div>
+
+  <div class="card-label">Semantic Intent → Color Mapping</div>
+  <div class="state-row" style="margin-top:0; margin-bottom:24px;">
+    <span class="state-chip priv-state"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--emerald); margin-right:5px; vertical-align:1px;"></span>Local-only (safe)</span>
+    <span class="state-chip active-state"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:5px; vertical-align:1px; animation:pulse-dot 2s infinite;"></span>AI active / thinking</span>
+    <span class="state-chip warn-state"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--amber); margin-right:5px; vertical-align:1px;"></span>Consent required</span>
+    <span class="state-chip danger-state"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--red); margin-right:5px; vertical-align:1px;"></span>Danger / policy violation</span>
+    <span class="state-chip"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--text-subtle); margin-right:5px; vertical-align:1px;"></span>Indexing / idle</span>
+    <span class="state-chip" style="color:#0E7490; background:var(--cyan-glow); border-color:rgba(34,211,238,0.25);"><span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--cyan); margin-right:5px; vertical-align:1px;"></span>Data syncing</span>
+  </div>
+
+  <div class="card-label">Typography Scale</div>
+  <div class="type-scale">
+    <div class="type-row">
+      <span class="type-label">display / 56px</span>
+      <span style="font-size:56px; font-weight:200; color:var(--text); letter-spacing:-2px; line-height:1;">08:42</span>
+    </div>
+    <div class="type-row">
+      <span class="type-label">heading / 22px</span>
+      <span style="font-size:22px; font-weight:700; color:var(--text);">Never find files again.</span>
+    </div>
+    <div class="type-row">
+      <span class="type-label">title / 15px</span>
+      <span style="font-size:15px; font-weight:600; color:var(--text);">Context Engine — Indexing</span>
+    </div>
+    <div class="type-row">
+      <span class="type-label">body / 13px</span>
+      <span style="font-size:13px; color:var(--text-muted);">Found 3 files matching "quarterly report" — from Documents/</span>
+    </div>
+    <div class="type-row">
+      <span class="type-label">label / 11px</span>
+      <span style="font-size:11px; font-weight:600; letter-spacing:0.5px; color:var(--text-subtle); text-transform:uppercase;">Privacy Policy</span>
+    </div>
+    <div class="type-row">
+      <span class="type-label">mono / 12px</span>
+      <span style="font-size:12px; font-family:var(--font-mono); color:#0E7490;">koompi-contextd · 3.2 MB RSS</span>
+    </div>
+    <div class="type-row" style="border-top:1px solid var(--border2); padding-top:10px; margin-top:4px;">
+      <span class="type-label">khmer / 15px</span>
+      <span style="font-size:15px; font-weight:600; color:var(--text); font-family:'Noto Sans Khmer', var(--font-ui);">ប្រព័ន្ធប្រតិបត្តិការដែលគិត <span style="font-size:11px; font-weight:400; color:var(--text-subtle); font-family:var(--font-ui);">— Noto Sans Khmer, cap-height matched to Inter</span></span>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:28px;">
+
+    <!-- Radius scale -->
+    <div style="flex:1; min-width:220px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px; box-shadow:0 1px 2px rgba(64,55,38,0.04);">
+      <div class="card-label">Radius</div>
+      <div style="display:flex; align-items:flex-end; gap:10px; margin-top:10px;">
+        <div style="width:44px; height:44px; border-radius:6px; background:var(--surface3); border:1px solid var(--border); display:flex; align-items:flex-end; justify-content:center; padding-bottom:3px; font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">sm 6</div>
+        <div style="width:52px; height:52px; border-radius:10px; background:var(--surface3); border:1px solid var(--border); display:flex; align-items:flex-end; justify-content:center; padding-bottom:4px; font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">md 10</div>
+        <div style="width:60px; height:60px; border-radius:16px; background:var(--surface3); border:1px solid var(--border); display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">lg 16</div>
+        <div style="width:68px; height:68px; border-radius:24px; background:var(--surface3); border:1px solid var(--border); display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px; font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">xl 24</div>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">Pills run 20px+. One step per nesting level — never the same radius inside itself.</p>
+    </div>
+
+    <!-- Elevation -->
+    <div style="flex:1; min-width:220px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px; box-shadow:0 1px 2px rgba(64,55,38,0.04);">
+      <div class="card-label">Elevation</div>
+      <div style="display:flex; gap:12px; margin-top:10px;">
+        <div style="flex:1; height:56px; border-radius:10px; background:var(--surface); border:1px solid var(--border2); box-shadow:0 1px 2px rgba(64,55,38,0.05); display:flex; align-items:center; justify-content:center; font-size:9px; font-family:var(--font-mono); color:var(--text-subtle);">rest</div>
+        <div style="flex:1; height:56px; border-radius:10px; background:var(--surface); border:1px solid var(--border2); box-shadow:0 2px 6px rgba(64,55,38,0.08), 0 8px 20px -6px rgba(64,55,38,0.12); display:flex; align-items:center; justify-content:center; font-size:9px; font-family:var(--font-mono); color:var(--text-subtle);">raised</div>
+        <div style="flex:1; height:56px; border-radius:10px; background:var(--surface); border:1px solid var(--border2); box-shadow:0 4px 12px rgba(64,55,38,0.10), 0 24px 48px -12px rgba(64,55,38,0.22); display:flex; align-items:center; justify-content:center; font-size:9px; font-family:var(--font-mono); color:var(--text-subtle);">overlay</div>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">Two shadows per level: a contact shadow and an ambient one. Never a single hard drop.</p>
+    </div>
+
+    <!-- Motion -->
+    <div style="flex:1; min-width:220px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px; box-shadow:0 1px 2px rgba(64,55,38,0.04);">
+      <div class="card-label">Motion — hover each chip</div>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <div onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform=''" style="flex:1; height:56px; border-radius:10px; background:var(--accent-glow); border:1px solid rgba(99,102,241,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:default; transition:transform 0.08s cubic-bezier(0.22,1,0.36,1);"><span style="font-size:10px; font-weight:600; color:var(--accent);">instant</span><span style="font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">80ms</span></div>
+        <div onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform=''" style="flex:1; height:56px; border-radius:10px; background:var(--accent-glow); border:1px solid rgba(99,102,241,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:default; transition:transform 0.16s cubic-bezier(0.22,1,0.36,1);"><span style="font-size:10px; font-weight:600; color:var(--accent);">quick</span><span style="font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">160ms</span></div>
+        <div onmouseover="this.style.transform='translateY(-6px)'" onmouseout="this.style.transform=''" style="flex:1; height:56px; border-radius:10px; background:var(--accent-glow); border:1px solid rgba(99,102,241,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:default; transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);"><span style="font-size:10px; font-weight:600; color:var(--accent);">standard</span><span style="font-size:8.5px; font-family:var(--font-mono); color:var(--text-subtle);">280ms</span></div>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">Ease-out only — motion decelerates like a thing with mass. No bounce, ever.</p>
+    </div>
+  </div>
+</section>

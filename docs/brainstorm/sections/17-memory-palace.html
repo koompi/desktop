@@ -1,0 +1,60 @@
+<section class="section" id="memory-palace">
+  <div class="section-header">
+    <h2>Memory Palace</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    The <strong>Timeline</strong> tab of the Memory app: a chronological view of the local memory store — documents, chats, and captured notes laid out by date, color-coded by project. Recall runs against a local vector index over that store. Deletion is honest: removing a memory leaves a <strong>tombstone</strong>, never a copy — the assistant is told the memory existed and is gone, and cannot reconstruct it.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Ships as the <b>Timeline</b> tab of the Memory app · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Timeline scrubber -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">Timeline — the memory store by date · color-coded by project</div>
+    <div style="display:flex; gap:2px; height:34px; border-radius:6px; overflow:hidden;">
+      <div style="width:14%; background:var(--cyan); opacity:0.55;" title="Selendra explorer"></div>
+      <div style="width:9%; background:var(--accent); opacity:0.7;" title="KOOMPI OS"></div>
+      <div style="width:6%; background:var(--amber); opacity:0.6;" title="Land rights research"></div>
+      <div style="width:22%; background:var(--accent);" title="KOOMPI OS — heavy"></div>
+      <div style="width:8%; background:var(--emerald); opacity:0.6;" title="Family"></div>
+      <div style="width:18%; background:var(--accent); opacity:0.85;" title="KOOMPI OS"></div>
+      <div style="width:11%; background:var(--cyan); opacity:0.7;" title="Selendra"></div>
+      <div style="width:12%; background:var(--amber); opacity:0.5;" title="Research"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:9px; color:var(--text-subtle); font-family:var(--font-mono); margin-top:6px;">
+      <span>2023</span><span>2024</span><span>2025</span><span>2026 — today</span>
+    </div>
+    <div class="state-row" style="margin-top:12px;">
+      <span class="state-chip active-state">KOOMPI OS</span>
+      <span class="state-chip" style="color:#0E7490; border-color:rgba(34,211,238,0.3); background:var(--cyan-glow);">Selendra</span>
+      <span class="state-chip warn-state">Land rights research</span>
+      <span class="state-chip priv-state">Family</span>
+    </div>
+  </div>
+
+  <!-- Deletion tombstone -->
+  <div style="max-width:760px; margin-top:16px; display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px dashed var(--border); border-radius:var(--radius); padding:12px 16px;">
+    <span style="font-size:18px; opacity:0.5;"><i class="fa-solid fa-monument"></i></span>
+    <div style="flex:1;">
+      <div style="font-size:12px; font-weight:600; color:var(--text-muted);">Tombstone — memory deleted</div>
+      <div style="font-size:11px; color:var(--text-subtle);">"Notes on 2024 salary negotiation" — deleted by you on 3 Mar 2026. Vectors and derived traces purged; a tombstone marks that it existed and is gone. No copy exists, and recall can never return it.</div>
+    </div>
+    <span class="state-chip" style="font-size:9px;">irreversible</span>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Chronological, not spatial <span class="badge new">KOOMPI</span></div>
+      <p>The store is browsed as a Timeline over a local vector index built by koompi-contextd — recall returns dated moments across PDFs, browser history, and chats, not a folder of matching filenames.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Deletion leaves a tombstone, never a copy</div>
+      <p>When you delete, the assistant is told only that a memory existed and is gone — it cannot reconstruct the content. The right to erase is part of owning the store.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The spatial 3D "palace" metaphor and room-to-room navigation stay on the horizon shelf (<code>horizon.md</code>).</p>
+    </div>
+  </div>
+</section>

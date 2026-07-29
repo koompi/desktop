@@ -1,0 +1,119 @@
+<section class="section" id="privacy-dash">
+  <div class="section-header">
+    <h2>Privacy Dashboard</h2>
+    <span class="tag priv">Privacy</span>
+  </div>
+  <p class="desc">
+    A live map of what KOOMPI OS knows about you, where that data lives, and what has been shared. Default posture: everything stays on-device. The user controls every outbound flow explicitly.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Becomes the <b>Overview</b> tab of Privacy Center · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Trust score hero -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:16px;display:flex;gap:24px;align-items:center;">
+    <div style="flex-shrink:0;width:80px;height:80px;border-radius:50%;background:conic-gradient(var(--emerald) 0% 94%,var(--surface3) 94%);display:flex;align-items:center;justify-content:center;position:relative;">
+      <div style="width:62px;height:62px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <div style="font-size:20px;font-weight:700;color:#047857;line-height:1;">94</div>
+        <div style="font-size:9px;color:var(--text-subtle);">/ 100</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">Privacy Score: Excellent</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">−6: Telegram telemetry opt-out available · Firefox Sync sends bookmarks off-device.</div>
+      <div style="display:flex;gap:8px;">
+        <span style="font-size:11px;background:var(--emerald-glow);color:#047857;padding:3px 10px;border-radius:20px;">On-device AI ✓</span>
+        <span style="font-size:11px;background:var(--emerald-glow);color:#047857;padding:3px 10px;border-radius:20px;">No cloud sync ✓</span>
+        <span style="font-size:11px;background:var(--amber-glow);color:#B45309;padding:3px 10px;border-radius:20px;">2 open flows !</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data flow map -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">Data Flow Map — Today</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <!-- Row: app → destination → status -->
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+        <div style="color:var(--text);font-weight:500;">Firefox</div>
+        <div style="color:var(--text-subtle);">Mozilla Sync → sync.services.mozilla.com</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">38.2 KB ↑</div>
+        <span style="font-size:11px;background:var(--amber-glow);color:#B45309;padding:2px 8px;border-radius:20px;text-align:center;">Consented</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+        <div style="color:var(--text);font-weight:500;">Telegram</div>
+        <div style="color:var(--text-subtle);">Messages → telegram.org</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">1.4 MB ↑↓</div>
+        <span style="font-size:11px;background:var(--amber-glow);color:#B45309;padding:2px 8px;border-radius:20px;text-align:center;">Consented</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+        <div style="color:var(--text);font-weight:500;">koompi-ai</div>
+        <div style="color:var(--text-subtle);">Local inference only — no network</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">0 B ↑</div>
+        <span style="font-size:11px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;text-align:center;">Local</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+        <div style="color:var(--text);font-weight:500;">koompi-contextd</div>
+        <div style="color:var(--text-subtle);">Filesystem indexing — local only</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">0 B ↑</div>
+        <span style="font-size:11px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;text-align:center;">Local</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+        <div style="color:var(--text);font-weight:500;">System Update</div>
+        <div style="color:var(--text-subtle);">pacman mirrors — package hashes only</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">4.1 KB ↑</div>
+        <span style="font-size:11px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;text-align:center;">Minimal</span>
+      </div>
+      <div style="display:grid;grid-template-columns:140px 1fr 90px 80px;align-items:center;gap:8px;font-size:13px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid rgba(34,211,238,.45);">
+        <div style="color:#0E7490;font-weight:500;">Selendra ID</div>
+        <div style="color:var(--text-subtle);">Identity anchor — blockchain proof only</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">0.1 KB ↑</div>
+        <span style="font-size:11px;background:var(--cyan-glow);color:#0E7490;padding:2px 8px;border-radius:20px;text-align:center;">Proof only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data categories stored locally -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">What KOOMPI Holds On-Device</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Context Index</div>
+        <div style="font-size:11px;color:var(--text-subtle);">Semantic embeddings of your files. Stored in ~/.local/share/koompi/context.db. Never leaves device.</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">AI Memory</div>
+        <div style="font-size:11px;color:var(--text-subtle);">Conversation summaries and named facts from AI sessions. Encrypted with your login key.</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Usage Patterns</div>
+        <div style="font-size:11px;color:var(--text-subtle);">App launch frequency, active window durations, focus sessions. Used locally for proactive suggestions only.</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Location (opt-in)</div>
+        <div style="font-size:11px;color:var(--text-subtle);">City-level location for weather. Stored as lat/lon with 2-decimal precision (~10 km). Never transmitted.</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Health (future)</div>
+        <div style="font-size:11px;color:var(--text-subtle);">Eye strain, posture reminders, focus scores from wearables. On-device only, no cloud health sync.</div>
+      </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Selendra Identity</div>
+        <div style="font-size:11px;color:var(--text-subtle);">DID keypair and verifiable credential proofs. Private key never leaves the device TPM.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">You own all local data <span class="badge new">KOOMPI</span></div>
+      <p>All data stores are in standard formats under ~/.local/share/koompi/. Export or delete any category at any time from this dashboard — no vendor lock-in.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Selendra ID: proof without disclosure</div>
+      <p>Your digital identity uses zero-knowledge proofs via Selendra blockchain. You can prove "I am over 18" or "I own this key" without revealing your name or address.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Consent receipts</div>
+      <p>Every outbound data flow requires explicit user consent. Receipts are stored in the Egress Ledger with timestamp, destination, data category, and your consent action.</p>
+    </div>
+  </div>
+</section>

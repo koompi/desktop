@@ -1,0 +1,236 @@
+<section class="section" id="file-manager">
+  <div class="section-header">
+    <h2>File Manager</h2>
+    <span class="tag ai">AI</span>
+  </div>
+  <p class="desc">
+    Files — KOOMPI's semantic file browser. A conventional tree on the left, but the address bar is also an ask-bar: type a path or describe a file in plain Khmer or English. Every result carries its privacy state, so the file system stays legible — never a black box the AI quietly reads. Browsing and asking are the same gesture, powered on-device by §26 Context Index.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ One Ask — the ask-bar attaches the selected file to the shared session · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- ============ HERO: the actual Files window ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;display:flex;min-height:500px;box-shadow:0 4px 24px rgba(64,55,38,.06);">
+
+    <!-- Tree sidebar -->
+    <div style="width:188px;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border2);display:flex;flex-direction:column;">
+      <div style="padding:14px 14px 8px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;">Places</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;"><i class="fa-solid fa-house"></i> Home</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--accent);background:var(--accent-glow);margin:0 6px;border-radius:6px;cursor:pointer;"><i class="fa-solid fa-file-lines"></i> Documents</div>
+      <div style="padding:6px 14px 6px 28px;font-size:12px;color:var(--text-muted);cursor:pointer;">Finance</div>
+      <div style="padding:6px 14px 6px 28px;font-size:12px;color:var(--text-muted);cursor:pointer;">Contracts</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;">⬇ Downloads</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;"><i class="fa-solid fa-image"></i> Pictures</div>
+      <div style="padding:14px 14px 8px;font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.1em;">Smart</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;">✦ Spatial recents</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;"><i class="fa-solid fa-lock"></i> Encrypted</div>
+      <div style="padding:6px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;"><i class="fa-solid fa-triangle-exclamation"></i> Shared out</div>
+
+      <!-- DRAG-TO-AI drop well (item 7) -->
+      <div style="margin:auto 10px 12px;border:1.5px dashed var(--accent);background:var(--accent-glow);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">✦</div>
+        <div style="font-size:12px;font-weight:600;color:var(--accent);">Drop a file to ask AI</div>
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.4;">Summarize, translate, rename, find similar — runs locally</div>
+      </div>
+    </div>
+
+    <!-- Main pane -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+      <!-- Address / ask bar (item 1) -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border2);">
+        <span style="color:var(--text-subtle);cursor:pointer;">‹</span>
+        <span style="color:var(--text-subtle);cursor:pointer;">›</span>
+        <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2.5h10M2 7h10M2 11.5h6" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span style="font-size:13px;color:var(--text);">the contract I edited before the Bangkok trip</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--accent);background:var(--accent-glow);padding:2px 7px;border-radius:5px;">✦ ASK MODE</span>
+        </div>
+        <div style="display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:2px;">
+          <span style="padding:4px 8px;font-size:11px;color:var(--text-subtle);cursor:pointer;">▦</span>
+          <span style="padding:4px 8px;font-size:11px;color:var(--accent);background:var(--surface);border-radius:5px;cursor:pointer;">☰</span>
+        </div>
+      </div>
+
+      <!-- Semantic answer line (item 2) -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--accent-glow);border-bottom:1px solid var(--border2);">
+        <span style="font-size:13px;color:var(--text);">1 strong match · 2 related — searched <strong>4,812 indexed files</strong> on-device in 38 ms</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--accent);cursor:pointer;">Why these? ›</span>
+      </div>
+
+      <!-- Result rows: name | privacy | spatial recents -->
+      <div style="flex:1;overflow-y:auto;">
+
+        <!-- Top match -->
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border2);background:var(--surface);">
+          <div style="width:34px;height:42px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-book"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);">Selendra-Foundation-MOU-v3.pdf</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:2px 0 7px;">Documents/Contracts · 2.1 MB · edited 14 May, 16:20</div>
+            <!-- why-matched chips -->
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="font-size:10.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;">edited 14 May — 3 days before BKK calendar event</span>
+              <span style="font-size:10.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;">body contains "agreement / កិច្ចព្រមព្រៀង"</span>
+              <span style="font-size:10.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;">file type: contract</span>
+            </div>
+          </div>
+          <!-- privacy column (item 3) -->
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:600;color:#0E7490;background:var(--cyan-glow);padding:2px 8px;border-radius:5px;">◆ INDEXED</span>
+            <span style="font-size:10px;font-weight:600;color:#047857;background:var(--emerald-glow);padding:2px 8px;border-radius:5px;"><i class="fa-solid fa-lock"></i> ENCRYPTED</span>
+            <span style="font-size:10px;font-weight:600;color:#B45309;background:var(--amber-glow);padding:2px 8px;border-radius:5px;">↗ SHARED</span>
+          </div>
+        </div>
+
+        <!-- Spatial-memory line under top match (item 4) -->
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 8px 62px;background:var(--surface2);border-bottom:1px solid var(--border2);">
+          <span style="font-size:11px;color:var(--text-muted);">✦ You last saw this <strong style="color:var(--text);">attached to your email to Sophea</strong>, 14 May 17:02 — and again in a Telegram preview from "Legal" yesterday.</span>
+        </div>
+
+        <!-- Related #1 -->
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border2);">
+          <div style="width:34px;height:42px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-book"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);">MOU-redline-notes.docx</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:2px 0 7px;">Documents/Contracts · 48 KB · edited 13 May</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="font-size:10.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;">references the MOU above</span>
+              <span style="font-size:10.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;">same session, 13 May evening</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:600;color:#0E7490;background:var(--cyan-glow);padding:2px 8px;border-radius:5px;">◆ INDEXED</span>
+            <span style="font-size:10px;font-weight:600;color:#047857;background:var(--emerald-glow);padding:2px 8px;border-radius:5px;"><i class="fa-solid fa-lock"></i> ENCRYPTED</span>
+          </div>
+        </div>
+
+        <!-- Related #2 — carries a LEAKED-ONCE flag (item 3 edge case) -->
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(239,68,68,.04);">
+          <div style="width:34px;height:42px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-book"></i></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);">MOU-v1-DRAFT.pdf</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:2px 0 7px;">Downloads · 1.9 MB · created 28 Apr</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+              <span style="font-size:10.5px;color:#B91C1C;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);padding:2px 8px;border-radius:12px;"><i class="fa-solid fa-triangle-exclamation"></i> this draft was uploaded once to gemini.google.com · 28 Apr</span>
+              <span style="font-size:10.5px;color:#B91C1C;cursor:pointer;text-decoration:underline;">View egress log · Revoke trust</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:600;color:#0E7490;background:var(--cyan-glow);padding:2px 8px;border-radius:5px;">◆ INDEXED</span>
+            <span style="font-size:10px;font-weight:600;color:#B91C1C;background:rgba(239,68,68,.1);padding:2px 8px;border-radius:5px;"><i class="fa-solid fa-triangle-exclamation"></i> LEAKED-ONCE</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Status footer -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-top:1px solid var(--border2);background:var(--surface2);font-size:11px;color:var(--text-subtle);">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span>
+        <span>contextd live · 4,812 files indexed · embeddings on-device (BGE-M3) · 0 bytes left this machine</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SATELLITE PANELS ROW ============ -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+    <!-- Indexing-in-progress (item 5) -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Documents/Contracts</span>
+        <span style="font-size:10px;color:#0E7490;background:var(--cyan-glow);padding:2px 8px;border-radius:5px;margin-left:auto;">◆ INDEXING 61%</span>
+      </div>
+      <!-- honest partial banner -->
+      <div style="padding:9px 16px;background:var(--cyan-glow);font-size:11.5px;color:var(--text);border-bottom:1px solid var(--border2);">
+        Results below are <strong>partial</strong> — 117 of 191 files embedded. AI search may miss recent additions until this finishes (~40 s).
+      </div>
+      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span><span style="font-size:12.5px;color:var(--text);flex:1;">NDA-2026-acme.pdf</span>
+          <span style="font-size:9.5px;color:#0E7490;background:var(--cyan-glow);padding:1px 6px;border-radius:4px;">indexed</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span><span style="font-size:12.5px;color:var(--text);flex:1;">vendor-terms-Q2.docx</span>
+          <span style="font-size:9.5px;color:#0E7490;background:var(--cyan-glow);padding:1px 6px;border-radius:4px;">indexed</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;opacity:.55;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span><span style="font-size:12.5px;color:var(--text-muted);flex:1;">lease-renewal-DRAFT.pdf</span>
+          <span style="font-size:9.5px;color:var(--text-subtle);background:var(--surface3);padding:1px 6px;border-radius:4px;">queued</span>
+        </div>
+        <div style="height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-top:2px;">
+          <div style="width:61%;height:100%;background:var(--cyan);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Khmer search + collation (item 6) -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text);">ស្វែងរក "កិច្ចសន្យា"</span>
+        <span style="font-size:10px;color:var(--text-subtle);margin-left:auto;">3 matches</span>
+      </div>
+      <div style="padding:9px 16px;background:var(--emerald-glow);font-size:11px;color:var(--text);border-bottom:1px solid var(--border2);">
+        Sorted by <strong>Khmer dictionary collation</strong> (UCA Khmer tailoring) — not Unicode byte order. Content split with the <strong>ICU Khmer dictionary break-iterator</strong>, since Khmer has no spaces between words.
+      </div>
+      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span>
+          <div style="flex:1;"><div style="font-size:13px;color:var(--text);">កិច្ចសន្យាជួលផ្ទះ.pdf</div><div style="font-size:10.5px;color:var(--text-muted);">Documents · matched filename + body</div></div>
+          <span style="font-size:9.5px;color:#047857;background:var(--emerald-glow);padding:1px 6px;border-radius:4px;"><i class="fa-solid fa-lock"></i></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span>
+          <div style="flex:1;"><div style="font-size:13px;color:var(--text);">កិច្ចសន្យាការងារ.docx</div><div style="font-size:10.5px;color:var(--text-muted);">Documents · matched body "និយោជក"</div></div>
+          <span style="font-size:9.5px;color:#0E7490;background:var(--cyan-glow);padding:1px 6px;border-radius:4px;">◆</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-file-lines"></i></span>
+          <div style="flex:1;"><div style="font-size:13px;color:var(--text);">សៀវភៅកិច្ចសន្យា-២០២៦.pdf</div><div style="font-size:10.5px;color:var(--text-muted);">Khmer numeral ២០២៦ folded to 2026 for sort</div></div>
+          <span style="font-size:9.5px;color:#0E7490;background:var(--cyan-glow);padding:1px 6px;border-radius:4px;">◆</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FRESH-INSTALL / EMPTY STATE (item 8) ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:32px;margin-bottom:16px;text-align:center;">
+    <div style="width:54px;height:54px;border-radius:14px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 14px;">✦</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">Nothing is indexed yet — and that's by design</div>
+    <div style="font-size:13px;color:var(--text-muted);max-width:520px;margin:0 auto 18px;line-height:1.55;">
+      KOOMPI will never read your files until you say so. Conventional browsing works right now. To turn on natural-language search, choose which folders the on-device index may read. You can revoke any folder at any time.
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <span style="font-size:12px;font-weight:600;color:#fff;background:var(--accent);padding:9px 18px;border-radius:8px;cursor:pointer;">Choose folders to index</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:9px 18px;border-radius:8px;cursor:pointer;">Browse without AI</span>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:11px;color:#047857;background:var(--emerald-glow);padding:5px 12px;border-radius:20px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--emerald);"></span> Index lives on this disk only · removed entirely on factory reset (§ koompi-restore)
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Browsing and asking are one bar <span class="badge new">KOOMPI</span></div>
+      <p>macOS keeps Finder and Spotlight separate; GNOME hides search behind a keystroke. KOOMPI fuses them: the address bar parses a path, or a sentence in Khmer or English. The ✦ ASK MODE pill tells you which interpretation contextd chose — and you can force either. No second window, no context switch.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Privacy state per file, always visible</div>
+      <p>Every row shows what the system knows about it: <strong style="color:#0E7490">indexed</strong> (data the AI can read), <strong style="color:#047857">encrypted</strong> (at rest), <strong style="color:#B45309">shared</strong> (left this device with consent), and <strong style="color:#B91C1C">leaked-once</strong> (left once via an app — auditable in the egress log, revocable). The file system is legible, not a black box the AI quietly reads.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Spatial memory beats timestamps</div>
+      <p>Finder's "Recents" sorts by mtime — useless when you remember <em>context</em>, not time. KOOMPI records <em>where you last saw a file</em>: attached to an email, previewed in Telegram, opened beside a calendar event. Over a lifetime, this is how humans actually find things — by the situation, not the clock.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer is sorted correctly, not byte-wise</div>
+      <p>Naive <code>strcmp</code> on Khmer produces nonsense dictionary order — dependent vowels and the coeng subscript (U+17D2) reorder under the Unicode Collation Algorithm's Khmer tailoring. And because Khmer has no inter-word spaces, content search tokenizes through ICU's dictionary break-iterator, not whitespace splitting. A Khmer user's files sort and search exactly as their language demands — first-class, never an afterthought.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Honest about partial knowledge</div>
+      <p>While a folder indexes, results say so — "117 of 191 embedded, search may miss recent additions." A Principal-Engineer detail: contextd indexes newest-mtime-first so the files you most likely want appear before the backlog drains. The UI never pretends to certainty it doesn't have.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Drag-to-AI, on-device <span class="badge new">Local</span></div>
+      <p>Drop any file on the sidebar well to act on it — summarize, translate to Khmer, rename by content, find similar. Every action runs against the local LLM. The drop target is the same surface that shows "0 bytes left this machine": the affordance and the privacy promise occupy the same pixels.</p>
+    </div>
+  </div>
+</section>

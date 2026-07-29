@@ -1,0 +1,79 @@
+# koompi-branding — static, edition-agnostic KOOMPI OS brand assets installed to
+# system paths: wallpapers, logo, the Plymouth boot splash, the GRUB theme, and
+# the SDDM greeter theme + selector + enablement preset. Shared by both editions
+# and the live ISO.
+#
+# NOTE (os-release): the distro os-release is intentionally NOT shipped here — it
+# is owned by the `filesystem` package and a second owner collides at pacman time.
+# os-release is set in the archiso airootfs and written to the target by the
+# installer instead (see docs/os-build.md).
+#
+# NOTE (art): the Naga per-era visual identity (docs/naming.md) is not yet drawn.
+# The Plymouth and GRUB themes here are still functional skeletons. The SDDM
+# greeter is not: it is a real Qt 6 QML theme, extracted from the live system,
+# and the selector now points at it.
+groups=(koompi)
+pkgname=koompi-branding
+pkgver=1.0
+pkgrel=2
+pkgdesc='KOOMPI OS branding: wallpapers, logo, plymouth/grub/sddm themes, login enablement'
+arch=(any)
+url='https://github.com/rithythul/koompi-desktop'
+license=('custom')
+# The greeter is QML: qt6-declarative for QtQuick/Controls/Effects and
+# Qt.labs.folderlistmodel (the random wallpaper pick), qt6-5compat for
+# Qt5Compat.GraphicalEffects (the card's drop shadow). Without them SDDM shows a
+# blank screen rather than an error, so these are hard depends, not optional.
+depends=(sddm qt6-declarative qt6-5compat)
+optdepends=('breeze: stock SDDM theme, the fallback if the koompi greeter ever fails to render')
+
+package() {
+  local _repo_root _src
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  _src="$startdir/files"
+
+  # Wallpapers -> /usr/share/backgrounds/koompi. Two tiers (M0 decision
+  # 2026-07-23): the brand wallpapers stay in git and install from the repo;
+  # the curated library ships as a release tarball built by
+  # wallpapers/build-tarball.sh. When the first tarball is published to a
+  # wallpapers-v<N> release on github.com/rithythul/koompi-desktop, add it to this
+  # PKGBUILD as:
+  #   source=("https://github.com/rithythul/koompi-desktop/releases/download/wallpapers-v<N>/koompi-wallpapers-<N>.tar.zst")
+  #   sha256sums=('<from build-tarball.sh output>')
+  # and install "$srcdir/koompi-wallpapers/"*/ into the same target below.
+  install -dm755 "$pkgdir/usr/share/backgrounds/koompi"
+  install -m644 "$_repo_root/wallpapers/"*.jpg "$pkgdir/usr/share/backgrounds/koompi/" 2>/dev/null || \
+    echo "koompi-branding: no wallpapers/*.jpg at repo root — skipping (clean-chroot build?)" >&2
+
+  # Logo / brand mark -> /usr/share/koompi
+  install -dm755 "$pkgdir/usr/share/koompi"
+  install -m644 "$_repo_root/dots/.config/quickshell/koompi/assets/icons/koompi-symbolic.svg" \
+    "$pkgdir/usr/share/koompi/koompi-symbolic.svg" 2>/dev/null || \
+    echo "koompi-branding: koompi-symbolic.svg not found — skipping logo" >&2
+
+  # Plymouth boot splash theme (script module; placeholder art, see header)
+  install -dm755 "$pkgdir/usr/share/plymouth/themes/koompi"
+  install -m644 "$_src/plymouth/koompi.plymouth" "$pkgdir/usr/share/plymouth/themes/koompi/"
+  install -m644 "$_src/plymouth/koompi.script"   "$pkgdir/usr/share/plymouth/themes/koompi/"
+
+  # GRUB theme (skeleton; placeholder art, see header)
+  install -dm755 "$pkgdir/usr/share/grub/themes/koompi"
+  install -m644 "$_src/grub/theme.txt" "$pkgdir/usr/share/grub/themes/koompi/"
+
+  # SDDM greeter + the selector that makes it the active theme. theme.conf
+  # points backgroundDir at the wallpapers installed above, so the greeter shows
+  # a different one of them per start and the lock screen matches it.
+  install -dm755 "$pkgdir/usr/share/sddm/themes/koompi"
+  install -m644 "$_src/sddm/theme/Main.qml"          "$pkgdir/usr/share/sddm/themes/koompi/"
+  install -m644 "$_src/sddm/theme/metadata.desktop"  "$pkgdir/usr/share/sddm/themes/koompi/"
+  install -m644 "$_src/sddm/theme/theme.conf"        "$pkgdir/usr/share/sddm/themes/koompi/"
+  install -m644 "$_src/sddm/theme/logo.png"          "$pkgdir/usr/share/sddm/themes/koompi/"
+  install -Dm644 "$_src/sddm/10-koompi.conf" "$pkgdir/etc/sddm.conf.d/10-koompi.conf"
+
+  # Enable the login manager on fresh installs (the installer also enables it
+  # explicitly; this preset is belt-and-suspenders for `systemctl preset-all`).
+  install -Dm644 "$_src/90-koompi.preset" "$pkgdir/usr/lib/systemd/system-preset/90-koompi.preset"
+
+  # Asset / license note
+  install -Dm644 "$_src/README" "$pkgdir/usr/share/koompi/BRANDING-README"
+}

@@ -1,0 +1,12 @@
+# Ubuntu-only packages: named differently from Debian, or only worth installing
+# there. Ubuntu 26.04 (resolute) and later.
+#
+# Absent from Ubuntu and therefore NOT here:
+#   hyprsunset  - not in any archive or PPA; built from source by the recipe
+#   yq-go       - no such package; the static binary is fetched instead
+#   uv          - not packaged; installed from astral.sh
+
+matugen                         # ppa:avengemedia/danklinux
+starship
+fprintd
+libpam-fprintd

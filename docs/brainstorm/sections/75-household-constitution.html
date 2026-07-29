@@ -1,0 +1,87 @@
+<section class="section" id="household-constitution">
+  <div class="section-header">
+    <h2>The Household Constitution</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    At 1.x a household keeps a single plain-language <strong>policy-floor file</strong> — in Khmer or English — listing what the assistant may never do, must always do, and must ask about first. It is the human-readable law layer of the one Policy Engine, enforced mechanically by koompi-egress and the approval layer. Amendments that <em>lower</em> a floor wait out a cooling-off period before taking effect; amendments that raise a floor apply instantly. That asymmetry is the whole mechanism: impulse can add a guardrail but cannot remove one on the spot.
+  </p>
+
+  <!-- The policy-floor file -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--amber-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:18px;"><i class="fa-solid fa-scroll"></i></span>
+      <div style="flex:1;">
+        <div style="font-size:15px; font-weight:700;">~/.koompi/household.policy · the floor file</div>
+        <div style="font-size:11px; color:var(--text-muted);">plain-language rules · enforced by koompi-egress + approval layer</div>
+      </div>
+      <span class="state-chip active-state" style="font-size:9px;">in force</span>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+
+      <div style="border:1px solid rgba(239,68,68,.35);display:flex; gap:12px; background:var(--surface2);  border-radius:var(--radius-sm); padding:10px 14px;">
+        <span style="font-family:var(--font-mono); font-size:10px; color:#B91C1C; font-weight:700; flex-shrink:0; padding-top:2px;">NEVER</span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:600;">ហាមបញ្ជូនទិន្នន័យសុខភាពចេញពីម៉ាស៊ីននេះ</div>
+          <div style="font-size:11px; color:var(--text-muted);">Health data never leaves this machine, under any circumstances.</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(16,185,129,.35);display:flex; gap:12px; background:var(--surface2);  border-radius:var(--radius-sm); padding:10px 14px;">
+        <span style="font-family:var(--font-mono); font-size:10px; color:#047857; font-weight:700; flex-shrink:0; padding-top:2px;">ALWAYS</span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:600;">ប្រើពាក្យសម្ដីផ្លូវការ ពេលនិយាយជាមួយចាស់ទុំក្នុងគ្រួសារ</div>
+          <div style="font-size:11px; color:var(--text-muted);">Use the formal register with elders in the family.</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(245,158,11,.40);display:flex; gap:12px; background:var(--surface2);  border-radius:var(--radius-sm); padding:10px 14px;">
+        <span style="font-family:var(--font-mono); font-size:10px; color:#B45309; font-weight:700; flex-shrink:0; padding-top:2px;">ASK FIRST</span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:600;">សួរមុនចំណាយប្រាក់លើសពី $20 ឬចុះហត្ថលេខាលើអ្វីមួយ</div>
+          <div style="font-size:11px; color:var(--text-muted);">Ask before spending over $20 or signing anything. Below $20, act and log it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cooling-off on amendments -->
+  <div style="max-width:760px; margin-top:16px; background:var(--surface); border:1px solid var(--amber); border-radius:var(--radius-lg); overflow:hidden;">
+    <div style="padding:12px 16px; background:linear-gradient(135deg, var(--amber-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:14px;">⏳</span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Amendment in cooling-off</span>
+      <span class="state-chip warn-state" style="font-size:9px;">41h remaining</span>
+    </div>
+    <div style="padding:14px 16px;">
+      <div style="font-size:12px; line-height:1.6; margin-bottom:10px;">
+        <span style="color:var(--text-muted);">Proposed 02:14:</span> weaken the ASK-FIRST floor — raise the no-ask spending limit from $20 to $500.
+      </div>
+      <div style="height:6px; border-radius:3px; background:var(--surface3); overflow:hidden; margin-bottom:6px;">
+        <div style="height:100%; width:43%; background:var(--amber); border-radius:3px;"></div>
+      </div>
+      <div style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono); margin-bottom:10px;">cooling-off · 31 of 72 hours · takes effect in 41h</div>
+      <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+        Floors go up instantly; they come down slowly. Until the cooling-off elapses, the old floor stands and the assistant cannot be argued out of it. Strengthening amendments skip the wait entirely.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Law, not settings <span class="badge new">KOOMPI</span></div>
+      <p>The floor file is plain language you wrote, in your own register of Khmer, enforced mechanically by koompi-egress. The document the assistant obeys is the document you can read aloud.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Cooling-off protects you from yourself</div>
+      <p>Any amendment that weakens a floor waits before taking effect; strengthening is instant. The asymmetry is the point — the 2am version of you cannot overrule the person who wrote the rule.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The full "family governance" arc — starter constitutions children inherit, a majority-age ratification ceremony, per-call consent graduating into a nineteen-article charter — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

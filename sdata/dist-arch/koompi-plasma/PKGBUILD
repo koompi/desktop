@@ -1,0 +1,16 @@
+groups=(koompi)
+pkgname=koompi-plasma
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI Plasma Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  # Curated lean Plasma session. plasma-desktop pulls plasma-workspace
+  # (plasmashell, kwin, krunner, kscreenlocker) and powerdevil directly, so they
+  # are not listed. Deliberately NOT plasma-meta — that drags discover, drkonqi,
+  # kinfocenter, plasma-systemmonitor, etc. (see docs/os-build.md AVOID list).
+  plasma-desktop
+  kscreen
+  plasma-pa
+)

@@ -1,0 +1,203 @@
+<section class="section" id="near-future">
+  <div class="section-header">
+    <h2>The Near Future</h2>
+    <span class="tag">Frame</span>
+    <span class="tag">Evidence</span>
+  </div>
+  <p class="desc">
+    What the next 24 months make possible — researched and dated (<strong>verified 2026-06-11</strong>, sources linked inline) so the design docs stamp against evidence, not vibes. The near future mostly <strong>confirms the architecture already chosen</strong>, flips Khmer speech from research to a fine-tuning project, hands the tool protocol over for free — and turns cruel on exactly one axis: RAM. The stamps this section calibrates live in <code>docs/blueprint.md</code>; the vision shelf in <code>docs/horizon.md</code>.
+  </p>
+
+  <!-- ── FIVE HEADLINES ───────────────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:18px;">
+    <div style="display:flex;align-items:baseline;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Kinder in four ways, crueler in one</span>
+      <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">2026 → 2028</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border2);">
+      <div style="background:var(--surface);padding:11px 13px;"><div style="font-size:11.5px;font-weight:700;color:var(--text);">✓ Architecture confirmed</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;">llama.cpp/GGUF, sqlite-vec, tiers — the bets hold; NPUs arrive <em>inside</em> them.</div></div>
+      <div style="background:var(--surface);padding:11px 13px;"><div style="font-size:11.5px;font-weight:700;color:var(--text);">✓ Khmer speech flips near</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;">106&nbsp;h of curated ASR data exists; fine-tunes reach ≈8% CER — gated 1.x, not research.</div></div>
+      <div style="background:var(--surface);padding:11px 13px;"><div style="font-size:11.5px;font-weight:700;color:var(--text);">✓ The tool protocol is free</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;">MCP won and went to the Linux Foundation; busd becomes a host plus a leash.</div></div>
+      <div style="background:var(--surface);padding:11px 13px;"><div style="font-size:11.5px;font-weight:700;color:var(--text);">✓ The window is open</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;">Recall normalized OS memory and burned the trust; Copilot+ abandons the hardware people own.</div></div>
+      <div style="background:linear-gradient(135deg,var(--amber-glow),var(--surface));padding:11px 13px;"><div style="font-size:11.5px;font-weight:700;color:#B45309;">! RAM turned cruel</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;">+130% through 2026, relief no earlier than late 2027 — the floor <em>is</em> the product.</div></div>
+    </div>
+  </div>
+
+  <!-- ── THE EIGHT UNLOCKS ────────────────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U1</span>Reliable local tool-calling at 1–4B</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">Edge models now <em>target</em> function calling (<a href="https://www.bentoml.com/blog/the-best-open-source-small-language-models" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Ministral-3-3B, SmolLM3-3B, Qwen3.5-4B</a>); grammar-constrained decoding makes a malformed tool call physically impossible.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> assistantd constrains tool calls at the sampler (GBNF/JSON-schema) from day one — prevention, not cleanup.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#tool-approval" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§11</a><a href="#ai-failure-correction" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§36</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U2</span>The Khmer model family matured</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;"><a href="https://github.com/sail-sg/sailor2" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Sailor2</a> ships 1B/8B/20B with Khmer (Apache); <a href="https://sea-lion.ai/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">SEA-LION v4</a> covers Khmer at 27B; <strong>SEA-LION-Embedding (2026-03)</strong> is the first credible BGE-M3 successor; SEA-Guard adds SEA-language safety.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> run the ADR-0006 Khmer eval now; era-tagged vectors + the re-embed runbook become <em>v1 schema law</em>, because the successor is ~12 months out.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#ai-model-manager" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§43</a><a href="#khmer-ai" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§21</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U3</span>Khmer speech flipped sides</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">The <a href="https://datacollective.mozillafoundation.org/datasets/cml9h5vgc01bxmn075sjeftek" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Khmer ASR Cultural Dataset V2</a> (106.5&nbsp;h, native-curated) exists; fine-tuned Whisper reaches ≈8% CER; Cambodian devs already ship <a href="https://huggingface.co/PhanithLIM/whisper-tiny-khmer-ct2" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Khmer whisper models</a>; Google open-sourced a <a href="https://research.google/pubs/a-step-by-step-process-for-building-tts-voices-using-open-source-data-and-framework-for-bangla-javanese-khmer-nepali-sinhala-and-sundanese/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Khmer TTS recipe</a>; <a href="https://github.com/rhasspy/piper" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Piper</a> runs VITS voices on Pi-class CPUs.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> dictation and one TTS voice move to 1.x behind measurable gates; dialects stay out (no corpus); <em>fund the Cambodian speech-OSS community, don't rebuild it</em>.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#khmer" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§33</a><a href="#accessibility" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§38</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U4</span>NPUs arrived inside the chosen toolchain</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;"><a href="https://medium.com/openvino-toolkit/openvino-lands-in-llama-cpp-run-gguf-models-on-intel-cpu-gpu-and-npu-d6fca1d633e8" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">OpenVINO is an official upstream llama.cpp backend</a> (Intel CPU/GPU/NPU, GGUF unchanged); Hexagon NPU on Linux landed April 2026; <a href="https://counterpointresearch.com/en/reports/ai-advanced-pcs-to-surpass-half-of-global-shipments-in-2026" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">AI PCs hit ≈55–59% of 2026 shipments</a>.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> tier detection probes llama.cpp backends; no rewrite ever — and today's Copilot+ machines are Cambodia's 2027–28 secondhand T2/T3 fleet.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#ai-model-manager" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§43</a><a href="#compositor-visual-physics" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§56</a></div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,var(--amber-glow),transparent);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:#B45309;margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U5</span>The RAM crisis — the cruel one</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">DDR5 32GB went from ≈$100 to <a href="https://www.tomshardware.com/pc-components/ram/ram-price-index-2026-lowest-price-on-ddr5-and-ddr4-memory-of-all-capacities" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">≈$375 in a year</a>; <a href="https://www.techtimes.com/articles/317872/20260605/ram-prices-2026-buy-now-wait-gartner-forecasts-130-memory-cost-surge.htm" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Gartner forecasts +130%</a> with relief no earlier than late 2027.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> T0/T1 are the mainstream through 2028 — BM25-first retrieval, on-demand embedder, zram, preinstalled weights are headline engineering; one 16GB <em>Home Node</em> amortizes the expensive RAM across a household.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#frame" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§00</a><a href="#partner-mobile" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§86</a><a href="#installer" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§32</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U6</span>MCP won — stop designing a protocol</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">Donated to the Linux Foundation's Agentic AI Foundation (Dec 2025); 10,000+ public servers, ≈97M monthly SDK downloads; the <a href="https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">2026 roadmap</a> adds the exact primitives L3/L4 planned to invent.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> busd <em>is</em> an MCP host wrapped in the Policy Engine — KOOMPI invents the leash, never the wire format (ADR-0013).</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#app-suite" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§83</a><a href="#appless-computing" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§20</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U7</span>Recall opened the window</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">Windows Recall shipped encrypted, Hello-gated, off by default — and is <a href="https://moccet.ai/news/tech/microsoft-windows-recall-faces-new-security-concerns-2026" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">still under fire in 2026</a>; Copilot+ hard-gates AI behind 40&nbsp;TOPS + 16GB hardware most of the world doesn't own. And at <a href="https://www.business-standard.com/technology/tech-news/apple-intelligence-siri-ai-google-nvidia-privacy-promise-private-cloud-compute-126061200846_1.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">WWDC 2026 Apple based its next-gen Foundation Models on Google's Gemini and pushed Private Cloud Compute onto Google/NVIDIA infrastructure</a> — the one incumbent whose brand <em>was</em> on-device privacy now routes the model through a third party (added 2026-06-13).</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> the same memory, <em>provably</em> yours, on hardware you already own. Never mock Recall's goal — beat its proof. Window: 2026–2028.</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#memory-palace" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§17</a><a href="#privacy-dash" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§27</a></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;"><span style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-subtle);margin-right:7px;">U8</span>Wayland accessibility modernizes underneath</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;"><a href="https://blogs.gnome.org/a11y/2024/06/18/update-on-newton-the-wayland-native-accessibility-project/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;">Newton</a> (push-model) + AccessKit are real: GTK 4.18 merged AccessKit; Orca is usable on Wayland with GTK4 apps. The Qt/QML side — our side — remains the gap.</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.6;margin-top:6px;"><strong style="color:var(--text);">Encode:</strong> adopt AccessKit roles as shell components are touched; the Khmer screen reader becomes a 2.x assembly of bricks we'll already own (TTS + segmentation + tree).</div>
+      <div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;"><a href="#accessibility" style="font-size:9.5px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:2px 8px;border-radius:12px;text-decoration:none;">§38</a></div>
+    </div>
+  </div>
+
+  <!-- ── CAPABILITY LADDER ────────────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="display:flex;align-items:baseline;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+      <span style="font-size:13px;font-weight:700;color:var(--text);">The capability ladder</span>
+      <span style="font-size:11px;color:var(--text-muted);">what to stamp where — v1 · 1.x · 2.x</span>
+    </div>
+    <div style="display:grid;grid-template-columns:0.8fr 1.1fr 1.1fr 1.1fr;gap:1px;background:var(--border2);font-size:10px;">
+      <div style="background:var(--surface3);padding:6px 12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-size:9px;">Domain</div>
+      <div style="background:var(--surface3);padding:6px 12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-size:9px;">v1 — now</div>
+      <div style="background:var(--surface3);padding:6px 12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-size:9px;">1.x — ≈12–24 mo</div>
+      <div style="background:var(--surface3);padding:6px 12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-size:9px;">2.x — ≈24–48 mo, gated</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Retrieval</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">FTS5/BM25 + sqlite-vec rerank; BGE-M3 quantized, loaded on demand</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">SEA-LION-Embedding eval → possible re-embed (runbook exists)</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Cross-device search via the Home Node</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Chat</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">T1: Sailor2-1B/3B-class Q4 · T2: 8B</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Multimodal-small on T2; SEA-Guard guardrails</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Ternary/BitNet-class on CPU — watch, don't bet</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Tools &amp; agency</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Grammar-constrained calls; READ/WRITE/DANGER tiers; nonce-bound approval</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">busd = MCP host + leash; recorded automations (demonstrate → replay)</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Bounded agent threads with budgets</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Khmer text</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Fonts/IME/strings; ICU segmentation with L1</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Eval-pinned Khmer chat per tier</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Register-aware generation only if evals prove it</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Khmer voice</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">— (cut from v1, honestly)</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;"><strong style="color:var(--text);">Dictation</strong> (CER-gated) · <strong style="color:var(--text);">one TTS voice</strong> (Piper)</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Screen-reader assembly; dialects need a data program</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Hardware</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">CPU floor; iGPU Vulkan where it helps</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">NPU detect via OpenVINO/Hexagon backends</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Secondhand Copilot+ wave; KOOMPI Home Node</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Identity &amp; continuity</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Per-user keys; TPM2 + LUKS</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">systemd-homed portable homes; KDE Connect transport</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Capsule handoff (Automerge); pocket thin-client via Home Node</div>
+
+      <div style="background:var(--surface);padding:8px 12px;font-weight:600;color:var(--text);font-size:10.5px;">Accessibility</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Contrast + keyboard CI gates</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">AccessKit roles in touched components</div>
+      <div style="background:var(--surface);padding:8px 12px;color:var(--text-muted);line-height:1.5;">Khmer screen reader (TTS + Newton + segmentation)</div>
+    </div>
+  </div>
+
+  <!-- ── STILL REFUSED ────────────────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:9px;">Still refused, even with 2026 eyes</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ open-ended autonomous agents on consumer hardware</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ browser-engine sovereignty (Servo = 2030s watch)</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ Khmer dialect voice (no corpus)</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ liveness on RGB cameras</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ ZK crowd flags</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ data-valuation theater</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ the self-tending Gardener</span>
+      <span style="font-size:10.5px;color:#B91C1C;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);padding:3px 10px;border-radius:20px;">✕ any plan that assumes cheap RAM before 2028</span>
+    </div>
+  </div>
+
+  <!-- ── CAPABILITY GATES + FOUNDER DECISIONS ─────────────────── -->
+  <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="flex:1.2;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;">✦ Capability gates — the mechanism this section exists for</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.7;margin-bottom:9px;">
+        v1 already ships <em>when real, never on a date</em>. The gate generalizes that to every future feature: name the external unlock and a measurable threshold; the feature ships when the gate passes. A feature without a gate row is fiction by definition. The registry lives in <code>docs/blueprint.md §3</code>.
+      </div>
+      <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);line-height:1.9;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:8px 11px;">
+        <span style="color:#0E7490;">G-KM-STT-1</span> · dictation · whisper-km fine-tune · CER ≤ 15% classroom mic · 1.x<br>
+        <span style="color:#0E7490;">G-KM-TTS-1</span> · Khmer voice · Piper/VITS · MOS ≥ 4.0 (n ≥ 30) · 1.x<br>
+        <span style="color:#0E7490;">G-EMB-2</span>&nbsp;&nbsp;&nbsp; · embedder succession · ≥ +5% retrieval + license + runbook · 1.x<br>
+        <span style="color:#0E7490;">G-HOME-1</span>&nbsp; · Home Node beta · D-1 + audited E2EE sync · 2.x
+      </div>
+    </div>
+    <div style="flex:1;min-width:280px;background:linear-gradient(135deg,var(--amber-glow),transparent);border:1px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 18px;">
+      <div style="font-size:13px;font-weight:700;color:#B45309;margin-bottom:6px;"><i class="fa-solid fa-scale-balanced"></i> Three calls only the founder can make</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.75;">
+        <strong style="color:var(--text);">D-1 · The Home Node.</strong> One 16GB box per household serving models, index, and sync to thin clients — the implementable §86, and the RAM crisis is its business case. <em>Default: prototype on an N100-class mini-PC before committing.</em><br>
+        <strong style="color:var(--text);">D-2 · SKU posture.</strong> 8GB honest floor vs 16GB premium positioning while RAM is 3–4× cost. <em>Default: 8GB floor, honestly tiered.</em><br>
+        <strong style="color:var(--text);">D-3 · Khmer speech strategy.</strong> Fund the Cambodian speech-OSS community vs build in-house. <em>Default: fund the community.</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── footer strip ─────────────────────────────────────────── -->
+  <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:14px 18px;margin-bottom:8px;">
+    <span style="font-size:22px;"><i class="fa-solid fa-binoculars"></i></span>
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:600;color:var(--text);">Evidence expires</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">Every claim here was verified on 2026-06-11 with sources linked in place. Before any Blueprint stamp moves, this review is re-run and re-dated — the near future is a measurement, not a mood.</div>
+    </div>
+    <span class="state-chip active-state" style="font-size:9px;">verified 2026-06-11</span>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">The floor rises slower than the hype <span class="badge new">KOOMPI</span></div>
+      <p>The RAM crisis keeps the modest machine on stage through at least 2028 — and Copilot+ abandons it. Designing beautifully for the hardware people actually own stops being a compromise and becomes the position no incumbent can take.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Adopt the protocol, invent the leash</div>
+      <p>MCP's victory is a gift: the app-bus, the intent layer, and the tool ecosystem arrive free. KOOMPI's entire invention budget goes where no one else spends theirs — consent, containment, and the audit trail around every capability call.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Gates, not dates</div>
+      <p>Khmer dictation at "CER ≤ 15% on a classroom mic" is engineering; "dialect-aware voice" without a corpus is fiction. The gate registry is how the Horizon earns its way into the Blueprint — one measured threshold at a time.</p>
+    </div>
+  </div>
+</section>

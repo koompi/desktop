@@ -1,0 +1,122 @@
+# Debian and Ubuntu packages common to both, one per line. Blank lines and
+# #-comments are ignored. Read by sdata/dist-debian/install-deps.sh.
+#
+# Names verified against Debian trixie/forky and Ubuntu 26.04 (resolute).
+# Packages that exist on only one of the two live in packages-debian.list or
+# packages-ubuntu.list. Packages that exist nowhere are handled by
+# sdata/lib/from-source.sh.
+
+# --- basic -------------------------------------------------------------------
+bc
+coreutils
+cliphist
+cmake
+curl
+wget
+ripgrep
+jq
+xdg-user-dirs
+rsync
+unzip
+git
+# NOTE: do NOT add `yq` here. On Debian and Ubuntu that name is a Python
+# wrapper around jq with incompatible syntax. See install_go_yq().
+
+# --- audio -------------------------------------------------------------------
+cava
+pavucontrol-qt
+wireplumber
+pipewire-pulse
+libdbusmenu-gtk3-4
+playerctl
+
+# --- backlight ---------------------------------------------------------------
+geoclue-2.0
+brightnessctl
+ddcutil
+
+# --- fonts and themes --------------------------------------------------------
+breeze
+breeze-icon-theme
+eza
+fish
+fontconfig
+kitty
+fonts-noto-color-emoji          # stands in for twemoji, which is not packaged
+fonts-jetbrains-mono            # unpatched; the Nerd build is fetched separately
+
+# --- KDE apps and integration ------------------------------------------------
+dolphin
+kdialog
+gnome-keyring
+network-manager
+
+# --- portals -----------------------------------------------------------------
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-hyprland
+
+# --- python runtime ----------------------------------------------------------
+clang
+python3
+python3-dev
+python3-gi
+python3-opencv
+libgtk-4-dev
+libadwaita-1-dev
+libsoup-3.0-dev
+libportal-gtk4-1
+gobject-introspection
+
+# --- screen capture ----------------------------------------------------------
+grim
+slurp
+swappy
+tesseract-ocr
+tesseract-ocr-eng
+wf-recorder
+
+# --- input toolkit -----------------------------------------------------------
+upower
+wtype
+ydotool
+
+# --- widgets and helpers -----------------------------------------------------
+fuzzel
+libglib2.0-bin
+imagemagick
+hypridle
+hyprlock
+hyprpicker
+translate-shell                 # Debian contrib / Ubuntu multiverse
+qalc
+libqalculate-dev
+wlogout
+libnotify-bin                   # hyprshot notifies through notify-send
+
+# --- compositor and shell ----------------------------------------------------
+zig                             # builds the global-menu daemon; skipped if absent
+libglib2.0-dev                  # GDBus headers the global-menu daemon links against
+pkg-config                      # zig build resolves glib through it
+x11-utils                       # xprop; the global menu reads menu addresses with it
+xwayland                        # Qt exports its menubar over D-Bus only on X11
+hyprland
+hyprpolkitagent
+wl-clipboard
+quickshell
+qt6ct
+
+# --- Qt runtime the shell loads at run time ----------------------------------
+qt6-wayland
+qt6-svg-plugins
+qt6-image-formats-plugins
+qml6-module-qtquick
+qml6-module-qtquick-controls
+qml6-module-qtquick-layouts
+qml6-module-qt5compat-graphicaleffects
+qml6-module-qtmultimedia
+qml6-module-qtpositioning
+qml6-module-qtquick-timeline
+qml6-module-qtsensors
+qml6-module-org-kde-kirigami
+qml6-module-org-kde-syntaxhighlighting

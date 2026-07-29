@@ -1,0 +1,123 @@
+# Fedora packages for the KOOMPI desktop, one per line. Blank lines and
+# #-comments are ignored. Read by sdata/dist-fedora/install-deps.sh.
+#
+# Verified against Fedora 44 (releases + updates) and the COPRs enabled by the
+# recipe. The COPR that carries each non-Fedora package is noted inline.
+
+# --- basic -------------------------------------------------------------------
+bc
+coreutils
+cliphist
+cmake
+curl
+wget2-wget
+ripgrep
+jq
+xdg-user-dirs
+rsync
+git
+yq                              # Fedora's yq IS mikefarah/yq, unlike Debian's
+fprintd
+unzip
+
+# --- audio -------------------------------------------------------------------
+cava
+pavucontrol-qt
+wireplumber
+pipewire-pulseaudio
+libdbusmenu-gtk3
+playerctl
+
+# --- backlight ---------------------------------------------------------------
+geoclue2
+brightnessctl
+ddcutil
+
+# --- fonts and themes --------------------------------------------------------
+adw-gtk3-theme
+breeze-icon-theme
+breeze-gtk-common
+breeze-plus-icon-theme          # copr: ririko66z/dots-hyprland
+darkly                          # copr: deltacopy/darkly
+eza
+fish
+fontconfig
+kitty
+matugen
+starship                        # copr: atim/starship
+florian-karsten-space-grotesk-fonts     # copr: ririko66z/dots-hyprland
+jetbrains-mono-nerd-fonts               # copr: ririko66z/dots-hyprland
+google-material-symbols-vf-rounded-fonts # copr: ririko66z/dots-hyprland
+readex-pro-fonts-all                    # copr: ririko66z/dots-hyprland
+google-rubik-vf-fonts                   # copr: ririko66z/dots-hyprland
+google-sans-flex-vf-fonts               # copr: ririko66z/dots-hyprland
+twitter-twemoji-fonts
+bibata-cursor-theme             # copr: ririko66z/dots-hyprland
+
+# --- KDE apps and integration ------------------------------------------------
+dolphin
+kdialog
+gnome-keyring
+NetworkManager
+plasma-nm
+bluedevil
+
+# --- portals -----------------------------------------------------------------
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+xdg-desktop-portal-hyprland     # copr: sdegler/hyprland
+
+# --- python runtime ----------------------------------------------------------
+clang
+uv
+python3
+python3-devel
+gtk4-devel
+libadwaita-devel
+libsoup3-devel
+libportal-gtk4
+gobject-introspection-devel
+python3-gobject
+python3-opencv
+
+# --- screen capture ----------------------------------------------------------
+hyprshot                        # copr: sdegler/hyprland
+slurp
+swappy
+tesseract
+tesseract-langpack-eng
+wf-recorder
+
+# --- input toolkit -----------------------------------------------------------
+upower
+wtype
+ydotool
+
+# --- widgets and helpers -----------------------------------------------------
+fuzzel
+glib2
+ImageMagick
+hypridle                        # copr: sdegler/hyprland
+hyprlock                        # copr: sdegler/hyprland
+hyprpicker                      # copr: sdegler/hyprland
+songrec                         # copr: ririko66z/dots-hyprland
+translate-shell
+qalculate
+libqalculate
+wlogout
+
+# --- compositor and shell ----------------------------------------------------
+hyprland                        # copr: sdegler/hyprland - 0.56, vs 0.49 in solopasha
+hyprsunset                      # copr: sdegler/hyprland
+hyprpolkitagent                 # copr: sdegler/hyprland - the graphical auth agent
+wl-clipboard
+quickshell
+qt6ct
+
+# --- optional ----------------------------------------------------------------
+microtex                        # copr: ririko66z/dots-hyprland - LaTeX in the shell
+zig                             # builds the global-menu daemon
+glib2-devel                     # GDBus headers the global-menu daemon links against
+pkgconf-pkg-config              # zig build resolves glib through it
+xorg-x11-utils                  # xprop; the global menu reads menu addresses with it
+xorg-x11-server-Xwayland        # Qt exports its menubar over D-Bus only on X11

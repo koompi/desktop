@@ -1,0 +1,23 @@
+groups=(koompi)
+pkgname=koompi-basic
+pkgver=1.0
+pkgrel=4
+pkgdesc='KOOMPI Basic Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  bc
+  coreutils
+  cliphist
+  cmake
+  curl
+  wget
+  ripgrep
+  jq
+  xdg-user-dirs
+  # Used in install script
+  rsync
+  go-yq # https://github.com/mikefarah/yq
+  # Fingerprint login/unlock; lock screen's fprintd.conf needs pam_fprintd. libfprint is pulled in by fprintd.
+  fprintd
+)

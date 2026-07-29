@@ -1,0 +1,63 @@
+<section class="section" id="energy-sovereignty">
+  <div class="section-header">
+    <h2>Energy-Sovereign Computing</h2>
+    <span class="tag">Futures</span>
+    <span class="tag ai">RULE · v1</span>
+  </div>
+  <p class="desc">
+    This is an engineering rule shipping at v1 (architecture §11): heavy background work — memory consolidation, re-embedding, format transcription — runs only when three gates are all open at once: the machine is on AC power, the user is idle, and the CPU is within thermal limits. If any gate closes, the work pauses and waits; it is deferred to the next window, never offloaded to a server. On battery, KOOMPI does light capture only.
+  </p>
+
+  <!-- The gating policy -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">Background-work gate — all three must be open</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-size:14px;"><i class="fa-solid fa-plug"></i></span>
+        <span style="font-family:var(--font-mono); font-size:11px; width:90px; color:var(--text);">on AC</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">consolidation never drains the battery; on battery, capture only</span>
+        <span class="state-chip active-state" style="font-size:9px;">gate 1</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-size:14px;"><i class="fa-solid fa-moon"></i></span>
+        <span style="font-family:var(--font-mono); font-size:11px; width:90px; color:var(--text);">idle</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">no contention with your foreground work; wakes on input</span>
+        <span class="state-chip active-state" style="font-size:9px;">gate 2</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-size:14px;"><i class="fa-solid fa-temperature-half"></i></span>
+        <span style="font-family:var(--font-mono); font-size:11px; width:90px; color:var(--text);">cool</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">CPU package within thermal budget; throttles down before it cooks</span>
+        <span class="state-chip active-state" style="font-size:9px;">gate 3</span>
+      </div>
+    </div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8; margin-top:14px;">
+      koompi-assistantd · sleep-tier scheduler<br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">on_ac</span>        <span class="code-str">true</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">idle</span>         <span class="code-str">true (12m)</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">thermal</span>      <span class="code-str">within budget (61°C / 85°C)</span><br>
+      <span style="color:var(--text-subtle);">└─</span> <span class="code-key">decision</span>     <span class="code-val">gates open → run T2/T3 · else defer</span>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+      Deferred is not offloaded. Work that can't run waits for the next window on this machine; nothing falls back to the cloud (ADR-0001: degrade local, never silent cloud).
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Consolidation is shiftable load <span class="badge new">KOOMPI</span></div>
+      <p>Memory consolidation is energy-hungry but never urgent — the ideal work to gate. KOOMPI runs T2/T3 sleep tiers only on AC, idle, and cool, so the heavy thinking happens when it costs the user nothing.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Scarcity never becomes surveillance</div>
+      <p>The cheapest response to a dying battery is "run it in the cloud" — the exact ratchet ADR-0001 forbids. Under the gate, deferred work waits for local power instead. Degrade local, never silent cloud.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The off-grid "solar metabolism" vision — scheduling the OS around a photovoltaic harvest curve and an honest energy-budget chooser for schools past the last pylon — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

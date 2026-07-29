@@ -1,0 +1,62 @@
+<section class="section" id="tool-approval">
+  <div class="section-header">
+    <h2>Tool Approval</h2>
+    <span class="tag ai">AI</span>
+  </div>
+  <p class="desc">
+    When AI wants to execute a tool (read file, run command, call API), user sees this modal before anything happens. Explicit consent model — nothing runs without a human decision.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ "Remember for this session" writes a session policy to the one Policy Engine · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+    <!-- Tool modal on a desktop stage -->
+    <div class="panel-stage" style="flex-shrink:1; min-width:320px;">
+    <div class="tool-modal">
+      <div class="tool-modal-header">
+        <div class="tool-modal-icon"><i class="fa-solid fa-wrench"></i></div>
+        <div>
+          <div class="tool-modal-title">AI wants to read a file</div>
+          <div class="tool-modal-sub">koompi-contextd is requesting filesystem access</div>
+        </div>
+      </div>
+
+      <div class="tool-code">
+        tool: <span class="code-key">"read_file"</span><br>
+        path: <span class="code-str">"/home/userx/Documents/Q4-2025-Report.pdf"</span><br>
+        reason: <span class="code-str">"Summarizing quarterly report as requested"</span>
+      </div>
+
+      <div class="tool-privacy-note">
+        <i class="fa-solid fa-lock"></i> This action stays local — no data leaves your device
+      </div>
+
+      <div class="tool-trust-row">
+        <input type="checkbox" checked style="width:13px; height:13px; cursor:pointer; accent-color:var(--accent);">
+        <span>Remember for this session</span>
+      </div>
+
+      <div class="tool-actions">
+        <div class="tool-btn allow">✓ Allow</div>
+        <div class="tool-btn">Allow once</div>
+        <div class="tool-btn deny">✗ Deny</div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Callouts -->
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:200px;">
+      <div class="callout">
+        <div class="callout-title">Explicit consent model <span class="badge new">KOOMPI</span></div>
+        <p>Every tool call surfaces a modal before execution. Users see exactly what the AI wants to do and why. No silent background actions.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Session trust</div>
+        <p>"Remember for this session" checkbox allows future calls of the same tool + path to auto-approve for the duration of the session. Cleared on logout.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Privacy note</div>
+        <p>When the action is local-only, the emerald privacy note reassures the user. When data could leave the device, the note is replaced by an amber warning.</p>
+      </div>
+    </div>
+  </div>
+</section>

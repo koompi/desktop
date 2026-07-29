@@ -1,0 +1,71 @@
+<section class="section" id="ambient-intelligence">
+  <div class="section-header">
+    <h2>Ambient Intelligence</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    A <strong>Context Pulse</strong> widget that surfaces the signals <code>koompi-contextd</code> already emits — nothing more. At 1.x it shows your next calendar event, uncommitted git changes, a focus/pomodoro timer, and the active window. Every value is read from a local contextd event; the widget renders state, it never acts on it. If the Pulse doesn't display a signal, contextd isn't reading it.
+  </p>
+
+  <!-- Context Pulse widget -->
+  <div style="width:320px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+      <span style="font-size:13px; color:var(--accent);">✦</span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Context Pulse</span>
+      <span class="state-chip priv-state" style="padding:2px 8px; font-size:9px;">LOCAL</span>
+    </div>
+
+    <div style="padding:16px;">
+      <!-- Focus / pomodoro timer ring -->
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <svg viewBox="0 0 64 64" style="width:64px; height:64px; flex-shrink:0;">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="var(--surface3)" stroke-width="6"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke="var(--accent)" stroke-width="6"
+            stroke-dasharray="163" stroke-dashoffset="34" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+          <text x="32" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent)">18:12</text>
+          <text x="32" y="45" text-anchor="middle" font-size="6" fill="var(--text-muted)">FOCUS</text>
+        </svg>
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:600;">Pomodoro · 18m left</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Timer state from contextd — not an inference about you</div>
+        </div>
+      </div>
+
+      <!-- contextd signals -->
+      <div class="card-label">Signals from koompi-contextd</div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:var(--accent);"></span>
+          <span style="flex:1; color:var(--text-muted);">Next event — calendar</span>
+          <span style="font-weight:600;">in 20 min</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:var(--amber);"></span>
+          <span style="flex:1; color:var(--text-muted);">Uncommitted changes — git</span>
+          <span style="font-weight:600; color:#B45309;">3 files</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:var(--emerald);"></span>
+          <span style="flex:1; color:var(--text-muted);">Active window</span>
+          <span style="font-weight:600;">nvim · 16-ambient</span>
+        </div>
+      </div>
+
+      <div class="tool-privacy-note">
+        <i class="fa-solid fa-lock"></i> Every signal is a local contextd event · nothing is computed from webcam or typing cadence
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Awareness, not surveillance <span class="badge new">KOOMPI</span></div>
+      <p>The Pulse renders only what contextd can honestly emit — calendar, git, timer, active window. There is no hidden sensing behind it: if the widget doesn't show a signal, the OS isn't reading it.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>Webcam/ambient-light sensing, energy-from-typing-cadence inference, and an AI "interruption shield" that holds or breaks through notifications stay on the horizon shelf (<code>horizon.md</code>).</p>
+    </div>
+  </div>
+</section>

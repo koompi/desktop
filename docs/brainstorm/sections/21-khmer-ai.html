@@ -1,0 +1,77 @@
+<section class="section" id="khmer-ai">
+  <div class="section-header">
+    <h2>Khmer-Native Intelligence</h2>
+    <span class="tag">i18n</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    v1 ships a fully Khmer OS surface: register-correct UI strings, honorifics, and the Khmer + Buddhist calendars, authored and reviewed so the shell reads as native rather than machine-translated. This is a strings-and-locale deliverable, not a language model. Khmer <em>chat</em> — an assistant that reasons and converses in Khmer — is a separate track gated behind <code>G-KM-CHAT-1</code>: it ships only after a Sailor2 / SEA-LION-class local model passes the Khmer eval. Until that gate clears, KOOMPI does not present fluent Khmer conversational AI.
+  </p>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+
+    <!-- v1: register-correct strings + calendar -->
+    <div style="width:340px; flex-shrink:0;">
+      <div class="card-label" style="margin-bottom:8px;">v1 — register-correct UI strings, reviewed</div>
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px;">
+        <div class="state-row" style="margin-top:0; margin-bottom:12px;">
+          <span class="state-chip">មិត្តភាព · informal</span>
+          <span class="state-chip active-state">ផ្លូវការ · formal</span>
+          <span class="state-chip warn-state">រាជសព្ទ · royal</span>
+        </div>
+        <div style="background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+          <div style="font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--accent); margin-bottom:6px;">System string · formal, with honorifics</div>
+          <div lang="km" style="font-size:13px; line-height:1.8;">ជូនចំពោះលោកប្រធាន<br>ខ្ញុំសូមគោរពជម្រាបជូន...</div>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+          Each register is a reviewed string set, not a live paraphrase — pronouns, honorifics, and sentence-final particles are correct because a Khmer editor signed them off before ship.
+        </p>
+      </div>
+
+      <!-- Khmer date display -->
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px; margin-top:14px;">
+        <div class="card-label" style="margin-bottom:10px;">Calendar — Khmer + Buddhist + Gregorian</div>
+        <div style="display:flex; align-items:baseline; gap:10px;">
+          <span lang="km" style="font-size:18px; font-weight:700;">ថ្ងៃអាទិត្យ ៨ មិថុនា</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+          <span lang="km">ខែ មិគសិរ · ឆ្នាំ ២៥៦៨ ពុទ្ធសករាជ</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-top:2px; font-family:var(--font-mono);">Gregorian: Sun, 8 Jun 2026</div>
+      </div>
+    </div>
+
+    <!-- Chat gate -->
+    <div style="flex:1; min-width:280px; display:flex; flex-direction:column; gap:14px;">
+      <div style="background:linear-gradient(135deg, var(--amber-glow), transparent); border:1px solid rgba(245,158,11,0.35); border-radius:var(--radius-lg); padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span class="state-chip warn-state" style="font-size:9px; padding:2px 8px;">GATED · G-KM-CHAT-1</span>
+          <span class="card-label" style="margin:0;">Khmer chat — behind the eval gate</span>
+        </div>
+        <div class="tool-code" style="font-size:11px; line-height:1.9;">
+          <span class="code-key">gate</span>  : <span class="code-str">G-KM-CHAT-1</span><br>
+          <span class="code-key">model</span> : <span class="code-val">Sailor2 / SEA-LION-class, local</span><br>
+          <span class="code-key">pass</span>  : <span class="code-val">Khmer eval (register + factual)</span><br>
+          <span class="code-key">until</span> : <span class="code-val">no fluent Khmer chat surfaced</span>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+          Conversational Khmer is a model deliverable, not a locale file. It unlocks only when a Sailor2-class model clears <code>G-KM-CHAT-1</code> — never a foreign cloud, never an English pivot in the middle.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Language independence is data independence <span class="badge new">KOOMPI</span></div>
+      <p>A Khmer-first surface means 17 million people compute in their own language locally, without shipping keystrokes to a foreign cloud to be understood. That holds at v1 for strings; it holds for chat once <code>G-KM-CHAT-1</code> clears.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>Khmer <em>dialect</em> voice and self-learned per-person transliteration stay on the horizon shelf (<code>horizon.md</code>) — out of scope until Khmer chat itself is proven.</p>
+    </div>
+  </div>
+</section>

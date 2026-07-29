@@ -1,0 +1,54 @@
+<section class="section" id="conversations-past-self">
+  <div class="section-header">
+    <h2>Conversations With Your Past Self</h2>
+    <span class="tag">Futures</span>
+    <span class="tag sys">2.x</span>
+  </div>
+  <p class="desc">
+    The buildable piece, targeted at 2.x+, is a belief-diff view over your own memory history. Because the Memory Lifecycle timestamps a contradiction instead of overwriting it, both the old and new versions of a recorded belief survive. The view picks a topic and shows how your notes on it changed over time — the earlier position, the turning point, the reversal — each entry a real dated record you can reopen. It diffs what you wrote; it does not speak for you or synthesize "what you would say".
+  </p>
+
+  <!-- Belief-diff thread -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">Belief diff — "databases for the indexer"</div>
+    <div style="position:relative; padding-left:18px;">
+      <div style="position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--border);"></div>
+      <div style="position:relative; margin-bottom:14px;">
+        <span style="position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%; background:var(--cyan); border:2px solid var(--surface);"></span>
+        <div style="font-size:12px; font-weight:600;">2029 — you argued SQL-only</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">"Vector DBs are a fad; Postgres can fake it." — design review note, 3 Apr 2029</div>
+      </div>
+      <div style="position:relative; margin-bottom:14px;">
+        <span style="position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%; background:var(--amber); border:2px solid var(--surface);"></span>
+        <div style="font-size:12px; font-weight:600;">2030 — first cracks</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">Benchmarks: pgvector recall collapsed past 40M rows. You called the result "annoying" in a note to Vathna.</div>
+      </div>
+      <div style="position:relative;">
+        <span style="position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%; background:var(--emerald); border:2px solid var(--surface);"></span>
+        <div style="font-size:12px; font-weight:600;">2031 — you reversed</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">ADR-0042 adopts a dedicated index. Your own words: "I was defending a tool, not a requirement."</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px dashed var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-top:14px;">
+      <span style="font-size:12px;"><i class="fa-solid fa-dna"></i></span>
+      <span style="font-size:10px; color:var(--text-muted);">Both positions survive as timestamped records. The 2029 you was not deleted when the 2031 you disagreed — contradiction is history, not error.</span>
+    </div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8; margin-top:14px;">
+      <span class="code-key">source</span>   <span class="code-str">timestamped memory records, same topic thread</span><br>
+      <span class="code-key">shows</span>    <span class="code-val">earlier belief → turning point → current belief</span><br>
+      <span class="code-key">links</span>    <span class="code-str">each entry opens the original dated note</span><br>
+      <span class="code-key">egress</span>   <span class="code-val">none — the diff is computed and read on one disk</span>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Contradictions make the diff possible</div>
+      <p>The Memory Lifecycle preserves reversed beliefs as timestamped records instead of overwriting them. That one rule is what lets a belief diff exist at all — most systems silently keep only your latest opinion.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "converse with your past self" aspiration — an AI persona of an earlier you, and sealed future-self letters delivered years later — stays on the horizon shelf (<code>horizon.md</code>); 2.x+ ships the diff over records, not a voice.</p>
+    </div>
+  </div>
+</section>

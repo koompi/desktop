@@ -1,0 +1,23 @@
+# KOOMPI OS — placeholder boot splash (Plymouth "script" module).
+# Black background + centered wordmark, no image dependency so it is valid
+# without art. Replace with the Naga animation when the per-era visual identity
+# is ready (docs/naming.md).
+
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+wordmark = Image.Text("KOOMPI OS", 1, 1, 1);
+wordmark_sprite = Sprite(wordmark);
+wordmark_sprite.SetX(Window.GetWidth()  / 2 - wordmark.GetWidth()  / 2);
+wordmark_sprite.SetY(Window.GetHeight() / 2 - wordmark.GetHeight() / 2);
+
+fun refresh_callback() { }
+Plymouth.SetRefreshFunction(refresh_callback);
+
+fun message_callback(text) {
+  message = Image.Text(text, 0.7, 0.7, 0.7);
+  message_sprite = Sprite(message);
+  message_sprite.SetX(Window.GetWidth() / 2 - message.GetWidth() / 2);
+  message_sprite.SetY(Window.GetHeight() / 2 + wordmark.GetHeight());
+}
+Plymouth.SetMessageFunction(message_callback);

@@ -1,0 +1,69 @@
+<section class="section" id="overview">
+  <div class="section-header">
+    <h2>Workspace Overview</h2>
+    <span class="tag">Super+Tab</span>
+  </div>
+  <p class="desc">
+    Full-screen grid of all workspaces. Drag windows between them. KOOMPI AI labels each workspace by context — "<i class="fa-solid fa-laptop-code"></i> Coding", "<i class="fa-brands fa-firefox-browser"></i> Browser", etc.
+  </p>
+
+  <div class="overview-demo">
+    <div class="ws-overview-grid">
+      <!-- WS 1 — active, coding -->
+      <div class="ws-tile ws-active">
+        <div class="ws-tile-bg" style="background:linear-gradient(135deg,#1a1060,#0a2840);"></div>
+        <span class="ws-tile-num">1</span>
+        <div class="ws-mini-win win-active" style="top:18%;left:8%;width:55%;height:40%;"></div>
+        <div class="ws-mini-win" style="top:22%;left:66%;width:28%;height:35%;"></div>
+        <div class="ws-mini-win" style="top:64%;left:8%;width:82%;height:22%;"></div>
+        <span class="ws-ai-tag"><i class="fa-solid fa-laptop-code"></i> Coding</span>
+      </div>
+      <!-- WS 2 — browser -->
+      <div class="ws-tile">
+        <div class="ws-tile-bg" style="background:linear-gradient(135deg,#0a2840,#12100D);"></div>
+        <span class="ws-tile-num">2</span>
+        <div class="ws-mini-win" style="top:15%;left:6%;width:88%;height:50%;"></div>
+        <div class="ws-mini-win" style="top:70%;left:6%;width:40%;height:18%;"></div>
+        <span class="ws-ai-tag"><i class="fa-brands fa-firefox-browser"></i> Browser</span>
+      </div>
+      <!-- WS 3 — comms -->
+      <div class="ws-tile">
+        <div class="ws-tile-bg" style="background:linear-gradient(135deg,#161310,#070B13);"></div>
+        <span class="ws-tile-num">3</span>
+        <div class="ws-mini-win" style="top:12%;left:6%;width:42%;height:75%;"></div>
+        <span class="ws-ai-tag"><i class="fa-solid fa-envelope-open-text"></i> Comms</span>
+      </div>
+      <!-- WS 4 — music -->
+      <div class="ws-tile">
+        <div class="ws-tile-bg" style="background:linear-gradient(135deg,#171411,#070B13);"></div>
+        <span class="ws-tile-num">4</span>
+        <div class="ws-mini-win" style="top:20%;left:15%;width:70%;height:55%;"></div>
+        <span class="ws-ai-tag"><i class="fa-solid fa-music"></i> Music</span>
+      </div>
+      <!-- WS 5 — empty -->
+      <div class="ws-empty-tile">+</div>
+      <!-- WS 6-10 -->
+      <div class="ws-empty-tile">+</div>
+      <div class="ws-empty-tile">+</div>
+      <div class="ws-empty-tile">+</div>
+      <div class="ws-empty-tile">+</div>
+      <div class="ws-empty-tile">+</div>
+    </div>
+    <div class="overview-hint">Click to switch · drag windows between workspaces · Super+Tab to close</div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">AI workspace labels <span class="badge new">KOOMPI</span></div>
+      <p>AI infers context from the apps running in each workspace (window titles, process names). Labels update when the workspace contents change significantly.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Drag to move windows</div>
+      <p>Click and drag a mini-window thumbnail onto another workspace tile to move it. Inspired by end-4's hy3 overview. Works with tiled and floating windows.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">KOOMPI twist</div>
+      <p>Context-aware labels let you navigate by intent ("where was I coding?") rather than by workspace number. Future: search overview by AI label.</p>
+    </div>
+  </div>
+</section>

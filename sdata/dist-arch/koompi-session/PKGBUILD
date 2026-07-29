@@ -1,0 +1,32 @@
+# koompi-session — the bootable KOOMPI Wayland session: the launcher, the
+# display-manager session entry, and the portal configuration that resolves
+# under XDG_CURRENT_DESKTOP=KOOMPI:Hyprland.
+#
+# BUILD NOTE: via the existing sdata/dist-arch flow (plain makepkg in-tree) this
+# reads ../../../dots through $startdir. For clean-chroot / repo builds (devtools,
+# the koompi pacman repo), that relative tree is absent — switch `source` to a
+# pinned git tag of this repo and copy from "$srcdir/koompi-desktop/dots".
+groups=(koompi)
+pkgname=koompi-session
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI Desktop Experience session launcher and Wayland session entry'
+arch=(any)
+license=(GPL-3.0-only)
+depends=(koompi-hyprland koompi-shell)
+
+package() {
+  local _repo_root
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  if [[ ! -d "$_repo_root/dots" ]]; then
+    echo "koompi-session: dots/ not found at repo root ($_repo_root)." >&2
+    echo "Building in a clean chroot? Switch source to a pinned git tag (see header)." >&2
+    return 1
+  fi
+
+  install -Dm755 "$_repo_root/dots/.local/bin/koompi-session" "$pkgdir/usr/bin/koompi-session"
+  install -Dm644 "$_repo_root/dots/.local/share/wayland-sessions/koompi.desktop" \
+    "$pkgdir/usr/share/wayland-sessions/koompi.desktop"
+  install -Dm644 "$_repo_root/dots/.config/xdg-desktop-portal/koompi-portals.conf" \
+    "$pkgdir/usr/share/xdg-desktop-portal/koompi-portals.conf"
+}

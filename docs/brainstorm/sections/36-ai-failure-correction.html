@@ -1,0 +1,241 @@
+<section class="section" id="ai-failure-correction">
+  <div class="section-header">
+    <h2>AI Failure &amp; Fixes</h2>
+    <span class="tag ai">AI · Trust</span>
+  </div>
+  <p class="desc">
+    The trust layer no other AI surface ships: how the OS behaves when it is <em>wrong</em>. Low-confidence signalling, per-claim attribution, the correction loop that writes back into §13 Memory, one-tap undo of a mistaken proactive action, source suppression, and trust-recovery after a bad streak. Trust in a thinking OS is built on how it fails — every inference is reviewable, correctable, and reversible.
+  </p>
+
+  <!-- ===================== 1 + 2 · LOW-CONFIDENCE ANSWER WITH PER-CLAIM ATTRIBUTION ===================== -->
+  <div style="max-width:620px; margin-bottom:18px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <!-- Header: uncertainty band -->
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">✦ KOOMPI AI · local · Sailor2-8B Q4</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--amber-glow); color:#B45309; border:1px solid rgba(245,158,11,0.3);">Grounding 38% — not sure</span>
+      </div>
+
+      <!-- Calibration band: a real meter, not a vibe -->
+      <div style="padding:12px 16px 6px;">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-subtle); margin-bottom:5px;">
+          <span>I'm guessing</span><span>I'm confident</span>
+        </div>
+        <div style="height:6px; border-radius:3px; background:linear-gradient(90deg,var(--amber) 0%,var(--amber) 40%,var(--surface3) 40%,var(--surface3) 100%); position:relative;">
+          <div style="position:absolute; left:38%; top:50%; transform:translate(-50%,-50%); width:12px; height:12px; border-radius:50%; background:var(--surface); border:2px solid var(--amber); box-shadow:0 0 0 3px var(--amber-glow);"></div>
+        </div>
+      </div>
+
+      <!-- The hedged answer -->
+      <div style="padding:8px 16px 4px; font-size:13px; line-height:1.55; color:var(--text);">
+        I'm <strong>not sure</strong>, but I think your land title for the Kandal plot was filed on <strong>14 March 2019</strong>. I couldn't find the certificate itself — this is inferred from two indirect sources, so please verify against the original.
+      </div>
+
+      <!-- Per-claim source attribution rows -->
+      <div style="padding:6px 14px 10px;">
+        <div style="display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border-radius:9px; background:var(--surface2); border:1px solid var(--border2); margin-bottom:6px;">
+          <span style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:5px; background:var(--cyan-glow); color:#0E7490; flex-shrink:0; margin-top:1px;">FILE · 0.62</span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:12px; color:var(--text); font-weight:600;">scan_kandal_deed_2019.jpg</div>
+            <div style="font-size:11px; color:var(--text-muted);">~/Documents/Land/ · OCR date field, partial read "14·03·201_"</div>
+          </div>
+          <span style="font-size:10px; font-weight:600; color:#B45309; cursor:pointer; flex-shrink:0; padding:2px 6px; border:1px solid var(--amber); border-radius:5px;">This is wrong</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border-radius:9px; background:var(--surface2); border:1px solid var(--border2);">
+          <span style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:5px; background:var(--accent-glow); color:var(--accent); flex-shrink:0; margin-top:1px;">CHAT · 0.41</span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:12px; color:var(--text); font-weight:600;">Telegram — "Borey គ្រួសារ" group</div>
+            <div style="font-size:11px; color:var(--text-muted);">12 Jan 2023 · message mentioned " early 2019" — vague</div>
+          </div>
+          <span style="font-size:10px; font-weight:600; color:#B45309; cursor:pointer; flex-shrink:0; padding:2px 6px; border:1px solid var(--amber); border-radius:5px;">This is wrong</span>
+        </div>
+      </div>
+
+      <!-- Local-only footer -->
+      <div style="padding:9px 16px; border-top:1px solid var(--border2); background:var(--surface2); font-size:10px; color:var(--text-subtle); display:flex; align-items:center; gap:6px;">
+        <span style="color:#047857;"><i class="fa-solid fa-lock"></i></span>
+        Inference + grounding computed on-device · nothing left this machine
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 3 · CORRECTION-LOOP MODAL (write-back to Memory) ===================== -->
+  <div style="max-width:620px; margin-bottom:18px;">
+    <div style="background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius-xl); overflow:hidden; box-shadow:0 8px 30px rgba(99,102,241,0.12);">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--accent-glow);">
+        <span style="font-size:13px; font-weight:700; color:var(--accent); flex:1;">Teach me the right fact</span>
+        <span style="font-size:18px; color:var(--text-subtle); cursor:pointer; line-height:1;">×</span>
+      </div>
+      <div style="padding:16px;">
+        <div style="font-size:11px; color:var(--text-subtle); margin-bottom:4px;">What I said</div>
+        <div style="font-size:12px; color:var(--text-muted); text-decoration:line-through; padding:8px 10px; border-radius:8px; background:var(--surface2); margin-bottom:12px;">Land title filed 14 March 2019</div>
+
+        <div style="font-size:11px; color:var(--accent); font-weight:600; margin-bottom:4px;">The correct fact</div>
+        <div style="font-size:13px; color:var(--text); padding:9px 11px; border-radius:8px; background:var(--surface); border:1.5px solid var(--accent); margin-bottom:6px;">Filed <strong>2 April 2019</strong> — receipt no. <strong>KD-2019-04471</strong></div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-bottom:14px;">This becomes an asserted fact. It will outrank anything I infer later.</div>
+
+        <!-- Provenance preview row -->
+        <div style="display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:8px; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); margin-bottom:14px;">
+          <span style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:5px; background:var(--emerald); color:#fff; flex-shrink:0;">→ MEMORY</span>
+          <div style="font-size:11px; color:var(--text); flex:1;">Writes to <strong>the assistant's memory store</strong> · type <code style="font-size:10px;">USER</code> · precedence <code style="font-size:10px;">asserted</code> · source <code style="font-size:10px;">manual-correction</code></div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <span style="flex:1; text-align:center; font-size:13px; font-weight:600; color:#fff; background:var(--accent); padding:9px; border-radius:8px; cursor:pointer;">Save &amp; remember</span>
+          <span style="text-align:center; font-size:13px; color:var(--text-muted); padding:9px 16px; border-radius:8px; border:1px solid var(--border2); cursor:pointer;">Just this once</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 4 · UNDO A MISTAKEN PROACTIVE ACTION (one tap) ===================== -->
+  <div style="max-width:620px; margin-bottom:18px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">↶ The OS acted on its own</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--amber-glow); color:#B45309; border:1px solid rgba(245,158,11,0.3);">Reversible · 17h left</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="display:flex; align-items:flex-start; gap:10px;">
+          <div style="width:34px; height:34px; border-radius:9px; background:var(--amber-glow); border:1px solid var(--amber); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;"><i class="fa-solid fa-bell-slash"></i></div>
+          <div style="flex:1;">
+            <div style="font-size:13px; color:var(--text); font-weight:600;">I held a notification I thought was spam</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">From <strong>ACLEDA Bank</strong> · OTP code · held 08:41 · I was 71% sure it was promotional. I was wrong to silence a time-sensitive code.</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px; padding-left:44px;">
+          <span style="font-size:12px; font-weight:600; color:#fff; background:var(--accent); padding:7px 14px; border-radius:7px; cursor:pointer;">Restore &amp; show now</span>
+          <span style="font-size:12px; color:var(--text-muted); padding:7px 14px; border-radius:7px; border:1px solid var(--border2); cursor:pointer;">Never hold ACLEDA again</span>
+        </div>
+        <div style="margin-top:12px; padding:8px 11px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2); font-size:10px; color:var(--text-subtle); display:flex; align-items:center; gap:6px;">
+          <span style="color:#047857;"><i class="fa-solid fa-lock"></i></span>
+          Undo receipt persisted in the assistant's memory store — the action stays reversible across reboot, not just until this toast fades.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 5 + 7 · SOURCE SUPPRESSION  +  HALLUCINATION REPORT ===================== -->
+  <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:18px;">
+    <!-- 5 · Source suppression -->
+    <div style="flex:1; min-width:280px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2); font-size:13px; font-weight:700; color:var(--text);">Stop surfacing this</div>
+      <div style="padding:12px 14px;">
+        <div style="display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2); margin-bottom:8px;">
+          <span style="font-size:12px; color:var(--text); flex:1;">Telegram · "Borey គ្រួសារ" group</span>
+          <span style="font-size:11px; font-weight:600; color:#B45309; cursor:pointer;">Suppress</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2); margin-bottom:8px;">
+          <span style="font-size:12px; color:var(--text); flex:1;">Topic · "land-rights" inferences</span>
+          <span style="font-size:11px; font-weight:600; color:#047857; cursor:default;">✓ Suppressed</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-subtle); padding:0 2px;">Suppressed sources are <strong>excluded from retrieval</strong>, not deleted. The files stay yours; the AI just stops drawing on them. Reversible in Settings → Context Engine.</div>
+      </div>
+    </div>
+
+    <!-- 7 · Hallucination report (local only) -->
+    <div style="flex:1; min-width:280px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">Flag a hallucination</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--emerald-glow); color:#047857; border:1px solid rgba(16,185,129,0.3);">Local only</span>
+      </div>
+      <div style="padding:12px 14px;">
+        <div style="font-size:11px; color:var(--text-subtle); margin-bottom:8px;">A diagnostic bundle is built so you — or a model retrain you opt into — can learn from this. <strong>Never auto-sent.</strong></div>
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:10px 11px; line-height:1.7;">
+          prompt_hash &nbsp;c4f9…2a1<br>
+          model &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sailor2-8b-q4<br>
+          retrieved &nbsp;&nbsp;2 sources (redacted)<br>
+          grounding &nbsp;&nbsp;&nbsp;0.38<br>
+          dest &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~/.local/share/koompi-ai/reports/
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <span style="font-size:12px; font-weight:600; color:var(--text); background:var(--surface2); border:1px solid var(--border2); padding:7px 12px; border-radius:7px; cursor:pointer;">Save locally</span>
+          <span style="font-size:12px; font-weight:600; color:#B45309; border:1px solid var(--amber); padding:7px 12px; border-radius:7px; cursor:pointer;">Review before sharing…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 6 · TRUST-RECOVERY / RECALIBRATE ===================== -->
+  <div style="max-width:620px; margin-bottom:18px;">
+    <div style="background:var(--surface); border:1px solid var(--amber); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--amber-glow);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;"><i class="fa-solid fa-triangle-exclamation"></i> I've been getting things wrong</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--surface); color:#B45309; border:1px solid var(--amber);">5 corrections this week</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Honesty check: across recent proactive calls, what I <em>claimed</em> vs what turned out true.</div>
+
+        <!-- Calibration drift: stated grounding vs empirical accuracy -->
+        <div style="margin-bottom:6px; display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:var(--accent); font-weight:600;">Stated grounding</span><span style="color:var(--accent); font-family:var(--font-mono);">avg 79%</span>
+        </div>
+        <div style="height:7px; border-radius:4px; background:var(--surface3); margin-bottom:10px; overflow:hidden;"><div style="width:79%; height:100%; background:var(--accent); border-radius:4px;"></div></div>
+        <div style="margin-bottom:6px; display:flex; justify-content:space-between; font-size:11px;">
+          <span style="color:#B45309; font-weight:600;">Actually correct</span><span style="color:#B45309; font-family:var(--font-mono);">52%</span>
+        </div>
+        <div style="height:7px; border-radius:4px; background:var(--surface3); margin-bottom:6px; overflow:hidden;"><div style="width:52%; height:100%; background:var(--amber); border-radius:4px;"></div></div>
+        <div style="font-size:11px; color:var(--text-subtle); margin-bottom:14px;">I'm <strong>27 points overconfident</strong>. Recalibrating pulls my proactive threshold up — I'll stay quiet unless I'm genuinely sure, and surface uncertainty more often.</div>
+
+        <div style="display:flex; gap:8px;">
+          <span style="font-size:12px; font-weight:600; color:#fff; background:var(--amber); padding:8px 14px; border-radius:7px; cursor:pointer;">Recalibrate · raise threshold to 85%</span>
+          <span style="font-size:12px; color:var(--text-muted); padding:8px 14px; border-radius:7px; border:1px solid var(--border2); cursor:pointer;">Pause proactivity 7 days</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 8 · KHMER REGISTER-AWARE CORRECTION TURN ===================== -->
+  <div style="max-width:620px; margin-bottom:6px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">Correction in Khmer · register-aware</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--accent-glow); color:var(--accent); border:1px solid rgba(99,102,241,0.25);">Register: formal</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <!-- user correction bubble -->
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <div style="max-width:78%; background:var(--accent-glow); border:1px solid rgba(99,102,241,0.25); border-radius:12px 12px 4px 12px; padding:9px 12px; font-size:14px; color:var(--text);">ខុសហើយ — ថ្ងៃ​ទី​២ មេសា ទេ មិន​មែន​ថ្ងៃ​ទី​១៤ មីនា ទេ។</div>
+        </div>
+        <!-- AI register-aware apology + restatement -->
+        <div style="display:flex; justify-content:flex-start;">
+          <div style="max-width:82%; background:var(--surface2); border:1px solid var(--border2); border-radius:12px 12px 12px 4px; padding:10px 12px;">
+            <div style="font-size:14px; color:var(--text); line-height:1.6;">សូម​អភ័យទោស ខ្ញុំ​យល់​ច្រឡំ។ ខ្ញុំ​បាន​កែ​ត្រឹមត្រូវ​ហើយ — ថ្ងៃ​ទី​<strong>២ មេសា ២០១៩</strong>។</div>
+          </div>
+        </div>
+        <!-- register annotation strip -->
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:140px; padding:8px 10px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2);">
+            <div style="font-size:10px; color:var(--text-subtle); margin-bottom:2px;">Apology particle chosen</div>
+            <div style="font-size:13px; color:var(--text);">សូម​អភ័យទោស <span style="font-size:10px; color:var(--text-muted);">— formal "I apologize"</span></div>
+          </div>
+          <div style="flex:1; min-width:140px; padding:8px 10px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2);">
+            <div style="font-size:10px; color:var(--text-subtle); margin-bottom:2px;">Royal register (រាជសព្ទ)</div>
+            <div style="font-size:13px; color:var(--text-muted);">swaps to honorific apology vocabulary <span style="font-size:10px;">— only when addressing royalty</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px; font-size:11px; color:var(--text-subtle);">Register is matched to how <em>you</em> address the OS — informal with friends-mode, formal here, royal only when addressing royalty. The apology is grammatical, not a literal translation of an English "sorry".</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CALLOUTS ===================== -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Corrections outrank inference <span class="badge new">KOOMPI</span></div>
+      <p>A user-asserted fact is written to assistant memory with a <code>precedence: asserted</code> flag. When a future model update or a fresh inference disagrees, it <strong>cannot silently overwrite</strong> what you told it — the correction wins, and the conflict is surfaced, not buried. This is value #6 made durable: corrections compound into a more honest system over a lifetime.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Grounding, not confidence theatre</div>
+      <p>macOS, Windows 11 Copilot, and GNOME present every AI answer with the same flat certainty. KOOMPI's meter is <strong>grounding</strong> — sources found, retrieval match, recency — never a raw model logit, which local models cannot calibrate. On a bad streak it plots <strong>stated grounding vs measured accuracy</strong>; "Recalibrate" acts on that drift, raising the proactive threshold so the OS earns back the right to speak up.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Undo survives the daemon</div>
+      <p>A reversed proactive action isn't toast state that vanishes on dismiss. The undo receipt is persisted, so a wrongly-held OTP or a misfiled note stays restorable across a reboot or an assistantd restart — for the receipt's full TTL, not just until you look away.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Failure stays on-device</div>
+      <p>Grounding scores, the correction loop, and the hallucination bundle all run locally. The report defaults to <code>~/.local/share/koompi-ai/reports/</code> and is <strong>never auto-sent</strong> — even your AI's mistakes are your sovereign data, shared only by an explicit, reviewable choice.</p>
+    </div>
+  </div>
+</section>

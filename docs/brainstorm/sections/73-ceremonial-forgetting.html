@@ -1,0 +1,148 @@
+<section class="section" id="ceremonial-forgetting">
+  <div class="section-header">
+    <h2>Ceremonial Forgetting</h2>
+    <span class="tag">Futures</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    Honest deletion, shipped in v1. Forgetting is three verbs, not one: <strong style="color:var(--text);">Suppress</strong> (rank pinned to zero — the index only), <strong style="color:var(--text);">Seal</strong> (re-encrypt under a key you do not hold today), and <strong style="color:var(--text);">Destroy</strong> (cryptographic erasure — the per-object DEK is shredded, a forget pass purges every derived trace, and a tombstone records <em>that</em> a thing was forgotten, never <em>what</em>). Destroy is owner-only and runs through a ceremony with a waiting period — never a context-menu item, never a side effect.
+  </p>
+
+  <!-- ─────────────── THE CONFLICT ─────────────── -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px; margin-bottom:24px;">
+    <div class="card-label" style="margin-bottom:12px;">Two promises in conflict — both already shipped in this document</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <div style="border:1px solid rgba(34,211,238,.40);flex:1; min-width:240px; background:var(--surface2);   border-radius:var(--radius); padding:12px 14px;">
+        <div style="font-size:10px; font-family:var(--font-mono); color:var(--cyan); margin-bottom:6px;">MEMORY PALACE · §17</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">"Every memory has a delete that leaves a tombstone, never a copy. <strong style="color:var(--text);">No copy exists.</strong>"</div>
+      </div>
+      <div style="display:flex; align-items:center; color:var(--red); font-size:18px;"><i class="fa-solid fa-bolt"></i></div>
+      <div style="border:1px solid rgba(16,185,129,.35);flex:1; min-width:240px; background:var(--surface2);   border-radius:var(--radius); padding:12px 14px;">
+        <div style="font-size:10px; font-family:var(--font-mono); color:var(--emerald); margin-bottom:6px;">MEMORY LIFECYCLE · §59 · INVARIANT A</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">"<strong style="color:var(--text);">Raw episodic records are immortal.</strong> Forgetting is a ranking property, never a delete."</div>
+      </div>
+    </div>
+    <div style="margin-top:12px; padding:10px 14px; background:var(--accent-glow); border:1px dashed var(--accent); border-radius:var(--radius); font-size:12px; color:var(--text); line-height:1.6;">
+      <strong>Resolution — Invariant A′:</strong> episodic records are immortal <em>by default</em>. The OS may never delete; decay and pruning still touch only the index. But the <strong>owner</strong> holds one additional power the OS does not: cryptographic destruction — granted only through ceremony, never as a side effect, never on impulse.
+    </div>
+  </div>
+
+  <!-- ─────────────── THREE VERBS ─────────────── -->
+  <div style="font-size:13px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:14px;">Three verbs of forgetting</div>
+  <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px;">
+
+    <div style="flex:1; min-width:230px; background:var(--surface); border:1px solid var(--border2); border-top:3px solid var(--cyan); border-radius:var(--radius-lg); padding:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:18px;"><i class="fa-solid fa-eye-slash"></i></span>
+        <span style="font-size:14px; font-weight:700; color:var(--cyan);">Suppress</span>
+        <span class="state-chip" style="margin-left:auto; font-size:9px;">recoverable</span>
+      </div>
+      <p style="font-size:11.5px; color:var(--text-muted); line-height:1.6; margin:0 0 10px;">
+        Rank pinned to zero. The Ebbinghaus machinery the OS already runs, pushed to its floor: never surfaced, never volunteered, never woven into a briefing. The record stays in <code style="color:var(--cyan);">@data</code> — the right cue, deliberately given, still rebuilds it.
+      </p>
+      <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-subtle);">for: the ex-employer, the abandoned startup, the noise</div>
+    </div>
+
+    <div style="flex:1; min-width:230px; background:var(--surface); border:1px solid var(--border2); border-top:3px solid var(--amber); border-radius:var(--radius-lg); padding:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:18px;"><i class="fa-solid fa-stamp"></i></span>
+        <span style="font-size:14px; font-weight:700; color:var(--amber);">Seal</span>
+        <span class="state-chip warn-state" style="margin-left:auto; font-size:9px;">time-locked</span>
+      </div>
+      <p style="font-size:11.5px; color:var(--text-muted); line-height:1.6; margin:0 0 10px;">
+        Re-encrypted under a key you do not hold today: released to your future self after a chosen date, or to your executor under the Death Protocol. Gone <em>now</em> — not forever. The OS cannot read it, cite it, or infer from it while sealed.
+      </p>
+      <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-subtle);">for: grief — the year she died, sealed until 2036</div>
+    </div>
+
+    <div style="flex:1; min-width:230px; background:var(--surface); border:1px solid var(--border2); border-top:3px solid var(--red); border-radius:var(--radius-lg); padding:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:18px;"><i class="fa-solid fa-monument"></i></span>
+        <span style="font-size:14px; font-weight:700; color:var(--red);">Destroy</span>
+        <span class="state-chip" style="margin-left:auto; font-size:9px; color:var(--red); border-color:var(--red);">irreversible</span>
+      </div>
+      <p style="font-size:11.5px; color:var(--text-muted); line-height:1.6; margin:0 0 10px;">
+        Cryptographic erasure. The per-object DEK is shredded; the ciphertext in <code style="color:var(--cyan);">@data</code> becomes noise. The next sleep cycle runs a <strong style="color:var(--text);">forget pass</strong>: every derived trace — vectors, graph nodes, summaries — is purged and re-consolidated without it. A tombstone records <em>that</em>, never <em>what</em>.
+      </p>
+      <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-subtle);">for: trauma · the legal right to erasure</div>
+    </div>
+  </div>
+
+  <!-- ─────────────── THE CEREMONY ─────────────── -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden; margin-bottom:24px;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--red-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:18px;"><i class="fa-solid fa-fire-flame-simple"></i></span>
+      <div>
+        <div style="font-size:14px; font-weight:700;">ពិធីបំភ្លេច — the ceremony of forgetting</div>
+        <div style="font-size:11px; color:var(--text-muted);">Destroy is a ritual with a waiting period, not a context-menu item</div>
+      </div>
+      <span class="state-chip warn-state" style="margin-left:auto; font-size:9px;">day 3 of 7</span>
+    </div>
+    <div style="padding:16px;">
+
+      <!-- Step rail -->
+      <div style="display:flex; gap:4px; margin-bottom:16px;">
+        <div style="flex:1; text-align:center; padding:8px 4px; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+          <div style="font-size:10px; font-weight:600; color:var(--emerald);">1 · Name it</div>
+          <div style="font-size:9px; color:var(--text-subtle);">you state, in your words, what dies</div>
+        </div>
+        <div style="flex:1; text-align:center; padding:8px 4px; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+          <div style="font-size:10px; font-weight:600; color:var(--emerald);">2 · Blast radius</div>
+          <div style="font-size:9px; color:var(--text-subtle);">the OS shows what else it touches</div>
+        </div>
+        <div style="flex:1; text-align:center; padding:8px 4px; background:var(--amber-glow); border:1px solid rgba(245,158,11,0.35); border-radius:6px;">
+          <div style="font-size:10px; font-weight:600; color:var(--amber);">3 · Waiting period</div>
+          <div style="font-size:9px; color:var(--text-subtle);">7 days · revocable any moment</div>
+        </div>
+        <div style="flex:1; text-align:center; padding:8px 4px; background:var(--surface2); border:1px solid var(--border); border-radius:6px;">
+          <div style="font-size:10px; font-weight:600; color:var(--text-muted);">4 · The act</div>
+          <div style="font-size:9px; color:var(--text-subtle);">key shredded · forget pass queued</div>
+        </div>
+      </div>
+
+      <!-- Blast radius -->
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:260px;">
+          <div class="card-label" style="margin-bottom:8px;">Blast radius — shown before you commit</div>
+          <div class="tool-code" style="font-size:11px; line-height:1.8;">
+            <span class="code-key">episodic rows</span>     <span class="code-str">214</span>  <span style="color:var(--text-subtle);">(11 Mar – 28 Sep 2031)</span><br>
+            <span class="code-key">semantic nodes</span>    <span class="code-str">3</span>    <span style="color:var(--text-subtle);">derive only from these rows</span><br>
+            <span class="code-key">graph edges</span>       <span class="code-str">14</span>   <span style="color:var(--text-subtle);">will be re-weighted</span><br>
+            <span class="code-key">summaries</span>         <span class="code-str">2</span>    <span style="color:var(--text-subtle);">will be regenerated without it</span><br>
+            <span class="code-key">shared with</span>       <span class="code-val">nothing — never left this device</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-muted); margin-top:8px; line-height:1.5;">
+            Derived knowledge is contamination if it survives the source. The forget pass re-runs consolidation on the affected window so the graph holds no shadow of the destroyed record.
+          </div>
+        </div>
+        <div style="flex:1; min-width:260px; display:flex; flex-direction:column; gap:10px;">
+          <div style="background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+            <div style="font-size:12px; font-weight:600; margin-bottom:4px;">The OS speaks once, in calm register</div>
+            <div style="font-size:11.5px; color:var(--text-muted); line-height:1.6;">"I will carry this for four more days, in case you change your mind. After that, I will not remember it — and I will not remember why there is a gap. You can stop this at any time before Thursday."</div>
+          </div>
+          <div style="background:var(--surface2); border:1px dashed var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:16px; opacity:0.5;"><i class="fa-solid fa-monument"></i></span>
+            <div style="font-size:11px; color:var(--text-subtle); line-height:1.5;">Tombstone after the act: <em>"A memory spanning Mar–Sep 2031 was destroyed by its owner on 14 Jun 2033, after ceremony."</em> That a thing was forgotten is remembered. What it was, is not.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── WHO HOLDS WHICH VERB ─────────────── -->
+  <div style="max-width:760px; margin-bottom:8px; display:flex; align-items:center; gap:14px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:14px 16px;">
+    <span style="font-size:22px;"><i class="fa-solid fa-scale-balanced"></i></span>
+    <div style="flex:1;">
+      <div style="font-size:12px; font-weight:600;">The asymmetry is the safety</div>
+      <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">The OS may suppress (ranking — it does this nightly). Only you may seal. Only you may destroy, and only through the ceremony. No daemon, no update, no cloud policy, no other person holds the destroy verb — and neither does a 2&nbsp;a.m. version of you.</div>
+    </div>
+    <span class="state-chip priv-state" style="font-size:9px;">owner-only</span>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The grief-and-mortality framing of forgetting over a 50-year life stays on the horizon shelf (<code>horizon.md</code>); v1 ships the three verbs, the ceremony, and the tombstone.</p>
+    </div>
+  </div>
+</section>

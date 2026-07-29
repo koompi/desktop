@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Open KOOMPI's opinionated, persistent agent workspace.
+set -euo pipefail
+
+if ! command -v herdr >/dev/null 2>&1; then
+    command -v notify-send >/dev/null 2>&1 \
+        && notify-send "KOOMPI Workbench" "Herdr is not installed. Run ./setup install --only-apps."
+    echo "koompi-workbench: herdr is not installed" >&2
+    exit 1
+fi
+
+project="${1:-}"
+if [[ -z "$project" ]]; then
+    for candidate in "$HOME/Projects" "$HOME/workspace" "$HOME"; do
+        if [[ -d "$candidate" ]]; then
+            project="$candidate"
+            break
+        fi
+    done
+fi
+
+if command -v wezterm >/dev/null 2>&1; then
+    exec wezterm start --cwd "$project" -- herdr
+elif command -v kitty >/dev/null 2>&1; then
+    exec kitty --directory "$project" herdr
+elif command -v konsole >/dev/null 2>&1; then
+    exec konsole --workdir "$project" -e herdr
+elif command -v foot >/dev/null 2>&1; then
+    cd "$project"
+    exec foot herdr
+fi
+
+echo "koompi-workbench: no supported terminal found" >&2
+exit 1

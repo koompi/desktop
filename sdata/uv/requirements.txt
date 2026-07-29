@@ -1,0 +1,19 @@
+# Python packages the KOOMPI shell imports, installed by `./setup install` into
+# ~/.local/state/quickshell/.venv (see sdata/install/setups.sh).
+#
+# PyGObject (gi) and OpenCV (cv2) are deliberately absent: they are taken from
+# the distro packages through --system-site-packages, because building them from
+# a wheel needs a C toolchain and pulls a second copy of GTK.
+#
+# Derived from the imports in dots/.config/quickshell/koompi/scripts/**/*.py.
+# Unpinned on purpose - this tracks a rolling desktop, and pins here would go
+# stale faster than anyone would refresh them.
+
+click
+google-auth
+loguru
+materialyoucolor
+numpy
+pillow
+requests
+tqdm

@@ -1,0 +1,64 @@
+# Debian and Ubuntu application packages for the KOOMPI desktop, one per line.
+# Blank lines and #-comments are ignored. Read by
+# sdata/dist-debian/install-apps.sh.
+#
+# The Arch equivalent is sdata/dist-arch/koompi-apps/PKGBUILD, and the comments
+# there explain why each program is the one KOOMPI picks. Keep the two in step.
+#
+# debian_install() asks apt-cache what exists before installing, so a name that
+# is missing on one release is reported and skipped rather than failing the
+# whole transaction.
+
+# --- terminals ---------------------------------------------------------------
+wezterm                         # trixie and later; absent on older Ubuntu
+konsole
+
+# --- KOOMPI Workbench --------------------------------------------------------
+# Agent CLIs are installed user-locally after these foundations. apt-cache
+# filtering keeps derivatives usable when one convenience tool is unavailable.
+neovim
+nodejs
+npm
+git
+gh
+ripgrep
+fd-find
+fzf
+jq
+bat
+eza
+zoxide
+direnv
+shellcheck
+shfmt
+just
+
+# --- editor ------------------------------------------------------------------
+# Zed is in no Debian or Ubuntu archive; install-apps.sh runs its own installer.
+
+# --- browsers ----------------------------------------------------------------
+# Both come from vendor repositories the recipe enables first.
+google-chrome-stable
+brave-browser
+
+# --- files, archives and viewers ---------------------------------------------
+ark
+kio-admin
+kdegraphics-thumbnailers
+ffmpegthumbs
+okular
+loupe
+mpv
+
+# --- office ------------------------------------------------------------------
+libreoffice-writer
+libreoffice-calc
+libreoffice-impress
+
+# --- system ------------------------------------------------------------------
+btop
+gnome-system-monitor
+network-manager-gnome           # ships the nm-connection-editor binary
+
+# --- connectivity ------------------------------------------------------------
+kdeconnect

@@ -1,0 +1,1157 @@
+<section class="section" id="shell-bar">
+  <div class="section-header">
+    <h2>Shell Bar</h2>
+    <span class="tag">Quickshell / QML</span>
+  </div>
+  <p class="desc">
+    Three bar styles, each a <b>fully interactive desktop simulation</b> — click any element and panels animate open just like the real shell.
+    <b>Hug</b> (default) — top bar flush to screen edge with concave fillet corners.
+    <b>Taskbar</b> — Windows 11 inspired: bottom full-width bar, centered launcher, Mica translucency, notification bell.
+    <b>Dock</b> — macOS inspired: thin top menu bar + floating dock pill with hover magnification.
+    All styles show KOOMPI's Privacy + AI identity pills.
+  </p>
+
+  <!-- Style + theme picker -->
+  <div class="bar-style-tabs">
+    <div class="seg-group">
+      <button class="bar-style-tab active" onclick="setBarStyle('hug',this)">Hug <span style="font-size:10px;opacity:0.6;">(default)</span></button>
+      <button class="bar-style-tab" onclick="setBarStyle('taskbar',this)">Taskbar <span style="font-size:10px;opacity:0.5;">Win11</span></button>
+      <button class="bar-style-tab" onclick="setBarStyle('dock',this)">Dock <span style="font-size:10px;opacity:0.5;">macOS</span></button>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme(this)"><i class="fa-solid fa-sun"></i> Light</button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SIM A — HUG (top bar, dark default, 3 tiled windows)
+       ════════════════════════════════════════════════════════ -->
+  <div class="bar-demo desktop-sim theme-light bar-hug" id="demo-hug" onclick="simDeskClick('hug',event)">
+    <div id="sim-root-hug" style="position:absolute;inset:0;">
+
+      <!-- L1 wallpaper -->
+      <div class="sim-wallpaper"></div>
+
+      <!-- L2 windows -->
+      <div class="sim-windows">
+        <!-- Terminal (left 40%) -->
+        <div class="sim-win sim-win-tiled" id="hug-term"
+             style="left:14px; top:54px; width:calc(40% - 21px); bottom:14px;"
+             onclick="simFocusWin('hug','hug-term','Terminal — zsh',event)">
+          <div class="sim-win-titlebar">
+            <span class="sim-win-titlebar-title">zsh — ~/workspace/koompi-desktop</span>
+            <div class="sim-win-controls">
+  <div class="sim-win-ctrl min" title="Minimize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="sim-win-ctrl max" title="Maximize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2.75" y="2.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+  <div class="sim-win-ctrl close" title="Close"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+</div>
+          </div>
+          <div class="sim-win-body">
+            <div class="sim-term">
+              <div><span class="t-blue">$</span> git status</div>
+              <div class="t-white">On branch <span class="t-amber">koompi-restore</span></div>
+              <div class="t-dim">Changes not staged for commit:</div>
+              <div>&nbsp;&nbsp;<span class="t-amber">M</span> docs/brainstorm/sections/02-shell-bar.html</div>
+              <div><span class="t-blue">$</span> bun run dev</div>
+              <div class="t-white">▲ Next.js 14.0.0</div>
+              <div>✓ Ready in 842ms</div>
+              <div class="t-dim">○ Compiling / ...</div>
+              <div><span class="t-blue">$</span> <span class="t-cursor"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code editor (right 60%, top 65%) -->
+        <div class="sim-win sim-win-tiled" id="hug-code"
+             style="left:calc(40% + 7px); top:54px; right:14px; bottom:calc(40% + 7px);"
+             onclick="simFocusWin('hug','hug-code','VS Code — BarContent.qml',event)">
+          <div class="sim-code">
+            <div class="sim-code-tree">
+              <div class="tree-row dir">▾ koompi-desktop</div>
+              <div class="tree-row dir">&nbsp;&nbsp;▾ shell</div>
+              <div class="tree-row file active">&nbsp;&nbsp;&nbsp;&nbsp;BarContent.qml</div>
+              <div class="tree-row file">&nbsp;&nbsp;&nbsp;&nbsp;Sidebar.qml</div>
+              <div class="tree-row file">&nbsp;&nbsp;&nbsp;&nbsp;Launcher.qml</div>
+              <div class="tree-row dir">&nbsp;&nbsp;▾ js</div>
+              <div class="tree-row file">&nbsp;&nbsp;&nbsp;&nbsp;app.js</div>
+              <div class="tree-row dir">&nbsp;&nbsp;▸ css</div>
+            </div>
+            <div class="sim-code-main">
+              <div class="sim-code-tabs">
+                <div class="sim-code-tab active">BarContent.qml <span class="tab-x">×</span></div>
+                <div class="sim-code-tab">app.js</div>
+                <div class="sim-code-tab">base.css</div>
+              </div>
+              <div class="sim-code-area">
+                <div class="sim-code-line"><span class="sim-code-ln">1</span><span class="sim-code-txt"><span class="c-kw">import</span> QtQuick</span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">2</span><span class="sim-code-txt"><span class="c-com">// KOOMPI privacy-aware bar</span></span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">3</span><span class="sim-code-txt"><span class="c-kw">Item</span> {</span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">4</span><span class="sim-code-txt">  <span class="c-prop">id</span>: <span class="c-fn">bar</span></span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">5</span><span class="sim-code-txt">  <span class="c-prop">property</span> <span class="c-kw">string</span> mode: <span class="c-str">"LOCAL"</span></span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">6</span><span class="sim-code-txt">  <span class="c-fn">PrivacyPill</span> {</span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">7</span><span class="sim-code-txt">    <span class="c-prop">label</span>: bar.mode</span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">8</span><span class="sim-code-txt">  }</span></div>
+                <div class="sim-code-line"><span class="sim-code-ln">9</span><span class="sim-code-txt">}</span></div>
+              </div>
+              <div class="sim-code-status">
+                <span>koompi-restore</span><span>Ln 7, Col 18</span><span>QML</span><span>UTF-8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Firefox / koompi.com (right 60%, bottom 35%) -->
+        <div class="sim-win sim-win-tiled" id="hug-fox"
+             style="left:calc(40% + 7px); right:14px; top:calc(60% + 7px); bottom:14px;"
+             onclick="simFocusWin('hug','hug-fox','Firefox — koompi.com',event)">
+          <div class="sim-browser">
+            <div class="sim-browser-chrome">
+              <div class="sim-browser-url"><i class="fa-solid fa-lock"></i> koompi.com</div>
+              <div class="sim-win-controls">
+  <div class="sim-win-ctrl min" title="Minimize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="sim-win-ctrl max" title="Maximize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2.75" y="2.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+  <div class="sim-win-ctrl close" title="Close"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+</div>
+            </div>
+            <div class="sim-browser-body" style="position:relative;">
+              <div class="sim-k-nav"><span class="nav-brand">KOOMPI</span><span>Products</span><span>OS</span><span>AI</span></div>
+              <div class="sim-k-logo">K</div>
+              <div class="sim-k-tagline">The OS That Thinks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L3 bar (top) -->
+      <div class="sim-bar-wrap top">
+        <div class="topbar-wrap" style="backdrop-filter:blur(20px);">
+          <div class="topbar">
+            <div class="topbar-left">
+              <div class="bar-group sim-bar-zone" style="padding:3px 7px;" title="Start menu"
+                   onclick="simToggleSidebar('hug','left',event)">
+                <span style="font-size:13px;font-weight:800;color:var(--accent);letter-spacing:-0.5px;">K</span>
+              </div>
+              <span class="active-win">Firefox — koompi.com</span>
+            </div>
+            <div class="topbar-center">
+              <div class="bar-group sim-bar-zone" title="Pomodoro" onclick="simTogglePopup('hug','pomo',event)">
+                <div class="pomodoro-widget" style="opacity:1;">
+                  <div class="pomo-ring"><svg viewBox="0 0 22 22">
+                    <circle cx="11" cy="11" r="9" fill="none" stroke="#EF444433" stroke-width="2"/>
+                    <circle cx="11" cy="11" r="9" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="42" stroke-dashoffset="14" stroke-linecap="round" transform="rotate(-90 11 11)"/>
+                    <text x="11" y="14.5" text-anchor="middle" font-size="7" font-family="'Font Awesome 6 Free'" font-weight="900" fill="#EF4444">&#xf06d;</text>
+                  </svg></div>
+                  <span style="font-size:11px;font-weight:600;font-family:var(--font-mono);color:#EF4444;">18:33</span>
+                </div>
+              </div>
+              <div class="bar-group sim-bar-zone" title="Workspaces — open Overview" onclick="simToggleOverview('hug',event)">
+                <div class="ws-pills">
+                  <div class="ws-pill active"><div class="ws-dot" style="background:white;"></div></div>
+                  <div class="ws-pill used"><div class="ws-dot"></div></div>
+                  <div class="ws-pill used"><div class="ws-dot"></div></div>
+                  <div class="ws-pill unused"><div class="ws-dot"></div></div>
+                  <div class="ws-pill unused"><div class="ws-dot"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="topbar-right">
+              <div class="media-pill sim-bar-zone" title="Media — popup" onclick="simTogglePopup('hug','media',event)">
+                <div class="media-art"></div>
+                <span class="media-title">Get Lucky</span>
+                <div class="media-controls"><div class="media-btn">⏮</div><div class="media-btn">⏸</div><div class="media-btn">⏭</div></div>
+              </div>
+              <div class="util-btns">
+                <div class="util-btn" title="Screenshot"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="2"/><circle cx="8" cy="8" r="2.5"/><path d="M5 3l1-2h4l1 2"/></svg></div>
+                <div class="util-btn sim-bar-zone" title="Display settings" onclick="simTogglePopup('hug','disp',event)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="9" rx="1"/><path d="M5 14h6M8 11v3"/></svg></div>
+                <div class="util-btn" title="Recorder"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3" fill="currentColor" stroke="none"/></svg></div>
+              </div>
+              <div class="util-btn sim-bar-zone" title="Brightness OSD" onclick="simShowOSD('hug','brightness',event)" style="color:var(--t-muted);"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg></div>
+              <div class="util-btn sim-bar-zone" title="Volume OSD" onclick="simShowOSD('hug','volume',event)" style="color:var(--t-muted);"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6v4h3l4 3V3L6 6H3z"/><path d="M11 5.5a3 3 0 010 5"/></svg></div>
+              <div class="privacy-pill sim-bar-zone" title="Privacy dashboard"><div class="priv-dot"></div>LOCAL</div>
+              <div class="ai-pill sim-bar-zone" title="AI sidebar" onclick="simToggleSidebar('hug','right',event)">✦ AI</div>
+              <div class="topbar-clock sim-bar-zone" title="Calendar" onclick="simTogglePopup('hug','cal',event)">08:42</div>
+            </div>
+          </div>
+        </div>
+        <div class="hug-fillet hug-fillet-left"></div>
+        <div class="hug-fillet hug-fillet-right"></div>
+      </div>
+
+      <!-- L4 left sidebar (Start) -->
+      <div class="sim-left-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title" style="display:flex;align-items:center;gap:6px;"><span style="color:var(--accent);font-weight:900;">K</span> KOOMPI</span><div class="sidebar-close-btn" onclick="simToggleSidebar('hug','left',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Applications</div>
+            <div class="sim-app-grid">
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#FF6600,#FF8C00);"><i class="fa-brands fa-firefox-browser"></i></div><div class="sim-app-nm">Firefox</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#0078D4,#005A9E);"><i class="fa-solid fa-laptop-code"></i></div><div class="sim-app-nm">VS Code</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#22D3EE,#0891B2);"><i class="fa-solid fa-folder"></i></div><div class="sim-app-nm">Files</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#10B981,#059669);"><i class="fa-solid fa-terminal"></i></div><div class="sim-app-nm">Terminal</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#6366F1,#4F46E5);">✦</div><div class="sim-app-nm">KOOMPI AI</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#64748B,#475569);"><i class="fa-solid fa-gear"></i></div><div class="sim-app-nm">Settings</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#EF4444,#DC2626);"><i class="fa-solid fa-calendar-days"></i></div><div class="sim-app-nm">Calendar</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#A855F7,#7C3AED);"><i class="fa-solid fa-music"></i></div><div class="sim-app-nm">Music</div></div>
+            </div>
+          </div>
+          <div class="qs-section">
+            <div class="qs-section-label">✦ AI</div>
+            <div class="sim-ai-ask"><span style="color:var(--accent);">✦</span> Ask KOOMPI anything…</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-lightbulb"></i> Summarize the 3 PDFs you opened today</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-paper-plane"></i> Draft a reply to the investor email</div>
+          </div>
+        </div>
+        <div class="sim-sidebar-footer">
+          <div class="sim-avatar">R</div>
+          <span class="sim-user-name">Rithy Thul</span>
+          <div class="sim-power-btn" title="Power">⏻</div>
+        </div>
+      </div>
+
+      <!-- L5 right sidebar (Quick Settings + Notifications) -->
+      <div class="sim-right-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title">Control Center</span><div class="sidebar-close-btn" onclick="simToggleSidebar('hug','right',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Quick Settings</div>
+            <div class="qs-grid">
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-wifi"></i></span><span class="qs-tile-label">WiFi</span><span class="qs-tile-sub">KOOMPI-5G</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-circle"></i></span><span class="qs-tile-label">Bluetooth</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-moon"></i></span><span class="qs-tile-label">Night Light</span><span class="qs-tile-sub">Off</span></div>
+              <div class="qs-tile priv-on"><span class="qs-tile-icon"><i class="fa-solid fa-lock"></i></span><span class="qs-tile-label">Local Mode</span><span class="qs-tile-sub">Private</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon">✦</span><span class="qs-tile-label">AI</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-cloud"></i></span><span class="qs-tile-label">Sync</span><span class="qs-tile-sub">Off</span></div>
+            </div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-sun"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:72%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:72%;"></div></div><span class="qs-slider-value">72%</span></div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-volume-high"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:58%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:58%;"></div></div><span class="qs-slider-value">58%</span></div>
+          </div>
+          <div class="notif-section">
+            <div class="qs-section-label" style="margin-bottom:8px;">Notifications</div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:#229ED9;color:#fff;">T</div>
+              <div class="notif-body">
+                <div style="display:flex;align-items:center;"><div class="notif-title">Telegram</div><div class="notif-time" style="margin-left:auto;">2m</div></div>
+                <div class="notif-ai-summary" style="margin-top:4px;">✦ Sok asks if the demo is ready for Thursday's call.</div>
+              </div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:var(--accent-glow);color:var(--accent);"><i class="fa-solid fa-calendar-days"></i></div>
+              <div class="notif-body">
+                <div style="display:flex;align-items:center;"><div class="notif-title">Calendar</div><div class="notif-time" style="margin-left:auto;">11:00</div></div>
+                <div class="notif-text">KOOMPI Investor Call · in 18 minutes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L6 popups -->
+      <div class="sim-popup-layer" onclick="event.stopPropagation()">
+        <div class="sim-popup" data-popup="media" style="top:52px; right:120px;">
+          <div class="media-popup">
+            <div class="media-popup-art"><i class="fa-solid fa-music"></i></div>
+            <div class="media-popup-track">Get Lucky</div>
+            <div class="media-popup-artist">Daft Punk ft. Pharrell Williams</div>
+            <div class="media-progress-bar"><div class="media-progress-fill"></div></div>
+            <div class="media-timestamps"><span>1:24</span><span>4:07</span></div>
+            <div class="media-popup-controls">
+              <div class="mpop-btn sm">⇌</div><div class="mpop-btn">⏮</div><div class="mpop-btn play">⏸</div><div class="mpop-btn">⏭</div><div class="mpop-btn sm">↻</div>
+            </div>
+            <div class="media-source-row"><div class="media-src-icon">S</div><span>Playing via Spotify</span></div>
+          </div>
+        </div>
+
+        <div class="sim-popup" data-popup="pomo" style="top:52px; left:50%; transform-origin:top center; margin-left:-105px;">
+          <div class="pomo-popup">
+            <div class="pomo-phase-label" style="color:var(--red);"><i class="fa-solid fa-fire"></i> Focus Session</div>
+            <div class="pomo-popup-ring">
+              <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="rgba(239,68,68,0.15)" stroke-width="5"/><circle cx="40" cy="40" r="34" fill="none" stroke="#EF4444" stroke-width="5" stroke-dasharray="213" stroke-dashoffset="68" stroke-linecap="round" transform="rotate(-90 40 40)"/></svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="fa-solid fa-fire"></i></div>
+            </div>
+            <div class="pomo-popup-time work">18:33</div>
+            <div class="pomo-controls"><div class="pomo-btn primary">⏸ Pause</div><div class="pomo-btn">↺ Reset</div></div>
+            <div class="pomo-sessions"><div class="pomo-session-dot done"></div><div class="pomo-session-dot done"></div><div class="pomo-session-dot"></div><div class="pomo-session-dot"></div></div>
+          </div>
+        </div>
+
+        <div class="sim-popup" data-popup="disp" style="top:52px; right:60px;">
+          <div class="disp-popup">
+            <div class="disp-row"><span class="disp-label">Brightness</span><div class="disp-slider-track"><div class="disp-slider-fill" style="width:72%;"></div><div class="disp-slider-thumb" style="left:72%;"></div></div><span class="disp-value">72%</span></div>
+            <div class="disp-toggle-row"><div class="disp-toggle-info"><div class="disp-toggle-name">Night light</div><div class="disp-toggle-sub">Sunset to sunrise</div></div><div class="toggle-pill off"></div></div>
+            <div class="disp-row"><span class="disp-label">Refresh</span><div class="disp-chips"><div class="disp-chip">60</div><div class="disp-chip active">120</div><div class="disp-chip">144</div></div></div>
+            <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;">Displays</div>
+            <div class="monitor-diagram"><div class="monitor-box" style="width:54px;height:34px;">eDP-1</div><div class="monitor-box primary" style="width:74px;height:44px;">HDMI ★</div></div>
+          </div>
+        </div>
+
+        <div class="sim-popup" data-popup="cal" style="top:52px; right:8px;">
+          <div class="sim-cal">
+            <div class="sim-cal-head"><span class="sim-cal-month">June 2026</span><div class="sim-cal-nav"><div class="sim-cal-arrow">‹</div><div class="sim-cal-arrow">›</div></div></div>
+            <div class="sim-cal-grid">
+              <div class="sim-cal-dow">Su</div><div class="sim-cal-dow">Mo</div><div class="sim-cal-dow">Tu</div><div class="sim-cal-dow">We</div><div class="sim-cal-dow">Th</div><div class="sim-cal-dow">Fr</div><div class="sim-cal-dow">Sa</div>
+              <div class="sim-cal-day muted">31</div><div class="sim-cal-day">1</div><div class="sim-cal-day">2</div><div class="sim-cal-day">3</div><div class="sim-cal-day">4</div><div class="sim-cal-day">5</div><div class="sim-cal-day">6</div>
+              <div class="sim-cal-day">7</div><div class="sim-cal-day today">8</div><div class="sim-cal-day">9</div><div class="sim-cal-day">10</div><div class="sim-cal-day">11</div><div class="sim-cal-day">12</div><div class="sim-cal-day">13</div>
+              <div class="sim-cal-day">14</div><div class="sim-cal-day">15</div><div class="sim-cal-day">16</div><div class="sim-cal-day">17</div><div class="sim-cal-day">18</div><div class="sim-cal-day">19</div><div class="sim-cal-day">20</div>
+            </div>
+            <div class="sim-cal-events">
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--accent);"></span>KOOMPI Investor Call<span class="ev-time">11:00</span></div>
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--emerald);"></span>Team Sync<span class="ev-time">15:30</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L7 OSD -->
+      <div class="sim-osd top" data-osd="volume">
+        <div class="osd-pill"><span class="osd-icon"><i class="fa-solid fa-volume-high"></i></span><div class="osd-track"><div class="osd-fill" style="width:58%;"></div></div><span class="osd-value">58%</span></div>
+      </div>
+      <div class="sim-osd top" data-osd="brightness">
+        <div class="osd-pill"><span class="osd-icon"><i class="fa-solid fa-sun"></i></span><div class="osd-track"><div class="osd-fill" style="width:72%;"></div></div><span class="osd-value">72%</span></div>
+      </div>
+
+      <!-- L8 overview -->
+      <div class="sim-overview" onclick="simOverviewBg(this,event)">
+        <div class="sim-overview-close" onclick="simToggleOverview('hug',event)">×</div>
+        <div class="sim-overview-inner">
+          <div class="sim-overview-grid">
+            <div class="sim-ws-tile active"><div class="sim-ws-tile-bg" style="background:radial-gradient(ellipse at 30% 60%,#1a1060,#070B13);"></div><span class="sim-ws-num">1</span><div class="sim-ws-mini" style="left:8%;top:20%;width:32%;height:55%;"></div><div class="sim-ws-mini acc" style="left:44%;top:14%;width:48%;height:60%;"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:radial-gradient(ellipse at 70% 40%,#0a2840,#070B13);"></div><span class="sim-ws-num">2</span><div class="sim-ws-mini" style="left:18%;top:22%;width:64%;height:56%;"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:radial-gradient(ellipse at 40% 50%,#16213e,#070B13);"></div><span class="sim-ws-num">3</span><div class="sim-ws-mini" style="left:10%;top:18%;width:40%;height:62%;"></div><div class="sim-ws-mini" style="left:54%;top:30%;width:36%;height:45%;"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:radial-gradient(ellipse at 60% 60%,#1a1060,#070B13);"></div><span class="sim-ws-num">4</span><div class="sim-ws-mini" style="left:22%;top:26%;width:56%;height:48%;"></div></div>
+            <div class="sim-ws-empty">+</div>
+            <div class="sim-ws-empty">+</div>
+            <div class="sim-ws-empty">+</div>
+            <div class="sim-ws-empty">+</div>
+            <div class="sim-ws-empty">+</div>
+            <div class="sim-ws-empty">+</div>
+          </div>
+          <div class="sim-overview-title">Workspace Overview · click a tile to switch · Esc to close</div>
+        </div>
+      </div>
+
+      <!-- L9 launcher -->
+      <div class="sim-launcher" onclick="simLauncherBg(this,event)">
+        <div class="sim-launcher-modal">
+          <div class="launcher-search">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--text-muted);flex-shrink:0;"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
+            <div class="launcher-search-text">quarterly report<span class="cursor"></span></div>
+            <span class="launcher-source-badge"><i class="fa-solid fa-lock"></i> Local</span>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">✦ AI Action</div>
+            <div class="launcher-item selected"><div class="launcher-icon" style="background:var(--accent-glow);color:var(--accent);">✦</div><div class="launcher-item-body"><div class="launcher-item-name">Summarize quarterly report</div><div class="launcher-item-meta">Q4-2025-Report.pdf</div></div><span class="launcher-kbd">↵</span></div>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">Files (2)</div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#EF444420;color:#EF4444;">PDF</div><div class="launcher-item-body"><div class="launcher-item-name">Q4-2025-Report.pdf</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#10B98120;color:#10B981;">XLS</div><div class="launcher-item-body"><div class="launcher-item-name">quarterly-data.xlsx</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+          </div>
+          <div class="launcher-footer"><div class="launcher-footer-kbds"><span><span class="launcher-kbd">↵</span> Open</span><span><span class="launcher-kbd">Esc</span> Close</span></div><span>12,847 files indexed</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="sim-caption"><span class="sim-cap-pill">Hug</span><span class="sim-cap-hint">Click the <b>K</b>, workspaces, pomodoro, media pill, clock, AI pill, display & volume icons. Click a window to focus it. Titlebar <b>─ ▢ ✕</b> are live — closing a window re-tiles the rest. <b>Esc</b> closes any panel.</span></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SIM B — TASKBAR (Win11, light, bottom bar, 1 maximized browser)
+       ════════════════════════════════════════════════════════ -->
+  <div class="bar-demo desktop-sim theme-light bar-panel hidden" id="demo-taskbar" onclick="simDeskClick('taskbar',event)">
+    <div id="sim-root-taskbar" style="position:absolute;inset:0;">
+
+      <div class="sim-wallpaper"></div>
+
+      <!-- maximized browser window -->
+      <div class="sim-windows">
+        <div class="sim-win" id="tb-win" style="left:0; top:0; right:0; bottom:48px; background:#fff;">
+          <div class="sim-browser">
+            <div class="sim-browser-chrome" style="height:30px;">
+              <div class="sim-browser-url" style="height:18px;"><i class="fa-solid fa-lock"></i> koompi.com</div>
+              <div class="sim-win-controls">
+  <div class="sim-win-ctrl min" title="Minimize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="sim-win-ctrl max" title="Maximize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2.75" y="2.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+  <div class="sim-win-ctrl close" title="Close"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+</div>
+            </div>
+            <div class="sim-browser-body" style="position:relative;">
+              <div class="sim-k-nav" style="height:34px;background:#fff;border-bottom:1px solid #eef2f7;"><span class="nav-brand">KOOMPI</span><span>Products</span><span>The OS</span><span>AI</span><span style="margin-left:auto;color:var(--accent);">Download</span></div>
+              <div class="sim-k-logo" style="font-size:40px;">K</div>
+              <div class="sim-k-tagline" style="font-size:16px;">The OS That Thinks</div>
+              <div class="sim-k-sub">Private by default · AI that runs on your machine</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- bottom taskbar -->
+      <div class="sim-bar-wrap bottom">
+        <div class="topbar-wrap" style="background:rgba(248,250,255,0.90);backdrop-filter:blur(32px) saturate(1.6);border-top:1px solid rgba(0,0,0,0.08);">
+          <div class="topbar" style="height:48px;display:flex;padding:0 10px;">
+            <div class="panel-zone-left">
+              <div class="win-widgets-btn sim-bar-zone" title="Widgets" onclick="simToggleSidebar('taskbar','left',event)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5" opacity="0.9"/><rect x="9" y="1" width="6" height="6" rx="1.5" opacity="0.6"/><rect x="1" y="9" width="6" height="6" rx="1.5" opacity="0.6"/><rect x="9" y="9" width="6" height="6" rx="1.5" opacity="0.35"/></svg>
+              </div>
+            </div>
+            <div class="win-center">
+              <div class="win-start-btn sim-bar-zone" title="Start" onclick="simToggleSidebar('taskbar','left',event)">K</div>
+              <div class="win-search-bar sim-bar-zone" title="Search — launcher" onclick="simToggleLauncher('taskbar',event)" style="background:rgba(0,0,0,0.04);">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--t-muted);flex-shrink:0;"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
+                <span class="win-search-text">Search...</span>
+              </div>
+              <div class="win-taskview-btn sim-bar-zone" title="Task View — Overview" onclick="simToggleOverview('taskbar',event)">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" style="color:var(--t-muted)"><rect x="1" y="1" width="6" height="6" rx="1" opacity="0.85"/><rect x="9" y="1" width="6" height="6" rx="1" opacity="0.85"/><rect x="1" y="9" width="6" height="6" rx="1" opacity="0.85"/><rect x="9" y="9" width="6" height="6" rx="1" opacity="0.4"/></svg>
+              </div>
+              <div class="win-divider-v"></div>
+              <div class="win-apps">
+                <div class="win-app active" title="Firefox"><i class="fa-brands fa-firefox-browser"></i></div>
+                <div class="win-app running" title="VS Code"><i class="fa-solid fa-laptop-code"></i></div>
+                <div class="win-app" title="Files"><i class="fa-solid fa-folder"></i></div>
+                <div class="win-app" title="Terminal"><i class="fa-solid fa-terminal"></i></div>
+                <div class="win-app" title="KOOMPI AI">✦</div>
+              </div>
+            </div>
+            <div class="panel-zone-right">
+              <div class="win-tray-row">
+                <div class="win-tray-icon" title="Network"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12a1 1 0 100 2 1 1 0 000-2z"/><path d="M5.5 9.5a3.5 3.5 0 015 0"/><path d="M3 7a6.5 6.5 0 0110 0"/></svg></div>
+                <div class="win-tray-icon sim-bar-zone" title="Volume OSD" onclick="simShowOSD('taskbar','volume',event)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6v4h3l4 3V3L6 6H3z"/><path d="M11 5.5a3 3 0 010 5"/></svg></div>
+                <div class="win-tray-icon" title="Battery"><div class="battery-bar"><div class="battery-fill"></div></div></div>
+              </div>
+              <div class="win-divider-v" style="margin:0 6px;"></div>
+              <div class="privacy-pill sim-bar-zone" title="Privacy dashboard"><div class="priv-dot"></div>LOCAL</div>
+              <div class="ai-pill sim-bar-zone" title="AI sidebar" onclick="simToggleSidebar('taskbar','right',event)">✦ AI</div>
+              <div class="win-divider-v" style="margin:0 6px;"></div>
+              <div class="panel-clock-2line sim-bar-zone" title="Calendar" onclick="simTogglePopup('taskbar','cal',event)"><span class="p-time">08:42</span><span class="p-date">Sun, Jun 8</span></div>
+              <div class="win-notif-btn sim-bar-zone" title="Notifications" onclick="simToggleSidebar('taskbar','right',event)">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a5 5 0 00-5 5v3l-1 1h12l-1-1V7a5 5 0 00-5-5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>
+                <div class="win-notif-badge"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- left sidebar (Start) -->
+      <div class="sim-left-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title" style="display:flex;align-items:center;gap:6px;"><span style="color:var(--accent);font-weight:900;">K</span> KOOMPI</span><div class="sidebar-close-btn" onclick="simToggleSidebar('taskbar','left',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Applications</div>
+            <div class="sim-app-grid">
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#FF6600,#FF8C00);"><i class="fa-brands fa-firefox-browser"></i></div><div class="sim-app-nm">Firefox</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#0078D4,#005A9E);"><i class="fa-solid fa-laptop-code"></i></div><div class="sim-app-nm">VS Code</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#22D3EE,#0891B2);"><i class="fa-solid fa-folder"></i></div><div class="sim-app-nm">Files</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#10B981,#059669);"><i class="fa-solid fa-terminal"></i></div><div class="sim-app-nm">Terminal</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#6366F1,#4F46E5);">✦</div><div class="sim-app-nm">KOOMPI AI</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#64748B,#475569);"><i class="fa-solid fa-gear"></i></div><div class="sim-app-nm">Settings</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#EF4444,#DC2626);"><i class="fa-solid fa-calendar-days"></i></div><div class="sim-app-nm">Calendar</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#A855F7,#7C3AED);"><i class="fa-solid fa-music"></i></div><div class="sim-app-nm">Music</div></div>
+            </div>
+          </div>
+          <div class="qs-section">
+            <div class="qs-section-label">✦ AI</div>
+            <div class="sim-ai-ask"><span style="color:var(--accent);">✦</span> Ask KOOMPI anything…</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-lightbulb"></i> Summarize the 3 PDFs you opened today</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-paper-plane"></i> Draft a reply to the investor email</div>
+          </div>
+        </div>
+        <div class="sim-sidebar-footer"><div class="sim-avatar">R</div><span class="sim-user-name">Rithy Thul</span><div class="sim-power-btn">⏻</div></div>
+      </div>
+
+      <!-- right sidebar -->
+      <div class="sim-right-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title">Control Center</span><div class="sidebar-close-btn" onclick="simToggleSidebar('taskbar','right',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Quick Settings</div>
+            <div class="qs-grid">
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-wifi"></i></span><span class="qs-tile-label">WiFi</span><span class="qs-tile-sub">KOOMPI-5G</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-circle"></i></span><span class="qs-tile-label">Bluetooth</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-moon"></i></span><span class="qs-tile-label">Night Light</span><span class="qs-tile-sub">Off</span></div>
+              <div class="qs-tile priv-on"><span class="qs-tile-icon"><i class="fa-solid fa-lock"></i></span><span class="qs-tile-label">Local Mode</span><span class="qs-tile-sub">Private</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon">✦</span><span class="qs-tile-label">AI</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-cloud"></i></span><span class="qs-tile-label">Sync</span><span class="qs-tile-sub">Off</span></div>
+            </div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-sun"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:72%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:72%;"></div></div><span class="qs-slider-value">72%</span></div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-volume-high"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:58%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:58%;"></div></div><span class="qs-slider-value">58%</span></div>
+          </div>
+          <div class="notif-section">
+            <div class="qs-section-label" style="margin-bottom:8px;">Notifications</div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:#229ED9;color:#fff;">T</div>
+              <div class="notif-body"><div style="display:flex;"><div class="notif-title">Telegram</div><div class="notif-time" style="margin-left:auto;">2m</div></div><div class="notif-ai-summary" style="margin-top:4px;">✦ Sok asks if the demo is ready for Thursday's call.</div></div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:var(--accent-glow);color:var(--accent);"><i class="fa-solid fa-calendar-days"></i></div>
+              <div class="notif-body"><div style="display:flex;"><div class="notif-title">Calendar</div><div class="notif-time" style="margin-left:auto;">11:00</div></div><div class="notif-text">KOOMPI Investor Call · in 18 minutes</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- popups -->
+      <div class="sim-popup-layer" onclick="event.stopPropagation()">
+        <div class="sim-popup from-bottom" data-popup="cal" style="bottom:56px; right:8px;">
+          <div class="sim-cal">
+            <div class="sim-cal-head"><span class="sim-cal-month">June 2026</span><div class="sim-cal-nav"><div class="sim-cal-arrow">‹</div><div class="sim-cal-arrow">›</div></div></div>
+            <div class="sim-cal-grid">
+              <div class="sim-cal-dow">Su</div><div class="sim-cal-dow">Mo</div><div class="sim-cal-dow">Tu</div><div class="sim-cal-dow">We</div><div class="sim-cal-dow">Th</div><div class="sim-cal-dow">Fr</div><div class="sim-cal-dow">Sa</div>
+              <div class="sim-cal-day muted">31</div><div class="sim-cal-day">1</div><div class="sim-cal-day">2</div><div class="sim-cal-day">3</div><div class="sim-cal-day">4</div><div class="sim-cal-day">5</div><div class="sim-cal-day">6</div>
+              <div class="sim-cal-day">7</div><div class="sim-cal-day today">8</div><div class="sim-cal-day">9</div><div class="sim-cal-day">10</div><div class="sim-cal-day">11</div><div class="sim-cal-day">12</div><div class="sim-cal-day">13</div>
+              <div class="sim-cal-day">14</div><div class="sim-cal-day">15</div><div class="sim-cal-day">16</div><div class="sim-cal-day">17</div><div class="sim-cal-day">18</div><div class="sim-cal-day">19</div><div class="sim-cal-day">20</div>
+            </div>
+            <div class="sim-cal-events">
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--accent);"></span>KOOMPI Investor Call<span class="ev-time">11:00</span></div>
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--emerald);"></span>Team Sync<span class="ev-time">15:30</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OSD (bottom-center, above taskbar) -->
+      <div class="sim-osd bottom" data-osd="volume">
+        <div class="osd-pill"><span class="osd-icon"><i class="fa-solid fa-volume-high"></i></span><div class="osd-track"><div class="osd-fill" style="width:58%;"></div></div><span class="osd-value">58%</span></div>
+      </div>
+
+      <!-- overview -->
+      <div class="sim-overview" onclick="simOverviewBg(this,event)">
+        <div class="sim-overview-close" onclick="simToggleOverview('taskbar',event)">×</div>
+        <div class="sim-overview-inner">
+          <div class="sim-overview-grid">
+            <div class="sim-ws-tile active"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#c7d8f0,#dde8f5);"></div><span class="sim-ws-num" style="color:#475569;">1</span><div class="sim-ws-mini acc" style="left:10%;top:14%;width:80%;height:64%;"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#dde8f5,#EEF2F7);"></div><span class="sim-ws-num" style="color:#475569;">2</span><div class="sim-ws-mini" style="left:14%;top:20%;width:50%;height:56%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#c7d8f0,#EEF2F7);"></div><span class="sim-ws-num" style="color:#475569;">3</span><div class="sim-ws-mini" style="left:18%;top:24%;width:60%;height:50%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#dde8f5,#c7d8f0);"></div><span class="sim-ws-num" style="color:#475569;">4</span><div class="sim-ws-mini" style="left:12%;top:18%;width:36%;height:60%;background:rgba(0,0,0,0.1);"></div><div class="sim-ws-mini" style="left:52%;top:30%;width:36%;height:44%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div>
+          </div>
+          <div class="sim-overview-title">Task View · click a tile to switch · Esc to close</div>
+        </div>
+      </div>
+
+      <!-- launcher -->
+      <div class="sim-launcher" onclick="simLauncherBg(this,event)">
+        <div class="sim-launcher-modal">
+          <div class="launcher-search">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--text-muted);flex-shrink:0;"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
+            <div class="launcher-search-text">quarterly report<span class="cursor"></span></div>
+            <span class="launcher-source-badge"><i class="fa-solid fa-lock"></i> Local</span>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">✦ AI Action</div>
+            <div class="launcher-item selected"><div class="launcher-icon" style="background:var(--accent-glow);color:var(--accent);">✦</div><div class="launcher-item-body"><div class="launcher-item-name">Summarize quarterly report</div><div class="launcher-item-meta">Q4-2025-Report.pdf</div></div><span class="launcher-kbd">↵</span></div>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">Files (2)</div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#EF444420;color:#EF4444;">PDF</div><div class="launcher-item-body"><div class="launcher-item-name">Q4-2025-Report.pdf</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#10B98120;color:#10B981;">XLS</div><div class="launcher-item-body"><div class="launcher-item-name">quarterly-data.xlsx</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+          </div>
+          <div class="launcher-footer"><div class="launcher-footer-kbds"><span><span class="launcher-kbd">↵</span> Open</span><span><span class="launcher-kbd">Esc</span> Close</span></div><span>12,847 files indexed</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="sim-caption"><span class="sim-cap-pill">Taskbar</span><span class="sim-cap-hint">Click the <b>Search</b> bar (launcher), <b>K</b>/Widgets (start), <b>Task View</b> (overview), bell or AI pill (control center), clock (calendar), volume. Titlebar <b>─ ▢ ✕</b> are live; a taskbar app icon brings windows back. <b>Esc</b> closes any panel.</span></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SIM C — DOCK (macOS, light, menu bar top + floating dock,
+                     2 overlapping floating windows)
+       ════════════════════════════════════════════════════════ -->
+  <div class="bar-demo desktop-sim theme-light bar-dock hidden" id="demo-dock" onclick="simDeskClick('dock',event)">
+    <div id="sim-root-dock" style="position:absolute;inset:0;">
+
+      <div class="sim-wallpaper"></div>
+
+      <!-- two floating windows -->
+      <div class="sim-windows">
+        <!-- browser (left-center) -->
+        <div class="sim-win sim-win-float" id="dock-fox"
+             style="left:6%; top:42px; width:54%; height:50%;"
+             onclick="simFocusWin('dock','dock-fox','Firefox — koompi.com',event)">
+          <div class="sim-win-titlebar light">
+            <span class="sim-win-titlebar-title">koompi.com — Firefox</span>
+            <div class="sim-win-controls">
+  <div class="sim-win-ctrl min" title="Minimize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="sim-win-ctrl max" title="Maximize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2.75" y="2.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+  <div class="sim-win-ctrl close" title="Close"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+</div>
+          </div>
+          <div class="sim-win-body" style="background:#fff;">
+            <div class="sim-browser-body" style="position:relative;height:100%;">
+              <div class="sim-k-nav"><span class="nav-brand">KOOMPI</span><span>Products</span><span>OS</span><span>AI</span></div>
+              <div class="sim-k-logo">K</div>
+              <div class="sim-k-tagline">The OS That Thinks</div>
+              <div class="sim-k-sub">Private by default</div>
+            </div>
+          </div>
+        </div>
+        <!-- terminal (right-center, overlapping) -->
+        <div class="sim-win sim-win-float" id="dock-term"
+             style="left:48%; top:30%; width:42%; height:42%;"
+             onclick="simFocusWin('dock','dock-term','Terminal — zsh',event)">
+          <div class="sim-win-titlebar">
+            <span class="sim-win-titlebar-title">Terminal — zsh</span>
+            <div class="sim-win-controls">
+  <div class="sim-win-ctrl min" title="Minimize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="sim-win-ctrl max" title="Maximize"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2.75" y="2.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg></div>
+  <div class="sim-win-ctrl close" title="Close"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="3" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="3" x2="3" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+</div>
+          </div>
+          <div class="sim-win-body">
+            <div class="sim-term">
+              <div><span class="t-blue">$</span> koompi ai status</div>
+              <div class="t-white">✦ Local model: <span class="t-amber">Sailor2-8B</span></div>
+              <div>✓ Egress gate: <span class="t-white">LOCAL</span> · 0 calls today</div>
+              <div><span class="t-blue">$</span> <span class="t-cursor"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L3a menu bar (top) -->
+      <div class="sim-bar-wrap top">
+        <div class="menubar-strip" style="background:rgba(248,250,255,0.82);backdrop-filter:blur(20px);">
+          <div class="menubar-left">
+            <span class="menubar-k sim-bar-zone" title="Start menu" onclick="simToggleSidebar('dock','left',event)">K</span>
+            <span class="menubar-app active-win">Firefox</span>
+            <span class="menubar-item">File</span>
+            <span class="menubar-item">Edit</span>
+            <span class="menubar-item">View</span>
+            <span class="menubar-item">History</span>
+          </div>
+          <div class="menubar-right">
+            <span class="sim-bar-zone" title="Brightness OSD" onclick="simShowOSD('dock','brightness',event)" style="display:flex;color:var(--t-muted);cursor:pointer;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg></span>
+            <span class="sim-bar-zone" title="Volume OSD" onclick="simShowOSD('dock','volume',event)" style="display:flex;color:var(--t-muted);cursor:pointer;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6v4h3l4 3V3L6 6H3z"/><path d="M11 5.5a3 3 0 010 5"/></svg></span>
+            <div class="battery-bar"><div class="battery-fill"></div></div>
+            <div class="privacy-pill sim-bar-zone" title="Privacy dashboard"><div class="priv-dot"></div>LOCAL</div>
+            <div class="ai-pill sim-bar-zone" title="AI sidebar" onclick="simToggleSidebar('dock','right',event)">✦ AI</div>
+            <span class="menubar-clock sim-bar-zone" title="Calendar" onclick="simTogglePopup('dock','cal',event)">08:42</span>
+          </div>
+        </div>
+        <div class="menubar-fillet left"></div>
+        <div class="menubar-fillet right"></div>
+      </div>
+
+      <!-- L3b floating dock (bottom-center) -->
+      <div class="sim-dock-bar">
+        <div class="macos-dock" style="background:rgba(245,248,255,0.82);">
+          <div class="dock-app running" style="background:linear-gradient(135deg,#FF6600,#FF8C00);" title="Firefox" onclick="simFocusWin('dock','dock-fox','Firefox — koompi.com',event)"><i class="fa-brands fa-firefox-browser"></i><div class="dock-dot"></div></div>
+          <div class="dock-app" style="background:linear-gradient(135deg,#0078D4,#005A9E);" title="VS Code"><i class="fa-solid fa-laptop-code"></i></div>
+          <div class="dock-app" style="background:linear-gradient(135deg,#22D3EE,#0891B2);" title="Files"><i class="fa-solid fa-folder"></i></div>
+          <div class="dock-app running" style="background:linear-gradient(135deg,#10B981,#059669);" title="Terminal" onclick="simFocusWin('dock','dock-term','Terminal — zsh',event)"><i class="fa-solid fa-terminal"></i><div class="dock-dot"></div></div>
+          <div class="dock-app sim-bar-zone" style="background:linear-gradient(135deg,#6366F1,#4F46E5);" title="KOOMPI AI" onclick="simToggleSidebar('dock','right',event)">✦</div>
+          <div class="dock-sep-h"></div>
+          <div class="dock-app sim-bar-zone" style="background:linear-gradient(135deg,#64748B,#475569);" title="Launcher" onclick="simToggleLauncher('dock',event)"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div class="dock-app sim-bar-zone" style="background:linear-gradient(135deg,#A855F7,#7C3AED);" title="Overview" onclick="simToggleOverview('dock',event)">▦</div>
+        </div>
+      </div>
+
+      <!-- left sidebar -->
+      <div class="sim-left-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title" style="display:flex;align-items:center;gap:6px;"><span style="color:var(--accent);font-weight:900;">K</span> KOOMPI</span><div class="sidebar-close-btn" onclick="simToggleSidebar('dock','left',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Applications</div>
+            <div class="sim-app-grid">
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#FF6600,#FF8C00);"><i class="fa-brands fa-firefox-browser"></i></div><div class="sim-app-nm">Firefox</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#0078D4,#005A9E);"><i class="fa-solid fa-laptop-code"></i></div><div class="sim-app-nm">VS Code</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#22D3EE,#0891B2);"><i class="fa-solid fa-folder"></i></div><div class="sim-app-nm">Files</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#10B981,#059669);"><i class="fa-solid fa-terminal"></i></div><div class="sim-app-nm">Terminal</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#6366F1,#4F46E5);">✦</div><div class="sim-app-nm">KOOMPI AI</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#64748B,#475569);"><i class="fa-solid fa-gear"></i></div><div class="sim-app-nm">Settings</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#EF4444,#DC2626);"><i class="fa-solid fa-calendar-days"></i></div><div class="sim-app-nm">Calendar</div></div>
+              <div class="sim-app-cell"><div class="sim-app-ico" style="background:linear-gradient(135deg,#A855F7,#7C3AED);"><i class="fa-solid fa-music"></i></div><div class="sim-app-nm">Music</div></div>
+            </div>
+          </div>
+          <div class="qs-section">
+            <div class="qs-section-label">✦ AI</div>
+            <div class="sim-ai-ask"><span style="color:var(--accent);">✦</span> Ask KOOMPI anything…</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-lightbulb"></i> Summarize the 3 PDFs you opened today</div>
+            <div class="sim-ai-suggest"><i class="fa-solid fa-paper-plane"></i> Draft a reply to the investor email</div>
+          </div>
+        </div>
+        <div class="sim-sidebar-footer"><div class="sim-avatar">R</div><span class="sim-user-name">Rithy Thul</span><div class="sim-power-btn">⏻</div></div>
+      </div>
+
+      <!-- right sidebar -->
+      <div class="sim-right-sidebar" onclick="event.stopPropagation()">
+        <div class="sidebar-header"><span class="sidebar-header-title">Control Center</span><div class="sidebar-close-btn" onclick="simToggleSidebar('dock','right',event)">×</div></div>
+        <div class="sim-sidebar-scroll">
+          <div class="qs-section">
+            <div class="qs-section-label">Quick Settings</div>
+            <div class="qs-grid">
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-wifi"></i></span><span class="qs-tile-label">WiFi</span><span class="qs-tile-sub">KOOMPI-5G</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon"><i class="fa-solid fa-circle"></i></span><span class="qs-tile-label">Bluetooth</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-moon"></i></span><span class="qs-tile-label">Night Light</span><span class="qs-tile-sub">Off</span></div>
+              <div class="qs-tile priv-on"><span class="qs-tile-icon"><i class="fa-solid fa-lock"></i></span><span class="qs-tile-label">Local Mode</span><span class="qs-tile-sub">Private</span></div>
+              <div class="qs-tile on"><span class="qs-tile-icon">✦</span><span class="qs-tile-label">AI</span><span class="qs-tile-sub">On</span></div>
+              <div class="qs-tile"><span class="qs-tile-icon"><i class="fa-solid fa-cloud"></i></span><span class="qs-tile-label">Sync</span><span class="qs-tile-sub">Off</span></div>
+            </div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-sun"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:72%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:72%;"></div></div><span class="qs-slider-value">72%</span></div>
+            <div class="qs-slider"><span class="qs-slider-icon"><i class="fa-solid fa-volume-high"></i></span><div class="qs-slider-track"><div class="qs-slider-fill" style="width:58%;background:var(--accent);"></div><div class="qs-slider-thumb" style="left:58%;"></div></div><span class="qs-slider-value">58%</span></div>
+          </div>
+          <div class="notif-section">
+            <div class="qs-section-label" style="margin-bottom:8px;">Notifications</div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:#229ED9;color:#fff;">T</div>
+              <div class="notif-body"><div style="display:flex;"><div class="notif-title">Telegram</div><div class="notif-time" style="margin-left:auto;">2m</div></div><div class="notif-ai-summary" style="margin-top:4px;">✦ Sok asks if the demo is ready for Thursday's call.</div></div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-avatar" style="background:var(--accent-glow);color:var(--accent);"><i class="fa-solid fa-calendar-days"></i></div>
+              <div class="notif-body"><div style="display:flex;"><div class="notif-title">Calendar</div><div class="notif-time" style="margin-left:auto;">11:00</div></div><div class="notif-text">KOOMPI Investor Call · in 18 minutes</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- popups -->
+      <div class="sim-popup-layer" onclick="event.stopPropagation()">
+        <div class="sim-popup" data-popup="cal" style="top:30px; right:8px;">
+          <div class="sim-cal">
+            <div class="sim-cal-head"><span class="sim-cal-month">June 2026</span><div class="sim-cal-nav"><div class="sim-cal-arrow">‹</div><div class="sim-cal-arrow">›</div></div></div>
+            <div class="sim-cal-grid">
+              <div class="sim-cal-dow">Su</div><div class="sim-cal-dow">Mo</div><div class="sim-cal-dow">Tu</div><div class="sim-cal-dow">We</div><div class="sim-cal-dow">Th</div><div class="sim-cal-dow">Fr</div><div class="sim-cal-dow">Sa</div>
+              <div class="sim-cal-day muted">31</div><div class="sim-cal-day">1</div><div class="sim-cal-day">2</div><div class="sim-cal-day">3</div><div class="sim-cal-day">4</div><div class="sim-cal-day">5</div><div class="sim-cal-day">6</div>
+              <div class="sim-cal-day">7</div><div class="sim-cal-day today">8</div><div class="sim-cal-day">9</div><div class="sim-cal-day">10</div><div class="sim-cal-day">11</div><div class="sim-cal-day">12</div><div class="sim-cal-day">13</div>
+              <div class="sim-cal-day">14</div><div class="sim-cal-day">15</div><div class="sim-cal-day">16</div><div class="sim-cal-day">17</div><div class="sim-cal-day">18</div><div class="sim-cal-day">19</div><div class="sim-cal-day">20</div>
+            </div>
+            <div class="sim-cal-events">
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--accent);"></span>KOOMPI Investor Call<span class="ev-time">11:00</span></div>
+              <div class="sim-cal-event"><span class="ev-dot" style="background:var(--emerald);"></span>Team Sync<span class="ev-time">15:30</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OSD (top-center) -->
+      <div class="sim-osd top" data-osd="volume">
+        <div class="osd-pill"><span class="osd-icon"><i class="fa-solid fa-volume-high"></i></span><div class="osd-track"><div class="osd-fill" style="width:58%;"></div></div><span class="osd-value">58%</span></div>
+      </div>
+      <div class="sim-osd top" data-osd="brightness">
+        <div class="osd-pill"><span class="osd-icon"><i class="fa-solid fa-sun"></i></span><div class="osd-track"><div class="osd-fill" style="width:72%;"></div></div><span class="osd-value">72%</span></div>
+      </div>
+
+      <!-- overview -->
+      <div class="sim-overview" onclick="simOverviewBg(this,event)">
+        <div class="sim-overview-close" onclick="simToggleOverview('dock',event)">×</div>
+        <div class="sim-overview-inner">
+          <div class="sim-overview-grid">
+            <div class="sim-ws-tile active"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#c7d8f0,#dde8f5);"></div><span class="sim-ws-num" style="color:#475569;">1</span><div class="sim-ws-mini" style="left:8%;top:18%;width:46%;height:54%;background:rgba(0,0,0,0.12);"></div><div class="sim-ws-mini acc" style="left:48%;top:30%;width:40%;height:46%;"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#dde8f5,#EEF2F7);"></div><span class="sim-ws-num" style="color:#475569;">2</span><div class="sim-ws-mini" style="left:16%;top:22%;width:60%;height:52%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#c7d8f0,#EEF2F7);"></div><span class="sim-ws-num" style="color:#475569;">3</span><div class="sim-ws-mini" style="left:20%;top:26%;width:54%;height:46%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-tile"><div class="sim-ws-tile-bg" style="background:linear-gradient(135deg,#dde8f5,#c7d8f0);"></div><span class="sim-ws-num" style="color:#475569;">4</span><div class="sim-ws-mini" style="left:14%;top:20%;width:70%;height:56%;background:rgba(0,0,0,0.1);"></div></div>
+            <div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div><div class="sim-ws-empty">+</div>
+          </div>
+          <div class="sim-overview-title">Mission Control · click a tile to switch · Esc to close</div>
+        </div>
+      </div>
+
+      <!-- launcher -->
+      <div class="sim-launcher" onclick="simLauncherBg(this,event)">
+        <div class="sim-launcher-modal">
+          <div class="launcher-search">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--text-muted);flex-shrink:0;"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
+            <div class="launcher-search-text">quarterly report<span class="cursor"></span></div>
+            <span class="launcher-source-badge"><i class="fa-solid fa-lock"></i> Local</span>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">✦ AI Action</div>
+            <div class="launcher-item selected"><div class="launcher-icon" style="background:var(--accent-glow);color:var(--accent);">✦</div><div class="launcher-item-body"><div class="launcher-item-name">Summarize quarterly report</div><div class="launcher-item-meta">Q4-2025-Report.pdf</div></div><span class="launcher-kbd">↵</span></div>
+          </div>
+          <div class="launcher-section">
+            <div class="launcher-section-label">Files (2)</div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#EF444420;color:#EF4444;">PDF</div><div class="launcher-item-body"><div class="launcher-item-name">Q4-2025-Report.pdf</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+            <div class="launcher-item"><div class="launcher-icon" style="background:#10B98120;color:#10B981;">XLS</div><div class="launcher-item-body"><div class="launcher-item-name">quarterly-data.xlsx</div><div class="launcher-item-meta">~/Documents/Finance/</div></div></div>
+          </div>
+          <div class="launcher-footer"><div class="launcher-footer-kbds"><span><span class="launcher-kbd">↵</span> Open</span><span><span class="launcher-kbd">Esc</span> Close</span></div><span>12,847 files indexed</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="sim-caption"><span class="sim-cap-pill">Dock</span><span class="sim-cap-hint">Click the menu-bar <b>K</b> (start), AI pill or ✦ dock icon (control center), <i class="fa-solid fa-magnifying-glass"></i>/▦ dock icons (launcher/overview), clock (calendar), brightness & volume. Click a window or dock icon to focus. Titlebar <b>─ ▢ ✕</b> are live; dock icons restore. <b>Esc</b> closes any panel.</span></div>
+
+  <div style="font-size:11px; color:var(--text-muted); margin:6px 0 20px;" id="style-desc">
+    Hug (default) — bar flush to screen edge. Concave fillet "ears" at bottom corners match the display bezel radius. Glass spans full width. Most immersive.
+  </div>
+
+  <!-- Callouts -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Workspaces pill <span class="badge">Center</span></div>
+      <p>Active=indigo, occupied=dim, empty=ghost. Click workspaces = Overview. Max 10 shown.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Pomodoro pill <span class="badge">Center-left</span></div>
+      <p>Circular arc + phase icon + MM:SS countdown. Click = popup. Dim when idle. Work phase = red, break = cyan.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Privacy pill <span class="badge new">KOOMPI</span></div>
+      <p>Always visible. <b>LOCAL</b>=emerald, <b>CLOUD</b>=amber, <b>OFF</b>=dim. Pulses to signal active egress gate. Tapping opens Privacy Dashboard.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI pill <span class="badge new">KOOMPI</span></div>
+      <p>✦ idle · spinner thinking · ✓ done. Click = toggle AI sidebar. Right-click = new conversation.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Left side scroll</div>
+      <p>Scroll over left zone = brightness. Hover reveals brightness hint icon + tooltip.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Right side scroll</div>
+      <p>Scroll over right zone = volume. OSD appears. Hover reveals volume hint.</p>
+    </div>
+  </div>
+
+  <div class="card-label" style="margin-top:24px;">Panel Style — Design Notes <span style="font-size:10px;font-weight:400;color:var(--text-muted);">Win11 + macOS inspiration</span></div>
+  <div class="callout-group" style="margin-top:0;">
+    <div class="callout">
+      <div class="callout-title">Dock pill <span class="badge new">Panel</span></div>
+      <p>Centered capsule with K Start button + pinned apps. Running apps get a dot indicator below. Separator divides pinned from utility apps. macOS-style magnification on hover is optional.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">2-line clock <span class="badge new">Panel</span></div>
+      <p>Time above, date below (Win11 signature). Stacked in 12px/10px. Clicking opens Calendar popup. Right side keeps tray cluster grouped — network + volume + battery in one pill.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Mica translucency <span class="badge new">Panel</span></div>
+      <p>Higher saturate() blur vs top-bar styles. Wallpaper color bleeds through more visibly — bar feels anchored to the desktop, not floating above it. Dark: rgba(8,14,26,0.82).</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Open question</div>
+      <p>Panel has no Pomodoro or Workspaces pill visible. Options: (1) move workspace dots below dock icons as a row, (2) workspace dots in top-right corner, (3) omit — use Overview gesture instead.</p>
+    </div>
+  </div>
+
+  <div class="card-label" style="margin-top:24px;">Dock — macOS Style Notes <span style="font-size:10px;font-weight:400;color:var(--text-muted);">menu bar + floating dock</span></div>
+  <div class="callout-group" style="margin-top:0;">
+    <div class="callout">
+      <div class="callout-title">Menu bar <span class="badge new">Dock</span></div>
+      <p>Active app name + global menus on left. Status cluster on right. 24px thin strip.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Icon size <span class="badge new">Dock</span></div>
+      <p>44px (vs 34px for Taskbar). Larger touch targets, more visual weight.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Magnification <span class="badge new">Dock</span></div>
+      <p>scale(1.28) + translateY(-6px) on hover — the classic macOS spring.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Open question</div>
+      <p>Does the KOOMPI AI icon belong in the dock, or in the menu bar only?</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Open question</div>
+      <p>Dock autohide — slide down on idle, reveal on mouse approach bottom edge.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Bar Popup Widgets -->
+  <div class="card-label" style="margin-top:0;">Bar Popup Widgets</div>
+  <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+    Every bar cluster opens a contextual popup. Popups are layered QML panels anchored to the bar element — same glass + blur treatment as the sidebar.
+  </p>
+
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; margin-bottom:20px;">
+    <!-- Media player popup -->
+    <div>
+      <div class="card-label" style="margin-bottom:8px; font-size:10px;">Media player <span style="color:var(--text-subtle); font-weight:400;">· click media pill</span></div>
+      <div class="media-popup">
+        <div class="media-popup-art"><i class="fa-solid fa-music"></i></div>
+        <div class="media-popup-track">Get Lucky</div>
+        <div class="media-popup-artist">Daft Punk ft. Pharrell Williams</div>
+        <div class="media-progress-bar">
+          <div class="media-progress-fill"></div>
+        </div>
+        <div class="media-timestamps"><span>1:24</span><span>4:07</span></div>
+        <div class="media-popup-controls">
+          <div class="mpop-btn sm" title="Shuffle">⇌</div>
+          <div class="mpop-btn" title="Previous">⏮</div>
+          <div class="mpop-btn play" title="Pause">⏸</div>
+          <div class="mpop-btn" title="Next">⏭</div>
+          <div class="mpop-btn sm" title="Loop">↻</div>
+        </div>
+        <div class="media-vol-row">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted); flex-shrink:0;">
+            <path d="M3 6v4h3l4 3V3L6 6H3z"/>
+          </svg>
+          <div class="media-vol-track"><div class="media-vol-fill"></div></div>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted); flex-shrink:0;">
+            <path d="M3 6v4h3l4 3V3L6 6H3z"/>
+            <path d="M11 5.5a3 3 0 010 5"/>
+          </svg>
+        </div>
+        <div class="media-source-row">
+          <div class="media-src-icon">S</div>
+          <span>Playing via Spotify</span>
+          <span style="margin-left:auto; color:var(--accent); cursor:pointer;">Open</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Display management popup -->
+    <div>
+      <div class="card-label" style="margin-bottom:8px; font-size:10px;">Display management <span style="color:var(--text-subtle); font-weight:400;">· click display icon</span></div>
+      <div class="disp-popup">
+        <div class="disp-row">
+          <span class="disp-label">Brightness</span>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted); flex-shrink:0;"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"/></svg>
+          <div class="disp-slider-track">
+            <div class="disp-slider-fill" style="width:72%;"></div>
+            <div class="disp-slider-thumb" style="left:72%;"></div>
+          </div>
+          <span class="disp-value">72%</span>
+        </div>
+        <div class="disp-toggle-row">
+          <div class="disp-toggle-info">
+            <div class="disp-toggle-name">Night light</div>
+            <div class="disp-toggle-sub">Reduces blue light · sunset to sunrise</div>
+          </div>
+          <div class="toggle-pill"></div>
+        </div>
+        <div class="disp-row" style="margin-top:-8px;">
+          <span class="disp-label">Color temp</span>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:#5CE1E6;flex-shrink:0;"><circle cx="8" cy="8" r="5"/></svg>
+          <div class="disp-slider-track">
+            <div class="temp-bar"></div>
+            <div class="disp-slider-thumb" style="left:65%; border-color:#FFD166;"></div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:#FF6B35;flex-shrink:0;"><circle cx="8" cy="8" r="5"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg>
+        </div>
+        <div class="disp-row">
+          <span class="disp-label">Refresh</span>
+          <div class="disp-chips">
+            <div class="disp-chip">60 Hz</div>
+            <div class="disp-chip active">120 Hz</div>
+            <div class="disp-chip">144 Hz</div>
+            <div class="disp-chip">165 Hz</div>
+          </div>
+        </div>
+        <div class="disp-row">
+          <span class="disp-label">Scale</span>
+          <div class="disp-chips">
+            <div class="disp-chip">100%</div>
+            <div class="disp-chip active">125%</div>
+            <div class="disp-chip">150%</div>
+          </div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Displays</div>
+        <div class="monitor-diagram">
+          <div class="monitor-box" style="width:70px; height:44px;">eDP-1<br><span style="font-size:8px;opacity:0.6;">1920×1080</span></div>
+          <div class="monitor-box primary" style="width:96px; height:56px;">HDMI-1 ★<br><span style="font-size:8px;">2560×1440</span></div>
+          <div class="monitor-box" style="width:60px; height:38px; opacity:0.5;">DP-1<br><span style="font-size:8px;opacity:0.6;">off</span></div>
+        </div>
+        <div style="font-size:10px; color:var(--text-subtle); text-align:center;">Drag to rearrange · ★ = primary</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Media (MPRIS) <span class="badge">Right zone</span></div>
+      <p>Visible only when media is active. Shows album art thumbnail + truncated track name + prev/play/next controls. Max-width shrinks on narrow screens. Click = full popup. Scroll on pill = volume.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Util buttons <span class="badge">Right zone</span></div>
+      <p>Compact icon trio: <b>Screenshot</b> (click = region, shift-click = fullscreen), <b>Color picker</b> (hyprpicker, copies hex to clipboard), <b>Screen recorder</b> (wf-recorder; turns red when recording).</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">SysTray <span class="badge">Right zone</span></div>
+      <p>SNI protocol. App icons auto-populated at runtime — Discord, Telegram, etc. Click = activate/hide window. Right-click = app tray menu. Hidden overflow → expand button appears when tray overflows.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Display management <span class="badge new">KOOMPI</span></div>
+      <p>Brightness scroll on left zone (existing). Display icon in util buttons opens the popup: brightness + night light + refresh rate + scale + multi-monitor arranger. No separate Settings app needed for daily adjustments.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Bar states row -->
+  <div class="card-label" style="margin-top:0;">Status States</div>
+  <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px;">
+
+    <!-- CLOUD state -->
+    <div style="border-radius:var(--radius); overflow:hidden; border:1px solid var(--border2); background:#0D1422;">
+      <div class="topbar" style="background:rgba(7,11,19,0.9);">
+        <div class="topbar-left">
+          <div class="bar-group" style="padding:3px 7px;"><span style="font-size:13px;font-weight:800;color:var(--accent);">K</span></div>
+          <span class="active-win">VS Code — main.zig</span>
+        </div>
+        <div class="topbar-center">
+          <div class="bar-group">
+            <div class="pomodoro-widget"><div class="pomo-ring"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="2"/><circle cx="11" cy="11" r="9" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="42" stroke-dashoffset="14" stroke-linecap="round" transform="rotate(-90 11 11)"/><text x="11" y="14.5" text-anchor="middle" font-size="7" font-family="'Font Awesome 6 Free'" font-weight="900" fill="#EF4444">&#xf06d;</text></svg></div><span style="font-size:11px;font-weight:600;font-family:var(--font-mono);color:#EF4444;">18:33</span></div>
+          </div>
+          <div class="bar-group"><div class="ws-pills">
+            <div class="ws-pill active"><div class="ws-dot" style="background:white;"></div></div>
+            <div class="ws-pill used"><div class="ws-dot"></div></div>
+            <div class="ws-pill unused"><div class="ws-dot"></div></div>
+          </div></div>
+        </div>
+        <div class="topbar-right">
+          <div class="privacy-pill" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);color:var(--amber);">
+            <div class="priv-dot" style="background:var(--amber);animation:pulse-dot 2s infinite;"></div>CLOUD
+          </div>
+          <div class="ai-pill">✦ AI</div>
+          <div class="topbar-clock">08:42</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); padding:0 4px;">↑ Cloud-allowed (policies.ai=1) — amber pill. Pomodoro mid-work-session.</div>
+
+    <!-- AI THINKING state -->
+    <div style="border-radius:var(--radius); overflow:hidden; border:1px solid var(--border2); background:#0D1422; margin-top:4px;">
+      <div class="topbar" style="background:rgba(7,11,19,0.9);">
+        <div class="topbar-left">
+          <div class="bar-group" style="padding:3px 7px;"><span style="font-size:13px;font-weight:800;color:var(--accent);">K</span></div>
+          <span class="active-win">Terminal — koompi-desktop</span>
+        </div>
+        <div class="topbar-center">
+          <div class="bar-group">
+            <div class="pomodoro-widget" style="opacity:0.5;"><div class="pomo-ring"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/><text x="11" y="14.5" text-anchor="middle" font-size="7" font-family="'Font Awesome 6 Free'" font-weight="900" fill="rgba(255,255,255,0.25)">&#xf06d;</text></svg></div><span style="font-size:11px;font-weight:600;font-family:var(--font-mono);color:var(--text-subtle);">25:00</span></div>
+          </div>
+          <div class="bar-group"><div class="ws-pills">
+            <div class="ws-pill active"><div class="ws-dot" style="background:white;"></div></div>
+            <div class="ws-pill used"><div class="ws-dot"></div></div>
+          </div></div>
+        </div>
+        <div class="topbar-right">
+          <div class="privacy-pill"><div class="priv-dot"></div>LOCAL</div>
+          <div class="ai-pill" style="gap:5px;">
+            <span style="display:inline-block;width:9px;height:9px;border:1.5px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;"></span>AI
+          </div>
+          <div class="topbar-clock">08:43</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); padding:0 4px;">↑ AI thinking — spinner. Pomodoro idle/dimmed (not started). Left: K button + window title only.</div>
+
+    <!-- BREAK state -->
+    <div style="border-radius:var(--radius); overflow:hidden; border:1px solid var(--border2); background:#0D1422; margin-top:4px;">
+      <div class="topbar" style="background:rgba(7,11,19,0.9);">
+        <div class="topbar-left">
+          <div class="bar-group" style="padding:3px 7px;"><span style="font-size:13px;font-weight:800;color:var(--accent);">K</span></div>
+          <span class="active-win">Firefox — news.ycombinator.com</span>
+        </div>
+        <div class="topbar-center">
+          <div class="bar-group">
+            <div class="pomodoro-widget"><div class="pomo-ring"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="rgba(34,211,238,0.2)" stroke-width="2"/><circle cx="11" cy="11" r="9" fill="none" stroke="#22D3EE" stroke-width="2" stroke-dasharray="42" stroke-dashoffset="28" stroke-linecap="round" transform="rotate(-90 11 11)"/><text x="11" y="14.5" text-anchor="middle" font-size="7" font-family="'Font Awesome 6 Free'" font-weight="900" fill="#22D3EE">&#xf7b6;</text></svg></div><span style="font-size:11px;font-weight:600;font-family:var(--font-mono);color:#22D3EE;">03:12</span></div>
+          </div>
+          <div class="bar-group"><div class="ws-pills">
+            <div class="ws-pill active"><div class="ws-dot" style="background:white;"></div></div>
+            <div class="ws-pill used"><div class="ws-dot"></div></div>
+            <div class="ws-pill used"><div class="ws-dot"></div></div>
+          </div></div>
+        </div>
+        <div class="topbar-right">
+          <div class="privacy-pill"><div class="priv-dot"></div>LOCAL</div>
+          <div class="ai-pill">✓ AI</div>
+          <div class="topbar-clock">09:06</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); padding:0 4px;">↑ Break phase — cyan arc + <i class="fa-solid fa-mug-hot"></i> + 03:12. AI done (✓). No workspaces in left section.</div>
+  </div>
+
+  <hr>
+
+  <!-- Pomodoro popup detail -->
+  <div class="card-label" style="margin-top:0;">Pomodoro Popup (click widget in bar)</div>
+  <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:12px;">
+
+    <!-- Work phase popup -->
+    <div>
+      <div style="font-size:11px; color:var(--text-subtle); margin-bottom:8px;">Work phase · running</div>
+      <div class="pomo-popup">
+        <div class="pomo-phase-label" style="color:var(--red);"><i class="fa-solid fa-fire"></i> Focus Session</div>
+        <div class="pomo-popup-ring">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(239,68,68,0.15)" stroke-width="5"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#EF4444" stroke-width="5"
+              stroke-dasharray="213" stroke-dashoffset="68"
+              stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;"><i class="fa-solid fa-fire"></i></div>
+        </div>
+        <div class="pomo-popup-time work">18:33</div>
+        <div class="pomo-controls">
+          <div class="pomo-btn primary">⏸ Pause</div>
+          <div class="pomo-btn">↺ Reset</div>
+        </div>
+        <div class="pomo-sessions">
+          <div class="pomo-session-dot done"></div>
+          <div class="pomo-session-dot done"></div>
+          <div class="pomo-session-dot"></div>
+          <div class="pomo-session-dot"></div>
+        </div>
+        <div style="text-align:center;font-size:10px;color:var(--text-subtle);margin-top:6px;">Session 3 of 4 · Long break after next</div>
+        <div class="pomo-config">
+          <div class="pomo-config-item">
+            <label>Focus (min)</label>
+            <input type="number" value="25">
+          </div>
+          <div class="pomo-config-item">
+            <label>Short break</label>
+            <input type="number" value="5">
+          </div>
+          <div class="pomo-config-item">
+            <label>Long break</label>
+            <input type="number" value="15">
+          </div>
+          <div class="pomo-config-item">
+            <label>Sessions</label>
+            <input type="number" value="4">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Break phase popup -->
+    <div>
+      <div style="font-size:11px; color:var(--text-subtle); margin-bottom:8px;">Break phase · running</div>
+      <div class="pomo-popup">
+        <div class="pomo-phase-label" style="color:var(--cyan);"><i class="fa-solid fa-mug-hot"></i> Short Break</div>
+        <div class="pomo-popup-ring">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(34,211,238,0.15)" stroke-width="5"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#22D3EE" stroke-width="5"
+              stroke-dasharray="213" stroke-dashoffset="142"
+              stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;"><i class="fa-solid fa-mug-hot"></i></div>
+        </div>
+        <div class="pomo-popup-time brk">03:12</div>
+        <div class="pomo-controls">
+          <div class="pomo-btn primary brk">⏸ Pause</div>
+          <div class="pomo-btn">↺ Reset</div>
+        </div>
+        <div class="pomo-sessions">
+          <div class="pomo-session-dot done"></div>
+          <div class="pomo-session-dot done"></div>
+          <div class="pomo-session-dot done"></div>
+          <div class="pomo-session-dot"></div>
+        </div>
+        <div style="text-align:center;font-size:10px;color:var(--text-subtle);margin-top:6px;">Session 3 done · 1 more until long break</div>
+        <div class="pomo-config">
+          <div class="pomo-config-item">
+            <label>Focus (min)</label>
+            <input type="number" value="25">
+          </div>
+          <div class="pomo-config-item">
+            <label>Short break</label>
+            <input type="number" value="5">
+          </div>
+          <div class="pomo-config-item">
+            <label>Long break</label>
+            <input type="number" value="15">
+          </div>
+          <div class="pomo-config-item">
+            <label>Sessions</label>
+            <input type="number" value="4">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

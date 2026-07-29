@@ -1,0 +1,118 @@
+<section class="section" id="factory-reset">
+  <div class="section-header">
+    <h2>Factory Reset</h2>
+    <span class="tag sys">System</span>
+  </div>
+  <p class="desc">
+    KOOMPI factory reset is surgical — you choose exactly what gets wiped. Full device reset, selective data removal, or profile snapshot export before wipe. Powered by koompi-restore, a Zig-native restore daemon.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Profile snapshot is the <b>snapshot</b> preset of the Lifeboat engine · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Reset tier picker -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Choose Reset Depth</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">All tiers preserve the KOOMPI system image. Only your data is in scope.</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <!-- Tier 1 -->
+      <div style="padding:16px 18px;background:var(--surface2);border:2px solid var(--border2);border-radius:10px;cursor:pointer;display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);margin-top:1px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Refresh — Keep Files</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Resets app settings and shell config. Your home directory, documents, and AI memory are untouched.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;">Keeps ~/Documents</span>
+            <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;">Keeps AI Memory</span>
+            <span style="font-size:10px;background:var(--amber-glow);color:#B45309;padding:2px 8px;border-radius:20px;">Wipes app configs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 2 (selected) -->
+      <div style="padding:16px 18px;background:var(--accent-glow);border:2px solid var(--accent);border-radius:10px;cursor:pointer;display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:18px;height:18px;border-radius:50%;background:var(--accent);margin-top:1px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4.5 7.5L8 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent);">Clean Slate — Wipe User Data</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Removes home directory, AI memory, context index, and all user settings. OS and installed packages remain.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span style="font-size:10px;background:rgba(239,68,68,0.1);color:#B91C1C;padding:2px 8px;border-radius:20px;">Wipes ~/</span>
+            <span style="font-size:10px;background:rgba(239,68,68,0.1);color:#B91C1C;padding:2px 8px;border-radius:20px;">Wipes AI Memory</span>
+            <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;">Keeps OS + packages</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 3 -->
+      <div style="padding:16px 18px;background:var(--surface2);border:2px solid var(--border2);border-radius:10px;cursor:pointer;display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);margin-top:1px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Full Format — Bare Metal</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Secure-erases the entire disk and reinstalls KOOMPI OS from the factory image. As if unboxed new.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span style="font-size:10px;background:rgba(239,68,68,0.15);color:#B91C1C;padding:2px 8px;border-radius:20px;">Wipes everything</span>
+            <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;">Reinstalls from image</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-reset actions -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">Before You Reset — Optional</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="width:16px;height:16px;border-radius:3px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Export profile snapshot</div>
+          <div style="font-size:11px;color:var(--text-subtle);">Shell config, AI preferences, app settings. Encrypted archive you can re-import later.</div>
+        </div>
+        <button style="font-size:11px;color:var(--accent);background:var(--accent-glow);border:none;border-radius:5px;padding:4px 10px;cursor:pointer;flex-shrink:0;">Export now</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="width:16px;height:16px;border-radius:3px;border:2px solid var(--border);flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Export Egress Ledger</div>
+          <div style="font-size:11px;color:var(--text-subtle);">Signed PDF report of all outbound data events. For personal records.</div>
+        </div>
+        <button style="font-size:11px;color:var(--text-muted);background:var(--surface3);border:none;border-radius:5px;padding:4px 10px;cursor:pointer;flex-shrink:0;">Export</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+        <div style="width:16px;height:16px;border-radius:3px;border:2px solid var(--border);flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Revoke Selendra ID</div>
+          <div style="font-size:11px;color:var(--text-subtle);">Publish a revocation proof to the blockchain before wiping keys. Prevents impersonation.</div>
+        </div>
+        <button style="font-size:11px;color:var(--text-muted);background:var(--surface3);border:none;border-radius:5px;padding:4px 10px;cursor:pointer;flex-shrink:0;">Revoke</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm button -->
+  <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:16px;">
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:600;color:#B91C1C;margin-bottom:4px;">Reset: Clean Slate</div>
+      <div style="font-size:12px;color:var(--text-muted);">This will permanently delete your home directory and all user data. This action cannot be undone.</div>
+    </div>
+    <button style="font-size:13px;font-weight:600;color:white;background:#ef4444;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;flex-shrink:0;">Hold to Confirm</button>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">koompi-restore daemon <span class="badge new">Zig</span></div>
+      <p>The reset engine is koompi-restore, a Zig-native daemon running as a systemd service. It handles secure erasure, factory image verification, and BTRFS snapshot rollback without root shell scripts.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">BTRFS snapshot rollback</div>
+      <p>If BTRFS is the filesystem, koompi-restore can roll back to a named snapshot (e.g., post-install, last-week) rather than doing a full wipe. Instant and reversible within the snapshot window.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Hold-to-confirm UX</div>
+      <p>Destructive actions require a 3-second press-and-hold, not a click. This prevents accidental resets while preserving keyboard accessibility — the hold timer is announced by a progress ring.</p>
+    </div>
+  </div>
+</section>

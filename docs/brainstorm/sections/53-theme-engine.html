@@ -1,0 +1,347 @@
+<section class="section" id="theme-engine">
+  <div class="section-header">
+    <h2>Theme Engine</h2>
+    <span class="tag ">Color</span>
+  </div>
+  <p class="desc">
+    A wallpaper is a seed, not a picture. <code>koompi-themed</code> extracts dominant colors from the active wallpaper, generates a full tonal palette via a Material-You-style algorithm, and drives <em>every</em> Quickshell token — bar, launcher, sidebar, notifications — in one atomic recolor. This is the engine behind BEAUTIFUL BY DEFAULT, and it is where §01's deliberately-undefined light theme finally gets its values. Beauty here is generated, contrast-checked, and reproducible — never hand-painted per release, never accidental.
+  </p>
+
+  <!-- ============ PIPELINE: wallpaper → seeds → tonal palette ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span>
+        Extraction Pipeline <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);font-weight:400;">koompi-themed · 38 ms</span>
+      </div>
+      <span style="font-size:11px;color:var(--text-subtle);">~/Pictures/Walls/angkor-dawn.jpg · 3840×2160</span>
+    </div>
+
+    <div style="padding:18px;display:flex;align-items:stretch;gap:14px;">
+      <!-- Stage 1: source wallpaper -->
+      <div style="width:160px;flex-shrink:0;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">1 · Source</div>
+        <div style="height:96px;border-radius:8px;background:linear-gradient(135deg,#2B1A3D 0%,#7C3A6E 40%,#E0894A 78%,#F2C879 100%);border:1px solid var(--border2);position:relative;overflow:hidden;">
+          <div style="position:absolute;bottom:0;left:0;right:0;height:34px;background:linear-gradient(180deg,transparent,rgba(20,10,30,.55));"></div>
+          <div style="position:absolute;bottom:6px;left:8px;font-size:10px;color:rgba(255,255,255,.85);font-family:var(--font-mono);">k-means · k=128</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:6px;">Quantized in CAM16 space, not sRGB — perceptual buckets, not pixel averages.</div>
+      </div>
+
+      <!-- arrow -->
+      <div style="display:flex;align-items:center;color:var(--text-subtle);font-size:18px;">→</div>
+
+      <!-- Stage 2: extracted seeds -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">2 · Ranked Seeds <span style="color:var(--text-subtle);font-weight:400;">· by population × chroma</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;border-radius:5px;background:#9B4F8A;border:1px solid rgba(0,0,0,.08);"></div>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">#9B4F8A</span>
+            <span style="font-size:10px;color:var(--text-muted);">primary</span>
+            <div style="flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;"><div style="width:62%;height:100%;background:var(--accent);"></div></div>
+            <span style="font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">62%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;border-radius:5px;background:#E0894A;border:1px solid rgba(0,0,0,.08);"></div>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">#E0894A</span>
+            <span style="font-size:10px;color:var(--text-muted);">secondary</span>
+            <div style="flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;"><div style="width:24%;height:100%;background:var(--accent);"></div></div>
+            <span style="font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">24%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:22px;height:22px;border-radius:5px;background:#3A6E64;border:1px solid rgba(0,0,0,.08);"></div>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">#3A6E64</span>
+            <span style="font-size:10px;color:var(--text-muted);">tertiary</span>
+            <div style="flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;"><div style="width:14%;height:100%;background:var(--accent);"></div></div>
+            <span style="font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">14%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- arrow -->
+      <div style="display:flex;align-items:center;color:var(--text-subtle);font-size:18px;">→</div>
+
+      <!-- Stage 3: tonal palette -->
+      <div style="flex:1.4;min-width:0;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">3 · Tonal Palette <span style="color:var(--text-subtle);font-weight:400;">· tone 0→100</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-family:var(--font-mono);">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:14px;font-size:9px;color:var(--text-subtle);">P</span>
+            <div style="flex:1;height:18px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="flex:1;background:#1A0B17;"></div><div style="flex:1;background:#3A1C33;"></div><div style="flex:1;background:#5E2E52;"></div><div style="flex:1;background:#7C3A6E;"></div><div style="flex:1;background:#9B4F8A;"></div><div style="flex:1;background:#B96FA7;"></div><div style="flex:1;background:#D396C2;"></div><div style="flex:1;background:#E9C2DD;"></div><div style="flex:1;background:#F8E8F2;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:14px;font-size:9px;color:var(--text-subtle);">S</span>
+            <div style="flex:1;height:18px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="flex:1;background:#1F1206;"></div><div style="flex:1;background:#3D2810;"></div><div style="flex:1;background:#60411C;"></div><div style="flex:1;background:#855B28;"></div><div style="flex:1;background:#E0894A;"></div><div style="flex:1;background:#EBA873;"></div><div style="flex:1;background:#F2C49C;"></div><div style="flex:1;background:#F8DEC6;"></div><div style="flex:1;background:#FCF1E6;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:14px;font-size:9px;color:var(--text-subtle);">N</span>
+            <div style="flex:1;height:18px;border-radius:4px;overflow:hidden;display:flex;">
+              <div style="flex:1;background:#121013;"></div><div style="flex:1;background:#2A262C;"></div><div style="flex:1;background:#433E45;"></div><div style="flex:1;background:#5E595F;"></div><div style="flex:1;background:#7A747B;"></div><div style="flex:1;background:#979199;"></div><div style="flex:1;background:#B5AFB6;"></div><div style="flex:1;background:#D6D0D6;"></div><div style="flex:1;background:#F4EFF4;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:8px;">13 tones per family. Dark theme reads from the low end, light from the high end — same hue, one source of truth.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LIVE RECOLOR + LIGHT/DARK PAIR ============ -->
+  <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- Live shell recolor preview -->
+    <div style="flex:1.3;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+        <span>Live Shell Recolor</span>
+        <span style="font-size:10px;color:#047857;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--emerald);"></span>synced · 1 atomic write</span>
+      </div>
+      <!-- mini desktop -->
+      <div style="margin:14px;border-radius:10px;height:200px;background:linear-gradient(135deg,#2B1A3D 0%,#7C3A6E 45%,#E0894A 85%);position:relative;overflow:hidden;border:1px solid var(--border2);">
+        <!-- bar -->
+        <div style="position:absolute;top:8px;left:8px;right:8px;height:24px;border-radius:7px;background:rgba(26,11,23,.72);backdrop-filter:blur(8px);display:flex;align-items:center;padding:0 8px;gap:6px;">
+          <span style="font-size:9px;color:#E9C2DD;font-weight:600;">◈ KOOMPI</span>
+          <span style="font-size:9px;color:rgba(255,255,255,.55);">Code</span>
+          <div style="flex:1;"></div>
+          <span style="width:18px;height:5px;border-radius:3px;background:#B96FA7;"></span>
+          <span style="font-size:9px;color:#F2C49C;">09:42</span>
+        </div>
+        <!-- launcher -->
+        <div style="position:absolute;top:42px;left:50%;transform:translateX(-50%);width:54%;border-radius:9px;background:rgba(26,11,23,.80);backdrop-filter:blur(12px);padding:8px;">
+          <div style="height:14px;border-radius:4px;background:rgba(155,79,138,.35);margin-bottom:6px;display:flex;align-items:center;padding:0 6px;font-size:8px;color:#E9C2DD;">Search…</div>
+          <div style="display:flex;gap:4px;"><div style="flex:1;height:8px;border-radius:3px;background:#9B4F8A;"></div><div style="flex:1;height:8px;border-radius:3px;background:rgba(255,255,255,.12);"></div><div style="flex:1;height:8px;border-radius:3px;background:rgba(255,255,255,.12);"></div></div>
+        </div>
+        <!-- sidebar -->
+        <div style="position:absolute;bottom:8px;right:8px;width:34%;border-radius:9px;background:rgba(26,11,23,.80);backdrop-filter:blur(12px);padding:8px;">
+          <div style="font-size:8px;color:#D396C2;margin-bottom:5px;">✦ AI</div>
+          <div style="height:7px;border-radius:3px;background:rgba(255,255,255,.15);margin-bottom:4px;"></div>
+          <div style="height:7px;width:70%;border-radius:3px;background:#E0894A;"></div>
+        </div>
+      </div>
+      <div style="padding:0 16px 14px;font-size:11px;color:var(--text-muted);">
+        Bar, launcher, and AI sidebar all read the live <code>~/.config/koompi/theme.json</code>. On wallpaper change, <code>koompi-themed</code> writes once; Quickshell's <code>FileView</code> watcher repaints in a single frame — no per-app restart, no flash of unstyled shell.
+      </div>
+    </div>
+
+    <!-- Light/Dark token pair (fills §01 gap) -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+        <span>Light / Dark Token Pair</span>
+        <span style="font-size:10px;color:var(--accent);background:var(--accent-glow);padding:2px 7px;border-radius:5px;">fills §01</span>
+      </div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;font-size:11px;">
+          <span style="color:var(--text-subtle);font-weight:600;">token</span>
+          <span style="color:var(--text-subtle);text-align:center;">dark</span>
+          <span style="color:var(--text-subtle);text-align:center;">light · derived</span>
+        </div>
+        <!-- rows -->
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;">
+          <span style="color:var(--text);">--bg</span>
+          <div style="background:#141019;color:#B5AFB6;padding:5px;border-radius:5px;text-align:center;">#141019</div>
+          <div style="background:#F4EFF4;color:#433E45;padding:5px;border-radius:5px;text-align:center;border:1px solid var(--border2);">#F4EFF4</div>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;">
+          <span style="color:var(--text);">--surface</span>
+          <div style="background:#1F1A26;color:#D6D0D6;padding:5px;border-radius:5px;text-align:center;">#1F1A26</div>
+          <div style="background:#FCFAFC;color:#433E45;padding:5px;border-radius:5px;text-align:center;border:1px solid var(--border2);">#FCFAFC</div>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;">
+          <span style="color:var(--text);">--accent</span>
+          <div style="background:#B96FA7;color:#1A0B17;padding:5px;border-radius:5px;text-align:center;">#B96FA7</div>
+          <div style="background:#7C3A6E;color:#F8E8F2;padding:5px;border-radius:5px;text-align:center;">#7C3A6E</div>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10px;">
+          <span style="color:var(--text);">--text</span>
+          <div style="background:#141019;color:#F4EFF4;padding:5px;border-radius:5px;text-align:center;">#F4EFF4</div>
+          <div style="background:#F4EFF4;color:#1A0B17;padding:5px;border-radius:5px;text-align:center;border:1px solid var(--border2);">#1A0B17</div>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+          Light is not a second hand-authored theme — it is the <em>same palette read from the opposite end of the tone scale</em>. One wallpaper, one source of truth, two coherent surfaces. This is what §01 left as <code>/* TBD */</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONTRAST GUARDRAIL ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+      <span style="display:flex;align-items:center;gap:8px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span>Contrast Guardrail <span style="font-weight:400;color:var(--text-subtle);font-size:11px;">WCAG · runs on every generated pair</span></span>
+      <span style="font-size:10px;color:#047857;background:var(--emerald-glow);padding:2px 8px;border-radius:5px;">11 / 12 pass · 1 auto-corrected</span>
+    </div>
+    <div style="padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;">
+      <div style="flex:1;min-width:150px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:6px;">text on --surface</div>
+        <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:20px;font-weight:700;color:#047857;">14.8:1</span><span style="font-size:10px;color:#047857;">AAA</span></div>
+      </div>
+      <div style="flex:1;min-width:150px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:6px;">accent on --bg</div>
+        <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:20px;font-weight:700;color:#047857;">7.2:1</span><span style="font-size:10px;color:#047857;">AAA</span></div>
+      </div>
+      <div style="flex:1.4;min-width:200px;background:#2C1E08;border:1px solid var(--amber);border-radius:8px;padding:10px;">
+        <div style="font-size:10px;color:var(--amber);margin-bottom:6px;display:flex;justify-content:space-between;"><span>secondary-text on --surface2</span><span>was 3.1:1 · fail</span></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:20px;font-weight:700;color:var(--amber);">3.1</span>
+          <span style="color:var(--text-subtle);">→</span>
+          <span style="font-size:20px;font-weight:700;color:var(--emerald);">4.6:1</span>
+          <span style="font-size:10px;color:var(--emerald);background:var(--emerald-glow);padding:2px 6px;border-radius:4px;">tone +2 nudged</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:6px;">A muddy mid-tone wallpaper can't ship an illegible UI. The engine darkens the foreground tone step-by-step until AA (4.5:1) is met — preserving hue, sacrificing only luminance.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OVERRIDE + LOCK + TYPOGRAPHY ============ -->
+  <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- Manual override + lock -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);">Override &amp; Lock</div>
+      <div style="padding:14px 16px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Force accent</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:#6366F1;border:3px solid white;box-shadow:0 0 0 2px #6366F1;cursor:pointer;"></div>
+          <div style="width:26px;height:26px;border-radius:50%;background:#22D3EE;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:26px;height:26px;border-radius:50%;background:#10B981;border:2px solid transparent;cursor:pointer;"></div>
+          <div style="width:26px;height:26px;border-radius:50%;background:#B96FA7;border:2px solid transparent;cursor:pointer;position:relative;"><span style="position:absolute;top:-2px;right:-2px;font-size:8px;">✦</span></div>
+          <span style="font-size:10px;color:var(--text-muted);margin-left:4px;">✦ = from wallpaper</span>
+        </div>
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Locked tokens <span style="color:var(--text-subtle);font-weight:400;">· survive wallpaper changes</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:6px;padding:7px 10px;">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">--accent</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--accent);"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5.5" width="7" height="5" rx="1" stroke="var(--accent)" stroke-width="1.1"/><path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="var(--accent)" stroke-width="1.1"/></svg>locked #6366F1</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:6px;padding:7px 10px;">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">--bg</span>
+            <span style="font-size:10px;color:#0E7490;">↻ tracks wallpaper</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:6px;padding:7px 10px;">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">--emerald</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:#047857;"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="2.5" y="5.5" width="7" height="5" rx="1" stroke="var(--emerald)" stroke-width="1.1"/><path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="var(--emerald)" stroke-width="1.1"/></svg>semantic · always green</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:10px;">Semantic tokens (emerald=private, amber=consent) are <em>locked by policy</em> — a purple wallpaper must never recolor the "safe" badge. Meaning outranks aesthetics.</div>
+      </div>
+    </div>
+
+    <!-- Typography pairing (§03 home) -->
+    <div style="flex:1.1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+        <span>Khmer + Latin Pairing</span>
+        <span style="font-size:10px;color:#0E7490;background:var(--cyan-glow);padding:2px 7px;border-radius:5px;">§03 typography home</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;border:2px solid var(--accent);border-radius:9px;padding:10px;background:var(--accent-glow);">
+            <div style="font-size:10px;color:var(--accent);font-weight:600;margin-bottom:6px;">Active pairing</div>
+            <div style="font-size:22px;color:var(--text);line-height:1.3;">សួស្តី KOOMPI</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">Noto Sans Khmer + Inter</div>
+          </div>
+          <div style="flex:1;border:1px solid var(--border2);border-radius:9px;padding:10px;cursor:pointer;">
+            <div style="font-size:10px;color:var(--text-subtle);font-weight:600;margin-bottom:6px;">Alt</div>
+            <div style="font-size:22px;color:var(--text);line-height:1.3;font-family:serif;">សួស្តី KOOMPI</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">Battambang + Source Serif</div>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11px;color:var(--text);">Khmer line-height</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">1.7×</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11px;color:var(--text);">Optical size match</span>
+            <span style="font-size:10px;color:#047857;">Khmer +12% · cap-height aligned</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11px;color:var(--text);">Coeng / subscript clearance</span>
+            <span style="font-size:10px;color:#047857;">verified ✓</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:10px;">Khmer glyphs ride taller than Latin and stack subscript consonants (coeng) below the baseline. Naïvely matched point sizes make Khmer look shrunken; the picker upscales Khmer +12% and pads line-height so both scripts feel equal — KHMER-NATIVE means typographic parity, not transliteration.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SAVED THEMES + ICC HANDOFF ============ -->
+  <div style="display:flex;gap:14px;margin-bottom:8px;flex-wrap:wrap;">
+    <!-- Saved themes gallery -->
+    <div style="flex:1.5;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+        <span>Saved Themes</span>
+        <span style="font-size:10px;color:var(--text-subtle);">portable · 2.4 KB JSON each</span>
+      </div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="border:2px solid var(--accent);border-radius:9px;overflow:hidden;cursor:pointer;">
+          <div style="height:46px;background:linear-gradient(135deg,#2B1A3D,#7C3A6E,#E0894A);"></div>
+          <div style="padding:6px;font-size:10px;color:var(--text);">Angkor Dawn</div>
+        </div>
+        <div style="border:1px solid var(--border2);border-radius:9px;overflow:hidden;cursor:pointer;">
+          <div style="height:46px;background:linear-gradient(135deg,#0B1E2B,#1E4A5E,#22D3EE);"></div>
+          <div style="padding:6px;font-size:10px;color:var(--text-muted);">Tonle Blue</div>
+        </div>
+        <div style="border:1px solid var(--border2);border-radius:9px;overflow:hidden;cursor:pointer;">
+          <div style="height:46px;background:linear-gradient(135deg,#0F1A12,#1E3A24,#10B981);"></div>
+          <div style="padding:6px;font-size:10px;color:var(--text-muted);">Rice Field</div>
+        </div>
+        <div style="border:1px dashed var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:4px;color:var(--text-subtle);">
+          <span style="font-size:18px;line-height:1;">+</span>
+          <span style="font-size:9px;">capture</span>
+        </div>
+      </div>
+      <div style="padding:0 16px 14px;font-size:10px;color:var(--text-muted);">
+        A theme is a 2.4 KB JSON of seeds + locks + font pairing — not a baked PNG. Snapshotted by <code>koompi-restore</code>, syncable across devices, and signed by your Selendra DID so a shared theme can prove provenance. One tap re-derives the whole palette on the new machine.
+      </div>
+    </div>
+
+    <!-- ICC handoff to §51 -->
+    <div style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:11px 16px;border-bottom:1px solid var(--border2);font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;">
+        <span>ICC-Aware Handoff</span>
+        <span style="font-size:10px;color:#0E7490;background:var(--cyan-glow);padding:2px 7px;border-radius:5px;">→ §51 display</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="display:flex;flex-direction:column;gap:0;font-size:11px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2);">
+            <span style="width:18px;height:18px;border-radius:5px;background:var(--accent);flex-shrink:0;"></span>
+            <span style="color:var(--text);flex:1;">Palette authored in</span>
+            <span style="font-family:var(--font-mono);color:var(--text-muted);">CAM16 / P3</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2);">
+            <span style="width:18px;height:18px;border-radius:5px;background:var(--cyan);flex-shrink:0;"></span>
+            <span style="color:var(--text);flex:1;">§51 reports panel ICC</span>
+            <span style="font-family:var(--font-mono);color:var(--text-muted);">LG · 98% P3</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;">
+            <span style="width:18px;height:18px;border-radius:5px;background:var(--emerald);flex-shrink:0;"></span>
+            <span style="color:var(--text);flex:1;">Gamut-mapped output</span>
+            <span style="font-family:var(--font-mono);color:#047857;">no clip ✓</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:var(--surface2);border-radius:8px;padding:10px;font-size:10px;color:var(--text-muted);">
+          The engine hands §51 the palette in its <em>working space</em>, not pre-clipped sRGB. On a wide-gamut panel #B96FA7 renders at full chroma; on a cheap 65% sRGB laptop, §51 maps it inward so it never bands or posterizes. Same theme, every display — handled once, downstream.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Beauty is generated, not painted <span class="badge new">KOOMPI</span></div>
+      <p>macOS and Windows 11 ship a fixed palette plus a handful of accent dots; GNOME bolts on libadwaita variants. KOOMPI derives the <em>entire</em> token set from your wallpaper through one CAM16 tonal algorithm. Every surface is coherent and personal from any image — BEAUTIFUL BY DEFAULT as an engine, not a mood board curated per release.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Light theme is no longer "TBD"</div>
+      <p>§01 deliberately left the light token values undefined because hand-authoring a second theme never scales. This engine resolves that audit gap structurally: light is the same palette read from the high end of the tone scale, contrast-checked by the same guardrail. One source of truth, two surfaces — and the gap closes for every future wallpaper, not just today's.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Contrast is a hard gate, not a hint</div>
+      <p>A generated palette that ships an illegible UI is a bug, not a style. Every foreground/background pair is checked against WCAG AA before <code>theme.json</code> is written; failing pairs are tone-nudged automatically, preserving hue. The OS literally cannot apply a theme it can't read.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A theme that ages with you</div>
+      <p>Themes are 2.4 KB of seeds, locks, and font pairing — signed by your Selendra DID, snapshotted by <code>koompi-restore</code>. In 20 years the JSON re-derives a coherent palette on hardware that doesn't exist yet, on color spaces not yet shipped. LIFETIME OS: your taste is portable data you own, never a baked asset that rots.</p>
+    </div>
+  </div>
+</section>

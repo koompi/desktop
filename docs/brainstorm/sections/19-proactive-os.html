@@ -1,0 +1,106 @@
+<section class="section" id="proactive-os">
+  <div class="section-header">
+    <h2>Proactive OS</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    <strong>L4 staged automations</strong>: the assistant prepares an action — drafts the email, pulls the file, holds the flight option — and stages it for one-tap approval. It never sends, commits, or spends on its own. At 1.x every automation stops at an Allow / Edit / Dismiss tap, and every one can explain the trigger, the inference, and the data it touched.
+  </p>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+
+    <!-- Morning prep card -->
+    <div style="width:360px; flex-shrink:0; background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius-xl); overflow:hidden; box-shadow:0 0 0 4px var(--accent-glow);">
+      <div style="padding:14px 16px; background:linear-gradient(135deg, var(--accent-glow), transparent); border-bottom:1px solid var(--border2);">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="color:var(--accent); font-size:14px;">✦</span>
+          <span style="font-size:13px; font-weight:700; flex:1;">Investor call in 2 hours</span>
+          <span class="state-chip active-state" style="font-size:9px; padding:2px 8px;">PREPARED</span>
+        </div>
+      </div>
+      <div style="padding:16px;">
+        <div style="font-size:13px; line-height:1.6; margin-bottom:14px;">
+          I noticed your 11:00 with Sequoia. I've pulled the <strong>Q4 report</strong>, drafted an <strong>agenda</strong>, and prepared <strong>3 talking points</strong> from your last board update. Want to review?
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted);"><span style="color:#0E7490;"><i class="fa-solid fa-file-lines"></i></span> Q4-2025-Report.pdf — opened to slide 7</div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted);"><span style="color:#047857;"><i class="fa-solid fa-pen-to-square"></i></span> agenda.md — 4 items drafted</div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted);"><span style="color:var(--accent);"><i class="fa-solid fa-comment"></i></span> 3 talking points — runway, ARR, hiring</div>
+        </div>
+        <div class="tool-actions">
+          <div class="tool-btn allow" style="background:var(--accent); color:white; border-color:var(--accent);">Review</div>
+          <div class="tool-btn">Snooze</div>
+          <div class="tool-btn deny">Not now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proposed actions tray -->
+    <div style="flex:1; min-width:280px; display:flex; flex-direction:column; gap:12px;">
+      <div class="card-label">Proposed actions — staged, nothing executed</div>
+
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:11px 13px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span style="color:#047857;"><i class="fa-solid fa-envelope"></i></span>
+          <span style="font-size:12px; font-weight:600; flex:1;">Reply to Vathna: "shipping Friday"</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:9px;">Draft ready — matches your usual tone, awaiting your word before it sends.</div>
+        <div class="tool-actions">
+          <div class="tool-btn allow">Allow</div><div class="tool-btn">Edit</div><div class="tool-btn deny">Dismiss</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:11px 13px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span style="color:#B45309;"><i class="fa-solid fa-calendar-days"></i></span>
+          <span style="font-size:12px; font-weight:600; flex:1;">Book travel: Phnom Penh → Siem Reap</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:9px;">You have an offsite confirmed Thu. Flight options held, not purchased.</div>
+        <div class="tool-actions">
+          <div class="tool-btn allow">Allow</div><div class="tool-btn">Edit</div><div class="tool-btn deny">Dismiss</div>
+        </div>
+      </div>
+
+      <!-- Why did you do that -->
+      <div style="background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+        <div style="display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; color:var(--accent); margin-bottom:9px;">
+          <span><i class="fa-solid fa-circle-question"></i></span> Why did you suggest the travel booking?
+        </div>
+        <div class="tool-code" style="font-size:10.5px; line-height:1.7;">
+          <span class="code-key">trigger</span>  = calendar event <span class="code-str">"Team Offsite — Siem Reap"</span><br>
+          <span class="code-key">inferred</span> = you are in Phnom Penh (last 6 events)<br>
+          <span class="code-key">gap</span>      = no flight in inbox or calendar<br>
+          <span class="code-key">policy</span>   = <span class="code-val">propose</span>, never auto-purchase<br>
+          <span class="code-key">data</span>     = <span class="code-val">local only</span> — no booking site contacted yet
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-row" style="margin-top:18px;">
+    <span class="state-chip priv-state">Prepare freely</span>
+    <span class="state-chip active-state">Propose, await tap</span>
+    <span class="state-chip warn-state">Never send unprompted</span>
+    <span class="state-chip danger-state">Never spend money silently</span>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Actions, not alerts <span class="badge new">KOOMPI</span></div>
+      <p>A notification makes you do the work. A proposed action does the work and asks for a yes. The OS arrives at the start line already prepared.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The consent boundary is bright</div>
+      <p>Reading, drafting, and preparing are free. Anything irreversible — sending, posting, paying, committing — always stops at an Allow / Edit / Dismiss tap. The line never moves silently.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Always explainable</div>
+      <p>Every staged action exposes its reasoning chain: the trigger, the inference, the gap it spotted, and the data it touched. No black-box helpfulness.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>Anything the OS would do autonomously — acting or sending without the user approving the staged step — stays on the horizon shelf (<code>horizon.md</code>).</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,95 @@
+<section class="section" id="web3-native">
+  <div class="section-header">
+    <h2>Web3 Native</h2>
+    <span class="tag data">Data</span>
+    <span class="tag priv">Sovereign</span>
+  </div>
+  <p class="desc">
+    KOOMPI is already a self-sovereign system — master key in your keyring, DID in your TPM, exit at full fidelity. Web3 is the same thesis extended to value and identity on shared rails: <strong>keys, signing, names, and payments become OS primitives</strong>, Selendra-default and multichain-capable. The discipline that makes it KOOMPI: <em>native, never mandatory</em> — the chain is one consent away, and it never gates the OS (ADR-0009 holds: nothing on the critical path, nothing on-chain without a deliberate act).
+  </p>
+
+  <!-- ── Principle banner ── -->
+  <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:13px 17px;margin-bottom:18px;">
+    <span style="font-size:20px;"><i class="fa-solid fa-link"></i></span>
+    <div style="flex:1;font-size:11.5px;color:var(--text-muted);line-height:1.65;">
+      <strong style="color:var(--text);">Native ≠ mandatory.</strong> A user who never touches a chain has a complete, lifetime-capable OS forever. A user who does gets wallet-grade key handling, human-readable signing, and agent commerce under constitutional limits — without installing a single extension. Crypto here serves <strong style="color:var(--text);">sovereignty, not speculation</strong>.
+    </div>
+    <span class="state-chip priv-state" style="font-size:9px;">chain-optional</span>
+  </div>
+
+  <!-- ── Architecture strip ── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);font-size:13px;font-weight:700;color:var(--text);">Where Web3 lives in the stack — no new silos</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border2);">
+      <div style="background:var(--surface);padding:12px 14px;"><div style="font-family:var(--font-mono);font-size:10px;color:#047857;margin-bottom:3px;">koompi-vault</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">the wallet <em>is</em> the Vault — TPM-sealed keys, Selendra DID + accounts for Selendra (home), EVM chains, Bitcoin &amp; other networks — one custody, Shamir recovery already designed (§62)</div></div>
+      <div style="background:var(--surface);padding:12px 14px;"><div style="font-family:var(--font-mono);font-size:10px;color:var(--accent);margin-bottom:3px;">koompi-busd</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;"><span style="font-family:var(--font-mono);">web3.resolve · web3.sign · web3.pay</span> — capabilities any app calls; signing never happens inside an app</div></div>
+      <div style="background:var(--surface);padding:12px 14px;"><div style="font-family:var(--font-mono);font-size:10px;color:#B45309;margin-bottom:3px;">org.koompi.Policy</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">spend is commit-class: the Constitution sets limits ("never above $20 unasked"), the floor can forbid entirely</div></div>
+      <div style="background:var(--surface);padding:12px 14px;"><div style="font-family:var(--font-mono);font-size:10px;color:#0E7490;margin-bottom:3px;">koompi-egress</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">chain RPC is just egress — destination, bytes, and rule ID in the Ledger like any other flow</div></div>
+    </div>
+  </div>
+
+  <!-- ── Signing ceremony ── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <div class="panel-stage" style="flex:1.2;min-width:320px;">
+      <div class="tool-modal" style="max-width:420px;">
+        <div class="tool-modal-header">
+          <div class="tool-modal-icon" style="background:var(--emerald-glow);border-color:rgba(16,185,129,.3);"><i class="fa-solid fa-signature"></i></div>
+          <div>
+            <div class="tool-modal-title">Sign &amp; send — read it like a sentence</div>
+            <div class="tool-modal-sub">simulated locally before anything is signed</div>
+          </div>
+        </div>
+        <div class="tool-code">
+          send <span class="code-val">25 SEL</span> → <span class="code-key">vathna.sel</span> <span style="color:var(--text-subtle);">(seen 14× · in your people graph)</span><br>
+          fee <span class="code-str">0.0012 SEL</span> · nonce 84 · selendra-mainnet<br>
+          approvals granted: <span class="code-val">none</span> · contract calls: <span class="code-val">none</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;background:var(--red-glow);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-sm);padding:6px 9px;font-size:11px;color:#B91C1C;margin-bottom:12px;">
+          <i class="fa-solid fa-triangle-exclamation"></i> Had this asked for an <b>unlimited token approval</b>, it would be blocked here with a plain-language warning — the #1 drainer pattern, refused by default.
+        </div>
+        <div class="tool-trust-row">
+          <span>Constitution: Art. 12 — spending above $20 always asks · today's agent budget: $0 spent</span>
+        </div>
+        <div class="tool-actions">
+          <div class="tool-btn allow">✓ Sign in Vault</div>
+          <div class="tool-btn deny">✗ Reject</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dApp + use cases -->
+    <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:12px;">
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:6px;">dApps are just apps</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.65;">
+          Same consent model, same containment (untrusted dApps run bwrap'd), same Egress Ledger. The page never holds your keys — it talks to a <strong style="color:var(--text);">brokered provider</strong>; every signature is the Vault ceremony on the left, in trusted chrome the page cannot draw over.
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:8px;">What it's actually for</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--text-muted);line-height:1.55;">
+          <div><span style="color:#047857;">▸</span> <b>Payments</b> — SEL &amp; stable rails beside KHQR/Bakong in Ledger; remittances without a 7% toll</div>
+          <div><span style="color:var(--accent);">▸</span> <b>Identity &amp; names</b> — <span style="font-family:var(--font-mono);">you.sel</span> (and ENS) resolve OS-wide; ZK proofs share a claim, never the file (§22)</div>
+          <div><span style="color:#0E7490;">▸</span> <b>Provenance</b> — §77 anchoring and the §69 charter escrow already run on these rails</div>
+          <div><span style="color:#B45309;">▸</span> <b>Agent commerce</b> — the partner can pay under constitutional limits, every sat receipted</div>
+          <div><span style="color:#047857;">▸</span> <b>Inheritance</b> — §62 executor keys and the estate protocol are wallet-grade by construction</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">The wallet is the Vault <span class="badge new">KOOMPI</span></div>
+      <p>No extension, no second keyring, no seed phrase in a browser popup. The same TPM-sealed, Shamir-recoverable key custody that guards your documents guards your value — one custody story for a whole life, which is what makes the §62 estate and §70 refugee flows automatically cover crypto too.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Native, never mandatory</div>
+      <p>ADR-0009 still holds: nothing on-chain on the critical path, nothing written without a deliberate act. "Web3-native" means the rails are first-class when you reach for them — not that the OS drags you onto them. The quiet, chainless path stays equal-weight, exactly like First Boot's identity fork.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Sovereignty, not speculation</div>
+      <p>No coin tickers in the shell, no NFT galleries on the desktop, no yield widgets. The Web3 layer exists for the same reason the egress gate does: your identity, your value, and your proofs should work without a corporation's permission — in Phnom Penh, at a border, or twenty years from now.</p>
+    </div>
+  </div>
+</section>

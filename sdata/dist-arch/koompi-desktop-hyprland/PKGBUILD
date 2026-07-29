@@ -1,0 +1,29 @@
+# koompi-desktop-hyprland — the KOOMPI OS Hyprland edition metapackage. Installs
+# the full Hyprland + Quickshell desktop: the DE-agnostic base, shared branding,
+# the compositor, the Quickshell bar, widgets, MicroTeX, and the Hyprland
+# /etc/skel dotfiles. One of the two installer-selectable editions (the other is
+# koompi-desktop-kde); the ISO/installer pacstraps whichever the user chooses.
+groups=(koompi)
+pkgname=koompi-desktop-hyprland
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI OS — Hyprland edition (metapackage)'
+arch=(any)
+license=(None)
+depends=(
+  # DE-agnostic foundation (audio, fonts/themes, KDE apps layer, portals, python,
+  # cursor, branding, sddm — see koompi-base).
+  koompi-base
+  # Hyprland compositor + Quickshell shell + widgets + MicroTeX.
+  koompi-hyprland
+  koompi-quickshell-git
+  koompi-widgets
+  koompi-microtex-git
+  # Hyprland dotfiles into /etc/skel (conflicts koompi-kde-config — one edition
+  # per machine).
+  koompi-hyprland-config
+)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

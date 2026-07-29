@@ -1,0 +1,107 @@
+<section class="section" id="quick-settings">
+  <div class="section-header">
+    <h2>Quick Settings</h2>
+    <span class="tag">Super+N</span>
+  </div>
+  <p class="desc">
+    Right sidebar lower panel. Toggles for system functions and sliders for brightness and volume. Privacy Mode and AI toggles are first-class citizens.
+  </p>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+    <!-- Sidebar panel on a desktop stage -->
+    <div class="panel-stage">
+    <div class="sidebar-panel">
+      <div class="sidebar-header">
+        <span style="font-size:14px;"><i class="fa-solid fa-gear"></i></span>
+        <span class="sidebar-header-title">Quick Settings</span>
+        <div class="sidebar-close-btn">✕</div>
+      </div>
+
+      <!-- Toggle grid -->
+      <div class="qs-section">
+        <div class="qs-grid">
+          <div class="qs-tile on">
+            <span class="qs-tile-icon"><i class="fa-solid fa-wifi"></i></span>
+            <span class="qs-tile-label">WiFi</span>
+            <span class="qs-tile-sub">Home-5G</span>
+          </div>
+          <div class="qs-tile on">
+            <span class="qs-tile-icon"><i class="fa-solid fa-headphones"></i></span>
+            <span class="qs-tile-label">Bluetooth</span>
+            <span class="qs-tile-sub">AirPods</span>
+          </div>
+          <div class="qs-tile">
+            <span class="qs-tile-icon"><i class="fa-solid fa-moon"></i></span>
+            <span class="qs-tile-label">Night Light</span>
+            <span class="qs-tile-sub">Off</span>
+          </div>
+          <div class="qs-tile priv-on">
+            <span class="qs-tile-icon"><i class="fa-solid fa-lock"></i></span>
+            <span class="qs-tile-label">Local Mode</span>
+            <span class="qs-tile-sub">● Private</span>
+          </div>
+          <div class="qs-tile on">
+            <span class="qs-tile-icon">✦</span>
+            <span class="qs-tile-label">AI</span>
+            <span class="qs-tile-sub">Active</span>
+          </div>
+          <div class="qs-tile">
+            <span class="qs-tile-icon"><i class="fa-solid fa-rotate"></i></span>
+            <span class="qs-tile-label">Sync</span>
+            <span class="qs-tile-sub">Paused</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="qs-section">
+        <div class="qs-slider">
+          <span class="qs-slider-icon"><i class="fa-solid fa-sun"></i></span>
+          <div class="qs-slider-track">
+            <div class="qs-slider-fill" style="width:72%; background:var(--accent);"></div>
+            <div class="qs-slider-thumb" style="left:72%;"></div>
+          </div>
+          <span class="qs-slider-value">72%</span>
+        </div>
+        <div class="qs-slider">
+          <span class="qs-slider-icon"><i class="fa-solid fa-volume-high"></i></span>
+          <div class="qs-slider-track">
+            <div class="qs-slider-fill" style="width:58%; background:var(--accent);"></div>
+            <div class="qs-slider-thumb" style="left:58%;"></div>
+          </div>
+          <span class="qs-slider-value">58%</span>
+        </div>
+      </div>
+
+      <!-- Night light temp row -->
+      <div class="qs-section" style="border-bottom:none;">
+        <div style="display:flex; align-items:center; gap:7px;">
+          <span style="font-size:10px; font-weight:600; color:var(--text-subtle); text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0; width:72px;">Color temp</span>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#5CE1E6" stroke-width="1.5" style="flex-shrink:0;"><circle cx="8" cy="8" r="5"/></svg>
+          <div class="qs-slider-track" style="flex:1;">
+            <div class="temp-bar"></div>
+            <div class="qs-slider-thumb" style="left:65%; border-color:#FFD166;"></div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#FF6B35" stroke-width="1.5" style="flex-shrink:0;"><circle cx="8" cy="8" r="5"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Callouts -->
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:200px;">
+      <div class="callout">
+        <div class="callout-title">Privacy Mode tile <span class="badge new">KOOMPI</span></div>
+        <p>Local Mode tile uses emerald "priv-on" state to distinguish it from normal on/off toggles. Tapping it opens the Privacy Dashboard for granular control.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">AI toggle <span class="badge new">KOOMPI</span></div>
+        <p>Disabling AI pauses all background inference, RAG indexing, and context collection. The bar pill dims. Useful for battery saving or focus mode.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Slider interactions</div>
+        <p>Brightness and volume sliders are interactive. Dragging updates the OSD overlay in real time. Scroll wheel on either slider also works from keyboard.</p>
+      </div>
+    </div>
+  </div>
+</section>

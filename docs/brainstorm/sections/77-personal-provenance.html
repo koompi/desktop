@@ -1,0 +1,49 @@
+<section class="section" id="personal-provenance">
+  <div class="section-header">
+    <h2>Your OS as Your Witness</h2>
+    <span class="tag">Futures</span>
+    <span class="tag sys">2.x</span>
+  </div>
+  <p class="desc">
+    The buildable kernel here is narrow and honestly stamped <strong>2.x — a watch item</strong>: C2PA-class capture provenance on media created on the device. When you take a photo, record video, or capture audio on KOOMPI, the OS can embed a signed C2PA manifest at the moment of capture — device, timestamp, and an authorship assertion (camera-captured vs. AI-generated). It rides the open C2PA/Content Credentials standard rather than a bespoke scheme, and it is a watch item because it depends on capture-pipeline and ecosystem support that is not yet settled. This is not "the OS as witness to your whole life" — it is a provenance stamp on captured media, nothing more.
+  </p>
+
+  <!-- C2PA capture manifest -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:12px 16px; background:linear-gradient(135deg, var(--amber-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:14px;"><i class="fa-solid fa-signature"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">C2PA manifest · stamped at capture</span>
+      <span class="state-chip" style="font-size:9px; color:#B45309; border-color:rgba(245,158,11,0.35); background:var(--amber-glow);">2.x watch</span>
+    </div>
+    <div style="padding:16px;">
+      <div class="tool-code" style="font-size:11px; line-height:1.8;">
+        capture · IMG_0421.jpg<br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">standard</span>    <span class="code-str">C2PA / Content Credentials (open spec)</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">assertion</span>   <span class="code-val">camera-captured · not AI-generated</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">bound</span>       <span class="code-val">device + timestamp · signed local key</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">verify</span>      <span class="code-str">any C2PA reader · offline · reveals only the manifest</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+        The manifest travels inside the file as standard Content Credentials, so anything that already reads C2PA can check it — no KOOMPI required to verify. AI-generated media gets the honest assertion in the same manifest.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">On the open standard, not a bespoke chain <span class="badge new">KOOMPI</span></div>
+      <p>Capture provenance rides C2PA / Content Credentials so it interoperates with the wider ecosystem. The value is a signed authorship assertion at the moment of capture, verifiable by any conformant reader.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Why it is a 2.x watch item</div>
+      <p>Trustworthy capture provenance needs capture-pipeline integration and ecosystem support that are still moving. It is tracked and honestly deferred — not promised at v1.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The lifetime-evidence vision — every keystroke marked, weekly Merkle roots anchored to Selendra, and a "negative proof of non-authorship" against deepfakes across fifty years — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

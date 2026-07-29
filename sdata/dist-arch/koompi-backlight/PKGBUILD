@@ -1,0 +1,13 @@
+groups=(koompi)
+pkgname=koompi-backlight
+pkgver=1.0
+pkgrel=2
+pkgdesc='KOOMPI Backlight Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  geoclue
+  brightnessctl
+  ddcutil
+)
+

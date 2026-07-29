@@ -1,0 +1,105 @@
+# koompi-apps — the opinionated application set for the KOOMPI desktop.
+#
+# Everything here is a *user-facing application*, deliberately kept apart from
+# the koompi-* dependency metas. Those carry things the shell cannot run
+# without; remove any of them and the session breaks. Remove something from
+# this list and you have simply chosen a different program.
+#
+# The choices are not arbitrary. dots/.config/hypr/hyprland/variables.lua
+# dispatches each role through launch_first_available.sh, which walks a
+# preference list and runs the first thing on PATH. What this package installs
+# is exactly what makes that list resolve the way KOOMPI intends:
+#
+#   terminal       wezterm
+#   fileManager    dolphin      (already a koompi-kde dependency)
+#   browser        google-chrome-stable, then brave
+#   codeEditor     zed          (its binary is `zeditor`)
+#   textEditor     zed
+#   officeSoftware libreoffice
+#   taskManager    gnome-system-monitor
+#
+# kitty is NOT listed here even though it is the KOOMPI terminal in several
+# places. It is a koompi-fonts-themes dependency because the shell hardcodes it
+# rather than dispatching: the Super+grave scratchpad, launch_sysmon.sh, and
+# the Config.qml terminal actions all name it directly, and applycolor.sh
+# writes it a generated theme. wezterm is what you get when you press the
+# terminal keybind; kitty is what the shell uses internally.
+groups=(koompi)
+pkgname=koompi-apps
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI Desktop applications (metapackage)'
+arch=(any)
+license=(None)
+depends=(
+  # --- terminals -------------------------------------------------------------
+  # The default. variables.lua names it first, general.lua lists its class in
+  # the swallow regex, and kdeglobals sets it as TerminalApplication.
+  wezterm
+  # Konsole is what KDE apps open when they want "a terminal here" - Dolphin's
+  # F4 and Open Terminal both go through KIO, which does not read variables.lua.
+  konsole
+
+  # --- KOOMPI Workbench ------------------------------------------------------
+  # Native editor plus the runtime and command-line foundation used by Claude
+  # Code, Codex, Pi and Herdr. The fast-moving agents themselves are installed
+  # user-locally by sdata/install/agents.sh.
+  neovim
+  nodejs
+  npm
+  git
+  github-cli
+  ripgrep
+  fd
+  fzf
+  jq
+  bat
+  eza
+  zoxide
+  direnv
+  shellcheck
+  shfmt
+  just
+
+  # --- editor ----------------------------------------------------------------
+  # Arch ships this in extra. On Fedora and Debian there is no package and the
+  # recipe falls back to Zed's own installer; see sdata/lib/from-source.sh.
+  zed
+
+  # --- browsers --------------------------------------------------------------
+  # Both from the AUR. variables.lua prefers Chrome, and rules.lua sends either
+  # of them to workspace 9 while leaving `chrome --app` widget windows alone.
+  google-chrome
+  brave-bin
+
+  # --- files, archives and viewers -------------------------------------------
+  # Dolphin itself comes from koompi-kde. These are the pieces that turn it
+  # from a file list into a file manager.
+  ark                       # archive handling, and Dolphin's extract-here
+  kio-admin                 # authenticated file operations without running as root
+  kdegraphics-thumbnailers  # PDF and raw-image previews in the file manager
+  ffmpegthumbs              # video previews
+  okular                    # PDF viewer, and the fallback for Quick Look
+  loupe                     # image viewer
+  mpv                       # video, and the engine mpvpaper drives for live wallpapers
+
+  # --- office ----------------------------------------------------------------
+  # variables.lua prefers wps then onlyoffice then libreoffice. Only
+  # LibreOffice is packaged on every distro KOOMPI supports, so it is the one
+  # the installer guarantees; install either of the others and it wins.
+  libreoffice-fresh
+
+  # --- system ----------------------------------------------------------------
+  btop                      # the sysmon scratchpad (Super+Shift+Escape) runs this
+  gnome-system-monitor      # variables.lua taskManager
+  nm-connection-editor      # the network widget's "advanced settings" opens this
+
+  # --- connectivity ----------------------------------------------------------
+  # Phone pairing, clipboard sync and notification mirroring. The shell's
+  # KDE Connect integration is dead weight without the daemon.
+  kdeconnect
+)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

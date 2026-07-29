@@ -1,0 +1,25 @@
+KOOMPI OS branding assets (koompi-branding)
+===========================================
+
+Static, edition-agnostic brand assets installed to standard system paths and
+shared by both the Hyprland and the Plasma (KDE) editions plus the live ISO.
+
+Installed:
+  /usr/share/backgrounds/koompi/          wallpapers (from repo wallpapers/)
+  /usr/share/koompi/koompi-symbolic.svg   logo / brand mark
+  /usr/share/plymouth/themes/koompi/      boot splash (script module, placeholder)
+  /usr/share/grub/themes/koompi/          GRUB theme (skeleton)
+  /usr/share/sddm/themes/koompi/          SDDM greeter dir (skeleton)
+  /etc/sddm.conf.d/10-koompi.conf         SDDM theme selector (interim: breeze)
+  /usr/lib/systemd/system-preset/90-koompi.preset   enable sddm.service
+
+NOT shipped here:
+  os-release — owned by the `filesystem` package; set in the archiso airootfs and
+  written to the target by the installer (see docs/os-build.md).
+
+TODO (art): the Naga per-era visual identity (docs/naming.md) is unfinished. The
+plymouth/grub/sddm themes are functional skeletons. When the Naga art is ready,
+replace the placeholders and flip /etc/sddm.conf.d/10-koompi.conf to Current=koompi.
+
+License: KOOMPI brand assets — custom. Upstream theme engines (breeze, etc.) keep
+their own licenses.

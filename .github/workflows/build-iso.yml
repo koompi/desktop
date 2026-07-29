@@ -1,0 +1,67 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SKELETON — build the KOOMPI OS live ISO with mkarchiso.
+#
+# This is a SCAFFOLD. It runs mkarchiso against the archiso profile at
+# sdata/dist-arch/iso/koompi/ and uploads the resulting .iso artifact.
+#
+# PRECONDITION: the signed [koompi] pacman repo must ALREADY EXIST and be
+# published, because the profile's pacman.conf points its [koompi] Server= at it
+# and mkarchiso pulls KOOMPI packages from there. Run build-packages.yml (and the
+# sign + publish steps) FIRST. See sdata/dist-arch/repo/README.md.
+#
+# NOTE: the archiso profile at sdata/dist-arch/iso/koompi/ exists (this scaffold).
+# The remaining precondition is the signed [koompi] repo (above) being published,
+# so mkarchiso can pull KOOMPI packages into the image.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Build KOOMPI ISO (SKELETON)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      # mkarchiso needs root + loop devices + mount, so the container must be
+      # privileged. Without this, image assembly fails on loop-device setup.
+      options: --privileged
+    steps:
+      - name: Install archiso
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm --needed archiso git
+
+      - uses: actions/checkout@v4
+
+      - name: Verify the [koompi] repo is reachable
+        run: |
+          set -euo pipefail
+          echo "TODO: confirm the signed [koompi] repo is published and that"
+          echo "      sdata/dist-arch/iso/koompi/pacman.conf points [koompi]"
+          echo "      Server= at it. mkarchiso pacstraps from this repo, so the"
+          echo "      signing key must also be trusted inside the profile."
+          test -f sdata/dist-arch/iso/koompi/profiledef.sh || {
+            echo "archiso profile not scaffolded yet (sdata/dist-arch/iso/koompi/)." >&2
+            echo "This workflow is the consumer; create the profile first." >&2
+            exit 1
+          }
+
+      - name: Build the ISO
+        run: |
+          set -euo pipefail
+          # -v verbose, -w work dir, -o output dir, then the profile directory.
+          mkarchiso -v \
+            -w "$RUNNER_TEMP/archiso-work" \
+            -o "$GITHUB_WORKSPACE/out" \
+            sdata/dist-arch/iso/koompi/
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: koompi-iso
+          path: out/*.iso
+          if-no-files-found: error

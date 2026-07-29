@@ -1,0 +1,48 @@
+# koompi-kde-config — the KOOMPI Plasma edition's /etc/skel payload: the shared
+# KDE/Qt theming (reused verbatim from the repo dots/) PLUS the greenfield Plasma
+# shell layout (single TOP panel, no dock, no bottom taskbar, no global menu).
+#
+# Mutually exclusive with koompi-hyprland-config: both ship the same shared
+# theming paths into /etc/skel, so they `conflicts`. One edition per machine,
+# chosen at install — exactly the KOOMPI OS install-time edition choice.
+#
+# BUILD NOTE: like koompi-hyprland-config, the in-tree makepkg flow reads the repo
+# via $startdir; clean-chroot/devtools builds must switch source to a pinned git
+# tag and copy from "$srcdir/koompi-desktop/dots".
+groups=(koompi)
+pkgname=koompi-kde-config
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI Plasma (KDE) layout + shared theming, installed into /etc/skel'
+arch=(any)
+url='https://github.com/rithythul/koompi-desktop'
+license=('custom')
+depends=(koompi-plasma)
+conflicts=('koompi-hyprland-config')
+
+package() {
+  local _repo_root _dots _skel _p
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  _dots="$_repo_root/dots/.config"
+  _skel="$pkgdir/etc/skel/.config"
+  if [[ ! -d "$_dots" ]]; then
+    echo "koompi-kde-config: dots/.config not found at repo root ($_repo_root)." >&2
+    echo "Building in a clean chroot? Switch source to a pinned git tag (see header)." >&2
+    return 1
+  fi
+  install -dm755 "$_skel"
+
+  # 1. Shared KDE/Qt theming — reused verbatim from the Hyprland dotfiles so the
+  #    two editions look identical. (This overlap with koompi-hyprland-config is
+  #    exactly why the two packages conflict.) kdeglobals is a seed that the
+  #    kde-material-you-colors autostart (below) overwrites from the wallpaper.
+  for _p in kdeglobals Kvantum darklyrc dolphinrc konsolerc kde-material-you-colors; do
+    if [[ -e "$_dots/$_p" ]]; then
+      cp -a "$_dots/$_p" "$_skel/"
+    fi
+  done
+
+  # 2. Plasma shell layout + autostart (greenfield, authored under files/.config):
+  #    single TOP panel, no dock/bottom taskbar, no global-menu applet.
+  cp -a "$startdir/files/.config/." "$_skel/"
+}

@@ -1,0 +1,45 @@
+# KOOMPI OS — Plasma shell layout (KDE edition).
+# Single TOP panel (location=3), no bottom taskbar, no dock, no global menu.
+# GREENFIELD — TUNE LIVE on real Plasma 6: appletsrc geometry and applet IDs
+# commonly need a first-boot pass. See docs/os-build.md.
+
+[ActionPlugins][0]
+RightButton;NoModifier=org.kde.contextmenu
+
+[Containments][1]
+activityId=
+formfactor=0
+immutability=1
+lastScreen=0
+location=0
+plugin=org.kde.plasma.folder
+wallpaperplugin=org.kde.image
+
+[Containments][1][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/backgrounds/koompi/koompi-antlers.jpg
+
+[Containments][2]
+formfactor=2
+immutability=1
+lastScreen=0
+location=3
+plugin=org.kde.panel
+
+[Containments][2][General]
+AppletOrder=3;4;5;6
+
+[Containments][2][Applets][3]
+immutability=1
+plugin=org.kde.plasma.kickoff
+
+[Containments][2][Applets][4]
+immutability=1
+plugin=org.kde.plasma.icontasks
+
+[Containments][2][Applets][5]
+immutability=1
+plugin=org.kde.plasma.systemtray
+
+[Containments][2][Applets][6]
+immutability=1
+plugin=org.kde.plasma.digitalclock

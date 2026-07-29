@@ -1,0 +1,87 @@
+<section class="section" id="rag-sources">
+  <div class="section-header">
+    <h2>RAG / Context Sources</h2>
+    <span class="tag data">Data</span>
+  </div>
+  <p class="desc">
+    Shows which files, docs, and context fragments the AI loaded for the current conversation. Full transparency on what the AI knows and how many tokens are in use.
+  </p>
+
+  <div style="max-width:560px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <!-- Header -->
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">✦ Active Context</span>
+        <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--accent-glow); color:var(--accent); border:1px solid rgba(99,102,241,0.25);">4 sources · 12,480 tokens</span>
+      </div>
+
+      <!-- Source rows -->
+      <div style="padding:8px 14px;">
+        <div class="rag-source-item">
+          <span class="rag-source-type">FILE</span>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="rag-source-name">BarContent.qml</span>
+              <span style="font-size:10px; color:var(--text-subtle); margin-left:auto;">4.2KB</span>
+              <span title="Remove from context" style="font-size:10px; color:var(--text-subtle); cursor:pointer; padding:0 2px;">✕</span>
+            </div>
+            <div class="rag-source-excerpt">...LeftSidebarButton, Workspaces, MprisController...</div>
+          </div>
+        </div>
+        <div class="rag-source-item">
+          <span class="rag-source-type">FILE</span>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="rag-source-name">CONTEXT.md</span>
+              <span style="font-size:10px; color:var(--text-subtle); margin-left:auto;">8.1KB</span>
+            </div>
+            <div class="rag-source-excerpt">KOOMPI OS repositioned as AI-first desktop...</div>
+          </div>
+        </div>
+        <div class="rag-source-item">
+          <span class="rag-source-type" style="background:var(--accent-glow); color:var(--accent);">DOC</span>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="rag-source-name">prd.md</span>
+              <span style="font-size:10px; color:var(--text-subtle); margin-left:auto;">22KB</span>
+            </div>
+            <div class="rag-source-excerpt">The OS That Thinks — data ownership in the AI era...</div>
+          </div>
+        </div>
+        <div class="rag-source-item">
+          <span class="rag-source-type" style="background:var(--cyan-glow); color:#0E7490;">MEM</span>
+          <div style="flex:1; min-width:0;">
+            <span class="rag-source-name">User profile</span>
+            <div class="rag-source-excerpt">Founder, blockchain/Selendra background, thinks ecosystem-level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Token budget bar -->
+      <div style="padding:10px 14px 14px; border-top:1px solid var(--border2);">
+        <div class="token-budget-label">
+          <span>Token budget used</span>
+          <span>12,480 / 100,000</span>
+        </div>
+        <div class="token-budget-track">
+          <div class="token-budget-fill" style="width:12.48%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Token budget <span class="badge new">KOOMPI</span></div>
+      <p>Visual bar shows how much context window has been consumed. Helps you understand when to trim context or start a fresh conversation.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Source types</div>
+      <p>FILE = local filesystem, DOC = indexed document, MEM = persistent memory entry. Each type is color-coded: file=default, doc=accent, mem=cyan.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Edit context</div>
+      <p>Clicking any source row removes it from context. Drag to reorder by priority. Add new sources via the + button (opens file picker or memory browser).</p>
+    </div>
+  </div>
+</section>

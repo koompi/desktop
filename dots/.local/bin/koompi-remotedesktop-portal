@@ -1,0 +1,529 @@
+#!/usr/bin/env python3
+# KOOMPI RemoteDesktop portal backend.
+#
+# xdg-desktop-portal-hyprland ships Screenshot, ScreenCast, GlobalShortcuts and
+# InputCapture, but no RemoteDesktop, so nothing on this desktop can satisfy
+# org.freedesktop.portal.RemoteDesktop. KDE Connect's mousepad plugin drives
+# Wayland input exclusively through that portal, which is why Remote Input fails
+# with "RemoteDesktop portal not authenticated".
+#
+# This implements the backend half (org.freedesktop.impl.portal.RemoteDesktop)
+# and injects the events into /dev/uinput, so they arrive as real input devices
+# and Hyprland treats them like any other mouse and keyboard.
+#
+# It deliberately reports interface version 1. The plugin links libei and will
+# ask for ConnectToEIS whenever the portal reports version 2 or newer; there is
+# no EIS server here, so version 1 keeps it on the NotifyPointer*/NotifyKeyboard*
+# path that uinput can actually serve.
+
+import ctypes
+import errno
+import fcntl
+import os
+import struct
+import sys
+import time
+
+import gi
+
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio, GLib
+
+BUS_NAME = "org.freedesktop.impl.portal.desktop.koompi"
+OBJECT_PATH = "/org/freedesktop/portal/desktop"
+
+DEVICE_KEYBOARD = 1
+DEVICE_POINTER = 2
+
+RESPONSE_SUCCESS = 0
+RESPONSE_CANCELLED = 1
+RESPONSE_failed = 2
+
+# ---------------------------------------------------------------- uinput
+
+EV_SYN, EV_KEY, EV_REL = 0x00, 0x01, 0x02
+SYN_REPORT = 0
+REL_X, REL_Y, REL_HWHEEL, REL_WHEEL = 0x00, 0x01, 0x06, 0x08
+BTN_LEFT, BTN_RIGHT, BTN_MIDDLE = 0x110, 0x111, 0x112
+
+UINPUT_SETUP_FMT = "<4H80sI"
+INPUT_EVENT_FMT = "<qqHHi"
+
+
+def _iow(kind, nr, size):
+    # _IOC_WRITE is 1, not 2 - 2 is _IOC_READ, and getting it wrong makes every
+    # ioctl here fail with EINVAL.
+    return (1 << 30) | (size << 16) | (ord(kind) << 8) | nr
+
+
+def _io(kind, nr):
+    return (ord(kind) << 8) | nr
+
+
+UI_DEV_CREATE = _io("U", 1)
+UI_DEV_DESTROY = _io("U", 2)
+UI_DEV_SETUP = _iow("U", 3, struct.calcsize(UINPUT_SETUP_FMT))
+UI_SET_EVBIT = _iow("U", 100, ctypes.sizeof(ctypes.c_int))
+UI_SET_KEYBIT = _iow("U", 101, ctypes.sizeof(ctypes.c_int))
+UI_SET_RELBIT = _iow("U", 102, ctypes.sizeof(ctypes.c_int))
+
+
+class UinputDevice:
+    def __init__(self, name, rel_axes=(), keys=()):
+        self.name = name
+        self.fd = os.open("/dev/uinput", os.O_WRONLY | os.O_NONBLOCK)
+        if rel_axes:
+            fcntl.ioctl(self.fd, UI_SET_EVBIT, EV_REL)
+            for axis in rel_axes:
+                fcntl.ioctl(self.fd, UI_SET_RELBIT, axis)
+        if keys:
+            fcntl.ioctl(self.fd, UI_SET_EVBIT, EV_KEY)
+            for key in keys:
+                fcntl.ioctl(self.fd, UI_SET_KEYBIT, key)
+        setup = struct.pack(
+            UINPUT_SETUP_FMT, 0x03, 0x4B4D, 0x0001, 0x0001, name.encode()[:79], 0
+        )
+        fcntl.ioctl(self.fd, UI_DEV_SETUP, setup)
+        fcntl.ioctl(self.fd, UI_DEV_CREATE)
+        # libinput needs a moment to pick the device up; events written before
+        # it does are delivered nowhere.
+        time.sleep(0.15)
+
+    def emit(self, etype, code, value):
+        os.write(self.fd, struct.pack(INPUT_EVENT_FMT, 0, 0, etype, code, value))
+
+    def sync(self):
+        self.emit(EV_SYN, SYN_REPORT, 0)
+
+    def close(self):
+        try:
+            fcntl.ioctl(self.fd, UI_DEV_DESTROY)
+        except OSError:
+            pass
+        os.close(self.fd)
+
+
+# ------------------------------------------------------- keysym mapping
+
+KEY_ESC, KEY_BACKSPACE, KEY_TAB, KEY_ENTER = 1, 14, 15, 28
+KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_RIGHTSHIFT = 29, 42, 54
+KEY_LEFTALT, KEY_SPACE, KEY_CAPSLOCK = 56, 57, 58
+KEY_RIGHTCTRL, KEY_RIGHTALT = 97, 100
+KEY_HOME, KEY_UP, KEY_PAGEUP = 102, 103, 104
+KEY_LEFT, KEY_RIGHT, KEY_END = 105, 106, 107
+KEY_DOWN, KEY_PAGEDOWN, KEY_INSERT, KEY_DELETE = 108, 109, 110, 111
+KEY_LEFTMETA, KEY_RIGHTMETA = 125, 126
+
+# US layout, unshifted then shifted, in evdev code order.
+_ROWS = [
+    ("`1234567890-=", "~!@#$%^&*()_+", [41, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
+    ("qwertyuiop[]\\", "QWERTYUIOP{}|", [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 43]),
+    ("asdfghjkl;'", 'ASDFGHJKL:"', [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]),
+    ("zxcvbnm,./", "ZXCVBNM<>?", [44, 45, 46, 47, 48, 49, 50, 51, 52, 53]),
+]
+
+# keysym -> (evdev keycode, needs shift)
+KEYSYM_MAP = {}
+for plain, shifted, codes in _ROWS:
+    for ch, sh, code in zip(plain, shifted, codes):
+        KEYSYM_MAP[ord(ch)] = (code, False)
+        KEYSYM_MAP[ord(sh)] = (code, True)
+KEYSYM_MAP[ord(" ")] = (KEY_SPACE, False)
+
+KEYSYM_MAP.update({
+    0xFF08: (KEY_BACKSPACE, False),
+    0xFF09: (KEY_TAB, False),
+    0xFF0D: (KEY_ENTER, False),
+    0xFF1B: (KEY_ESC, False),
+    0xFF50: (KEY_HOME, False),
+    0xFF51: (KEY_LEFT, False),
+    0xFF52: (KEY_UP, False),
+    0xFF53: (KEY_RIGHT, False),
+    0xFF54: (KEY_DOWN, False),
+    0xFF55: (KEY_PAGEUP, False),
+    0xFF56: (KEY_PAGEDOWN, False),
+    0xFF57: (KEY_END, False),
+    0xFF63: (KEY_INSERT, False),
+    0xFF8D: (KEY_ENTER, False),
+    0xFFFF: (KEY_DELETE, False),
+    0xFFE1: (KEY_LEFTSHIFT, False),
+    0xFFE2: (KEY_RIGHTSHIFT, False),
+    0xFFE3: (KEY_LEFTCTRL, False),
+    0xFFE4: (KEY_RIGHTCTRL, False),
+    0xFFE9: (KEY_LEFTALT, False),
+    0xFFEA: (KEY_RIGHTALT, False),
+    0xFFEB: (KEY_LEFTMETA, False),
+    0xFFEC: (KEY_RIGHTMETA, False),
+})
+for i in range(12):  # F1..F12; F11/F12 are not contiguous with F1..F10
+    KEYSYM_MAP[0xFFBE + i] = ((59 + i) if i < 10 else (87 + i - 10), False)
+
+ALL_KEYS = sorted({code for code, _ in KEYSYM_MAP.values()} | set(range(1, 128)))
+POINTER_BUTTONS = [BTN_LEFT, BTN_RIGHT, BTN_MIDDLE]
+
+
+def keysym_to_key(keysym):
+    if keysym in KEYSYM_MAP:
+        return KEYSYM_MAP[keysym]
+    # Unicode keysyms are 0x01000000 + codepoint.
+    if 0x01000000 <= keysym <= 0x0110FFFF:
+        return KEYSYM_MAP.get(keysym - 0x01000000, (None, False))
+    return (None, False)
+
+
+# ------------------------------------------------------------ the backend
+
+IMPL_XML = """
+<node>
+  <interface name='org.freedesktop.impl.portal.RemoteDesktop'>
+    <method name='CreateSession'>
+      <arg type='o' name='handle' direction='in'/>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='u' name='response' direction='out'/>
+      <arg type='a{sv}' name='results' direction='out'/>
+    </method>
+    <method name='SelectDevices'>
+      <arg type='o' name='handle' direction='in'/>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='u' name='response' direction='out'/>
+      <arg type='a{sv}' name='results' direction='out'/>
+    </method>
+    <method name='Start'>
+      <arg type='o' name='handle' direction='in'/>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='s' name='app_id' direction='in'/>
+      <arg type='s' name='parent_window' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='u' name='response' direction='out'/>
+      <arg type='a{sv}' name='results' direction='out'/>
+    </method>
+    <method name='NotifyPointerMotion'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='d' name='dx' direction='in'/>
+      <arg type='d' name='dy' direction='in'/>
+    </method>
+    <method name='NotifyPointerMotionAbsolute'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='u' name='stream' direction='in'/>
+      <arg type='d' name='x' direction='in'/>
+      <arg type='d' name='y' direction='in'/>
+    </method>
+    <method name='NotifyPointerButton'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='i' name='button' direction='in'/>
+      <arg type='u' name='state' direction='in'/>
+    </method>
+    <method name='NotifyPointerAxis'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='d' name='dx' direction='in'/>
+      <arg type='d' name='dy' direction='in'/>
+    </method>
+    <method name='NotifyPointerAxisDiscrete'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='u' name='axis' direction='in'/>
+      <arg type='i' name='steps' direction='in'/>
+    </method>
+    <method name='NotifyKeyboardKeycode'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='i' name='keycode' direction='in'/>
+      <arg type='u' name='state' direction='in'/>
+    </method>
+    <method name='NotifyKeyboardKeysym'>
+      <arg type='o' name='session_handle' direction='in'/>
+      <arg type='a{sv}' name='options' direction='in'/>
+      <arg type='i' name='keysym' direction='in'/>
+      <arg type='u' name='state' direction='in'/>
+    </method>
+    <property name='AvailableDeviceTypes' type='u' access='read'/>
+    <property name='version' type='u' access='read'/>
+  </interface>
+</node>
+"""
+
+SESSION_XML = """
+<node>
+  <interface name='org.freedesktop.impl.portal.Session'>
+    <method name='Close'/>
+    <signal name='Closed'/>
+  </interface>
+</node>
+"""
+
+REQUEST_XML = """
+<node>
+  <interface name='org.freedesktop.impl.portal.Request'>
+    <method name='Close'/>
+  </interface>
+</node>
+"""
+
+
+def log(*parts):
+    print(f"[{time.strftime('%H:%M:%S')}]", *parts, file=sys.stderr, flush=True)
+
+
+# pygobject deprecated plain register_object in favour of the closures variant.
+# Using the old one works but prints a DeprecationWarning on every session,
+# which would bury the interesting lines in the journal.
+def register(connection, path, interface_info, on_call, on_get_property=None):
+    return connection.register_object_with_closures2(
+        path, interface_info, on_call, on_get_property, None
+    )
+
+
+def kdeconnect_running():
+    for pid in os.listdir("/proc"):
+        if not pid.isdigit():
+            continue
+        try:
+            with open(f"/proc/{pid}/comm") as handle:
+                if handle.read().strip() == "kdeconnectd":
+                    return True
+        except OSError:
+            continue
+    return False
+
+
+class Portal:
+    # The impl side of a portal never sees the real requesting process: the only
+    # DBus caller is xdg-desktop-portal itself, and app_id is empty for anything
+    # not sandboxed. So a non-empty app_id is matched against the allow-list,
+    # and an empty one is only accepted while kdeconnectd is actually running.
+    ALLOWED_APP_IDS = {"org.kde.kdeconnect", "org.kde.kdeconnect.daemon"}
+
+    def __init__(self):
+        self.sessions = {}
+        self.pointer = None
+        self.keyboard = None
+        self.impl_info = Gio.DBusNodeInfo.new_for_xml(IMPL_XML).interfaces[0]
+        self.session_info = Gio.DBusNodeInfo.new_for_xml(SESSION_XML).interfaces[0]
+        self.request_info = Gio.DBusNodeInfo.new_for_xml(REQUEST_XML).interfaces[0]
+
+    # -- device lifecycle, created lazily and torn down with the last session
+
+    def ensure_devices(self):
+        if self.pointer is None:
+            self.pointer = UinputDevice(
+                "KOOMPI Remote Pointer",
+                rel_axes=(REL_X, REL_Y, REL_WHEEL, REL_HWHEEL),
+                keys=POINTER_BUTTONS,
+            )
+            log("created virtual pointer")
+        if self.keyboard is None:
+            self.keyboard = UinputDevice("KOOMPI Remote Keyboard", keys=ALL_KEYS)
+            log("created virtual keyboard")
+
+    def release_devices(self):
+        if self.sessions:
+            return
+        for attr in ("pointer", "keyboard"):
+            device = getattr(self, attr)
+            if device is not None:
+                device.close()
+                setattr(self, attr, None)
+        log("released virtual devices")
+
+    def permitted(self, app_id):
+        if app_id:
+            allowed = app_id in self.ALLOWED_APP_IDS
+            log(f"session request app_id={app_id!r} -> {'allowed' if allowed else 'DENIED'}")
+            return allowed
+        if kdeconnect_running():
+            log("session request app_id='' with kdeconnectd running -> allowed")
+            return True
+        log("session request app_id='' and no kdeconnectd -> DENIED")
+        return False
+
+    # -- dispatch
+
+    def on_call(self, connection, sender, path, interface, method, params, invocation):
+        try:
+            handler = getattr(self, f"do_{method}")
+        except AttributeError:
+            invocation.return_error_literal(
+                Gio.DBusError.quark(), Gio.DBusError.UNKNOWN_METHOD, method
+            )
+            return
+        try:
+            handler(connection, invocation, *params.unpack())
+        except Exception as exc:  # a raising handler must not kill the daemon
+            log(f"{method} failed: {exc!r}")
+            invocation.return_error_literal(
+                Gio.DBusError.quark(), Gio.DBusError.FAILED, str(exc)
+            )
+
+    def on_get_property(self, connection, sender, path, interface, prop):
+        if prop == "AvailableDeviceTypes":
+            return GLib.Variant("u", DEVICE_KEYBOARD | DEVICE_POINTER)
+        if prop == "version":
+            return GLib.Variant("u", 1)
+        return None
+
+    # -- session lifecycle
+
+    def do_CreateSession(self, connection, invocation, handle, session_handle, app_id, options):
+        if not self.permitted(app_id):
+            invocation.return_value(GLib.Variant("(ua{sv})", (RESPONSE_CANCELLED, {})))
+            return
+
+        registration = register(
+            connection,
+            session_handle,
+            self.session_info,
+            lambda c, s, p, i, m, prm, inv: self.close_session(session_handle, inv),
+        )
+        self.sessions[session_handle] = {
+            "connection": connection,
+            "registration": registration,
+            "devices": DEVICE_KEYBOARD | DEVICE_POINTER,
+            "started": False,
+        }
+        log(f"session created {session_handle}")
+        invocation.return_value(
+            GLib.Variant("(ua{sv})", (RESPONSE_SUCCESS, {"session_id": GLib.Variant("s", session_handle)}))
+        )
+
+    def do_SelectDevices(self, connection, invocation, handle, session_handle, app_id, options):
+        session = self.sessions.get(session_handle)
+        if session is None:
+            invocation.return_value(GLib.Variant("(ua{sv})", (RESPONSE_CANCELLED, {})))
+            return
+        requested = options.get("types")
+        if requested is not None:
+            session["devices"] = int(requested) & (DEVICE_KEYBOARD | DEVICE_POINTER)
+        log(f"devices selected {session['devices']} for {session_handle}")
+        invocation.return_value(GLib.Variant("(ua{sv})", (RESPONSE_SUCCESS, {})))
+
+    def do_Start(self, connection, invocation, handle, session_handle, app_id, parent_window, options):
+        session = self.sessions.get(session_handle)
+        if session is None:
+            invocation.return_value(GLib.Variant("(ua{sv})", (RESPONSE_CANCELLED, {})))
+            return
+        self.ensure_devices()
+        session["started"] = True
+        log(f"session started {session_handle}")
+        results = {
+            "devices": GLib.Variant("u", session["devices"]),
+            "clipboard_enabled": GLib.Variant("b", False),
+        }
+        invocation.return_value(GLib.Variant("(ua{sv})", (RESPONSE_SUCCESS, results)))
+
+    def close_session(self, session_handle, invocation=None):
+        session = self.sessions.pop(session_handle, None)
+        if session is not None:
+            if session["registration"]:
+                session["connection"].unregister_object(session["registration"])
+            log(f"session closed {session_handle}")
+        if invocation is not None:
+            invocation.return_value(None)
+        self.release_devices()
+
+    # -- input injection
+
+    def active(self, session_handle, mask):
+        session = self.sessions.get(session_handle)
+        return bool(session and session["started"] and session["devices"] & mask)
+
+    def do_NotifyPointerMotion(self, connection, invocation, session_handle, options, dx, dy):
+        if not self.active(session_handle, DEVICE_POINTER):
+            return
+        # Sub-pixel deltas would truncate to zero and the pointer would never
+        # move, so anything non-zero is rounded away from zero.
+        for code, delta in ((REL_X, dx), (REL_Y, dy)):
+            step = int(delta) or (1 if delta > 0 else -1 if delta < 0 else 0)
+            if step:
+                self.pointer.emit(EV_REL, code, step)
+        self.pointer.sync()
+
+    def do_NotifyPointerMotionAbsolute(self, connection, invocation, session_handle, options, stream, x, y):
+        # No PipeWire stream is negotiated here, so there is no coordinate space
+        # to map into. Relative motion is what the phone's touchpad sends.
+        return
+
+    def do_NotifyPointerButton(self, connection, invocation, session_handle, options, button, state):
+        if not self.active(session_handle, DEVICE_POINTER):
+            return
+        self.pointer.emit(EV_KEY, button, 1 if state else 0)
+        self.pointer.sync()
+
+    def do_NotifyPointerAxis(self, connection, invocation, session_handle, options, dx, dy):
+        if not self.active(session_handle, DEVICE_POINTER):
+            return
+        for code, delta in ((REL_HWHEEL, dx), (REL_WHEEL, -dy)):
+            step = int(delta / 15) or (1 if delta > 0.5 else -1 if delta < -0.5 else 0)
+            if step:
+                self.pointer.emit(EV_REL, code, step)
+        self.pointer.sync()
+
+    def do_NotifyPointerAxisDiscrete(self, connection, invocation, session_handle, options, axis, steps):
+        if not self.active(session_handle, DEVICE_POINTER):
+            return
+        code = REL_WHEEL if axis == 0 else REL_HWHEEL
+        self.pointer.emit(EV_REL, code, -steps if axis == 0 else steps)
+        self.pointer.sync()
+
+    def do_NotifyKeyboardKeycode(self, connection, invocation, session_handle, options, keycode, state):
+        if not self.active(session_handle, DEVICE_KEYBOARD):
+            return
+        self.keyboard.emit(EV_KEY, keycode, 1 if state else 0)
+        self.keyboard.sync()
+
+    def do_NotifyKeyboardKeysym(self, connection, invocation, session_handle, options, keysym, state):
+        if not self.active(session_handle, DEVICE_KEYBOARD):
+            return
+        keycode, shift = keysym_to_key(keysym & 0xFFFFFFFF)
+        if keycode is None:
+            log(f"unmapped keysym 0x{keysym:x}")
+            return
+        if state and shift:
+            self.keyboard.emit(EV_KEY, KEY_LEFTSHIFT, 1)
+            self.keyboard.sync()
+        self.keyboard.emit(EV_KEY, keycode, 1 if state else 0)
+        self.keyboard.sync()
+        if not state and shift:
+            self.keyboard.emit(EV_KEY, KEY_LEFTSHIFT, 0)
+            self.keyboard.sync()
+
+
+def main():
+    portal = Portal()
+    loop = GLib.MainLoop()
+
+    def on_bus_acquired(connection, name):
+        register(
+            connection,
+            OBJECT_PATH,
+            portal.impl_info,
+            portal.on_call,
+            portal.on_get_property,
+        )
+        log(f"registered {OBJECT_PATH} on {name}")
+
+    def on_name_lost(connection, name):
+        log(f"lost bus name {name}, exiting")
+        loop.quit()
+
+    Gio.bus_own_name(
+        Gio.BusType.SESSION,
+        BUS_NAME,
+        Gio.BusNameOwnerFlags.NONE,
+        on_bus_acquired,
+        None,
+        on_name_lost,
+    )
+    log("koompi-remotedesktop-portal starting")
+    loop.run()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,4 @@
+# KOOMPI OS — KWin defaults (skeleton; tune live).
+[org.kde.kdecoration2]
+library=org.kde.breeze
+theme=Breeze

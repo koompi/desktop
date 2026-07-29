@@ -1,0 +1,15 @@
+groups=(koompi)
+pkgname=koompi-screencapture
+pkgver=1.0
+pkgrel=2
+pkgdesc='KOOMPI Screenshot and Recording Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  hyprshot
+  slurp
+  swappy
+  tesseract
+  tesseract-data-eng
+  wf-recorder
+)

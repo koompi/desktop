@@ -1,0 +1,61 @@
+<section class="section" id="osd">
+  <div class="section-header">
+    <h2>OSD Overlays</h2>
+    <span class="tag sys">System</span>
+  </div>
+  <p class="desc">
+    On-screen display pills that appear briefly when volume or brightness changes, or when the AI is thinking. Auto-dismiss after ~2s. Appear top-right, non-blocking.
+  </p>
+
+  <div class="osd-demo">
+    <span class="osd-demo-label">On-Screen Display — appears top-right</span>
+
+    <!-- Volume OSD -->
+    <div class="osd-pill">
+      <span class="osd-icon"><i class="fa-solid fa-volume-high"></i></span>
+      <div class="osd-track">
+        <div class="osd-fill" style="width:62%;"></div>
+      </div>
+      <span class="osd-value">62%</span>
+    </div>
+
+    <!-- Brightness OSD -->
+    <div class="osd-pill">
+      <span class="osd-icon"><i class="fa-solid fa-sun"></i></span>
+      <div class="osd-track">
+        <div class="osd-fill" style="width:78%; background:var(--amber);"></div>
+      </div>
+      <span class="osd-value">78%</span>
+    </div>
+
+    <!-- Media OSD -->
+    <div class="osd-pill">
+      <span class="osd-icon"><i class="fa-solid fa-music"></i></span>
+      <div class="osd-track">
+        <div class="osd-fill" style="width:45%;"></div>
+      </div>
+      <span class="osd-value" style="min-width:70px; font-size:10px; font-weight:600; font-family:var(--font-ui);">Get Lucky</span>
+    </div>
+
+    <!-- AI status OSD -->
+    <div class="osd-ai-pill">
+      <div class="osd-ai-breath"></div>
+      ✦ KOOMPI AI is thinking…
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Auto-dismiss</div>
+      <p>Each OSD appears for ~2s then fades out. Continued input (scrolling volume) resets the timer and updates the fill in place — no stacking.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Media OSD</div>
+      <p>When changing track or seeking, the media OSD shows track name and progress position. Track name replaces the percentage value on the right side.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI status OSD <span class="badge new">KOOMPI</span></div>
+      <p>Appears when AI begins a task. Indigo glass with a breathing dot — cognition is non-directional, so it breathes; only loading bars travel. Dismissed when the AI task completes, never on a timer.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,383 @@
+<section class="section" id="app-permissions">
+  <div class="section-header">
+    <h2>App Permissions</h2>
+    <span class="tag priv">Privacy</span>
+  </div>
+  <p class="desc">
+    Per-app capability grants and sandboxing tiers for conventional GUI apps — Firefox, Telegram, GIMP, the software you already know. This is the legacy-app counterpart to <strong>§11 Tool Approval</strong>: §11 governs the <em>AI agent</em> earning tool calls; §42 governs <em>ordinary apps</em> earning OS capabilities. One mechanism, two consumers. The default is <strong>deny</strong>. Every grant is visible, scoped, time-stamped, and revocable from a single surface — closing the gap the §11 audit flagged: standing app grants that nothing could review or revoke. Camera, mic, location, files, network, removable media: your data is never assumed-available.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Becomes the <b>Permissions</b> tab of Privacy Center · rules live in the one Policy Engine · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- ============ PANEL 1: PER-APP PERMISSION MATRIX ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:18px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Capability Matrix</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">What each installed app is allowed to touch — read down a column to audit one capability</div>
+      </div>
+      <div style="font-size:11px;color:#047857;background:var(--emerald-glow);padding:4px 10px;border-radius:20px;font-weight:600;">Default: deny all</div>
+    </div>
+
+    <!-- Matrix header row -->
+    <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:0;font-size:11px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;padding:10px 18px;border-bottom:1px solid var(--border2);">
+      <div>Application</div>
+      <div style="text-align:center;">Camera</div>
+      <div style="text-align:center;">Mic</div>
+      <div style="text-align:center;">Location</div>
+      <div style="text-align:center;">Files</div>
+      <div style="text-align:center;">Network</div>
+    </div>
+
+    <!-- Firefox -->
+    <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:0;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:7px;background:#FF7139;display:flex;align-items:center;justify-content:center;font-size:13px;"><i class="fa-brands fa-firefox-browser"></i></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Firefox</div>
+          <div style="font-size:10px;color:var(--text-subtle);">org.mozilla.firefox</div>
+        </div>
+      </div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--amber-glow);color:#B45309;">ask</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--amber-glow);color:#B45309;">ask</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--cyan-glow);color:#0E7490;">~/Downloads</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+    </div>
+
+    <!-- Telegram -->
+    <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:0;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:7px;background:#2AABEE;display:flex;align-items:center;justify-content:center;font-size:13px;"><i class="fa-solid fa-plane"></i></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Telegram Desktop</div>
+          <div style="font-size:10px;color:var(--text-subtle);">org.telegram.desktop</div>
+        </div>
+      </div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--cyan-glow);color:#0E7490;">portal</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+    </div>
+
+    <!-- GIMP -->
+    <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:0;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:7px;background:#5C5543;display:flex;align-items:center;justify-content:center;font-size:13px;"><i class="fa-solid fa-paintbrush"></i></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">GIMP</div>
+          <div style="font-size:10px;color:var(--text-subtle);">org.gimp.GIMP</div>
+        </div>
+      </div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--cyan-glow);color:#0E7490;">portal</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text-subtle);">denied</span></div>
+    </div>
+
+    <!-- Zoom — unconfined, flagged -->
+    <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);gap:0;align-items:center;padding:12px 18px;background:var(--amber-glow);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:7px;background:#2D8CFF;display:flex;align-items:center;justify-content:center;font-size:12px;"><i class="fa-solid fa-video"></i></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Zoom <span style="font-size:9px;color:#B45309;font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> unconfined</span></div>
+          <div style="font-size:10px;color:var(--text-subtle);">us.zoom.Zoom · /opt (non-Flatpak .deb)</div>
+        </div>
+      </div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--amber-glow);color:#B45309;">ask</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--amber-glow);color:#B45309;">full home</span></div>
+      <div style="text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">allowed</span></div>
+    </div>
+    <div style="padding:8px 18px;font-size:11px;color:var(--text-muted);background:var(--surface2);border-top:1px solid var(--border2);">
+      Legend — <span style="color:#047857;font-weight:600;">allowed</span> standing grant · <span style="color:#B45309;font-weight:600;">ask</span> prompts each session · <span style="color:#0E7490;font-weight:600;">portal</span> file picker only, no standing FS · <span style="color:var(--text-subtle);font-weight:600;">denied</span> default
+    </div>
+  </div>
+
+  <!-- ============ ROW: CONSENT DIALOG + SANDBOX TIER ============ -->
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:stretch;margin-bottom:18px;">
+
+    <!-- PANEL 2: RUNTIME CONSENT DIALOG (Khmer-native) -->
+    <div style="flex:1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(64,55,38,.08);">
+      <div style="padding:18px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border2);">
+        <div style="width:40px;height:40px;border-radius:10px;background:#FF7139;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;"><i class="fa-brands fa-firefox-browser"></i></div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Firefox wants microphone access</div>
+          <div style="font-size:12px;color:var(--text-muted);">requested by meet.google.com · 14:07</div>
+        </div>
+      </div>
+      <div style="padding:14px 20px;">
+        <!-- Khmer-native, formal register -->
+        <div style="font-size:13px;color:var(--text);line-height:1.7;padding:10px 12px;background:var(--accent-glow);border-radius:8px;border:1px solid rgba(99,102,241,.30);">
+          <span lang="km" style="font-size:14px;">កម្មវិធី Firefox សុំការអនុញ្ញាតប្រើមីក្រូហ្វូន។</span><br>
+          <span style="font-size:11px;color:var(--text-subtle);">Formal register · the system addresses you as សុំ (request), not a command — register-aware, not machine-translated.</span>
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:#047857;background:var(--emerald-glow);padding:8px 12px;border-radius:8px;">
+          <i class="fa-solid fa-lock"></i> Audio is captured by the app directly. KOOMPI does not record or route it anywhere.
+        </div>
+      </div>
+      <!-- Scope choices -->
+      <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-glow);cursor:pointer;">
+          <span style="font-size:13px;font-weight:600;color:var(--accent);">Allow while in this meeting</span>
+          <span style="font-size:11px;color:var(--text-muted);">auto-revokes on tab close</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text-muted);cursor:pointer;">Allow once</div>
+          <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text-muted);cursor:pointer;">Always allow</div>
+          <div style="flex:1;text-align:center;padding:9px;border:1px solid rgba(239,68,68,.3);border-radius:8px;font-size:13px;color:#B91C1C;background:rgba(239,68,68,.06);cursor:pointer;">Deny</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: SANDBOXING TIERS -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Sandboxing Tier</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">How much the OS can mechanically guarantee — mapped to the real Wayland/portal stack</div>
+      </div>
+      <div style="padding:14px 18px;display:flex;flex-direction:column;gap:12px;">
+        <!-- Sandboxed -->
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="margin-top:2px;flex-shrink:0;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;background:var(--emerald-glow);color:#047857;">SANDBOXED</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5;"><strong style="color:var(--text);">Flatpak + bubblewrap.</strong> No host FS, no host sockets. Every capability flows through xdg-desktop-portal. The OS can prove what it cannot reach. <em>Telegram, GIMP.</em></div>
+        </div>
+        <!-- Portal-mediated -->
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="margin-top:2px;flex-shrink:0;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;background:var(--cyan-glow);color:#0E7490;">PORTAL</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5;"><strong style="color:var(--text);">Native + PipeWire/portal.</strong> Runs on the host but camera, mic and screen-capture are brokered through PipeWire — device access is per-grant, not ambient. <em>Firefox.</em></div>
+        </div>
+        <!-- Unconfined -->
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="margin-top:2px;flex-shrink:0;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;background:var(--amber-glow);color:#B45309;">UNCONFINED</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5;"><strong style="color:var(--text);">Vendor .deb / AppImage.</strong> Full ambient authority — we <em>cannot</em> enforce, only observe and warn. KOOMPI labels honestly rather than pretending. <em>Zoom.</em></div>
+        </div>
+        <div style="margin-top:4px;padding:9px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text-subtle);line-height:1.5;">
+          The badge never lies about confidence. We don't paint an unconfined app green just because the user granted it — the tier reflects the <em>mechanism</em>, the matrix reflects the <em>grant</em>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 4: REVOCATION SURFACE (the named gap-filler) ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:18px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Standing Grants — Review &amp; Revoke <span style="font-size:10px;color:#047857;background:var(--emerald-glow);padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle;">fills §11 audit gap</span></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Every permission any app currently holds, in one place. Revoke signals the running app live — it does not just flip a row in a database.</div>
+      </div>
+      <div style="font-size:12px;color:#B91C1C;border:1px solid rgba(239,68,68,.3);padding:6px 12px;border-radius:8px;font-weight:600;cursor:pointer;">Revoke all standing</div>
+    </div>
+
+    <!-- Grant row: Telegram mic -->
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="width:24px;height:24px;border-radius:6px;background:#2AABEE;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"><i class="fa-solid fa-plane"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);"><strong>Telegram</strong> · Microphone</div>
+        <div style="font-size:11px;color:var(--text-subtle);">granted 12 Mar 2026 · last used 41 min ago · 312 times total</div>
+      </div>
+      <div style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:var(--emerald-glow);color:#047857;">portal-mediated</div>
+      <div style="font-size:12px;color:var(--text-muted);border:1px solid var(--border2);padding:5px 12px;border-radius:7px;cursor:pointer;">Revoke</div>
+    </div>
+
+    <!-- Grant row: Zoom full home — flagged -->
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border2);background:var(--amber-glow);">
+      <div style="width:24px;height:24px;border-radius:6px;background:#2D8CFF;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;"><i class="fa-solid fa-video"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);"><strong>Zoom</strong> · Full home directory <span style="font-size:10px;color:#B45309;font-weight:700;">broad scope</span></div>
+        <div style="font-size:11px;color:var(--text-subtle);">granted 02 Jan 2026 · last used 67 days ago · narrow this to ~/Documents?</div>
+      </div>
+      <div style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:var(--amber-glow);color:#B45309;">unconfined</div>
+      <div style="font-size:12px;color:#B91C1C;border:1px solid rgba(239,68,68,.3);padding:5px 12px;border-radius:7px;cursor:pointer;">Revoke</div>
+    </div>
+
+    <!-- Grant row: hash changed — re-consent -->
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="width:24px;height:24px;border-radius:6px;background:#FF7139;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;"><i class="fa-brands fa-firefox-browser"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);"><strong>Firefox</strong> · Network <span style="font-size:10px;color:var(--accent);font-weight:700;">binary changed</span></div>
+        <div style="font-size:11px;color:var(--text-subtle);">grant paused — app updated 132.0→133.0, hash differs. Re-confirm before access resumes.</div>
+      </div>
+      <div style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:var(--accent-glow);color:var(--accent);">re-consent</div>
+      <div style="font-size:12px;color:var(--accent);border:1px solid rgba(99,102,241,.3);padding:5px 12px;border-radius:7px;cursor:pointer;">Review</div>
+    </div>
+
+    <!-- Empty / decayed state -->
+    <div style="padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-subtle);background:var(--surface2);">
+      <span style="font-size:14px;"><i class="fa-solid fa-clock-rotate-left"></i></span>
+      <span><strong style="color:var(--text-muted);">Grant decay:</strong> 3 capabilities unused for 90+ days were auto-surfaced for review. A Lifetime OS does not let a 2027 grant silently outlive its reason in 2034.</span>
+    </div>
+  </div>
+
+  <!-- ============ ROW: FS-SCOPE PICKER + USB TRUST ============ -->
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:stretch;margin-bottom:18px;">
+
+    <!-- PANEL 5: FILESYSTEM SCOPE PICKER -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Filesystem Scope</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">GIMP wants to save a file — grant the folder, not the home directory</div>
+      </div>
+      <div style="padding:14px 18px;">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:12px;">/home/userx/Pictures/Edits/</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1.5px solid var(--emerald);border-radius:8px;background:var(--emerald-glow);cursor:pointer;">
+            <span style="font-size:13px;font-weight:600;color:#047857;">✓ This folder only</span>
+            <span style="font-size:11px;color:var(--text-muted);">~/Pictures/Edits/</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;">
+            <span style="font-size:13px;color:var(--text-muted);">This file only</span>
+            <span style="font-size:11px;color:var(--text-subtle);">sunset.xcf</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid rgba(245,158,11,.3);border-radius:8px;cursor:pointer;">
+            <span style="font-size:13px;color:#B45309;">All of ~/Pictures</span>
+            <span style="font-size:11px;color:#B45309;"><i class="fa-solid fa-triangle-exclamation"></i> broader</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-subtle);line-height:1.5;">
+          macOS grants whole-folder TCC scopes; KOOMPI defaults to the <em>narrowest</em> selection and ranks broader ones below with a warning. The picker is the portal — the app never sees a path you didn't choose.
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 6: USB / REMOVABLE MEDIA TRUST -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Removable Media — block by default</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">A USB stick just appeared. Nothing auto-mounts.</div>
+      </div>
+      <div style="padding:14px 18px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:12px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--surface4);display:flex;align-items:center;justify-content:center;font-size:16px;"><i class="fa-solid fa-floppy-disk"></i></div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;color:var(--text);">SanDisk Ultra · 64 GB</div>
+            <div style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">VID:0781 PID:5591 · sda1 · exFAT</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:3px 8px;border-radius:10px;">untrusted</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div style="flex:1;text-align:center;padding:9px;border:1.5px solid var(--emerald);border-radius:8px;font-size:12px;font-weight:600;color:#047857;background:var(--emerald-glow);cursor:pointer;">Mount read-only</div>
+          <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text-muted);cursor:pointer;">Read-write</div>
+          <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text-subtle);cursor:pointer;">Eject</div>
+        </div>
+        <!-- egress-style record -->
+        <div style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;line-height:1.6;">
+          <span style="color:#0E7490;">▸ media-event</span> 09 Jun 14:22 · sda1 attached<br>
+          <span style="color:var(--text-subtle);">  recorded to §28 Egress Ledger · awaiting decision</span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-subtle);line-height:1.5;">
+          Removable media is an <em>egress vector</em> as much as the network — data leaving on a stick is logged with the same rigor. Trust is per-device (by VID/PID), remembered, and revocable.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ROW: USAGE TIMELINE + QUARANTINE ============ -->
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:stretch;margin-bottom:18px;">
+
+    <!-- PANEL 7: PERMISSION-USAGE TIMELINE -->
+    <div style="flex:1.3;min-width:330px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Usage Timeline — Telegram</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Not just <em>can it</em> — <em>did it, and when</em></div>
+        </div>
+        <span style="font-size:11px;color:var(--text-subtle);">Today · 9 Jun</span>
+      </div>
+      <div style="padding:14px 18px;">
+        <!-- AI summary — the one legit indigo touch -->
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--accent-glow);border-radius:8px;margin-bottom:14px;">
+          <span style="font-size:14px;">✦</span>
+          <div style="font-size:12px;color:var(--text);line-height:1.5;"><strong>Telegram used your mic 3× today</strong>, all during the 11:00 call — consistent with a voice chat. Camera unused for 9 days despite a standing grant. <span style="color:var(--accent);font-weight:600;cursor:pointer;">Revoke camera?</span><div style="font-size:10px;color:var(--text-subtle);margin-top:3px;">Summarized by the local model — the timeline data never left the device.</div></div>
+        </div>
+        <!-- timeline rows -->
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+            <span style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);width:42px;">11:03</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></span>
+            <span style="font-size:12px;color:var(--text);flex:1;">Microphone opened</span>
+            <span style="font-size:11px;color:var(--text-subtle);">42 min</span>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+            <span style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);width:42px;">11:48</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></span>
+            <span style="font-size:12px;color:var(--text);flex:1;">Microphone opened</span>
+            <span style="font-size:11px;color:var(--text-subtle);">6 min</span>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+            <span style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);width:42px;">13:20</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0;"></span>
+            <span style="font-size:12px;color:var(--text);flex:1;">~/Downloads read · invoice.pdf</span>
+            <span style="font-size:11px;color:var(--text-subtle);">portal</span>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:8px 0;">
+            <span style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);width:42px;">14:01</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></span>
+            <span style="font-size:12px;color:var(--text);flex:1;">Microphone opened</span>
+            <span style="font-size:11px;color:var(--text-subtle);">2 min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 8: QUARANTINE / FIRST-LAUNCH WARNING -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid rgba(245,158,11,.4);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--amber-glow);display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;"><i class="fa-solid fa-shield-halved"></i></span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">First launch — quarantined</div>
+          <div style="font-size:12px;color:var(--text-muted);">This app has never run on your system</div>
+        </div>
+      </div>
+      <div style="padding:14px 18px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="fa-solid fa-box"></i></div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);">videodownloader.AppImage</div>
+            <div style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">~/Downloads · unsigned · unconfined</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+          Downloaded 4 min ago from an unknown source. No Selendra signature, no Flatpak sandbox. If you run it, it starts with <strong style="color:var(--text);">zero grants</strong> — deny is still the floor, even outside the sandbox.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;padding:9px;border:1.5px solid var(--emerald);border-radius:8px;font-size:12px;font-weight:600;color:#047857;background:var(--emerald-glow);cursor:pointer;">Run sandboxed (recommended)</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;text-align:center;padding:9px;border:1px solid rgba(245,158,11,.4);border-radius:8px;font-size:12px;color:#B45309;cursor:pointer;">Run unconfined</div>
+            <div style="flex:1;text-align:center;padding:9px;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text-subtle);cursor:pointer;">Delete</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CALLOUTS ============ -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Deny is the floor <span class="badge new">KOOMPI</span></div>
+      <p>macOS and Windows ship apps with broad default entitlements and ask you to claw them back. KOOMPI inverts it: every app — sandboxed or not — starts at zero and earns each capability with one explicit, scoped grant. Even an unconfined .AppImage begins with nothing granted.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">§42 apps vs §11 agent</div>
+      <p>One consent engine, two consumers. §11 Tool Approval governs the AI agent asking to call a tool; §42 governs ordinary GUI apps asking for OS capabilities. Sharing the engine is why the §11-audit gap — no surface to review or revoke standing app grants — is closed here, not patched separately.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Honest tier badges</div>
+      <p>The sandbox badge reflects the <em>mechanism</em> (bubblewrap, PipeWire/portal, or nothing), never the grant. An unconfined app is never painted green just because you trusted it. We'd rather tell you we can only observe than pretend we can enforce.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Grants don't outlive the code <span class="badge new">Lifetime</span></div>
+      <p>When an app's binary hash changes on update, its standing grants pause for re-consent — the permission was given to <em>that</em> code, not a name. Unused grants decay to a review queue after 90 days. Across decades, the permission set stays a true picture of what you actually rely on.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer-native consent</div>
+      <p>System prompts speak grammatically formal Khmer with correct register — សុំ (a request), not an imperative — because asking permission in a borrowed register is its own kind of disrespect. Consent is the most important sentence the OS says; it says it properly.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Revoke means revoke — live</div>
+      <p>Revoking a standing grant doesn't just flip a database row; it signals the running app through the portal so an in-progress mic stream actually closes. A revocation the app can ignore until next launch isn't a revocation. USB and removable media are treated as egress vectors and logged to the §28 Egress Ledger.</p>
+    </div>
+  </div>
+</section>

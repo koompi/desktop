@@ -1,0 +1,107 @@
+<section class="section" id="refugee-mode">
+  <div class="section-header">
+    <h2>Refugee Mode</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    Refugee mode is the <b>refugee</b> preset of the Lifeboat export engine, landing at 1.x. Your home directory is already a portable encrypted volume via systemd-homed; the refugee preset seals that home plus your keys and trust postures into a single encrypted file, small enough for one microSD, unlocked by one passphrase you carry in your head. Any KOOMPI machine can import it. The engine is v1; this preset is a 1.x deliverable.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ The microSD export is the <b>refugee</b> preset of the Lifeboat engine · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Export flow -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--accent-glow), transparent); border-bottom:1px solid var(--border2);">
+      <div style="font-size:15px; font-weight:700;">Seal a portable home</div>
+      <div style="font-size:11px; color:var(--text-muted);">koompi-restore export --refugee · systemd-homed volume + keys + postures</div>
+    </div>
+    <div style="padding:16px; display:flex; align-items:center; gap:14px;">
+      <div style="flex:1.2; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px;">
+        <div style="font-size:11px; font-weight:600; margin-bottom:8px;">systemd-homed home + state</div>
+        <div style="display:flex; flex-direction:column; gap:4px; font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">
+          <div>memory palace <span style="color:#0E7490;">31.2 GB</span></div>
+          <div>documents &amp; photos <span style="color:#0E7490;">6.4 GB</span></div>
+          <div>identity keys <span style="color:#0E7490;">4 KB</span></div>
+          <div>egress ledger &amp; postures <span style="color:#0E7490;">112 MB</span></div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-subtle);">encrypt →</div>
+        <div style="font-size:16px; margin:4px 0;"><i class="fa-solid fa-user-lock"></i></div>
+        <div style="font-size:9px; font-family:var(--font-mono); color:var(--text-subtle);">age + argon2id</div>
+      </div>
+      <div style="flex:1; background:var(--surface2); border:1px solid rgba(16,185,129,0.35); border-radius:var(--radius); padding:12px; text-align:center;">
+        <div style="font-size:22px;"><i class="fa-solid fa-floppy-disk"></i></div>
+        <div style="font-size:12px; font-weight:700; margin-top:4px;">38 GB · one microSD</div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">indistinguishable from random data</div>
+        <span class="state-chip active-state" style="font-size:9px; margin-top:8px;">sealed</span>
+      </div>
+    </div>
+    <div style="padding:12px 16px; border-top:1px solid var(--border2); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:16px;"><i class="fa-solid fa-brain"></i></span>
+      <div style="flex:1; font-size:11px; line-height:1.5; color:var(--text-muted);">
+        The key is a 7-word passphrase — offered in Khmer or English UI — that you memorize and never write down. <span style="color:var(--text);">Without it the card is noise. With it, the card is your home.</span>
+      </div>
+      <span style="font-family:var(--font-mono); font-size:10px; color:#B45309;">ទន្លេ-ស្ពាន-អំបិល-…</span>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; margin-top:24px;">
+
+    <!-- No decoy — honest refusal -->
+    <div style="width:360px; flex-shrink:0; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); overflow:hidden;">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2); display:flex; align-items:center; gap:8px;">
+        <span style="font-size:15px;"><i class="fa-solid fa-passport"></i></span>
+        <span style="font-size:13px; font-weight:700; flex:1;">What we refuse to ship</span>
+        <span class="state-chip warn-state" style="font-size:9px;">honest refusal</span>
+      </div>
+      <div style="padding:16px;">
+        <div style="display:flex; align-items:flex-start; gap:8px; background:var(--amber-glow); border:1px solid rgba(245,158,11,0.3); border-radius:var(--radius); padding:10px 12px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-shield-halved"></i></span>
+          <div style="font-size:11px; line-height:1.5; color:var(--text-muted);"><span style="font-weight:600; color:#B45309;">No duress PIN, no decoy, no hidden volume.</span> KOOMPI does <strong>not</strong> ship a duress passphrase that unlocks a fake life. A decoy volume is forensically visible, and a discovered one turns "I have nothing" into a provable lie — escalating coercion into an obstruction charge (cut for the §37/§41 reasons). We refuse the theater rather than sell a false sense of safety.</div>
+        </div>
+        <div style="font-size:12px; line-height:1.6; margin-top:12px; color:var(--text-muted);">
+          The honest protection is absence, not concealment: before you carry the card, the machine's home can be crypto-erased so an inspection finds a genuinely empty device — because that is all that exists on it.
+        </div>
+      </div>
+    </div>
+
+    <!-- Restore anywhere -->
+    <div style="flex:1; min-width:280px; background:linear-gradient(135deg, var(--emerald-glow), transparent); border:1px solid rgba(16,185,129,0.4); border-radius:var(--radius-lg); padding:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="color:#047857; font-size:14px;">✦</span>
+        <span style="font-size:13px; font-weight:700;">Import onto any KOOMPI machine</span>
+      </div>
+      <div style="font-size:13px; line-height:1.6; margin-bottom:12px;">
+        A borrowed or secondhand KOOMPI machine accepts the card and the passphrase, and systemd-homed activates your home in place. No network, no account, no server.
+      </div>
+      <div class="tool-code" style="font-size:11px; line-height:1.8;">
+        koompi-restore import /dev/mmcblk0<br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">passphrase</span>  <span class="code-str">verified · argon2id · 4.1s</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">integrity</span>   <span class="code-str">38 GB · all chunks intact</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">restore</span>     <span class="code-val">homed volume · keys · postures</span>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+        Optionally the card's Merkle root was anchored to Selendra before departure (ADR-0009), so you can later prove the restored home is the unaltered original. The chain holds a fingerprint, never the data.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">A home in a hem and a head <span class="badge new">KOOMPI</span></div>
+      <p>The refugee preset seals your systemd-homed volume, keys, and postures into one microSD unlocked by one memorized passphrase. No cloud account that can be frozen, subpoenaed, or geo-blocked stands between you and your own home.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Absence, not concealment</div>
+      <p>Protection is genuine emptiness, not a decoy. koompi-restore can crypto-erase the device's home so an inspection finds the truth: there is nothing on it. We refuse to ship hidden-volume theater that can get someone hurt.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The full 2.x reach — seamless mid-journey restore across borrowed hardware anywhere on earth, framed as a finished humanitarian guarantee — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

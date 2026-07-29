@@ -1,0 +1,293 @@
+<section class="section" id="gaming-mode">
+  <div class="section-header">
+    <h2>Gaming Mode</h2>
+    <span class="tag sys">Performance</span>
+  </div>
+  <p class="desc">
+    A single, reversible performance preset. It strips compositor effects, pins the CPU/GPU governor to performance, asks the kernel for direct scanout, and tells the AI to stand down. The counterpoint to §56 Visual Physics: beauty by default knows when to step aside. Sovereignty includes the right to turn the thinking off — and to get every pixel of the desktop back the instant you exit.
+  </p>
+
+  <!-- ============ TOGGLE / STATE PANEL ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <!-- Title bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(135deg,#241F19 0%,#2D3652 100%);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="8" rx="3" stroke="#22D3EE" stroke-width="1.3"/><circle cx="6" cy="9" r="1.1" fill="#22D3EE"/><line x1="11.5" y1="7.5" x2="11.5" y2="10.5" stroke="#22D3EE" stroke-width="1.3" stroke-linecap="round"/><line x1="10" y1="9" x2="13" y2="9" stroke="#22D3EE" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span style="font-size:14px;font-weight:700;color:#fff;">Gaming Mode</span>
+        <span style="font-size:10px;font-weight:600;color:#10B981;background:rgba(16,185,129,.16);padding:2px 8px;border-radius:10px;letter-spacing:.04em;">● ACTIVE · 00:47:12</span>
+      </div>
+      <!-- Master toggle (on) -->
+      <div style="width:46px;height:26px;background:#10B981;border-radius:13px;position:relative;cursor:pointer;box-shadow:0 0 0 3px rgba(16,185,129,.25);">
+        <div style="position:absolute;right:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;"></div>
+      </div>
+    </div>
+
+    <!-- What it did (state diff) -->
+    <div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Compositor</div>
+        <div style="font-size:13px;color:var(--text);font-weight:600;">Effects off</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">blur · shadows · animations → disabled</div>
+        <div style="font-size:10px;color:#047857;margin-top:4px;font-family:var(--font-mono);">hyprctl keyword decoration:blur:enabled 0</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Power Governor</div>
+        <div style="font-size:13px;color:var(--text);font-weight:600;">performance</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">was: schedutil</div>
+        <div style="font-size:10px;color:#B45309;margin-top:4px;font-family:var(--font-mono);">EPP=performance · platform_profile=performance</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Notifications + AI</div>
+        <div style="font-size:13px;color:var(--text);font-weight:600;">Held &amp; quiet</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">7 queued · contextd paused</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:4px;font-family:var(--font-mono);">assistantd → idle · indexer → suspended</div>
+      </div>
+    </div>
+
+    <!-- Latency / scanout indicator -->
+    <div style="margin:0 18px 16px 18px;background:linear-gradient(135deg,rgba(34,211,238,.07),rgba(99,102,241,.07));border:1px solid var(--border2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:18px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 8px var(--emerald);"></span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Direct scanout engaged</span>
+      </div>
+      <div style="flex:1;display:flex;gap:24px;flex-wrap:wrap;">
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;">Compositor latency</div><div style="font-size:15px;font-weight:700;color:#047857;font-family:var(--font-mono);">0.0 ms <span style="font-size:10px;font-weight:400;color:var(--text-muted);">bypassed</span></div></div>
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;">Present mode</div><div style="font-size:15px;font-weight:700;color:var(--text);font-family:var(--font-mono);">tearing <span style="font-size:10px;font-weight:400;color:var(--text-muted);">(immediate)</span></div></div>
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;">VRR</div><div style="font-size:15px;font-weight:700;color:#0E7490;font-family:var(--font-mono);">48–144 Hz</div></div>
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;">Frame time</div><div style="font-size:15px;font-weight:700;color:var(--text);font-family:var(--font-mono);">6.9 ms</div></div>
+      </div>
+    </div>
+    <div style="margin:0 18px 16px 18px;font-size:11px;color:var(--text-muted);line-height:1.5;">
+      <span style="color:#0E7490;font-weight:600;">Direct scanout</span> hands the fullscreen game buffer straight to the display controller — Hyprland stops composing entirely. KOOMPI watches for an unredirect-breaking event (an overlay, a notification it lets through, alt-tab) and re-composites in a single frame, then drops back. The indicator turns <span style="color:#B45309;">amber</span> the moment a layer forces composition, so you know <em>why</em> a stutter happened.
+    </div>
+  </div>
+
+  <!-- ============ LIBRARY SURFACE ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:var(--text);">Library</span>
+        <span style="font-size:11px;color:var(--text-subtle);">142 titles · 3 sources</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);">Steam</span>
+        <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);">Lutris</span>
+        <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);">Heroic</span>
+      </div>
+    </div>
+
+    <div style="padding:16px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <!-- Card: running -->
+      <div style="border:1.5px solid var(--emerald);border-radius:10px;overflow:hidden;background:var(--surface2);">
+        <div style="height:64px;background:linear-gradient(135deg,#10B981 0%,#0B7355 100%);position:relative;">
+          <span style="position:absolute;top:6px;left:8px;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;">● PLAYING</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Elden Ring</div>
+          <div style="font-size:10px;color:var(--text-muted);">Proton GE 9-20 · 138 fps</div>
+        </div>
+      </div>
+      <!-- Card: proton verified -->
+      <div style="border:1px solid var(--border2);border-radius:10px;overflow:hidden;background:var(--surface2);">
+        <div style="height:64px;background:linear-gradient(135deg,#6366F1 0%,#3B3F9E 100%);position:relative;">
+          <span style="position:absolute;top:6px;left:8px;font-size:9px;font-weight:600;color:#22D3EE;background:rgba(0,0,0,.35);padding:2px 6px;border-radius:4px;">✓ Proton 9.0</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Hades II</div>
+          <div style="font-size:10px;color:var(--text-muted);">Steam · 24h played</div>
+        </div>
+      </div>
+      <!-- Card: native -->
+      <div style="border:1px solid var(--border2);border-radius:10px;overflow:hidden;background:var(--surface2);">
+        <div style="height:64px;background:linear-gradient(135deg,#22D3EE 0%,#0E7490 100%);position:relative;">
+          <span style="position:absolute;top:6px;left:8px;font-size:9px;font-weight:600;color:#fff;background:rgba(0,0,0,.35);padding:2px 6px;border-radius:4px;">native</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Dota 2</div>
+          <div style="font-size:10px;color:var(--text-muted);">Vulkan · 144 fps cap</div>
+        </div>
+      </div>
+      <!-- Card: needs attention -->
+      <div style="border:1px solid var(--amber);border-radius:10px;overflow:hidden;background:var(--surface2);">
+        <div style="height:64px;background:linear-gradient(135deg,#64748B 0%,#475569 100%);position:relative;">
+          <span style="position:absolute;top:6px;left:8px;font-size:9px;font-weight:600;color:#B45309;background:rgba(0,0,0,.4);padding:2px 6px;border-radius:4px;"><i class="fa-solid fa-triangle-exclamation"></i> anti-cheat</span>
+        </div>
+        <div style="padding:8px 10px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Valorant</div>
+          <div style="font-size:10px;color:#B45309;">Vanguard — not supported on Linux</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 18px 14px 18px;font-size:11px;color:var(--text-muted);">
+      One library, every launcher. KOOMPI re-skins Steam, Lutris and Heroic shelves into a single Quickshell surface and reads <span style="font-family:var(--font-mono);color:var(--text);">~/.steam/steam/steamapps/</span> + Lutris YAML directly — your collections live where they always did. The <span style="color:#B45309;">amber</span> card never gets hidden: a kernel-level anti-cheat that refuses Linux is a fact the user deserves up front, not a silent failed launch.
+    </div>
+  </div>
+
+  <!-- ============ PER-GAME PROFILE ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;display:flex;min-height:300px;">
+    <!-- left: game header -->
+    <div style="width:220px;flex-shrink:0;background:linear-gradient(160deg,#10B981 0%,#0B7355 70%,#08503C 100%);padding:18px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div>
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;">Per-game profile</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;margin-top:6px;">Elden Ring</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.85);margin-top:4px;">Proton GE 9-20 · DLSS</div>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.22);border-radius:8px;padding:8px 10px;line-height:1.5;">
+        ✦ Auto-applies on launch. Detected by Steam AppID <span style="font-family:var(--font-mono);">1245620</span> via gamescope wrapper.
+      </div>
+    </div>
+    <!-- right: controls -->
+    <div style="flex:1;padding:20px 24px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Resolution</div>
+          <div style="display:flex;gap:6px;">
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);font-family:var(--font-mono);">2560×1440</span>
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);font-family:var(--font-mono);">1920×1080</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">FPS Cap</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;height:4px;background:var(--surface3);border-radius:2px;position:relative;">
+              <div style="position:absolute;left:0;width:65%;height:100%;background:var(--cyan);border-radius:2px;"></div>
+              <div style="position:absolute;left:65%;width:14px;height:14px;background:var(--cyan);border-radius:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(34,211,238,.2);"></div>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:13px;color:#0E7490;font-weight:700;width:48px;">144</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Power Target</div>
+          <div style="display:flex;gap:6px;">
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);">Quiet</span>
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);">Balanced</span>
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:rgba(245,158,11,.14);color:#B45309;border:1px solid var(--amber);">Max</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Upscaler</div>
+          <div style="display:flex;gap:6px;">
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);">FSR 3</span>
+            <span style="font-size:11px;padding:5px 10px;border-radius:6px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);">Off</span>
+          </div>
+        </div>
+      </div>
+      <!-- launch options -->
+      <div style="margin-top:18px;">
+        <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Resolved launch command</div>
+        <div style="background:#0F1626;border-radius:8px;padding:10px 12px;font-family:var(--font-mono);font-size:11px;color:#94A3B8;overflow-x:auto;white-space:nowrap;">
+          <span style="color:#22D3EE;">gamescope</span> -W 2560 -H 1440 -r 144 --hdr-enabled --force-grab-cursor <span style="color:#10B981;">--</span> <span style="color:#6366F1;">%command%</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:6px;">Edited by hand? KOOMPI stops auto-managing this field and shows a <span style="color:#B45309;">manual</span> lock — your override always wins.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ THERMAL + DND ROW ============ -->
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px;">
+    <!-- Thermal -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Thermal &amp; Power</span>
+        <span style="font-size:10px;color:var(--text-subtle);">refresh 1 Hz</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;">CPU</div><div style="font-size:18px;font-weight:700;color:var(--text);font-family:var(--font-mono);">72°C</div><div style="font-size:10px;color:#047857;">nominal</div></div>
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;">GPU</div><div style="font-size:18px;font-weight:700;color:#B45309;font-family:var(--font-mono);">84°C</div><div style="font-size:10px;color:#B45309;">warm</div></div>
+        <div><div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;">Draw</div><div style="font-size:18px;font-weight:700;color:var(--text);font-family:var(--font-mono);">186 W</div><div style="font-size:10px;color:var(--text-muted);">total</div></div>
+      </div>
+      <!-- Entry-hardware throttle warning -->
+      <div style="background:rgba(245,158,11,.1);border:1px solid var(--amber);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px;"><path d="M8 2L14.5 13H1.5L8 2Z" stroke="#F59E0B" stroke-width="1.3" stroke-linejoin="round"/><line x1="8" y1="6.5" x2="8" y2="9.5" stroke="#F59E0B" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".7" fill="#F59E0B"/></svg>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Fan at 100% — sustained throttle likely</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;line-height:1.45;">This looks like an entry GPU (4 GB VRAM). Capping to <span style="color:#B45309;font-weight:600;">90 fps</span> would hold 78°C and stop the coil whine. <span style="color:var(--accent);">Apply</span> · <span style="color:var(--text-subtle);">Ignore for this game</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DND / AI-quiet -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);">AI is quiet</span>
+        <span style="font-size:10px;color:var(--text-subtle);margin-left:auto;">ties to §31 Modes</span>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);line-height:1.5;margin:0 0 12px;">No briefings, no suggestions, no indexing. The orb in the bar dims to a single dot. It is not listening for a wake word.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:7px;padding:8px 12px;">
+          <span style="font-size:12px;color:var(--text);">Hold notifications</span>
+          <span style="font-size:10px;color:#047857;font-weight:600;">ON · 7 queued</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:7px;padding:8px 12px;">
+          <span style="font-size:12px;color:var(--text);">Let calls ring through</span>
+          <span style="font-size:10px;color:var(--accent);font-weight:600;">allow-list</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border-radius:7px;padding:8px 12px;">
+          <span style="font-size:12px;color:var(--text);">contextd file indexing</span>
+          <span style="font-size:10px;color:var(--text-subtle);font-weight:600;">PAUSED</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text-subtle);margin-top:10px;line-height:1.5;">Held notifications are <span style="color:#047857;">never dropped</span> — they land in a single grouped stack the moment you exit, newest first.</div>
+    </div>
+  </div>
+
+  <!-- ============ CONTROLLER PAIRING ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Controllers</span>
+      <span style="font-size:11px;color:var(--accent);cursor:pointer;">+ Pair new</span>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--emerald);border-radius:8px;padding:8px 12px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span>
+        <div><div style="font-size:12px;font-weight:600;color:var(--text);">DualSense</div><div style="font-size:10px;color:var(--text-muted);">USB-C · battery 88%</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--cyan);"></span>
+        <div><div style="font-size:12px;font-weight:600;color:var(--text);">Xbox Wireless</div><div style="font-size:10px;color:var(--text-muted);">BT · battery 41%</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px dashed var(--amber);border-radius:8px;padding:8px 12px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber);"></span>
+        <div><div style="font-size:12px;font-weight:600;color:#B45309;">Pairing… hold PS + Share</div><div style="font-size:10px;color:var(--text-muted);">searching 0:06</div></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5;">Quick-pair shows the exact button combo per detected pad — no rummaging for a manual. Steam Input and the kernel <span style="font-family:var(--font-mono);color:var(--text);">hid-playstation</span> driver are reconciled so a controller never binds twice and double-acts.</div>
+  </div>
+
+  <!-- ============ EXIT / RESTORE ============ -->
+  <div style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(16,185,129,.06));border:1px solid var(--border2);border-radius:12px;padding:16px 18px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 2H4a2 2 0 00-2 2v8a2 2 0 002 2h2" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Exit → restore desktop</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:11px;">
+      <span style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 11px;color:var(--text-muted);">effects fade back in</span>
+      <span style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 11px;color:var(--text-muted);">governor → schedutil</span>
+      <span style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 11px;color:var(--text-muted);">7 notifications delivered</span>
+      <span style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 11px;color:var(--text-muted);">AI orb wakes</span>
+      <span style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:4px 11px;color:var(--text-muted);">contextd resumes index</span>
+      <span style="background:rgba(16,185,129,.1);border:1px solid var(--emerald);border-radius:14px;padding:4px 11px;color:#047857;">previous state restored exactly</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5;">Every change is recorded as a reversible delta in <span style="font-family:var(--font-mono);color:var(--text);">koompi-gamed</span>. If the daemon crashes mid-session or the game hard-locks, a watchdog restores governor, effects and notifications on next login — you never get stranded in a stripped-down desktop with a dead AI.</div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Sovereignty includes off <span class="badge new">KOOMPI</span></div>
+      <p>Windows nags, GNOME hides the toggle, KDE buries it in Game Mode plugins. KOOMPI makes "turn the thinking off" a first-class, one-tap state — and means it. In Gaming Mode the local LLM does not infer, the indexer does not read your files, and no wake word listens. Stepping back is a feature, not a degraded mode.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Every change is a reversible delta</div>
+      <p>The daemon never "sets and forgets." Each tweak — governor, blur, EPP, notification hold — is journalled with its prior value. Exit replays the journal in reverse; a crash triggers a login-time watchdog restore. The aesthetic desktop always comes back, exactly as it was.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Honest about entry hardware</div>
+      <p>Built for Cambodia, where the common rig is a 4 GB laptop GPU, not a desktop 4090. The thermal panel warns before sustained throttle and coil whine, and offers a concrete fps cap — respecting the user's actual machine instead of assuming a flagship.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Ages with the library</div>
+      <p>Profiles key on stable Steam AppIDs and launcher YAML, not screen-scraped names — so a per-game tweak set in 2026 still auto-applies in 2046 after ten Proton versions and three GPUs. A hand-edited launch command locks to <span style="color:#B45309;">manual</span> and is never silently overwritten across decades of updates.</p>
+    </div>
+  </div>
+</section>

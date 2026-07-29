@@ -1,0 +1,49 @@
+<section class="section" id="hardware-succession">
+  <div class="section-header">
+    <h2>Ship of Theseus — Hardware Succession</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    Your identity lives in the Memory Palace and your keys, not the chassis. So moving to a new machine is a Lifeboat restore, not a bespoke migration tool — and at 1.x that restore path is guarded by a CI test that restores a sealed export onto fresh hardware and asserts the recovered state matches byte-for-byte. If restore-onto-a-new-machine ever breaks, the build goes red.
+  </p>
+
+  <!-- Restore-onto-fresh-hardware CI test -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--accent-glow), transparent); border-bottom:1px solid var(--border2);">
+      <div style="font-size:15px; font-weight:700;">CI · restore onto a new machine</div>
+      <div style="font-size:11px; color:var(--text-muted);">ci/lifeboat-restore-fresh-hw · runs on every koompi-restore change</div>
+    </div>
+    <div style="padding:16px;">
+      <div class="tool-code" style="font-size:11px; line-height:1.8;">
+        koompi-restore import --into /dev/fresh-target<br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">target</span>     <span class="code-str">clean VM image · no prior KOOMPI state</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">source</span>     <span class="code-str">sealed export (memory palace · keys · postures)</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">keys</span>       <span class="code-str">re-wrapped to the target TPM</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">vectors</span>    <span class="code-str">embed_model_id preserved per record</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">assert</span>     <span class="code-val">recovered state == source · byte-exact</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+        Every vector carries its <span style="font-family:var(--font-mono); color:#0E7490;">embed_model_id</span>, so a record recalled on the new machine is read with the model that made it — recall stays era-correct across an OS reinstall or a hardware swap. The self is the data plus the keys; the CI test proves the data plus the keys actually move.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Restore is a tested path, not a promise <span class="badge new">KOOMPI</span></div>
+      <p>"Your data is portable" is only true if it's exercised. The Lifeboat restore path is verified by a CI job that restores a sealed export onto fresh hardware and diffs the result — so buying a new laptop is a supported, tested operation, not a hopeful one.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Identity survives the box</div>
+      <p>Keys re-wrap to the new machine's TPM and vectors keep their embed_model_id, so recall works the same after the move. The chip changed; the self did not.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The century-long "succession ceremony" — machines honored and verifiably laid to rest across ten devices and three CPU architectures — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

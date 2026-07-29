@@ -1,0 +1,91 @@
+<section class="section" id="memory">
+  <div class="section-header">
+    <h2>Memory View</h2>
+    <span class="tag ai">AI</span>
+  </div>
+  <p class="desc">
+    Persistent per-user memory that the AI carries across sessions. User can view, edit, or delete entries. Full control — nothing is hidden.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Becomes the <b>Entries</b> tab of the Memory app · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <div style="max-width:560px;">
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <!-- Header -->
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px; font-weight:700; color:var(--text); flex:1;">✦ AI Memory — 7 entries</span>
+        <span style="font-size:11px; color:var(--red); cursor:pointer;">Clear all</span>
+      </div>
+
+      <div style="padding:8px 14px;">
+
+        <!-- User category label -->
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle); padding:6px 0 3px;">User</div>
+
+        <div class="memory-item">
+          <span class="memory-type user-t">USER</span>
+          <span class="memory-text" style="flex:1;">Rithy is KOOMPI OS founder</span>
+          <span class="memory-delete">×</span>
+        </div>
+        <div class="memory-item">
+          <span class="memory-type user-t">USER</span>
+          <span class="memory-text" style="flex:1;">Blockchain + Selendra background</span>
+          <span class="memory-delete">×</span>
+        </div>
+        <div class="memory-item">
+          <span class="memory-type user-t">USER</span>
+          <span class="memory-text" style="flex:1;">Thinks ecosystem-level, not feature-level</span>
+          <span class="memory-delete">×</span>
+        </div>
+
+        <!-- Project category label -->
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle); padding:8px 0 3px;">Project</div>
+
+        <div class="memory-item">
+          <span class="memory-type project-t">PROJECT</span>
+          <span class="memory-text" style="flex:1;">KOOMPI pivoted to AI-first OS — The OS That Thinks</span>
+          <span class="memory-delete">×</span>
+        </div>
+        <div class="memory-item">
+          <span class="memory-type project-t">PROJECT</span>
+          <span class="memory-text" style="flex:1;">Bar styles: Hug (default), Taskbar, Dock</span>
+          <span class="memory-delete">×</span>
+        </div>
+
+        <!-- Feedback category label -->
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-subtle); padding:8px 0 3px;">Feedback</div>
+
+        <div class="memory-item">
+          <span class="memory-type feedback-t">FEEDBACK</span>
+          <span class="memory-text" style="flex:1;">Always include Privacy pill in mockups</span>
+          <span class="memory-delete">×</span>
+        </div>
+        <div class="memory-item">
+          <span class="memory-type feedback-t">FEEDBACK</span>
+          <span class="memory-text" style="flex:1;">No background pill removal on bar group containers</span>
+          <span class="memory-delete">×</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:10px 14px; border-top:1px solid var(--border2); background:var(--surface2); font-size:10px; color:var(--text-subtle); display:flex; align-items:center; gap:6px;">
+        <span style="color:var(--emerald);"><i class="fa-solid fa-lock"></i></span>
+        Memory stored locally · never sent to cloud
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Local-only storage <span class="badge new">KOOMPI</span></div>
+      <p>All memory entries are stored in ~/.local/share/koompi-ai/memory.json. Never synced to a cloud service. Local model reads them directly.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">User control</div>
+      <p>Each entry has a × delete button. "Clear all" wipes all memory with a confirmation step. Individual entries are also editable — click text to edit inline.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI uses this for personalization</div>
+      <p>On each conversation start, relevant memory entries are injected into the system prompt. User type entries = who you are. Project type = current context. Feedback type = AI behavior preferences.</p>
+    </div>
+  </div>
+</section>

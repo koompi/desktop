@@ -1,0 +1,291 @@
+<section class="section" id="backup-restore">
+  <div class="section-header">
+    <h2>Backup &amp; Restore</h2>
+    <span class="tag priv">Durability &amp; Threat Model</span>
+  </div>
+  <p class="desc">
+    §30 snapshots protect you from yourself — a bad update, a deleted folder. They live on the same disk. They do nothing against fire, theft, or a confiscated laptop. A Lifetime OS that concentrates fifty years of one person's memory on a single SSD owes a hard answer to the question the Vision audit flagged as critical: <em>what happens when the disk is gone — or taken?</em> Owning your data means owning its durability and its destruction. Backups stay yours, encrypted with keys we never hold; and a stolen machine in a politically sensitive context cannot become a single point of catastrophic exposure.
+  </p>
+
+  <!-- ───────────────────────── PANEL 1 · 3-2-1 BACKUP MAP ───────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:600;color:var(--text);">Your 3-2-1 Backup Map</div>
+      <div style="font-size:11px;color:#047857;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 3px var(--emerald-glow);"></span>Healthy · 3 copies, 2 media, 1 off-site</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Three copies of every byte, on two kinds of media, one of them never in this room. koompi-restore tracks all three from one daemon.</div>
+
+    <div style="display:flex;gap:12px;align-items:stretch;">
+      <!-- Leg 1: local snapshot -->
+      <div style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:24px;height:24px;border-radius:6px;background:var(--cyan-glow);display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="2.5" width="10" height="8" rx="1.5" stroke="var(--cyan)" stroke-width="1.2"/><line x1="1.5" y1="5" x2="11.5" y2="5" stroke="var(--cyan)" stroke-width="1.2"/></svg></div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Leg 1 — Local</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">BTRFS snapshot on this disk. Instant, but dies with the drive. <span style="color:var(--text-subtle);">→ see §30</span></div>
+        <div style="margin-top:12px;font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">@home.2026-06-09_06:00</div>
+        <div style="margin-top:4px;font-size:11px;color:#0E7490;">Hourly · 168 kept</div>
+      </div>
+
+      <!-- arrow -->
+      <div style="display:flex;align-items:center;color:var(--text-subtle);"><svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M1 7H16M16 7L11 2M16 7L11 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <!-- Leg 2: encrypted external -->
+      <div style="flex:1;background:var(--emerald-glow);border:1.5px solid var(--emerald);border-radius:10px;padding:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:24px;height:24px;border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="6" width="9" height="5.5" rx="1" stroke="var(--emerald)" stroke-width="1.2"/><path d="M4 6V4a2.5 2.5 0 0 1 5 0v2" stroke="var(--emerald)" stroke-width="1.2"/></svg></div>
+          <div style="font-size:12px;font-weight:600;color:#047857;">Leg 2 — Owned Drive</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Encrypted external SSD. Yours, physical, offline. The copy that survives the SSD failing.</div>
+        <div style="margin-top:12px;font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">Samsung T7 · /dev/sdb · LUKS2</div>
+        <div style="margin-top:4px;font-size:11px;color:#047857;">Last: today 06:14 · 412 GB</div>
+      </div>
+
+      <!-- arrow -->
+      <div style="display:flex;align-items:center;color:var(--text-subtle);"><svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M1 7H16M16 7L11 2M16 7L11 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <!-- Leg 3: self-host (optional) -->
+      <div style="flex:1;background:var(--surface2);border:1px dashed var(--border);border-radius:10px;padding:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:24px;height:24px;border-radius:6px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="2" width="10" height="3.5" rx="1" stroke="var(--accent)" stroke-width="1.2"/><rect x="1.5" y="7.5" width="10" height="3.5" rx="1" stroke="var(--accent)" stroke-width="1.2"/><circle cx="4" cy="3.75" r=".6" fill="var(--accent)"/><circle cx="4" cy="9.25" r=".6" fill="var(--accent)"/></svg></div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);">Leg 3 — Off-site</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Optional. Your home NAS, a relative's KOOMPI box, or a rented VPS you control. Never KOOMPI's cloud — there isn't one.</div>
+        <div style="margin-top:12px;font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">nas.home.lan:22 · borg+ssh</div>
+        <div style="margin-top:4px;font-size:11px;color:#B45309;">Stale — 6 days · reconnect?</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border2);font-size:11px;color:var(--text-subtle);">
+      What macOS Time Machine and Windows File History give you is one external copy and a cloud upsell. KOOMPI assumes you may live where the cloud is a wiretap — so the off-site leg is <em>your</em> hardware, addressed by you, or nothing at all.
+    </div>
+  </div>
+
+  <!-- ───────────────── PANEL 2 · ENCRYPTED SETUP + KEY CUSTODY ───────────────── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px;">Encrypt this backup target</div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Cipher</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text);"><span>AES-256-XTS (LUKS2)</span><span style="color:#047857;font-family:var(--font-mono);">argon2id · 1.2 GB</span></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Key derivation is memory-hard on purpose: even with the drive in hand, a guess costs 1.2 GB of RAM and ~0.9 s. A botnet can't shortcut it.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div style="flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;"><div style="width:78%;height:100%;background:linear-gradient(90deg,var(--emerald),var(--cyan));"></div></div>
+        <span style="font-size:11px;color:#047857;">Encrypting… 78%</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">321 GB / 412 GB · 14 MB/s · ETA 1h 49m · backgrounded</div>
+    </div>
+
+    <!-- Key custody explainer -->
+    <div style="flex:1;min-width:300px;background:var(--amber-glow);border:1.5px solid var(--amber);border-radius:12px;padding:22px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14 4v4c0 3.5-2.5 5.5-6 6.5C4.5 13.5 2 11.5 2 8V4l6-2.5Z" stroke="var(--amber)" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 8L7.2 9.7L10.5 6" stroke="var(--amber)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-size:13px;font-weight:700;color:#B45309;">Who holds the key? You. Only you.</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin:0 0 12px 0;">
+        Apple escrows your FileVault recovery key to iCloud. Microsoft uploads your BitLocker key to your account by default. Convenient — and a key a court can subpoena. KOOMPI does neither. The key is generated on-device and <strong>never transmitted</strong>.
+      </p>
+      <div style="background:var(--surface);border-radius:8px;padding:12px;font-size:11px;color:var(--text);line-height:1.6;border:1px solid var(--border2);">
+        <strong style="color:#B45309;">This is the one warning we will not soften:</strong> if you lose this recovery key, your backup is mathematically gone. We cannot recover it. There is no "forgot password" because there is no one to ask.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── PANEL 2b · RECOVERY KEY HANDLING (Shamir) ─────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Recovery key — choose how it survives you forgetting it</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Since we hold nothing, the burden of not-losing-it is yours. We give you three honest options instead of a silent cloud upload.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;border:1px solid var(--border2);border-radius:10px;padding:14px;background:var(--surface2);">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">Paper</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Printed once as a 24-word BIP-39 phrase + QR. The print dialog wipes the spooler after. Put it in a drawer, not a password manager.</div>
+        <div style="margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);">orbit · candle · … · 24 words</div>
+      </div>
+      <div style="flex:1;min-width:200px;border:1.5px solid var(--accent);border-radius:10px;padding:14px;background:var(--accent-glow);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:12px;font-weight:600;color:var(--accent);">Shamir split (3-of-5)</div><span style="font-size:9px;background:var(--accent);color:#fff;padding:1px 7px;border-radius:20px;">Recommended</span></div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Five shards to five people you trust. Any three reconstruct the key; any two learn nothing. No single relative can betray you, and losing one shard is survivable.</div>
+        <div style="margin-top:8px;font-size:10px;color:var(--accent);">Sothea · Dara · Bopha · Mom · Lawyer</div>
+      </div>
+      <div style="flex:1;min-width:200px;border:1px solid var(--border2);border-radius:10px;padding:14px;background:var(--surface2);">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">Selendra DID lock</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Key sealed to your Selendra identity, recoverable only via your social-recovery guardians on-chain. The chain never sees the key — only that a threshold of guardians approved.</div>
+        <div style="margin-top:8px;font-size:10px;color:#0E7490;font-family:var(--font-mono);">did:sel:8xK…91d</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── PANEL 3 · RESTORE CEREMONY ───────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:16px 22px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;background:var(--surface2);">
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Restore ceremony</div>
+      <div style="font-size:11px;color:var(--text-subtle);">Step 2 of 3 · Preview before anything is touched</div>
+    </div>
+    <div style="display:flex;">
+      <!-- snapshot timeline -->
+      <div style="width:230px;flex-shrink:0;border-right:1px solid var(--border2);padding:16px 0;">
+        <div style="padding:0 16px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-subtle);">Choose a point in time</div>
+        <div style="padding:9px 16px;font-size:12px;color:var(--text-muted);border-left:2px solid transparent;">Today 06:14 · local</div>
+        <div style="border:1px solid rgba(99,102,241,.35);padding:9px 16px;font-size:12px;color:var(--accent);background:var(--accent-glow);">
+          <div style="font-weight:600;">3 days ago · 14:00</div>
+          <div style="font-size:10px;color:var(--text-muted);">owned drive · before OS update</div>
+        </div>
+        <div style="padding:9px 16px;font-size:12px;color:var(--text-muted);border-left:2px solid transparent;">2 weeks ago · off-site</div>
+        <div style="padding:9px 16px;font-size:12px;color:var(--text-muted);border-left:2px solid transparent;">1 Jan 2026 · off-site</div>
+        <div style="padding:9px 16px;font-size:11px;color:var(--text-subtle);border-left:2px solid transparent;">… 4 years of monthlies</div>
+      </div>
+      <!-- what returns -->
+      <div style="flex:1;padding:18px 22px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Restoring <strong style="color:var(--accent);">3 days ago · 14:00</strong> will bring back, and replace nothing without showing you:</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--emerald-glow);border-radius:8px;"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 6.5L5.5 9L10 4" stroke="var(--emerald)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-size:12px;color:var(--text);">~/Documents — 14,203 files</span><span style="margin-left:auto;font-size:10px;color:#047857;">42 newer files kept aside</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--emerald-glow);border-radius:8px;"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 6.5L5.5 9L10 4" stroke="var(--emerald)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-size:12px;color:var(--text);">AI Memory (assistantd) — 8,902 entries</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--cyan-glow);border-radius:8px;"><svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="4.5" stroke="var(--cyan)" stroke-width="1.2" fill="none"/></svg><span style="font-size:12px;color:var(--text);">Context index — will rebuild after restore (~6 min)</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--amber-glow);border-radius:8px;"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2L12 11H1L6.5 2Z" stroke="var(--amber)" stroke-width="1.2" fill="none" stroke-linejoin="round"/><line x1="6.5" y1="6" x2="6.5" y2="8.5" stroke="var(--amber)" stroke-width="1.2"/></svg><span style="font-size:12px;color:var(--text);">5 files edited since then will be moved to ~/.restore-conflicts/</span></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+          <div style="padding:8px 18px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:600;">Restore (dry-run first)</div>
+          <div style="padding:8px 18px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);border-radius:8px;font-size:12px;">Mount read-only &amp; browse</div>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-subtle);">Verified ✓ against Selendra manifest 4 h ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── PANEL 4 · FDE STATUS + PANEL 5 THEFT ───────────────── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- FDE -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">Encryption at rest</div>
+        <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:3px 10px;border-radius:20px;">● Locked when off</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-muted);">System disk</span><span style="color:#047857;font-family:var(--font-mono);">LUKS2 · TPM2 + PIN</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-muted);">Swap</span><span style="color:#047857;font-family:var(--font-mono);">encrypted (no hibernate leak)</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-muted);">Owned-drive backup</span><span style="color:#047857;font-family:var(--font-mono);">LUKS2</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text-muted);">Off-site repo</span><span style="color:#047857;font-family:var(--font-mono);">client-side, repokey-blake2</span></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);font-size:11px;color:var(--text-muted);line-height:1.5;">
+        TPM unseals the key only if the boot chain is unmodified — pull the disk into another machine and it stays ciphertext. The PIN defeats an attacker who steals the <em>whole</em> laptop, since TPM-only unlock would hand them a logged-in session.
+      </div>
+    </div>
+
+    <!-- Theft / remote wipe arming -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">If this device is lost or taken</div>
+        <span style="font-size:10px;background:var(--amber-glow);color:#B45309;padding:3px 10px;border-radius:20px;">● Armed</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">Fail-to-check-in wipe</div><div style="font-size:10px;color:var(--text-muted);">No unlock + no network in 14 days → keys self-destruct</div></div>
+          <div style="font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);">14 d</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">Remote kill via Selendra</div><div style="font-size:10px;color:var(--text-muted);">Signed wipe order from your DID — no KOOMPI server in the loop</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;opacity:.7;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--text-subtle);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">Wrong-PIN crypto-erase</div><div style="font-size:10px;color:var(--text-muted);">10 failed attempts → discard LUKS keyslot. Off by default.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-muted);line-height:1.5;">A wipe here discards the <em>key</em>, not 512 GB of blocks — so it completes in under a second, before a sophisticated holder can image the drive. Your backups remain. The thief gets a brick.</div>
+    </div>
+  </div>
+
+  <!-- ───────────────── PANEL 6 · DURESS / DECOY — refused (C-15) ───────────────── -->
+  <div style="background:var(--surface);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:24px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Duress unlock · refused</span>
+      <span style="font-size:10px;background:var(--red-glow);color:#B91C1C;border-radius:10px;padding:2px 8px;">✕ security theater</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;max-width:760px;">An earlier draft of this page demoed a duress PIN unsealing a decoy hidden volume, silently severing the backup link, and firing a coercion heartbeat over Selendra. It is <b>cut, honestly</b>: a second LUKS keyslot and a decoy volume are visible to any competent forensic examination — fake deniability is worse than none, because it teaches you to lean on a story that evaporates exactly when it matters, and a discovered decoy can convert a search into an obstruction charge. KOOMPI does not ship protections that only work if the adversary is careless.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:240px;display:flex;gap:10px;align-items:flex-start;padding:11px 13px;background:var(--surface2);border-radius:8px;">
+        <span style="font-size:14px;color:var(--text-muted);"><i class="fa-solid fa-power-off"></i></span>
+        <div><div style="font-size:12px;color:var(--text);font-weight:600;">The honest protections</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">FDE at rest — power off is the real defense. Lockout throttling makes guessing expensive; a wipe discards the key in under a second.</div></div>
+      </div>
+      <div style="flex:1;min-width:240px;display:flex;gap:10px;align-items:flex-start;padding:11px 13px;background:var(--surface2);border-radius:8px;">
+        <span style="font-size:14px;color:var(--text-muted);"><i class="fa-solid fa-map"></i></span>
+        <div><div style="font-size:12px;color:var(--text);font-weight:600;">The data outlives the device</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">The 3-2-1 map above means a confiscated laptop costs you hardware, not your life's data — it still exists elsewhere, for you and no one else.</div></div>
+      </div>
+      <div style="flex:1;min-width:240px;display:flex;gap:10px;align-items:flex-start;padding:11px 13px;background:var(--surface2);border-radius:8px;">
+        <span style="font-size:14px;color:var(--text-muted);"><i class="fa-solid fa-flask"></i></span>
+        <div><div style="font-size:12px;color:var(--text);font-weight:600;">If the science arrives</div><div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Credible deniable storage earns a capability-gate row first (<code>blueprint.md §3</code>) — never a quiet checkbox.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── PANEL 7 · SELENDRA MANIFEST + 8 LIFETIME EXPORT ───────────────── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- manifest -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="width:22px;height:22px;border-radius:6px;background:var(--cyan-glow);display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1L11 3.5V6.5C11 9 8.5 10.5 6 11C3.5 10.5 1 9 1 6.5V3.5L6 1Z" stroke="var(--cyan)" stroke-width="1.1" fill="none" stroke-linejoin="round"/></svg></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);">Selendra-anchored manifest</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">The chain proves your backup is intact and untampered. It never sees a byte of the data — only a Merkle root. Integrity you can verify against a public ledger, contents only you can decrypt.</div>
+      <div style="background:#0d1326;border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:10.5px;line-height:1.8;color:#9fb3d4;">
+        <div><span style="color:#64748b;">manifest</span> @home.2026-06-09_06:14</div>
+        <div><span style="color:#64748b;">merkle_root</span> <span style="color:var(--cyan);">0x7af3…be21</span></div>
+        <div><span style="color:#64748b;">files</span> 162,094 · <span style="color:#64748b;">bytes</span> 412.6 GB</div>
+        <div><span style="color:#64748b;">anchored_tx</span> <span style="color:var(--accent);">sel:0x91d4…00c7</span> ✓</div>
+        <div><span style="color:#64748b;">on_chain</span> root + size + timestamp <em style="color:#64748b;">only</em></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--emerald-glow);border-radius:8px;">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 6.5L5.5 9L10 4" stroke="var(--emerald)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:11px;color:var(--text);">Auto test-restore passed 4 h ago — mounted read-only, 1,024 random blocks checksummed against the anchored root.</span>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-subtle);line-height:1.5;">A backup never restored is Schrödinger's backup. koompi-restore verifies one weekly so you learn the drive is dead <em>before</em> the day you need it, not on it.</div>
+    </div>
+
+    <!-- lifetime export -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;">Lifetime archive — for whoever comes after you <span style="font-size:9px;background:var(--accent);color:#fff;padding:1px 7px;border-radius:20px;vertical-align:middle;">§24</span></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">A fifty-year OS must outlive itself. The archive exports in formats a stranger can open in 2076 without KOOMPI existing — open codecs, plain files, no proprietary container.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:9px 12px;background:var(--surface2);border-radius:8px;"><span style="color:var(--text);">Documents &amp; photos</span><span style="color:var(--text-subtle);font-family:var(--font-mono);">plain files · JPEG/PDF/UTF-8</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:9px 12px;background:var(--surface2);border-radius:8px;"><span style="color:var(--text);">AI memory &amp; journals</span><span style="color:var(--text-subtle);font-family:var(--font-mono);">Markdown + JSON-LD</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:9px 12px;background:var(--surface2);border-radius:8px;"><span style="color:var(--text);">Provenance ledger</span><span style="color:var(--text-subtle);font-family:var(--font-mono);">Selendra proofs (offline-verifiable)</span></div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:var(--accent-glow);border-radius:8px;font-size:11px;color:var(--text-muted);line-height:1.6;">
+        Sealed to your heirs by Shamir shares plus a time-lock: it cannot open before a date you choose, and opens only when a threshold of named guardians agrees. Your daughter inherits your memories — but not before you meant her to.
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <div style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:600;">Export lifetime archive</div>
+        <div style="padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);border-radius:8px;font-size:12px;">Set inheritance terms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── EMPTY / EDGE STATE ───────────────── -->
+  <div style="background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:18px 22px;margin-bottom:8px;display:flex;align-items:center;gap:14px;">
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--amber-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 3L16 15H2L9 3Z" stroke="var(--amber)" stroke-width="1.3" fill="none" stroke-linejoin="round"/><line x1="9" y1="7.5" x2="9" y2="11" stroke="var(--amber)" stroke-width="1.3" stroke-linecap="round"/><circle cx="9" cy="12.8" r=".7" fill="var(--amber)"/></svg></div>
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:600;color:var(--text);">No off-device backup yet — you have one copy of your whole life</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">The setup wizard appears on day one and nags weekly, not silently. An OS that hoards your data without protecting it has no right to your trust. Plug in any drive over 256 GB to begin.</div>
+    </div>
+    <div style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;">Set up now</div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">We hold no keys, no copies, no cloud <span class="badge new">Sovereign</span></div>
+      <p>Apple escrows FileVault keys to iCloud; Microsoft uploads BitLocker keys to your account. Both are a subpoena away. KOOMPI's backups encrypt on-device with keys that never leave it — which means we genuinely cannot recover your data, and we say so in amber rather than hiding behind a silent cloud upload. Sovereignty has a cost, and we make you the one who pays it knowingly.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A stolen laptop is not a catastrophe</div>
+      <p>Concentrating fifty years of memory locally is only defensible if the disk being gone or taken is survivable. FDE turns a stolen drive into ciphertext; remote and dead-man wipes discard the key in under a second. The 3-2-1 map guarantees the data still exists elsewhere — for you, and no one else.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Theater refused — no duress decoys</div>
+      <p>An earlier draft shipped a duress PIN that opened a decoy life, with "the absence of evidence" as its protection. Cut: a second keyslot and a decoy volume <em>are</em> evidence — visible to competent forensics — so the deniability fails exactly when it matters, and a discovered decoy can make things legally worse. The limit we documented then is the reason it is gone now: no software survives you confessing it exists. The honest answers are boring and real — FDE at rest, lockout throttling, key-discard wipes, and three copies of your data that travel without the laptop.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Backups proven, not assumed</div>
+      <p>The detail every consumer backup tool skips: an untested backup is a guess. koompi-restore mounts the archive read-only each week, checksums a random sample against the Merkle root anchored on Selendra, and tells you the day a drive silently dies — not the day you reach for it after a disaster. Lifetime durability means the restore is verified for decades, not hoped for.</p>
+    </div>
+  </div>
+</section>

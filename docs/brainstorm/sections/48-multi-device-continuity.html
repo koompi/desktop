@@ -1,0 +1,293 @@
+<section class="section" id="multi-device-continuity">
+  <div class="section-header">
+    <h2>Device Continuity</h2>
+    <span class="tag data">Mesh Handoff</span>
+  </div>
+  <p class="desc">
+    <strong>The dream:</strong> your mental context moves with you — pick up the phone and KOOMPI already knows what you were thinking about on the desktop: the conversation, the draft, the open thread of thought, carried in an encrypted <em>Context Capsule</em> over your own local mesh, never a cloud round-trip. <strong>The shippable layer:</strong> three concrete things — a shared clipboard, file and draft handoff, and phone/tablet pairing. We serialize <strong>documents and AI context</strong>, and we are honest about the boundary: a running process does not teleport; you see those processes held back, by design, and choose <em>Continue</em> or <em>Fork</em> on arrival.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Absorbs <b>Fluid Continuity</b> — vision + mechanics in one place · Connect is its app · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- ░░░ ROW 1: PAIRING CEREMONY + TRANSPORT ░░░ -->
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:stretch; margin-bottom:16px;">
+
+    <!-- Pairing ceremony with SAS -->
+    <div style="flex:1; min-width:320px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px;"><i class="fa-solid fa-handshake"></i></span>
+        <span style="font-size:13px; font-weight:700; flex:1;">Pair a Device</span>
+        <span class="state-chip priv-state" style="font-size:9px; padding:2px 8px;">NO CLOUD</span>
+      </div>
+      <div style="padding:16px;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:16px;">
+          <div style="text-align:center;">
+            <div style="font-size:26px;"><i class="fa-solid fa-desktop"></i></div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">rithy-workstation</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+            <span style="font-size:9px; color:var(--accent); font-family:var(--font-mono);">Noise_XX</span>
+            <span style="font-size:18px; color:var(--accent);">⇄</span>
+            <span style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">mDNS · :7842</span>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:26px;"><i class="fa-solid fa-mobile-screen"></i></div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">rithy-pixel</div>
+          </div>
+        </div>
+
+        <!-- Safety string compare -->
+        <div style="background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px; margin-bottom:12px;">
+          <div class="card-label" style="margin-bottom:8px;">Confirm both screens show the same words</div>
+          <div style="display:flex; gap:8px; justify-content:center; font-family:var(--font-mono); font-size:14px; font-weight:700; letter-spacing:0.5px;">
+            <span style="padding:4px 8px; background:var(--accent-glow); color:var(--accent); border-radius:6px;">temple</span>
+            <span style="padding:4px 8px; background:var(--accent-glow); color:var(--accent); border-radius:6px;">mango</span>
+            <span style="padding:4px 8px; background:var(--accent-glow); color:var(--accent); border-radius:6px;">river</span>
+            <span style="padding:4px 8px; background:var(--accent-glow); color:var(--accent); border-radius:6px;">07</span>
+          </div>
+          <div style="text-align:center; font-size:10px; color:var(--text-subtle); margin-top:8px;">
+            Short Authentication String · defeats a man-in-the-middle on your LAN
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1; text-align:center; padding:9px; border:1.5px solid var(--emerald); background:var(--emerald-glow); color:#047857; border-radius:var(--radius); font-size:12px; font-weight:700;">✓ They match</div>
+          <div style="flex:1; text-align:center; padding:9px; border:1.5px solid var(--border2); background:var(--surface2); color:var(--text-muted); border-radius:var(--radius); font-size:12px;">✕ Cancel</div>
+        </div>
+        <div class="tool-privacy-note" style="margin-top:12px; margin-bottom:0;">
+          <i class="fa-solid fa-lock"></i> Keys generated on-device. Mesh identity is bound to your Selendra DID — devices change, identity persists for decades.
+        </div>
+      </div>
+    </div>
+
+    <!-- Transport indicator + degraded state -->
+    <div style="flex:1; min-width:300px; display:flex; flex-direction:column; gap:16px;">
+      <!-- Live mesh -->
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+          <span style="font-size:13px;"><i class="fa-solid fa-satellite-dish"></i></span>
+          <span style="font-size:13px; font-weight:700; flex:1;">Mesh Transport</span>
+          <span class="state-chip priv-state" style="font-size:9px; padding:2px 8px;">LINK UP</span>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:var(--emerald); box-shadow:0 0 0 3px var(--emerald-glow);"></span>
+            <span style="font-size:12px; flex:1;">Direct on <strong>home-wifi</strong></span>
+            <span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">192.168.1.x · 0 hops</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.5; background:var(--surface2); border-radius:var(--radius-sm); padding:8px 10px;">
+            Discovery via <span style="font-family:var(--font-mono); color:#0E7490;">mDNS/DNS-SD</span>, channel encrypted with a <span style="font-family:var(--font-mono); color:#0E7490;">Noise</span> handshake. Bytes flow peer&nbsp;→&nbsp;peer. <strong style="color:#047857;">No KOOMPI server is in the path</strong> — there is nothing to relay through.
+          </div>
+        </div>
+      </div>
+
+      <!-- Out of range / degraded -->
+      <div style="background:var(--surface); border:1px solid var(--amber); border-radius:var(--radius-xl); overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--amber-glow);">
+          <span style="font-size:13px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+          <span style="font-size:13px; font-weight:700; flex:1; color:#B45309;">Phone out of range</span>
+          <span style="font-size:9px; padding:2px 8px; background:var(--amber); color:#fff; border-radius:10px; font-weight:700;">QUEUED</span>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">
+            <strong>rithy-pixel</strong> left the network 4 min ago. Because the mesh is direct and not a relay, the capsule <strong>cannot</strong> be pushed right now — and we will not silently route it through a cloud to "fix" that.
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:11px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:#B45309;">⏳</span>
+            <span style="flex:1;">Held locally · delivers when both devices share a network</span>
+          </div>
+          <div style="font-size:10px; color:var(--text-subtle); margin-top:8px; line-height:1.4;">
+            Optional: route over <span style="font-family:var(--font-mono);">your own</span> WireGuard tunnel — still your infrastructure, still end-to-end, never ours.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░░░ ROW 2: HANDOFF CAPSULE WITH HONEST BOUNDARY ░░░ -->
+  <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+      <span style="font-size:13px;"><i class="fa-solid fa-fire-flame-curved"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Handoff Capsule → rithy-pixel</span>
+      <span class="state-chip priv-state" style="font-size:9px; padding:2px 8px;">E2E · MESH</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap;">
+
+      <!-- LEFT: what transfers -->
+      <div style="flex:1; min-width:300px; padding:16px; border-right:1px solid var(--border2);">
+        <div class="card-label" style="margin-bottom:10px; color:#047857;">✓ Serialized &amp; transferring</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:#0E7490;"><i class="fa-solid fa-file-lines"></i></span><span style="flex:1;">5 files <span style="color:var(--text-subtle);">(content + cursor pos)</span></span><span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">BarContent.qml +4</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:var(--accent);">✦</span><span style="flex:1;">AI conversation window</span><span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">3,400 tok</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:#047857;"><i class="fa-solid fa-envelope"></i></span><span style="flex:1;">1 draft email <span style="color:var(--text-subtle);">(unsent buffer)</span></span><span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">to: board</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-subtle); margin-bottom:4px;">
+            <span>Capsule size</span><span style="font-family:var(--font-mono);">2.1 MB · ~0.4s over mesh</span>
+          </div>
+          <div style="height:6px; border-radius:3px; background:var(--surface3); overflow:hidden;">
+            <div style="height:100%; width:34%; background:var(--accent); border-radius:3px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: the honest boundary — processes held back -->
+      <div style="flex:1; min-width:300px; padding:16px; background:repeating-linear-gradient(135deg, var(--surface), var(--surface) 10px, var(--surface2) 10px, var(--surface2) 20px);">
+        <div class="card-label" style="margin-bottom:10px; color:#B45309;">⊘ Stays on this device — cannot serialize</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface); border:1px dashed var(--amber); border-radius:var(--radius-sm);">
+            <span style="color:#B45309;"><i class="fa-solid fa-gear"></i></span>
+            <span style="flex:1; text-decoration:line-through; text-decoration-color:var(--text-subtle); color:var(--text-muted);">dev-server <span style="font-size:10px;">:5173</span></span>
+            <span style="font-size:9px; color:#B45309; font-family:var(--font-mono);">PID 28411</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface); border:1px dashed var(--amber); border-radius:var(--radius-sm);">
+            <span style="color:#B45309;"><i class="fa-solid fa-gear"></i></span>
+            <span style="flex:1; text-decoration:line-through; text-decoration-color:var(--text-subtle); color:var(--text-muted);">vite --watch</span>
+            <span style="font-size:9px; color:#B45309; font-family:var(--font-mono);">PID 28419</span>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-top:12px; background:var(--amber-glow); border-radius:var(--radius-sm); padding:9px 11px;">
+          A live process owns open sockets, file descriptors, and kernel state that have no meaning on another machine. We <strong>do not</strong> pretend to teleport it. Instead the phone is told <em>how</em> to restart it: <span style="font-family:var(--font-mono); font-size:10px;">npm run dev</span> in the same repo, one tap. <strong style="color:var(--text);">Honest beats magic.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░░░ ROW 3: RECEIVING DEVICE — RECEIPT + CONTINUE/FORK ░░░ -->
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; margin-bottom:16px;">
+
+    <!-- Phone receipt -->
+    <div style="width:230px; flex-shrink:0; background:#171411; border-radius:28px; padding:8px; border:1px solid var(--border); box-shadow:0 10px 30px rgba(64,55,38,0.18);">
+      <div style="background:linear-gradient(160deg,#1E2A45,#171411); border-radius:22px; padding:18px 14px; color:#E2E8F0;">
+        <div style="font-size:9px; letter-spacing:0.5px; text-transform:uppercase; color:#A5B4FC; font-weight:700; margin-bottom:10px;">✦ Received from rithy-workstation</div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:3px;">BarContent.qml refactor</div>
+        <div style="font-size:10px; opacity:0.55; margin-bottom:14px;">handed off 18:51 · 2.1 MB · verified ✓</div>
+
+        <div style="font-size:9px; color:#94A3B8; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px;">What arrived</div>
+        <div style="display:flex; flex-direction:column; gap:5px; font-size:11px; margin-bottom:12px;">
+          <div style="display:flex; gap:6px;"><span style="color:#22D3EE;"><i class="fa-solid fa-file-lines"></i></span> 5 files restored</div>
+          <div style="display:flex; gap:6px;"><span style="color:#A5B4FC;">✦</span> AI context · 3,400 tok</div>
+          <div style="display:flex; gap:6px;"><span style="color:#34D399;"><i class="fa-solid fa-envelope"></i></span> draft to board</div>
+        </div>
+
+        <!-- model mismatch honesty -->
+        <div style="background:rgba(245,158,11,0.14); border:1px solid rgba(245,158,11,0.4); border-radius:10px; padding:9px 10px; font-size:10px; line-height:1.45; color:#FCD34D;">
+          <i class="fa-solid fa-triangle-exclamation"></i> Rehydrated into <strong>Sailor2 8B</strong>. Desktop ran 20B — phrasing may differ; ask it to re-explain if needed.
+        </div>
+        <div style="margin-top:10px; font-size:9px; opacity:0.5; line-height:1.4;">
+          ⊘ dev-server &amp; watcher did not transfer — tap to start them here.
+        </div>
+      </div>
+    </div>
+
+    <!-- Continue vs Fork -->
+    <div style="flex:1; min-width:300px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); padding:16px;">
+      <div class="card-label" style="margin-bottom:12px;">On resume — Continue or Fork?</div>
+      <div style="display:flex; gap:12px; margin-bottom:14px;">
+        <div style="flex:1; border:1.5px solid var(--accent); background:var(--accent-glow); border-radius:var(--radius-lg); padding:13px 14px;">
+          <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:4px;">↳ Continue</div>
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.45;">Pick up the same thread. The AI memory branch from the desktop becomes <em>active</em> on this device; the desktop session goes idle.</div>
+        </div>
+        <div style="flex:1; border:1.5px solid var(--border2); background:var(--surface2); border-radius:var(--radius-lg); padding:13px 14px;">
+          <div style="font-size:13px; font-weight:700; margin-bottom:4px;">⑂ Fork</div>
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.45;">Start a clean memory branch in <span style="font-family:var(--font-mono); font-size:10px;">koompi-assistantd</span>. Desktop session stays <strong>fully intact</strong> to return to.</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; font-size:10px; color:var(--text-subtle); background:var(--surface2); border-radius:var(--radius-sm); padding:8px 10px;">
+        <span style="color:var(--accent);">✦</span>
+        Neither choice deletes anything. Memory is append-only and versioned — you can always diff the two branches later.
+      </div>
+    </div>
+  </div>
+
+  <!-- ░░░ ROW 4: CLIPBOARD RECEIPT + TRUSTED DEVICE LIST ░░░ -->
+  <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+
+    <!-- Cross-device clipboard receipt -->
+    <div style="flex:1; min-width:300px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px;"><i class="fa-solid fa-clipboard"></i></span>
+        <span style="font-size:13px; font-weight:700; flex:1;">Clipboard pushed</span>
+        <span class="state-chip priv-state" style="font-size:9px; padding:2px 8px;">RECEIPT</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--text); background:var(--surface2); border-radius:var(--radius-sm); padding:9px 11px; margin-bottom:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          0xA3f1…board-multisig-addr
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:11px; color:var(--text-muted);">
+          <div style="display:flex; gap:8px;"><span style="width:64px; color:var(--text-subtle);">Type</span><span>text · 42 bytes</span></div>
+          <div style="display:flex; gap:8px;"><span style="width:64px; color:var(--text-subtle);">From → To</span><span>workstation → pixel</span></div>
+          <div style="display:flex; gap:8px;"><span style="width:64px; color:var(--text-subtle);">At</span><span style="font-family:var(--font-mono);">18:52:07</span></div>
+          <div style="display:flex; gap:8px;"><span style="width:64px; color:var(--text-subtle);">Path</span><span style="color:#047857;">direct mesh · not logged off-device</span></div>
+        </div>
+        <div class="tool-privacy-note" style="margin-top:12px; margin-bottom:0;">
+          <i class="fa-solid fa-lock"></i> Every push leaves a receipt. You can see exactly what crossed — no silent clipboard sync.
+        </div>
+      </div>
+    </div>
+
+    <!-- Trusted device list with revocation -->
+    <div style="flex:1; min-width:300px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:13px;"><i class="fa-solid fa-key"></i></span>
+        <span style="font-size:13px; font-weight:700; flex:1;">Trusted Devices</span>
+        <span style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">3 paired</span>
+      </div>
+      <div style="padding:8px 12px;">
+        <!-- this device -->
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 8px; border-bottom:1px solid var(--border2);">
+          <span style="font-size:16px;"><i class="fa-solid fa-desktop"></i></span>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:600;">rithy-workstation <span style="font-size:9px; color:var(--accent); font-weight:700;">THIS</span></div>
+            <div style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">fp 4A·2C·91 · paired 2024</div>
+          </div>
+        </div>
+        <!-- phone -->
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 8px; border-bottom:1px solid var(--border2);">
+          <span style="font-size:16px;"><i class="fa-solid fa-mobile-screen"></i></span>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:600;">rithy-pixel</div>
+            <div style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">fp 7E·1B·33 · seen 4m ago</div>
+          </div>
+          <span style="font-size:10px; color:var(--text-muted); border:1px solid var(--border2); border-radius:6px; padding:3px 8px; cursor:pointer;">Revoke</span>
+        </div>
+        <!-- lost tablet -->
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 8px; opacity:0.7;">
+          <span style="font-size:16px;"><i class="fa-solid fa-clipboard"></i></span>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted);">old-tablet <span style="font-size:9px; color:#B91C1C; font-weight:700;">LOST</span></div>
+            <div style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">fp 0C·9F·A2 · seen 11 days ago</div>
+          </div>
+          <span style="font-size:10px; color:#fff; background:var(--red); border-radius:6px; padding:3px 8px; cursor:pointer; font-weight:700;">Revoke now</span>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); line-height:1.5; background:var(--red-glow); border-radius:var(--radius-sm); padding:9px 11px; margin:6px 4px 4px;">
+          <strong style="color:#B91C1C;">Revoke = rotate the mesh key.</strong> Removing a device re-keys the mesh so a lost or stolen device can never decrypt a <em>future</em> capsule — not just disappear from a list.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Honest beats magic <span class="badge new">KOOMPI</span></div>
+      <p>The early vision dreamed of "running processes" following you across devices. They can't — a live process owns sockets and kernel state with no meaning elsewhere. We serialize documents, drafts, and AI context, and we <em>show</em> the two processes being held back rather than faking a teleport. The phone gets the command to restart them, not a lie about migrating them.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Mesh, never a relay</div>
+      <p>Discovery is mDNS/DNS-SD; the channel is a Noise handshake; bytes go peer-to-peer. When a device is out of range, the capsule waits — we will not quietly route it through a cloud to paper over the gap. Sovereignty means nobody sits in the middle, even when it's inconvenient.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Revocation that actually revokes</div>
+      <p>Apple and Google "remove device" entries leave old keys valid. KOOMPI ties mesh identity to your Selendra DID and rotates the key on revocation — a stolen tablet loses the ability to decrypt future handoffs. Identity persists for decades; any single device is disposable.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The model may shrink on arrival</div>
+      <p>Your laptop runs Sailor2 20B; your phone runs 8B. The conversation context serializes perfectly — the model behind it does not. The receipt says so plainly, so a subtly different answer on the phone is explained, not mysterious. Transparent AI all the way down.</p>
+    </div>
+  </div>
+</section>

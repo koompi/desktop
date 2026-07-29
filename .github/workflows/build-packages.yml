@@ -1,0 +1,112 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SKELETON — build the signed [koompi] pacman repo packages in CI.
+#
+# This is a SCAFFOLD, not a wired pipeline. It builds the koompi-* packages in an
+# Arch container; the sign + publish steps are COMMENTED OUT and use placeholder
+# secrets. Do not enable real deploy until the signing key and publish target
+# (see sdata/dist-arch/repo/) are decided.
+#
+# Pairs with: sdata/dist-arch/repo/build-repo.sh  (same build → sign → repo-add
+# flow, here under GitHub Actions). Once packages are published, build-iso.yml
+# consumes the resulting signed [koompi] repo.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Build KOOMPI packages (SKELETON)
+
+on:
+  # SKELETON: manual-only for now (matches build-iso.yml). A `push:` trigger on
+  # sdata/dist-arch/** is intentionally NOT enabled yet — auto-building every
+  # koompi-* package on each commit would burn Actions minutes and surface red on
+  # a public repo while the pipeline is still a scaffold (no signing key / publish
+  # target). Re-enable the push trigger once SIGN + PUBLISH below is wired.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install build tooling
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm --needed base-devel git sudo pacman-contrib
+          # base-devel    : makepkg + toolchain
+          # pacman-contrib : repo-add / repo-remove
+          # devtools (clean chroot) is the PRODUCTION path; omitted from this
+          # skeleton because makechrootpkg needs privileged loop/mount support.
+
+      - uses: actions/checkout@v4
+
+      # makepkg REFUSES to run as root, and the archlinux container runs as root.
+      # Create a dedicated unprivileged build user. This is the single most common
+      # Arch-CI failure — it must be here even in a skeleton.
+      - name: Create unprivileged build user
+        run: |
+          set -euo pipefail
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+
+      - name: Build koompi-* packages
+        run: |
+          set -euo pipefail
+          # Build every sdata/dist-arch/koompi-*/PKGBUILD as the build user.
+          # --nodeps: the meta packages (koompi-base, koompi-desktop-*) depend on
+          # other koompi-* not yet in any repo, so dep-checking would abort. We
+          # only need the .pkg.tar.zst artifacts here; resolution is a client-side
+          # / install-time concern. PRODUCTION builds in dependency order inside a
+          # clean chroot, repo-add-ing each result before building the metas.
+          install -dm755 "$GITHUB_WORKSPACE/sdata/dist-arch/repo/packages"
+          for pkgdir in "$GITHUB_WORKSPACE"/sdata/dist-arch/koompi-*/; do
+            [ -f "$pkgdir/PKGBUILD" ] || continue
+            echo "::group::build $(basename "$pkgdir")"
+            sudo -u builder bash -c "cd '$pkgdir' && \
+              PKGDEST='$GITHUB_WORKSPACE/sdata/dist-arch/repo/packages' \
+              makepkg --force --cleanbuild --nodeps"
+            echo "::endgroup::"
+          done
+          # NOTE: the *-config packages read ../../../dots via \$startdir, which is
+          # present here (full checkout) but ABSENT in a clean chroot — switch their
+          # source to a pinned git tag for the production/devtools path. See the
+          # BUILD NOTE headers in koompi-hyprland-config / koompi-kde-config.
+
+      - name: Upload built packages (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: koompi-packages
+          path: sdata/dist-arch/repo/packages/*.pkg.tar.zst
+
+      # ── SIGN + PUBLISH (DISABLED in this skeleton) ────────────────────────────
+      # Enable only once GPG_KEY exists as a repo secret and a publish target is
+      # chosen (GitHub Releases or a mirror). See sdata/dist-arch/repo/README.md.
+      #
+      # - name: Import signing key
+      #   env:
+      #     GPG_KEY: ${{ secrets.GPG_KEY }}          # TODO: ASCII-armored PRIVATE key
+      #     GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}    # TODO: key fingerprint / email
+      #   run: |
+      #     set -euo pipefail
+      #     echo "$GPG_KEY" | gpg --batch --import
+      #
+      # - name: Sign each package + build signed DB
+      #   env:
+      #     GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+      #   run: |
+      #     set -euo pipefail
+      #     cd sdata/dist-arch/repo/packages
+      #     # (2) sign every package — required for SigLevel=Required, DB sig alone
+      #     #     is NOT enough.
+      #     for pkg in *.pkg.tar.zst; do
+      #       gpg --batch --yes --detach-sign --local-user "$GPG_KEY_ID" "$pkg"
+      #     done
+      #     # (3) sign the database (signs koompi.db only — see README "two signatures")
+      #     repo-add --sign --verify --key "$GPG_KEY_ID" koompi.db.tar.gz *.pkg.tar.zst
+      #
+      # - name: Publish signed repo
+      #   run: |
+      #     echo "TODO: upload packages/, .sig files, koompi.db* to the publish"
+      #     echo "      target (GitHub Releases / mirror). Do NOT wire real deploy"
+      #     echo "      until the target is locked."

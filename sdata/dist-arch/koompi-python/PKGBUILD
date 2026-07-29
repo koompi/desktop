@@ -1,0 +1,16 @@
+groups=(koompi)
+pkgname=koompi-python
+pkgver=1.1
+pkgrel=5
+pkgdesc='KOOMPI Python Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  clang
+  uv
+  gtk4
+  libadwaita
+  libsoup3
+  libportal-gtk4
+  gobject-introspection
+)

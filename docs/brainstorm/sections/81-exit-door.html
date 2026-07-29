@@ -1,0 +1,102 @@
+<section class="section" id="exit-door">
+  <div class="section-header">
+    <h2>The Exit Door</h2>
+    <span class="tag">Futures</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    This is the canonical spec for the <strong>Lifeboat export engine</strong>. The engine ships at v1 because factory reset depends on it — reset seals a Lifeboat archive before it wipes, so the engine's completeness verifier is load-bearing from day one. On top of the engine sit four presets (<span style="font-family:var(--font-mono);">snapshot</span> §30 · <span style="font-family:var(--font-mono);">legacy</span> §24/§62 · <span style="font-family:var(--font-mono);">refugee</span> §70 · <span style="font-family:var(--font-mono);">exit</span> §81), each landing at 1.x. The <span style="font-family:var(--font-mono);">exit</span> preset (1.x) is the full-fidelity export off the platform: every store the OS registers, in a self-describing open format, with a completeness checklist that fails closed if anything is withheld.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ The full export is the <b>exit</b> preset (1.x) of the Lifeboat engine (v1) · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Export dialog · the exit preset -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; border-bottom:1px solid var(--border2); background:linear-gradient(135deg, var(--emerald-glow), transparent); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:18px;"><i class="fa-solid fa-door-open"></i></span>
+      <div style="flex:1;">
+        <div style="font-size:15px; font-weight:700;">Lifeboat · <span style="font-family:var(--font-mono);">exit</span> preset</div>
+        <div style="font-size:11px; color:var(--text-muted);">full-fidelity · self-describing open format · no account required, no one notified</div>
+      </div>
+      <span class="state-chip active-state" style="font-size:9px;">always available</span>
+    </div>
+    <div style="padding:16px;">
+      <div class="card-label" style="margin-bottom:8px;">Completeness verifier — every store the OS registers, enumerated against the archive</div>
+      <div class="tool-code" style="font-size:11px; line-height:1.9;">
+        <span style="color:#047857;">✓</span> <span class="code-key">episodic/</span>      <span class="code-str">raw text + episodes</span>            <span class="code-val">184.2 GB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">semantic-graph/</span> <span class="code-str">nodes · edges</span>                 <span class="code-val">9.4 GB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">egress-ledger/</span>  <span class="code-str">every byte that ever left</span>      <span class="code-val">1.1 GB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">tool-approvals/</span> <span class="code-str">grants &amp; denials</span>              <span class="code-val">48 MB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">policy/</span>         <span class="code-str">floor file + revision history</span>  <span class="code-val">2 MB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">corrections/</span>    <span class="code-str">every time you taught it</span>        <span class="code-val">310 MB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">tombstones/</span>     <span class="code-str">deletions noted, never content</span> <span class="code-val">4 MB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">themes-shell/</span>   <span class="code-str">Quickshell config · keybinds</span>   <span class="code-val">21 MB</span><br>
+        <span style="color:#047857;">✓</span> <span class="code-key">schema/</span>         <span class="code-str">format spec embedded, CC0</span>      <span class="code-val">self-describing</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.35); border-radius:var(--radius); padding:10px 14px; margin-top:12px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-receipt"></i></span>
+        <div style="flex:1; font-size:11px;">
+          <span style="color:#047857; font-weight:700;">Fails closed.</span> <span style="color:var(--text-muted);">The verifier walks every store koompi-assistantd registers and matches each against the archive. If any store is missing or an opaque blob is found, the export refuses to call itself complete — 9/9 stores or it errors.</span>
+        </div>
+        <span class="state-chip active-state" style="font-size:9px;">9/9 ✓</span>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <span style="background:var(--emerald-glow); border:1px solid var(--emerald); color:#047857; border-radius:var(--radius-sm); padding:6px 16px; font-size:12px; font-weight:600;">Export → /run/media/rithy/archive</span>
+        <span style="background:var(--surface2); border:1px solid var(--border2); color:var(--text-muted); border-radius:var(--radius-sm); padding:6px 16px; font-size:12px;">Verify only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- One engine, four presets + factory-reset dependency -->
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; margin-top:24px;">
+    <div style="width:360px; flex-shrink:0; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px;">
+      <div class="card-label" style="margin-bottom:10px;">One engine (v1), four presets (1.x)</div>
+      <div class="tool-code" style="font-size:11px; line-height:1.9;">
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">snapshot</span> <span class="code-val">§30 · point-in-time backup</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">legacy</span>   <span class="code-val">§24/§62 · inheritance archive</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">refugee</span>  <span class="code-val">§70 · portable-home carry-out</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">exit</span>     <span class="code-str">§81 · full-fidelity leave the platform</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-top:10px;">
+        Same engine, same self-describing format, same completeness verifier — the presets only differ in what they scope in. Reference the engine; do not reinvent it.
+      </p>
+    </div>
+
+    <div style="flex:1; min-width:300px; display:flex; flex-direction:column; gap:14px;">
+      <div style="background:linear-gradient(135deg, var(--accent-glow), transparent); border:1px solid var(--accent); border-radius:var(--radius-lg); padding:14px 16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="color:var(--accent); font-size:14px;">✦</span>
+          <span style="font-size:13px; font-weight:700;">Why the engine is v1, not later</span>
+        </div>
+        <div style="font-size:13px; line-height:1.7;">
+          Factory reset seals a Lifeboat archive before it wipes the disk, so the engine and its completeness verifier must exist at v1 — a reset that could not prove it saved everything first is not a reset anyone should trust. Export is not a farewell feature bolted on late; it is the safety mechanism the destructive path depends on.
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 16px;">
+        <span style="font-size:18px;"><i class="fa-solid fa-repeat"></i></span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:600;">Self-describing, CC0, verifiable</div>
+          <div style="font-size:11px; color:var(--text-muted);">The schema is embedded and licensed CC0, so the archive explains itself to any importer without KOOMPI present. Tombstones travel with it, asking a receiving OS to keep deletions deleted.</div>
+        </div>
+        <span class="state-chip priv-state" style="font-size:9px;">spec: CC0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Provable completeness, not export theater <span class="badge new">KOOMPI</span></div>
+      <p>Most "data takeout" ships a JSON husk and keeps the soul. The Lifeboat verifier enumerates every store the OS registers and proves each is in the archive — 9/9 or the export refuses to complete.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A format that outlives the company</div>
+      <p>Self-describing, schema embedded, licensed CC0. If the vendor disappears, the archive still explains itself to whatever reads it. The promise is in the bytes, not the brand.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The hundred-year "trust paradox" narrative — a rival OS importing twenty-seven years of a life in 2053, loyalty made optional every day for a century — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

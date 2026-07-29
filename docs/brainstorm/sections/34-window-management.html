@@ -1,0 +1,239 @@
+<section class="section" id="window-management">
+  <div class="section-header">
+    <h2>Window Management</h2>
+    <span class="tag sys">Shell</span>
+  </div>
+  <p class="desc">
+    KOOMPI tiles by default on Hyprland — deterministic, legible, keyboard-first. Windows never overlap by accident; every position is a consequence you can read. The AI may <em>route</em> a new window to the workspace where it belongs and <em>relabel</em> that workspace from its contents, but the choice is always shown inline and reversed with one tap. No window appears without an explainable reason. §07 Overview shows the grid; this is where moving, throwing, pinning, and grouping actually live.
+  </p>
+
+  <!-- ============ 1. MASTER-STACK TILING + FLOATING EXCEPTION ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Workspace 2 · <i class="fa-solid fa-laptop-code"></i> Coding</span>
+        <span style="font-size:10px;font-family:var(--font-mono);color:var(--text-subtle);">dwindle · master ratio 0.58</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <span style="font-size:10px;padding:3px 8px;border-radius:20px;background:var(--accent-glow);color:var(--accent);">3 tiled</span>
+        <span style="font-size:10px;padding:3px 8px;border-radius:20px;background:var(--amber-glow);color:var(--amber);">1 floating</span>
+      </div>
+    </div>
+    <!-- Tiling canvas -->
+    <div style="position:relative;height:300px;background:var(--surface3);padding:12px;display:flex;gap:0;">
+      <!-- Master -->
+      <div style="width:58%;background:var(--surface);border:2px solid var(--accent);border-radius:8px;margin-right:6px;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="height:22px;background:var(--accent-glow);display:flex;align-items:center;padding:0 8px;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>
+          <span style="font-size:11px;color:var(--accent);font-weight:600;">nvim — window-manager.zig</span>
+        </div>
+        <div style="flex:1;padding:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);line-height:1.6;">
+          <span style="color:var(--text-subtle);">42</span>  pub fn placeWindow(w: *Window) void {<br>
+          <span style="color:var(--text-subtle);">43</span>      const ws = router.classify(w);<br>
+          <span style="color:var(--accent);">44</span>      ws.attach(w);  <span style="color:var(--emerald);">// deterministic</span>
+        </div>
+      </div>
+      <!-- Live ratio drag handle -->
+      <div style="width:6px;align-self:stretch;display:flex;align-items:center;justify-content:center;cursor:col-resize;position:relative;">
+        <div style="width:3px;height:100%;background:var(--accent);border-radius:2px;box-shadow:0 0 0 4px var(--accent-glow);"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--text);color:#fff;font-size:10px;font-family:var(--font-mono);padding:3px 7px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 12px rgba(64,55,38,.3);">↔ 0.58 → 0.61</div>
+      </div>
+      <!-- Stack -->
+      <div style="width:40%;display:flex;flex-direction:column;gap:6px;margin-left:6px;">
+        <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <div style="height:20px;background:var(--surface4);display:flex;align-items:center;padding:0 8px;"><span style="font-size:10px;color:var(--text-muted);">Zellij — cargo build</span></div>
+          <div style="padding:6px 8px;font-family:var(--font-mono);font-size:9px;color:var(--emerald);">✓ Compiling koompi-wm v0.4.1</div>
+        </div>
+        <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <div style="height:20px;background:var(--surface4);display:flex;align-items:center;padding:0 8px;"><span style="font-size:10px;color:var(--text-muted);">Firefox — localhost:3000</span></div>
+          <div style="padding:6px 8px;font-size:9px;color:var(--text-subtle);">Dev preview · hot-reloaded 4s ago</div>
+        </div>
+      </div>
+      <!-- Floating exception -->
+      <div style="position:absolute;bottom:24px;right:28px;width:180px;background:var(--surface);border:2px solid var(--amber);border-radius:10px;box-shadow:0 12px 32px rgba(245,158,11,.22);overflow:hidden;">
+        <div style="height:22px;background:var(--amber-glow);display:flex;align-items:center;justify-content:space-between;padding:0 8px;">
+          <span style="font-size:10px;color:var(--amber);font-weight:600;"><i class="fa-solid fa-calculator"></i> Calculator</span>
+          <span style="font-size:9px;font-family:var(--font-mono);color:var(--amber);">float</span>
+        </div>
+        <div style="padding:10px 8px;font-family:var(--font-mono);font-size:13px;color:var(--text);text-align:right;">1,920 × 0.61 = 1,171</div>
+      </div>
+    </div>
+    <!-- Inline move/resize hint bar (Khmer keybindings) -->
+    <div style="display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--surface2);border-top:1px solid var(--border2);overflow-x:auto;">
+      <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">←↑↓→</span><span style="font-size:11px;color:var(--text-muted);">ផ្លាស់ទីផ្តោត <span style="color:var(--text-subtle);">· move focus</span></span></div>
+      <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">Shift</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">←↑↓→</span><span style="font-size:11px;color:var(--text-muted);">បោះបង្អួច <span style="color:var(--text-subtle);">· throw window</span></span></div>
+      <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">R</span><span style="font-size:11px;color:var(--text-muted);">ប្តូរទំហំ <span style="color:var(--text-subtle);">· resize mode</span></span></div>
+      <div style="display:flex;align-items:center;gap:5px;white-space:nowrap;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">V</span><span style="font-size:11px;color:var(--text-muted);">អណ្តែត <span style="color:var(--text-subtle);">· toggle float</span></span></div>
+    </div>
+  </div>
+
+  <!-- ============ 2 + 3: SCRATCHPAD + SMART PLACEMENT (two-up) ============ -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- Scratchpad summon -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Scratchpads</span>
+        <span style="font-size:10px;color:var(--text-subtle);">summon over any workspace · special:</span>
+      </div>
+      <div style="position:relative;height:170px;background:var(--surface3);padding:12px;">
+        <!-- dimmed underlying ws -->
+        <div style="position:absolute;inset:12px;background:repeating-linear-gradient(45deg,var(--surface4),var(--surface4) 6px,transparent 6px,transparent 12px);opacity:.4;border-radius:8px;"></div>
+        <!-- terminal scratchpad sliding down -->
+        <div style="position:relative;width:78%;margin:0 auto;background:#10131C;border:1px solid var(--accent);border-radius:10px;box-shadow:0 16px 40px rgba(99,102,241,.3);overflow:hidden;">
+          <div style="height:20px;background:rgba(99,102,241,.2);display:flex;align-items:center;padding:0 8px;gap:6px;"><span style="font-size:10px;color:#A5B4FC;">⌁ scratch-term</span><span style="font-size:9px;font-family:var(--font-mono);color:#64748B;margin-left:auto;">↓ summoned</span></div>
+          <div style="padding:8px;font-family:var(--font-mono);font-size:10px;color:#10B981;line-height:1.6;">~ ❯ koompi-ctl ws list<br><span style="color:#64748B;">3 active · 1 pinned · 12 history</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border2);">
+        <div style="display:flex;align-items:center;gap:5px;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">`</span><span style="font-size:11px;color:var(--text-muted);">terminal</span></div>
+        <div style="display:flex;align-items:center;gap:5px;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">N</span><span style="font-size:11px;color:var(--text-muted);">notes</span></div>
+        <span style="font-size:10px;color:var(--text-subtle);margin-left:auto;align-self:center;">same key dismisses · state preserved</span>
+      </div>
+    </div>
+
+    <!-- Smart placement decision -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Smart Placement</span>
+        <span style="font-size:10px;color:var(--accent);">✦ koompi-contextd</span>
+      </div>
+      <div style="padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="width:30px;height:30px;border-radius:7px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;"><i class="fa-brands fa-rust"></i></span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);">RustRover launched</div><div style="font-size:10px;color:var(--text-subtle);">~/dev/koompi-wm · IDE class</div></div>
+        </div>
+        <!-- AI decision -->
+        <div style="background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);border-radius:8px;padding:10px;margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px;">✦ Routed to <i class="fa-solid fa-laptop-code"></i> Coding (WS 2)</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.5;">Project path matches the workspace you've used for <span style="color:var(--text);">koompi-wm</span> 41 times. Confidence <span style="font-family:var(--font-mono);color:var(--accent);">0.94</span>.</div>
+        </div>
+        <!-- Override chips -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <span style="font-size:10px;color:var(--text-subtle);">Override:</span>
+          <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;">Keep here</span>
+          <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;">Send to WS 1</span>
+          <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--amber-glow);border:1px solid rgba(245,158,11,.3);color:var(--amber);cursor:pointer;">↺ Never auto-route IDEs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 4. MULTI-MONITOR WORKSPACE MAP ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Output-bound Workspaces</span>
+      <span style="font-size:10px;font-family:var(--font-mono);color:var(--text-subtle);">Hyprland · 2 displays · workspaces follow the output they were created on</span>
+    </div>
+    <div style="display:flex;gap:18px;padding:18px;align-items:flex-start;">
+      <!-- Display 1 -->
+      <div style="flex:2;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:6px;font-family:var(--font-mono);">DP-1 · 2560×1440 · primary</div>
+        <div style="background:var(--surface3);border:1.5px solid var(--accent);border-radius:8px;padding:8px;display:flex;gap:6px;">
+          <div style="flex:1;text-align:center;padding:14px 0;background:var(--surface);border-radius:6px;font-size:11px;color:var(--text-muted);">1 · <i class="fa-solid fa-comment"></i></div>
+          <div style="flex:1;text-align:center;padding:14px 0;background:var(--accent-glow);border:1px solid var(--accent);border-radius:6px;font-size:11px;color:var(--accent);font-weight:600;">2 · <i class="fa-solid fa-laptop-code"></i></div>
+          <div style="flex:1;text-align:center;padding:14px 0;background:var(--surface);border-radius:6px;font-size:11px;color:var(--text-muted);">3 · <i class="fa-solid fa-palette"></i></div>
+        </div>
+        <div style="font-size:9px;color:var(--accent);margin-top:4px;text-align:center;">bound: WS 1–3</div>
+      </div>
+      <!-- Display 2 -->
+      <div style="flex:1;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:6px;font-family:var(--font-mono);">HDMI-A-1 · 1920×1080 · vertical</div>
+        <div style="background:var(--surface3);border:1.5px solid var(--cyan);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px;">
+          <div style="text-align:center;padding:10px 0;background:var(--cyan-glow);border:1px solid var(--cyan);border-radius:6px;font-size:11px;color:var(--cyan);font-weight:600;">7 · <i class="fa-solid fa-chart-column"></i> Monitoring</div>
+          <div style="text-align:center;padding:10px 0;background:var(--surface);border-radius:6px;font-size:11px;color:var(--text-muted);">8 · <i class="fa-solid fa-satellite-dish"></i> Logs</div>
+        </div>
+        <div style="font-size:9px;color:var(--cyan);margin-top:4px;text-align:center;">bound: WS 7–8</div>
+      </div>
+    </div>
+    <div style="padding:8px 14px;background:var(--amber-glow);border-top:1px solid rgba(245,158,11,.2);display:flex;align-items:center;gap:8px;">
+      <span style="font-size:14px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span style="font-size:11px;color:var(--text);line-height:1.4;"><strong style="color:var(--amber);">HDMI-A-1 unplugged?</strong> WS 7–8 don't vanish — they re-home onto DP-1 and remember their binding. Re-attach the monitor and they snap back, windows intact. <span style="color:var(--text-subtle);">No lost work, ever.</span></span>
+    </div>
+  </div>
+
+  <!-- ============ 5 + 6: WINDOW GROUP + THROW-TO-WORKSPACE (two-up) ============ -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- Tabbed group -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Window Group · tabbed</span>
+        <span style="font-size:10px;font-family:var(--font-mono);color:var(--text-subtle);">3 stacked in one tile</span>
+      </div>
+      <div style="padding:12px;background:var(--surface3);">
+        <!-- tab strip -->
+        <div style="display:flex;gap:2px;">
+          <div style="padding:6px 12px;background:var(--surface);border:1px solid var(--accent);border-bottom:none;border-radius:7px 7px 0 0;font-size:11px;color:var(--accent);font-weight:600;">Figma</div>
+          <div style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-bottom:none;border-radius:7px 7px 0 0;font-size:11px;color:var(--text-muted);">Inkscape</div>
+          <div style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-bottom:none;border-radius:7px 7px 0 0;font-size:11px;color:var(--text-muted);">refs.png</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--accent);border-radius:0 8px 8px 8px;height:90px;display:flex;align-items:center;justify-content:center;color:var(--text-subtle);font-size:11px;">Figma — koompi-wm board</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border2);">
+        <span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">Tab</span>
+        <span style="font-size:11px;color:var(--text-muted);">cycle group · </span>
+        <div style="display:flex;gap:3px;margin-left:auto;"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--border);"></span><span style="width:7px;height:7px;border-radius:50%;background:var(--border);"></span></div>
+      </div>
+    </div>
+
+    <!-- Throw-to-workspace drag -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Throw to Workspace</span>
+        <span style="font-size:10px;color:var(--amber);">● dragging…</span>
+      </div>
+      <div style="position:relative;height:170px;background:var(--surface3);padding:12px;">
+        <!-- ghost window mid-drag -->
+        <div style="position:absolute;top:40px;left:40px;width:120px;height:70px;background:var(--surface);border:2px dashed var(--accent);border-radius:8px;opacity:.85;transform:rotate(-3deg);box-shadow:0 16px 32px rgba(99,102,241,.25);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent);"><i class="fa-solid fa-hand"></i> Slack</div>
+        <!-- drop targets -->
+        <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;gap:8px;">
+          <div style="flex:1;text-align:center;padding:10px 0;border:2px dashed var(--border);border-radius:8px;font-size:11px;color:var(--text-subtle);">2 · <i class="fa-solid fa-laptop-code"></i></div>
+          <div style="flex:1;text-align:center;padding:10px 0;border:2px solid var(--emerald);background:var(--emerald-glow);border-radius:8px;font-size:11px;color:var(--emerald);font-weight:600;">1 · <i class="fa-solid fa-comment"></i> drop here</div>
+          <div style="flex:1;text-align:center;padding:10px 0;border:2px dashed var(--border);border-radius:8px;font-size:11px;color:var(--text-subtle);">+ new</div>
+        </div>
+      </div>
+      <div style="padding:8px 14px;background:var(--surface2);border-top:1px solid var(--border2);font-size:10px;color:var(--text-subtle);">Drag the titlebar, or <span class="kb-key" style="display:inline-block;">Super</span>+<span class="kb-key" style="display:inline-block;">Shift</span>+<span class="kb-key" style="display:inline-block;">1–9</span> to throw without the mouse.</div>
+    </div>
+  </div>
+
+  <!-- ============ 7. FIRST-RUN EMPTY WORKSPACE ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text);">Empty Workspace · first run</div>
+    <div style="height:200px;background:var(--surface3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;position:relative;">
+      <div style="position:absolute;inset:24px;border:2px dashed var(--border);border-radius:12px;opacity:.6;"></div>
+      <div style="font-size:32px;opacity:.5;"><i class="fa-solid fa-table-cells-large"></i></div>
+      <div style="font-size:13px;color:var(--text-muted);text-align:center;max-width:320px;line-height:1.5;">No windows yet. Open anything — KOOMPI tiles it for you. The next window splits beside it automatically.</div>
+      <div style="display:flex;gap:8px;">
+        <div style="display:flex;align-items:center;gap:5px;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">Enter</span><span style="font-size:11px;color:var(--text-muted);">terminal</span></div>
+        <div style="display:flex;align-items:center;gap:5px;"><span class="kb-key">Super</span><span style="color:var(--text-subtle);">+</span><span class="kb-key">Space</span><span style="font-size:11px;color:var(--text-muted);">launcher</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CALLOUTS ============ -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Tiling is deterministic <span class="badge new">Legible</span></div>
+      <p>Unlike GNOME's floating chaos or macOS Stage Manager's opaque heuristics, every window's position is the predictable result of split direction and insertion order. You can <em>read</em> the layout. Same inputs, same result — for 50 years.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI routes, never decides silently</div>
+      <p>Smart placement and workspace auto-naming come from koompi-contextd — local, on-device. Every routed window shows the <span style="color:var(--accent);">✦ reason chip</span> with a confidence score and a one-tap <span style="color:var(--amber);">↺ Never do this</span> override that becomes a permanent rule.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Output binding survives unplugs</div>
+      <p>Hyprland workspaces bind to the output they were born on. Pull a monitor and they re-home gracefully, remembering their binding; re-attach and windows snap back intact. Laptop on a desk, then on a train, then docked again — your spatial memory holds.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer-native keybinding hints</div>
+      <p>The inline move/resize hint bar labels every action in Khmer with register-correct verbs (<span style="font-family:inherit;">បោះ</span> "throw", <span style="font-family:inherit;">អណ្តែត</span> "float"), English subtitle below. The shell speaks the user's language first, not a translation layer bolted on.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Floating is an explicit exception</div>
+      <p>Dialogs, pickers, and calculators float by class rule — and the titlebar says <span style="color:var(--amber);font-family:var(--font-mono);">float</span> so you know <em>why</em> it isn't tiled. No window escapes the model without announcing it.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Scratchpads preserve state</div>
+      <p>A summoned scratchpad isn't relaunched — it's the same long-lived window slid off-screen. Your terminal scrollback, your half-written note: still there at 3am next Tuesday. The lifetime OS doesn't forget your transient context.</p>
+    </div>
+  </div>
+</section>

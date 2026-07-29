@@ -1,0 +1,57 @@
+<section class="section" id="continuity-charter">
+  <div class="section-header">
+    <h2>The Continuity Charter</h2>
+    <span class="tag">Futures</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    The Continuity Charter is a real document, committed to <span style="font-family:var(--font-mono);">docs/</span>, that answers one question in writing: if KOOMPI the company dies, what happens to your machine? Its answer is "nothing you can see" — because every package builds from public repos, the memory and egress schemas are specified independently of the code, and your machine never phones home for permission to run. It's not a pledge in a blog post; it's a versioned file with guarantees you can check against the repo today.
+  </p>
+
+  <!-- The charter, as a committed document -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--accent-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:18px;"><i class="fa-solid fa-scroll"></i></span>
+      <div style="flex:1;">
+        <div style="font-size:15px; font-weight:700;">docs/continuity-charter.md</div>
+        <div style="font-size:11px; color:var(--text-muted);">committed &amp; versioned · the written answer to "what if the company dies"</div>
+      </div>
+      <span class="state-chip active-state" style="font-size:9px;">in repo</span>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:flex-start; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--accent); width:24px;">§1</span>
+        <div style="flex:1; font-size:12px; line-height:1.5;"><strong>Reproducible from public source.</strong> <span style="color:var(--text-muted);">Every package builds from public repos. No private build step is load-bearing.</span></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--accent); width:24px;">§2</span>
+        <div style="flex:1; font-size:12px; line-height:1.5;"><strong>Protocol over implementation.</strong> <span style="color:var(--text-muted);">The memory schema and egress format are specified independently of the code, so anyone may re-implement them. The spec is the contract.</span></div>
+      </div>
+      <div style="display:flex; align-items:flex-start; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; color:var(--accent); width:24px;">§3</span>
+        <div style="flex:1; font-size:12px; line-height:1.5;"><strong>Your machine never depends on us being alive.</strong> <span style="color:var(--text-muted);">No phone-home, no license check, no kill switch. A machine that never hears from KOOMPI again keeps working (ADR-0001: degrade local, never silent cloud).</span></div>
+      </div>
+    </div>
+    <div style="padding:10px 16px; border-top:1px solid var(--border2); font-size:11px; color:var(--text-muted);">
+      Each clause maps to something checkable in the repo — public package sources, a versioned schema file, and the ADR-0001 no-phone-home invariant. The charter is a trust weapon precisely because it's falsifiable against the code that ships.
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">The promise, written down and committed <span class="badge new">KOOMPI</span></div>
+      <p>Ask most platforms "what happens to my OS if you die?" and you get silence. KOOMPI's answer is a file in the repo: build from public source, spec over implementation, no phone-home. You can read it and check it today.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The spec outlives the code</div>
+      <p>The memory schema and egress format are documents first, implementations second — so a compatible OS can be rebuilt from the spec even with no original KOOMPI source, the way TCP/IP outlived every original stack.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The full governance apparatus — a seated cross-border council, 3-of-5 key escrow, and a 90-day dead-man's switch that auto-releases signing keys — is described in the charter as intent but stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>) until it can be seated and audited for real.</p>
+    </div>
+  </div>
+</section>

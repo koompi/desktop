@@ -1,0 +1,270 @@
+<section class="section" id="first-boot">
+  <div class="section-header">
+    <h2>First Boot</h2>
+    <span class="tag ai">Day Zero</span>
+  </div>
+  <p class="desc">
+    Power-on to productive desktop, with nothing assumed. Every other section in this document describes an OS that already knows you — your habits, your files, your memory graph. This one designs the moment <em>before</em> any of that exists: the empty baseline. On day one KOOMPI knows nothing about you, and it says so honestly. Trust is earned before a single byte is indexed. Every capability is opt-in, off by default, and the very first impression is in Khmer — because who this is built for should be visible at minute zero, not buried in a locale menu.
+  </p>
+
+  <!-- ── 1 · First-frame greeting (Khmer + English, formal register) ──────── -->
+  <div style="background:linear-gradient(160deg,#242019 0%,#1C1915 60%,#171411 100%);border-radius:14px;padding:40px 44px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);"></div>
+    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:18px;">KOOMPI OS · <span lang="km">ប្រព័ន្ធដែលគិត</span></div>
+    <div lang="km" style="font-size:34px;font-weight:700;color:#fff;line-height:1.5;margin-bottom:6px;">ជម្រាបសួរ</div>
+    <div style="font-size:18px;color:var(--text-subtle);margin-bottom:22px;">Welcome — let's set up your KOOMPI</div>
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:6px 14px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></span>
+      <span style="font-size:12px;color:var(--emerald);">Nothing has been collected yet. Setup happens entirely on this device.</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-subtle);margin-top:16px;font-style:italic;">Greeting shown in <strong style="color:var(--text-muted);">formal register</strong> — we have never met. KOOMPI does not address a stranger informally.</div>
+  </div>
+
+  <!-- ── 2 · Language & keyboard layout — the first decision ──────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px 26px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);">Step 1 of 5 · Language &amp; Keyboard</div>
+      <div style="font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">no network required</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">This is the first thing KOOMPI asks — before identity, before AI, before anything. The default is Khmer.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div style="border:1.5px solid var(--accent);background:var(--accent-glow);border-radius:10px;padding:16px;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span lang="km" style="font-size:20px;font-weight:700;color:var(--text);">ខ្មែរ</span>
+          <div style="width:16px;height:16px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+            <svg width="9" height="9" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.5 6L6.5 2" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">Khmer · Cambodia</div>
+        <div style="font-size:11px;color:var(--accent);margin-top:6px;">Keyboard: NiDA (Unicode) · numerals <span lang="km">០១២៣</span></div>
+      </div>
+      <div style="border:1.5px solid var(--border2);background:var(--surface2);border-radius:10px;padding:16px;cursor:pointer;">
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;">English</div>
+        <div style="font-size:12px;color:var(--text-muted);">English · International</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:6px;">Keyboard: Latin (QWERTY) · numerals 0123</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;">
+      <span style="font-size:14px;">⌨</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text);font-weight:600;">Layout switch is always live</div>
+        <div style="font-size:11px;color:var(--text-muted);">Both layouts install. Toggle with <span style="font-family:var(--font-mono);background:var(--surface3);padding:1px 6px;border-radius:4px;">Super + Space</span> at any time — the choice here just sets the default, it is never a one-way door.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3 · AI setup ceremony — everything OFF by default ────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:22px 26px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);">Step 2 of 5 · What may KOOMPI learn?</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--emerald-glow);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:3px 11px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--emerald);"></span>
+        <span style="font-size:11px;color:#047857;font-weight:600;">All sources off · you are private by default</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">KOOMPI's intelligence comes from indexing your files locally. None of this is on yet. Turn on only what you want — and only when you are ready. Each source explains exactly what it reads and where the index lives.</div>
+
+    <!-- Source rows, all OFF -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:12px 16px;">
+        <span style="font-size:18px;width:24px;text-align:center;"><i class="fa-solid fa-file-lines"></i></span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Documents</div>
+          <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">~/Documents · indexed by koompi-contextd → local SQLite + vectors</div>
+        </div>
+        <div style="width:38px;height:22px;border-radius:11px;background:var(--surface4);border:1px solid var(--border);position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;left:2px;top:1.5px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:12px 16px;">
+        <span style="font-size:18px;width:24px;text-align:center;"><i class="fa-solid fa-image"></i></span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Photos &amp; Screenshots</div>
+          <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">~/Pictures · on-device caption + OCR, no upload</div>
+        </div>
+        <div style="width:38px;height:22px;border-radius:11px;background:var(--surface4);border:1px solid var(--border);position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;left:2px;top:1.5px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:12px 16px;">
+        <span style="font-size:18px;width:24px;text-align:center;"><i class="fa-solid fa-envelope"></i></span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">Messages &amp; Mail</div>
+          <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">Telegram, IMAP · metadata + body, stays on device</div>
+        </div>
+        <div style="width:38px;height:22px;border-radius:11px;background:var(--surface4);border:1px solid var(--border);position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;left:2px;top:1.5px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:12px 16px;">
+        <span style="font-size:18px;width:24px;text-align:center;"><i class="fa-solid fa-clock"></i></span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">App &amp; window activity</div>
+          <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);">what you use &amp; when · powers Daily Briefing</div>
+        </div>
+        <div style="width:38px;height:22px;border-radius:11px;background:var(--surface4);border:1px solid var(--border);position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;left:2px;top:1.5px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px;background:var(--amber-glow);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:11px 14px;">
+      <span style="font-size:14px;"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <div style="font-size:11px;color:var(--text);line-height:1.55;">
+        <strong style="color:#B45309;">The only amber moment in setup.</strong> Turning a source on is a deliberate consent action — it never happens automatically, and the toggle turns <span style="color:#047857;font-weight:600;">emerald</span> only after you confirm <em>where</em> the index lives and that it can be wiped from the Privacy Dashboard in one click. You can come back and grant access months later; KOOMPI will simply index from that day forward.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4 · Identity fork — Selendra DID vs Local-only (EQUAL weight) ────── -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Step 3 of 5 · How do you want to be known?</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Two equally valid paths. Local-only is not a downgrade — it is a complete, lifetime-capable OS. Identity is for portability across your <em>own</em> devices, never for surveillance.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <!-- Local-only -->
+      <div style="border:1.5px solid var(--emerald);background:var(--surface);border-radius:12px;padding:20px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+          <span style="font-size:18px;"><i class="fa-solid fa-lock"></i></span>
+          <span style="font-size:14px;font-weight:700;color:var(--text);">Stay local-only</span>
+          <span style="font-size:10px;background:var(--emerald-glow);color:#047857;padding:2px 8px;border-radius:20px;margin-left:auto;">No account</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">Everything lives on this machine. No key, no chain, no recovery phrase to lose. Your data and AI are fully yours, today.</div>
+        <ul style="font-size:11px;color:var(--text-muted);margin:12px 0 0;padding-left:18px;line-height:1.9;">
+          <li>All AI &amp; memory work identically</li>
+          <li>Nothing to back up off-device</li>
+          <li>Upgrade to an identity later, anytime</li>
+        </ul>
+      </div>
+      <!-- Selendra DID -->
+      <div style="border:1.5px solid var(--accent);background:var(--surface);border-radius:12px;padding:20px;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+          <span style="font-size:18px;">✦</span>
+          <span style="font-size:14px;font-weight:700;color:var(--text);">Create a Selendra ID</span>
+          <span style="font-size:10px;background:var(--accent-glow);color:var(--accent);padding:2px 8px;border-radius:20px;margin-left:auto;">Portable</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">A self-sovereign DID you control. Sync settings &amp; memory to your other KOOMPI devices; prove who you are with zero-knowledge — without revealing the data behind it.</div>
+        <ul style="font-size:11px;color:var(--text-muted);margin:12px 0 0;padding-left:18px;line-height:1.9;">
+          <li>Recovery phrase, shown once</li>
+          <li>ZK proofs — share a claim, not the file</li>
+          <li>Keys generated &amp; stored on-device</li>
+        </ul>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-subtle);margin-top:10px;text-align:center;">Neither button is pre-selected. There is no "Recommended" badge, no greyed-out skip link, no smaller font on the private choice. <strong style="color:#047857;">Sovereignty means the quiet option is never the harder one.</strong></div>
+  </div>
+
+  <!-- ── 5 + 6 · Model provisioning / tier check ─────────────────────────── -->
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-bottom:16px;">
+    <!-- Capable device -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 22px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Step 4 · Your AI engine</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">KOOMPI measured this hardware and picked a model that runs well — not the biggest one that technically loads.</div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.9;">
+        <div>cpu&nbsp;&nbsp;&nbsp;AMD Ryzen 7 · 8c/16t</div>
+        <div>ram&nbsp;&nbsp;&nbsp;16 GB&nbsp;&nbsp;<span style="color:#047857;">✓ ample</span></div>
+        <div>gpu&nbsp;&nbsp;&nbsp;Radeon · 8 GB VRAM&nbsp;&nbsp;<span style="color:#047857;">✓ offload</span></div>
+      </div>
+      <div style="background:var(--accent-glow);border:1px solid rgba(99,102,241,0.3);border-radius:9px;padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:700;color:var(--accent);">Sailor2 8B · Q4_K_M</span>
+          <span style="font-size:10px;background:var(--surface);color:var(--accent);padding:2px 8px;border-radius:20px;border:1px solid rgba(99,102,241,0.3);">Recommended tier</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">4.9 GB download · ~38 tok/s on this device · GPU-accelerated</div>
+        <!-- progress -->
+        <div style="margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px;font-family:var(--font-mono);">
+            <span>downloading · 2.1 / 4.9 GB</span><span>43%</span>
+          </div>
+          <div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+            <div style="width:43%;height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:3px;"></div>
+          </div>
+          <div style="font-size:10px;color:#0E7490;margin-top:6px;font-family:var(--font-mono);">SHA-256 verified after fetch · runs offline forever once saved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Degraded tier -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 22px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">On a weaker device?</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">KOOMPI does not refuse to run. It steps down gracefully and tells you the trade-off in plain language.</div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.9;">
+        <div>ram&nbsp;&nbsp;&nbsp;4 GB&nbsp;&nbsp;<span style="color:#B45309;"><i class="fa-solid fa-triangle-exclamation"></i> tight</span></div>
+        <div>gpu&nbsp;&nbsp;&nbsp;none · CPU inference</div>
+      </div>
+      <div style="background:var(--amber-glow);border:1px solid rgba(245,158,11,0.3);border-radius:9px;padding:13px;">
+        <div style="font-size:12px;font-weight:700;color:#B45309;">Sailor2 1B · Q4 fallback</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.55;">~9 tok/s · briefings &amp; search still work; long reasoning is slower. You can connect a cloud model later — but the OS is fully usable on its own.</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-subtle);margin-top:10px;line-height:1.6;">Tier is re-evaluated on every boot. Add RAM or a GPU and KOOMPI offers the 8B model on the next start — no reinstall.</div>
+    </div>
+  </div>
+
+  <!-- ── 8 · Offline / no-network first boot ─────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 22px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="font-size:16px;"><i class="fa-solid fa-satellite-dish"></i></span>
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Edge case · No network at first boot</span>
+      <span style="font-size:10px;background:var(--amber-glow);color:#B45309;padding:2px 9px;border-radius:20px;margin-left:auto;">offline</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;">A student opens KOOMPI in a province with no Wi-Fi. The model is not downloaded yet. <strong style="color:var(--text);">The OS must never hold your own computer hostage to a download.</strong> Setup completes; the desktop is fully usable; only the cloud-fetched model is deferred.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:11px;background:var(--emerald-glow);color:#047857;border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 11px;">✓ Shell, files, apps, settings — all work</span>
+      <span style="font-size:11px;background:var(--emerald-glow);color:#047857;border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 11px;">✓ Khmer keyboard &amp; rendering offline</span>
+      <span style="font-size:11px;background:var(--amber-glow);color:#B45309;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:4px 11px;">⏳ AI queued — downloads on next connection</span>
+    </div>
+    <div style="font-size:11px;color:var(--text-subtle);margin-top:12px;font-style:italic;">Principal-engineer detail: the ISO ships a tiny 0.5B "stub" model so semantic search and the briefing degrade-but-function from the first second offline. The 8B fetch is a background upgrade via koompi-restore's snapshot-safe queue, resumable across reboots — not a setup blocker.</div>
+  </div>
+
+  <!-- ── 5 (empty memory) + 7 (desktop reveal + one next action) ─────────── -->
+  <div style="background:linear-gradient(160deg,#242019 0%,#1A1714 100%);border-radius:14px;padding:26px 30px;margin-bottom:16px;">
+    <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:6px;">Step 5 · Setup complete — your desktop</div>
+    <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;">Productive in under two minutes</div>
+
+    <!-- Day-one empty Context Pulse — honest framing -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:11px;padding:18px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text-subtle);">✦ Context Pulse</span>
+        <span style="font-size:10px;background:rgba(99,102,241,0.18);color:var(--accent);padding:2px 9px;border-radius:20px;">day 1</span>
+      </div>
+      <div style="text-align:center;padding:14px 8px;">
+        <div style="font-size:15px;color:#fff;font-weight:600;margin-bottom:6px;">I don't know you yet.</div>
+        <div style="font-size:12px;color:var(--text-subtle);line-height:1.7;max-width:440px;margin:0 auto;">No memories, no patterns, no briefing — because nothing has happened on this device yet, and I will not pretend otherwise. As you work (and grant access to what you choose), this fills in. Everything I learn will be visible here and erasable in one click.</div>
+        <div style="display:inline-flex;gap:18px;margin-top:14px;font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">
+          <span>memories <strong style="color:#fff;">0</strong></span>
+          <span>indexed files <strong style="color:#fff;">0</strong></span>
+          <span>days observed <strong style="color:#fff;">0</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single guided next action -->
+    <div style="display:flex;align-items:center;gap:14px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:11px;padding:16px 18px;">
+      <span style="font-size:22px;"><i class="fa-solid fa-hand"></i></span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#fff;">One thing to try first</div>
+        <div style="font-size:11px;color:var(--text-subtle);">Press <span style="font-family:var(--font-mono);background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:4px;color:#fff;">Super</span> and ask KOOMPI anything — in Khmer or English. That's the whole tour.</div>
+      </div>
+      <span style="font-size:11px;background:var(--accent);color:#fff;padding:7px 14px;border-radius:8px;font-weight:600;cursor:pointer;">Open launcher</span>
+    </div>
+    <div style="font-size:10px;color:var(--text-subtle);margin-top:12px;">No popup tour, no 9-card carousel, no "rate us". One action, then out of the way. Windows 11 shows you OneDrive ads on first boot; GNOME hands you a blank panel; KOOMPI hands you a single honest sentence and your own computer.</div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Off by default is the thesis, not a setting <span class="badge new">Local First</span></div>
+      <p>Every index source ships disabled. The all-off state is framed as a feature — "you are private by default" — and only an explicit consent action flips a toggle to emerald. macOS and Windows opt you into telemetry and cloud sync during setup and make you hunt to leave; KOOMPI starts from zero and earns each capability.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">"I don't know you yet" — honesty over theatre</div>
+      <p>This section patches the Vision audit's #1 hole: every longitudinal feature assumes a populated memory graph. Day one has none, so the empty Context Pulse says so plainly instead of faking a loading state or inventing a fake briefing. An OS that admits ignorance on day one is one you can trust on day 3,000.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The quiet choice is never the harder one</div>
+      <p>The identity fork gives "stay local-only" identical visual weight to creating a Selendra ID — no recommended badge, no dimmed skip link, no dark pattern. Data sovereignty is meaningless if the private path is the inconvenient one. And the degraded-tier model means a 4 GB laptop in a Cambodian classroom still gets a working AI — the lifetime promise has to start on the hardware people actually own.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer-first at minute zero <span class="badge new">Khmer-Native</span></div>
+      <p>The first frame greets in <span lang="km">ខ្មែរ</span> with the <strong>formal register</strong> — you address a stranger politely — and offers the NiDA layout as a peer of QWERTY, not a buried locale option. Before any data exists, the OS has already signalled who it is built for.</p>
+    </div>
+  </div>
+</section>

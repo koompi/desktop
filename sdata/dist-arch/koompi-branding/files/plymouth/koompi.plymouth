@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=KOOMPI
+Description=KOOMPI OS boot splash (Naga — placeholder; see docs/naming.md)
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/koompi
+ScriptFile=/usr/share/plymouth/themes/koompi/koompi.script

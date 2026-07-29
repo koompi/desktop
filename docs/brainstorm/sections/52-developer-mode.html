@@ -1,0 +1,272 @@
+<section class="section" id="developer-mode">
+  <div class="section-header">
+    <h2>Developer Mode</h2>
+    <span class="tag sys">System</span>
+  </div>
+  <p class="desc">
+    Power without dissolving the guarantees. Developer Mode widens <em>hardware</em> and <em>sandbox</em> scope — but the AI agent in your terminal obeys the same §11 consent model it obeys in the launcher. macOS and Windows treat "developer" as a trusted role that earns fewer prompts. KOOMPI treats it as a wider, visible, reversible <em>scope</em>. Builders get root in a box, not over the OS.
+  </p>
+
+  <!-- ════════════ 1. ENABLE CEREMONY ════════════ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="background:linear-gradient(135deg,#FEF3E2 0%,var(--surface) 70%);padding:18px 22px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(245,158,11,.3);">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 6v5c0 4 3.4 6.4 8 7 4.6-.6 8-3 8-7V6l-8-4z" stroke="white" stroke-width="1.4" fill="none"/><path d="M7.5 10l1.8 1.8L13 8" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Enable Developer Mode</div>
+        <div style="font-size:12px;color:#B45309;font-weight:600;">This widens access. It is not the default for a reason.</div>
+      </div>
+    </div>
+    <div style="padding:20px 22px;">
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:16px;">Developer Mode unlocks sandboxed root, scoped hardware grants, and a local-model API. It does <strong>not</strong> disable any privacy guarantee. Here is exactly what changes:</div>
+
+      <!-- diff: what changes -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+        <div style="border:1px solid var(--border2);border-radius:8px;padding:12px 14px;background:var(--surface2);">
+          <div style="font-size:10px;font-weight:700;color:#B45309;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">What widens</div>
+          <div style="font-size:11px;color:var(--text-muted);line-height:1.9;">
+            ↗ Root <em>inside</em> a named container<br>
+            ↗ Per-project USB / serial / GPU grants<br>
+            ↗ Local LLM reachable on <code style="font-family:var(--font-mono);color:var(--text);">127.0.0.1:11434</code><br>
+            ↗ Unsigned binaries may run in-sandbox
+          </div>
+        </div>
+        <div style="border:1px solid var(--border2);border-radius:8px;padding:12px 14px;background:#ECFDF5;">
+          <div style="font-size:10px;font-weight:700;color:#047857;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">What does NOT change</div>
+          <div style="font-size:11px;color:#047857;line-height:1.9;">
+            ✓ AI agent still asks before every tool call<br>
+            ✓ Egress ledger still records all network<br>
+            ✓ Your home dir stays outside the sandbox<br>
+            ✓ Selendra keys never enter dev scope
+          </div>
+        </div>
+      </div>
+
+      <!-- consent action row -->
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;">
+        <div style="flex:1;font-size:11px;color:var(--text-muted);line-height:1.5;">Authenticate with fingerprint to confirm. Developer Mode appears in your Privacy Dashboard as an <span style="color:#B45309;font-weight:600;">active wide-access state</span> until you revert it.</div>
+        <div style="padding:8px 18px;border:1px solid var(--border);border-radius:7px;font-size:12px;color:var(--text-muted);background:var(--surface);cursor:pointer;">Cancel</div>
+        <div style="padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;color:white;background:var(--amber);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(245,158,11,.3);">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="white" stroke-width="1.2"/><path d="M2.5 11c0-2.2 1.8-3.5 4-3.5s4 1.3 4 3.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Authenticate &amp; Enable
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 2 + 3. SANDBOX + SCOPED HARDWARE ════════════ -->
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:16px;margin-bottom:16px;">
+
+    <!-- 2. Sandboxed dev environment -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Dev Environment</div>
+        <div style="display:flex;align-items:center;gap:6px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:20px;padding:3px 10px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--emerald);"></div>
+          <span style="font-size:10px;font-weight:700;color:#047857;letter-spacing:.04em;">ISOLATED</span>
+        </div>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--text);margin-bottom:4px;">koompi-toolbox · <span style="color:var(--accent);">selendra-node</span></div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);margin-bottom:14px;">arch-rolling · podman rootless · created 2026-05-31</div>
+
+        <div style="font-size:10px;font-weight:700;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Namespaced away from host</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);"><span style="color:#047857;font-family:var(--font-mono);">●</span> PID / mount / network namespaces</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);"><span style="color:#047857;font-family:var(--font-mono);">●</span> Writable overlay — host <code style="font-family:var(--font-mono);">/</code> is read-only</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);"><span style="color:#0E7490;font-family:var(--font-mono);">◐</span> Bind: <code style="font-family:var(--font-mono);color:var(--text);">~/code/selendra</code> only</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);"><span style="color:#B45309;font-family:var(--font-mono);">○</span> <code style="font-family:var(--font-mono);">~/.ssh</code>, <code style="font-family:var(--font-mono);">~/Documents</code> — not visible</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Scoped hardware access -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Hardware Grants</div>
+        <div style="font-size:10px;color:var(--text-subtle);">Scoped per project · expire automatically</div>
+      </div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <!-- active USB grant -->
+        <div style="border:1px solid #A7F3D0;border-radius:8px;padding:9px 12px;background:#ECFDF5;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text);">USB · ST-Link v2</span>
+            <span style="font-size:9px;font-weight:700;color:#047857;">GRANTED</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);">udev 0483:3748 → cgroup allow · ttyACM0</div>
+        </div>
+        <!-- active GPU grant -->
+        <div style="border:1px solid #A7F3D0;border-radius:8px;padding:9px 12px;background:#ECFDF5;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text);">GPU · /dev/dri (compute)</span>
+            <span style="font-size:9px;font-weight:700;color:#047857;">GRANTED</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);">render node only · no display attach</div>
+        </div>
+        <!-- expired grant -->
+        <div style="border:1px solid var(--border2);border-radius:8px;padding:9px 12px;background:var(--surface2);opacity:.85;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-decoration:line-through;">Serial · CP2102</span>
+            <span style="font-size:9px;font-weight:700;color:#B45309;">EXPIRED 4h ago</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);">auto-revoked · re-grant needs consent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 4. TERMINAL + IDE WITH §11 AGENT ════════════ -->
+  <div style="background:#0F1729;border:1px solid #1E293B;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <!-- title bar -->
+    <div style="background:#241F19;padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2D3652;">
+      <div style="display:flex;gap:6px;"><div style="width:11px;height:11px;border-radius:50%;background:#EF4444;"></div><div style="width:11px;height:11px;border-radius:50%;background:#F59E0B;"></div><div style="width:11px;height:11px;border-radius:50%;background:#10B981;"></div></div>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#94A3B8;margin-left:6px;">koompi-term — selendra-node (toolbox)</span>
+      <div style="flex:1;"></div>
+      <span style="display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.4);border-radius:14px;padding:2px 9px;font-size:9px;font-weight:700;color:#A5B4FC;">✦ AI agent attached</span>
+    </div>
+    <!-- terminal body -->
+    <div style="padding:14px 16px;font-family:var(--font-mono);font-size:11.5px;line-height:1.75;">
+      <div style="color:#10B981;">rithy@selendra-node<span style="color:#64748B;">:</span><span style="color:#22D3EE;">~/code/selendra</span><span style="color:#64748B;">$</span> <span style="color:#E2E8F0;">koompi ai "find why the node panics on block 4.2M"</span></div>
+      <div style="color:#94A3B8;margin-top:4px;">✦ I need to grep the runtime logs and read <code style="color:#E2E8F0;">runtime/src/lib.rs</code>.</div>
+
+      <!-- §11 tool-approval prompt INSIDE the terminal -->
+      <div style="margin:10px 0;border:1px solid rgba(99,102,241,.45);border-radius:8px;background:rgba(99,102,241,.08);padding:11px 13px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">
+          <span style="font-size:13px;"><i class="fa-solid fa-wrench"></i></span>
+          <span style="color:#C7D2FE;font-weight:700;font-size:11px;">AI wants to run a command</span>
+          <span style="margin-left:auto;font-size:9px;color:#64748B;">same consent model as §11 — no exception for dev</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:10.5px;color:#A5B4FC;background:#0F1729;border-radius:5px;padding:7px 9px;margin-bottom:9px;">tool: <span style="color:#FBBF24;">"run_command"</span><br>cmd&nbsp;: <span style="color:#6EE7B7;">"rg -n 'unwrap' runtime/src/lib.rs"</span><br>cwd&nbsp;: <span style="color:#67E8F9;">/home/rithy/code/selendra</span></div>
+        <div style="display:flex;gap:7px;align-items:center;">
+          <span style="padding:5px 12px;background:#6366F1;border-radius:6px;font-size:10px;font-weight:700;color:white;cursor:pointer;">✓ Allow</span>
+          <span style="padding:5px 12px;background:#1E293B;border:1px solid #334155;border-radius:6px;font-size:10px;color:#CBD5E1;cursor:pointer;">Allow once</span>
+          <span style="padding:5px 12px;background:#1E293B;border:1px solid #334155;border-radius:6px;font-size:10px;color:#FCA5A5;cursor:pointer;">✗ Deny</span>
+          <span style="margin-left:auto;font-size:9px;color:#64748B;display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border:1px solid #475569;border-radius:2px;display:inline-block;"></span>Remember for this session</span>
+        </div>
+      </div>
+      <div style="color:#475569;">↳ read-only command. Writes &amp; <code style="color:#94A3B8;">git push</code> always re-prompt, even after "remember".</div>
+    </div>
+  </div>
+
+  <!-- ════════════ 5 + 6. LOCAL MODEL TOKEN + REPRO ENV ════════════ -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+    <!-- 5. Local model API token -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="var(--accent)" stroke-width="1.3"/><circle cx="8" cy="8" r="2.2" fill="var(--accent)"/></svg>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Local Model API</div>
+        <span style="margin-left:auto;font-size:10px;color:#047857;font-weight:600;">on-device · no egress</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;">Your tools reach Sailor2 8B locally. Each project gets its own scoped token — revoke one without breaking the others.</div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:11px 13px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text);">koompi-tok_sln_8f3a··········c1d</span>
+            <span style="font-size:9px;color:var(--text-subtle);cursor:pointer;border:1px solid var(--border);border-radius:5px;padding:2px 7px;">copy</span>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">
+            <span style="font-size:9px;background:var(--accent-glow);color:var(--accent);border-radius:4px;padding:2px 7px;font-weight:600;">chat</span>
+            <span style="font-size:9px;background:var(--accent-glow);color:var(--accent);border-radius:4px;padding:2px 7px;font-weight:600;">embeddings</span>
+            <span style="font-size:9px;background:var(--surface3);color:var(--text-subtle);border-radius:4px;padding:2px 7px;">tool-call ✗</span>
+            <span style="font-size:9px;background:var(--surface3);color:var(--text-subtle);border-radius:4px;padding:2px 7px;">fs-read ✗</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border2);padding-top:8px;">
+            <span style="font-size:10px;color:var(--text-subtle);">scope: <code style="font-family:var(--font-mono);">selendra-node</code> · 14.2k calls</span>
+            <span style="font-size:10px;font-weight:600;color:#B91C1C;cursor:pointer;">Revoke</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-subtle);margin-top:10px;line-height:1.5;">A leaked token can chat with the model. It <strong>cannot</strong> read your files or call tools — those need a live §11 prompt with a human present.</div>
+      </div>
+    </div>
+
+    <!-- 6. Reproducible env / dotfiles snapshot -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 5l6-3 6 3-6 3-6-3z" stroke="var(--cyan)" stroke-width="1.2" fill="none"/><path d="M2 8l6 3 6-3M2 11l6 3 6-3" stroke="var(--cyan)" stroke-width="1.2"/></svg>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Reproducible Env</div>
+        <span style="margin-left:auto;font-size:10px;color:#0E7490;font-weight:600;">→ §41 backup</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;">Toolbox spec + dotfiles captured as a BTRFS subvolume snapshot via <code style="font-family:var(--font-mono);color:var(--text);">koompi-restore</code>. Rebuild this exact environment on a new machine in one command.</div>
+        <div style="background:#0F1729;border-radius:8px;padding:11px 13px;font-family:var(--font-mono);font-size:10.5px;line-height:1.7;margin-bottom:12px;">
+          <div style="color:#67E8F9;">env.lock · selendra-node</div>
+          <div style="color:#94A3B8;">├ toolbox: arch-rolling@a91f0</div>
+          <div style="color:#94A3B8;">├ dotfiles: nvim, zsh, git (×37)</div>
+          <div style="color:#94A3B8;">├ pkgs: 214 explicit · pinned</div>
+          <div style="color:#6EE7B7;">└ snapshot: 2026-06-09 09:41 ✓</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:7px;padding:8px 11px;">
+          <span style="color:#047857;">✓</span>
+          <span style="font-size:10px;color:#047857;line-height:1.4;">Folded into your encrypted §41 backup. No secrets captured — tokens &amp; keys are excluded by manifest.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 7. KHMER TERMINAL + IME PREEDIT STATE ════════════ -->
+  <div style="background:#0F1729;border:1px solid #1E293B;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="background:#241F19;padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2D3652;">
+      <span style="font-family:var(--font-mono);font-size:11px;color:#94A3B8;">koompi-term — Khmer IME in terminal</span>
+      <div style="flex:1;"></div>
+      <span style="font-family:var(--font-mono);font-size:10px;color:#A5B4FC;background:rgba(99,102,241,.18);border-radius:4px;padding:2px 8px;">ខ្មែរ · fcitx5 composing</span>
+    </div>
+    <div style="padding:14px 16px;font-family:var(--font-mono);font-size:13px;line-height:1.9;">
+      <div style="color:#10B981;">rithy@host<span style="color:#64748B;">:</span><span style="color:#22D3EE;">~$</span> <span style="color:#E2E8F0;">git commit -m "</span><!--
+      preedit span: underlined composition, not yet committed
+      --><span style="color:#F0F2F7;border-bottom:2px solid #6366F1;padding-bottom:1px;">សួស្ដី</span><span style="display:inline-block;width:2px;height:15px;background:#22D3EE;vertical-align:-2px;margin-left:1px;"></span></div>
+      <div style="margin-top:6px;background:#241F19;border:1px solid #2D3652;border-radius:6px;display:inline-block;padding:4px 8px;font-size:11px;color:#CBD5E1;">
+        1.&nbsp;សួស្ដី&nbsp;&nbsp; 2.&nbsp;សួស្តី&nbsp;&nbsp; 3.&nbsp;ស្វាគមន៍ <span style="color:#64748B;">— candidates</span>
+      </div>
+      <div style="margin-top:12px;color:#64748B;font-size:10.5px;line-height:1.6;">The preedit <span style="color:#A5B4FC;">underlined span</span> is the uncommitted composition; the cyan bar is the real cursor. Cursor advances by <em>grapheme cluster</em> — <code style="color:#94A3B8;">ស្ដី</code> is 4 codepoints but one cell-wide cluster, so backspace deletes the cluster, not a stray COENG.</div>
+    </div>
+  </div>
+
+  <!-- ════════════ 8. REVERT TO HARDENED DEFAULTS ════════════ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+      <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M3 8.5a5.5 5.5 0 109-4.2" stroke="var(--emerald)" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M12 1.5V5H8.5" stroke="var(--emerald)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="font-size:13px;font-weight:700;color:var(--text);">Revert to Hardened Defaults</div>
+      <span style="margin-left:auto;font-size:10px;color:#047857;font-weight:600;">one click · reversible</span>
+    </div>
+    <div style="padding:16px 18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--text-muted);line-height:2;">
+          <div>↘ All hardware grants <span style="color:#047857;font-weight:600;">revoked</span></div>
+          <div>↘ Toolboxes <span style="color:var(--text);">stopped</span> (kept on disk)</div>
+          <div>↘ Model API tokens <span style="color:#B91C1C;font-weight:600;">invalidated</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:2;">
+          <div>↘ Unsigned-binary exec <span style="color:#047857;font-weight:600;">blocked</span></div>
+          <div>↘ udev/cgroup rules <span style="color:var(--text);">removed</span></div>
+          <div>↘ Privacy Dashboard returns to <span style="color:#047857;font-weight:600;">green</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:7px;padding:9px 12px;">
+        <span style="color:#047857;"><i class="fa-solid fa-shield-halved"></i></span>
+        <span style="font-size:10.5px;color:#047857;line-height:1.5;">Your work survives the revert. Toolboxes and <code style="font-family:var(--font-mono);">env.lock</code> snapshots stay — re-enabling Developer Mode restores them instantly. Hardening removes the <em>access</em>, never the <em>artifacts</em>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ CALLOUTS ════════════ -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">The agent obeys §11 in a terminal too <span class="badge new">KOOMPI</span></div>
+      <p>VS Code and Cursor grant the AI blanket terminal trust once you click "Yes, and always." KOOMPI never does. A coding agent in your shell hits the same <em>Allow / Allow once / Deny</em> modal as anywhere else — and writes plus <code>git push</code> always re-prompt, even after "remember for this session." Developer Mode widens hardware scope, not consent.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Power is scoped, visible, reversible</div>
+      <p>Hardware grants are per-project udev + cgroup allowlists that <em>expire on their own</em>. The local-model token can chat but cannot touch files or call tools. While dev mode is on, your Privacy Dashboard shows an amber wide-access banner — sovereignty means you always see how open the machine currently is, and close it in one click.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer-native, even at the prompt</div>
+      <p>A first-class Khmer OS that can't type Khmer in its terminal is a contradiction. KOOMPI renders fcitx5 preedit correctly over the PTY — underlined composition, grapheme-cluster cursor advance, no stray COENG on backspace. The detail every other Linux terminal gets wrong, we treat as a requirement.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A Lifetime OS for builders</div>
+      <p>Your environment is an artifact, not a fragile setup. <code>env.lock</code> + dotfiles snapshot into your encrypted §41 backup via koompi-restore, so the exact toolbox you built in 2026 rebuilds bit-identically on a machine you buy in 2046 — and reverting dev mode hardens access without ever destroying the work.</p>
+    </div>
+  </div>
+</section>

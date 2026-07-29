@@ -1,0 +1,103 @@
+<section class="section" id="data-sovereignty">
+  <div class="section-header">
+    <h2>Data Sovereignty</h2>
+    <span class="tag data">Data</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    A 1.x privacy panel that makes every app's data access visible and revocable. For any installed app you see which scopes it holds, when each was granted, and a one-tap revoke; alongside it is the local log of consent receipts — a per-device record of every share you approved. Receipts live on your machine; the optional Selendra ledger (ADR-0009) stores only tamper-proof <em>proofs</em> that a consent happened, never the data itself.
+  </p>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+
+    <!-- Per-app data map -->
+    <div style="width:330px; flex-shrink:0; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--border2); background:var(--surface2); font-size:13px; font-weight:700;">Data map — which app holds what</div>
+      <div style="padding:16px;">
+        <svg viewBox="0 0 300 200" style="width:100%; height:auto;">
+          <line x1="150" y1="100" x2="60"  y2="40"  stroke="var(--emerald)" stroke-width="1.5"/>
+          <line x1="150" y1="100" x2="245" y2="45"  stroke="var(--amber)"   stroke-width="1.5"/>
+          <line x1="150" y1="100" x2="55"  y2="160" stroke="var(--emerald)" stroke-width="1.5"/>
+          <line x1="150" y1="100" x2="250" y2="155" stroke="var(--red)"     stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle cx="150" cy="100" r="26" fill="var(--accent)"/>
+          <text x="150" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="white">YOU</text>
+          <circle cx="60"  cy="40"  r="16" fill="var(--emerald-glow)" stroke="var(--emerald)" stroke-width="1.5"/>
+          <text x="60"  y="43"  text-anchor="middle" font-size="7" fill="var(--emerald)">Files</text>
+          <circle cx="245" cy="45"  r="16" fill="var(--amber-glow)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="245" y="48"  text-anchor="middle" font-size="7" fill="var(--amber)">Maps</text>
+          <circle cx="55"  cy="160" r="16" fill="var(--emerald-glow)" stroke="var(--emerald)" stroke-width="1.5"/>
+          <text x="55"  y="163" text-anchor="middle" font-size="7" fill="var(--emerald)">Mail</text>
+          <circle cx="250" cy="155" r="16" fill="var(--red-glow)" stroke="var(--red)" stroke-width="1.5"/>
+          <text x="250" y="158" text-anchor="middle" font-size="7" fill="var(--red)">AdSDK</text>
+        </svg>
+        <div class="state-row" style="margin-top:6px;">
+          <span class="state-chip priv-state">local only</span>
+          <span class="state-chip warn-state">limited share</span>
+          <span class="state-chip danger-state">leaking · revoke</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consent receipts + revocation -->
+    <div style="flex:1; min-width:280px; display:flex; flex-direction:column; gap:14px;">
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px;">
+        <div class="card-label" style="margin-bottom:10px;">Consent receipts — every share, revocable in one tap</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:#B45309;"><i class="fa-solid fa-location-dot"></i></span>
+            <span style="flex:1;">Maps app — coarse location</span>
+            <span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">3 Mar</span>
+            <span class="state-chip" style="font-size:9px; padding:2px 8px; cursor:pointer;">revoke</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--red-glow); border:1px solid rgba(239,68,68,0.2); border-radius:var(--radius-sm);">
+            <span style="color:#B91C1C;"><i class="fa-solid fa-satellite-dish"></i></span>
+            <span style="flex:1;">AdSDK — behavioral profile</span>
+            <span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">1 Apr</span>
+            <span class="state-chip danger-state" style="font-size:9px; padding:2px 8px; cursor:pointer;">revoke now</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:var(--radius-sm);">
+            <span style="color:#047857;"><i class="fa-solid fa-file-lines"></i></span>
+            <span style="flex:1;">Tax app — read 2 PDFs</span>
+            <span style="font-size:10px; color:var(--text-subtle); font-family:var(--font-mono);">expired</span>
+            <span class="state-chip priv-state" style="font-size:9px; padding:2px 8px;">auto-revoked</span>
+          </div>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+          Each row is a stored consent receipt. Revoking cuts the app's access immediately and appends a revocation receipt — the panel is the ground truth of what any app may touch.
+        </p>
+      </div>
+
+      <!-- On-chain proofs only -->
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px;">
+        <div class="card-label" style="margin-bottom:10px;">On-chain attestation — Selendra ledger (opt-in)</div>
+        <div class="tool-code" style="font-size:11px; line-height:1.9;">
+          <span class="code-key">event</span> : <span class="code-str">"consent_granted"</span><br>
+          <span class="code-key">at</span>    : <span class="code-val">2026-03-15 09:42:11 UTC</span><br>
+          <span class="code-key">tx</span>    : <span class="code-str">0x7a1f…c3e9</span> <span style="color:#047857;">✓ confirmed</span><br>
+          <span class="code-key">scope</span> : <span class="code-val">proof only — no personal data on chain</span>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+          Selendra records that a consent happened; the receipt and the data both stay on your device. Tamper-proof proofs for a private life.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Consent you can see and revoke <span class="badge new">KOOMPI</span></div>
+      <p>Every data share is a line item with a revoke button, backed by a local receipt. No buried settings, no dark patterns — the map shows leaks in red and lets you cut them instantly.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Proofs on chain, data on device</div>
+      <p>Selendra is the opt-in ledger of consent, not a store of your information. It attests that events happened; your files, location, and habits stay local.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "what your data is worth" valuation panel is a decided cut (C-12) — there is no honest way to price a person's data on their own machine, so KOOMPI ships flows and receipts, never a fictional number.</p>
+    </div>
+  </div>
+</section>

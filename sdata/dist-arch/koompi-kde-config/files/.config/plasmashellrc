@@ -1,0 +1,4 @@
+# KOOMPI OS — plasmashell defaults (skeleton; tune live).
+[PlasmaViews][Panel 2]
+floating=0
+panelVisibility=0

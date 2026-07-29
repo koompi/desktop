@@ -1,0 +1,432 @@
+#!/usr/bin/env bash
+# koompi-quicklook - macOS-style Quick Look preview for the KOOMPI desktop.
+#
+#   koompi-quicklook <path>      toggle a preview of <path>
+#   koompi-quicklook close       close any open preview
+#   koompi-quicklook kind <path> print the dispatch decision (mime -> kind)
+#   koompi-quicklook drive <path> hand a file to Google Drive
+#   koompi-quicklook install     wire Space in Dolphin (service menu + shortcut)
+#   koompi-quicklook selftest    exercise the dispatch table
+#
+# One preview at a time, one surface for every kind. Pressing the bound key
+# again (or Space/Escape inside the preview) closes it, so the same gesture
+# opens and dismisses - that is the whole point of Quick Look.
+#
+# The surface itself is a Quickshell layer-shell overlay
+# (quickshell/koompi-quicklook/shell.qml); this script decides WHAT to show and
+# hands it over through the environment.
+set -euo pipefail
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+
+APP_DIR="$XDG_CONFIG_HOME/quickshell/koompi-quicklook"
+[ -f "$APP_DIR/shell.qml" ] || APP_DIR="/etc/xdg/quickshell/koompi-quicklook"
+CACHE_DIR="$XDG_CACHE_HOME/koompi/quicklook"
+LOG_DIR="$XDG_STATE_HOME/koompi/logs"
+LOG="$LOG_DIR/quicklook.log"
+PIDFILE="$XDG_RUNTIME_DIR/koompi-quicklook.pid"
+PALETTE="$XDG_STATE_HOME/quickshell/user/generated/colors.json"
+
+# Pages rendered up front vs. streamed in behind the window. Page one has to be
+# instant; the rest can land while you are already reading it.
+PAGE_LIMIT=30
+
+log() {
+    mkdir -p "$LOG_DIR"
+    printf '%s koompi-quicklook: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG"
+}
+
+usage() {
+    sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
+    exit "${1:-0}"
+}
+
+# ---------------------------------------------------------------- install
+
+# Space in Dolphin goes through a KIO service menu: Dolphin lists service-menu
+# entries in Configure Keyboard Shortcuts (as "Context Menu Actions") and
+# persists the binding in its local dolphinui.rc. Both halves are written here
+# so a fresh machine gets the behaviour without anyone opening a dialog.
+#
+# The .desktop must be executable - KIO refuses to run a service menu that is
+# not, with "You are not authorized to execute this file".
+install_dolphin() {
+    local data="${XDG_DATA_HOME:-$HOME/.local/share}" menu ui action line
+    menu="$data/kio/servicemenus/koompi-quicklook.desktop"
+    action="servicemenu_koompi-quicklook.desktop::quicklook"
+
+    mkdir -p "$(dirname "$menu")"
+    cat > "$menu" <<'DESKTOP'
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=all/allfiles;
+Actions=quicklook;
+X-KDE-Priority=TopLevel
+
+[Desktop Action quicklook]
+Name=Quick Look
+Icon=quickview
+Exec=koompi-quicklook %f
+DESKTOP
+    chmod 755 "$menu"
+
+    # KF6 still keeps per-app GUI state under kxmlgui5.
+    ui="$data/kxmlgui5/dolphin/dolphinui.rc"
+    mkdir -p "$(dirname "$ui")"
+    line="  <Action name=\"$action\" shortcut=\"Space\"/>"
+    if [ ! -f "$ui" ]; then
+        # An older version than Dolphin's own means the menu layout comes from
+        # the app and only these ActionProperties are kept.
+        cat > "$ui" <<RC
+<!DOCTYPE gui>
+<gui name="dolphin" version="1">
+ <ActionProperties scheme="Default">
+  <Action name="toggle_selection_mode" shortcut="; "/>
+$line
+ </ActionProperties>
+</gui>
+RC
+    elif ! grep -q "$action" "$ui"; then
+        python3 - "$ui" "$line" <<'PY'
+import re, sys
+path, line = sys.argv[1], sys.argv[2]
+doc = open(path).read()
+# Space belongs to Quick Look now, the way it does in Finder; drop it from
+# Dolphin's "Select Files and Folders" so the binding is not ambiguous.
+if 'name="toggle_selection_mode"' in doc:
+    doc = re.sub(r'<Action name="toggle_selection_mode"[^/]*/>',
+                 '<Action name="toggle_selection_mode" shortcut="; "/>', doc)
+    doc = doc.replace("</ActionProperties>", line + '\n </ActionProperties>')
+elif "<ActionProperties" in doc:
+    doc = re.sub(r'(<ActionProperties[^>]*>)', r'\1\n' + line, doc, count=1)
+else:
+    doc = doc.replace("</gui>",
+        ' <ActionProperties scheme="Default">\n'
+        '  <Action name="toggle_selection_mode" shortcut="; "/>\n'
+        + line + '\n </ActionProperties>\n</gui>')
+open(path, "w").write(doc)
+PY
+    fi
+
+    command -v kbuildsycoca6 >/dev/null && kbuildsycoca6 --noincremental >/dev/null 2>&1
+    log "installed Dolphin service menu and Space shortcut"
+    echo "koompi-quicklook: Space wired in Dolphin."
+    echo "  service menu: $menu"
+    echo "  shortcut:     $ui ($action)"
+    echo "Restart any running Dolphin for it to take effect."
+}
+
+# ---------------------------------------------------------------- dispatch
+
+# Mime -> kind. Every kind maps straight onto a view in shell.qml. Kept as one
+# pure function so `selftest` can assert on it without launching anything.
+ql_kind() {
+    local mime="$1" path="${2:-}"
+    case "$mime" in
+        image/*) echo image; return ;;
+        video/*) echo video; return ;;
+        audio/*) echo audio; return ;;
+        application/pdf) echo pages; return ;;
+        text/*)  echo text;  return ;;
+    esac
+    case "$mime" in
+        # Plenty of plain-text formats are typed as application/*; list the ones
+        # that actually show up in a file manager rather than guessing.
+        application/json|application/*+json \
+        |application/xml|application/*+xml \
+        |application/javascript|application/ecmascript \
+        |application/x-shellscript|application/x-perl|application/x-ruby \
+        |application/x-python*|application/x-php|application/x-desktop \
+        |application/x-yaml|application/yaml|application/toml \
+        |application/x-subrip|application/sql|application/x-tex \
+        |inode/x-empty)
+            echo text; return ;;
+        # ffmpeg containers that `file` reports generically.
+        application/ogg|application/x-matroska)
+            echo video; return ;;
+    esac
+    # Last resort: an extensionless script or dotfile that could not be typed is
+    # still readable text if it has no NUL bytes.
+    if [ -n "$path" ] && [ -f "$path" ] && [ -s "$path" ] \
+       && [ "$(head -c 4096 -- "$path" | tr -d '\0' | wc -c)" -eq "$(head -c 4096 -- "$path" | wc -c)" ]; then
+        echo text; return
+    fi
+    echo other
+}
+
+# `file` types plenty of real .pptx/.docx as application/zip. Office formats
+# have no preview, but the fallback card should still name them correctly, so
+# trust the extension when the sniffed type is that generic.
+ext_of() {
+    printf '%s' "${1##*.}" | tr '[:upper:]' '[:lower:]'
+}
+
+mime_of() {
+    local path="$1" mime ext
+    mime=$(file -bL --mime-type -- "$path" 2>/dev/null || echo application/octet-stream)
+    case "$mime" in
+        application/zip|application/octet-stream|application/x-ole-storage)
+            ext=$(ext_of "$path")
+            case "$ext" in
+                docx) mime=application/vnd.openxmlformats-officedocument.wordprocessingml.document ;;
+                pptx) mime=application/vnd.openxmlformats-officedocument.presentationml.presentation ;;
+                xlsx) mime=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet ;;
+                odt)  mime=application/vnd.oasis.opendocument.text ;;
+                odp)  mime=application/vnd.oasis.opendocument.presentation ;;
+                ods)  mime=application/vnd.oasis.opendocument.spreadsheet ;;
+                doc)  mime=application/msword ;;
+                ppt)  mime=application/vnd.ms-powerpoint ;;
+                xls)  mime=application/vnd.ms-excel ;;
+                epub) mime=application/epub+zip ;;
+            esac
+            ;;
+    esac
+    printf '%s' "$mime"
+}
+
+human_size() {
+    numfmt --to=iec --suffix=B --format='%.1f' "$1" 2>/dev/null || echo "$1 B"
+}
+
+# Cache key that changes when the file does, so an edited document re-renders.
+cache_key() {
+    printf '%s:%s' "$1" "$(stat -Lc %Y -- "$1")" | cksum | cut -d' ' -f1
+}
+
+# ---------------------------------------------------------------- drive
+
+# Escape hatch for the formats nothing here can render: Drive can open a docx
+# or a deck properly, so hand it the file rather than showing a dead end.
+#
+# With rclone configured this is a real upload; without it the file goes on the
+# clipboard as a uri-list and Drive opens ready to paste, which is as far as we
+# get without adding a dependency.
+open_in_drive() {
+    local path remote
+    path=$(readlink -f -- "$1")
+    [ -e "$path" ] || { echo "koompi-quicklook: no such file: $path" >&2; exit 1; }
+
+    remote="${KOOMPI_DRIVE_REMOTE:-}"
+    if [ -z "$remote" ] && command -v rclone >/dev/null; then
+        remote=$(rclone listremotes --long 2>/dev/null | awk '$2 == "drive" { print $1; exit }')
+        [ -n "$remote" ] || remote=$(rclone listremotes 2>/dev/null | head -1)
+    fi
+
+    if [ -n "$remote" ] && command -v rclone >/dev/null; then
+        log "drive upload $path -> $remote"
+        if rclone copy -- "$path" "$remote" >/dev/null 2>&1; then
+            notify_user "Uploaded to Google Drive" "$(basename -- "$path")"
+        else
+            notify_user "Google Drive upload failed" "$(basename -- "$path")"
+        fi
+    else
+        command -v wl-copy >/dev/null && printf 'file://%s\n' "$path" | wl-copy --type text/uri-list
+        log "drive handoff (no rclone remote) $path"
+        notify_user "Google Drive" "File copied to the clipboard - paste it into Drive to upload."
+    fi
+    xdg-open "https://drive.google.com/drive/my-drive" >/dev/null 2>&1 &
+}
+
+notify_user() {
+    command -v notify-send >/dev/null || return 0
+    notify-send -a "KOOMPI Quick Look" -i "folder-cloud" -t 4000 "$1" "$2" || true
+}
+
+# ---------------------------------------------------------------- documents
+
+pdf_pages() {
+    pdfinfo -- "$1" 2>/dev/null | awk '/^Pages:/ { print $2 }'
+}
+
+# Page one synchronously, the rest streamed into the same directory while the
+# preview is already on screen. shell.qml retries missing pages until they land.
+render_pdf() {
+    local pdf="$1" dir n
+    dir="$CACHE_DIR/$(cache_key "$pdf")/pages"
+    mkdir -p "$dir"
+    n=$(pdf_pages "$pdf"); [ -n "$n" ] || n=1
+    [ "$n" -gt "$PAGE_LIMIT" ] && n="$PAGE_LIMIT"
+    if [ ! -s "$dir/page-1.png" ]; then
+        pdftoppm -png -r 130 -singlefile -f 1 -l 1 -- "$pdf" "$dir/page-1" >/dev/null 2>&1 || return 1
+    fi
+    if [ "$n" -gt 1 ] && [ ! -s "$dir/page-$n.png" ]; then
+        (
+            for i in $(seq 2 "$n"); do
+                [ -s "$dir/page-$i.png" ] && continue
+                pdftoppm -png -r 130 -singlefile -f "$i" -l "$i" -- "$pdf" "$dir/page-$i" >/dev/null 2>&1 || break
+            done
+        ) >/dev/null 2>&1 &
+    fi
+    printf '%s\t%s' "$dir" "$n"
+}
+
+# Waveform strip for audio, drawn in the current accent so it matches whatever
+# matugen last generated. A miss just means no waveform.
+waveform() {
+    local path="$1" out color
+    command -v ffmpeg >/dev/null || return 0
+    out="$CACHE_DIR/wave-$(cache_key "$path").png"
+    if [ ! -s "$out" ]; then
+        mkdir -p "$CACHE_DIR"
+        color=$(sed -n 's/.*"primary"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$PALETTE" 2>/dev/null | head -1)
+        [ -n "$color" ] || color="#dac0c9"
+        # -t caps analysis so a long recording cannot stall the preview.
+        ffmpeg -v error -y -t 600 -i "$path" \
+            -filter_complex "aformat=channel_layouts=mono,compand,showwavespic=s=1400x320:colors=$color" \
+            -frames:v 1 "$out" >/dev/null 2>&1 || { rm -f "$out"; return 0; }
+    fi
+    printf '%s' "$out"
+}
+
+# Short right-aligned header string: dimensions/duration/pages when they are
+# cheap to get, size otherwise.
+describe() {
+    local kind="$1" path="$2" pages="${3:-}" source="${4:-$2}" size extra="" res
+    # Size always describes the file the user selected, never a cache artifact.
+    size=$(human_size "$(stat -Lc %s -- "$path")")
+    case "$kind" in
+        image)
+            command -v magick >/dev/null && extra=$(magick identify -format '%wx%h' "${path}[0]" 2>/dev/null || true)
+            ;;
+        video|audio)
+            if command -v ffprobe >/dev/null; then
+                extra=$(ffprobe -v error -show_entries format=duration -of csv=p=0 -- "$path" 2>/dev/null \
+                    | awk '{ if ($1 > 0) printf "%d:%02d", int($1/60), int($1)%60 }')
+                if [ "$kind" = video ]; then
+                    res=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height \
+                        -of csv=s=x:p=0 -- "$path" 2>/dev/null | head -1)
+                    [ -n "$res" ] && extra="${res}${extra:+  $extra}"
+                fi
+            fi
+            ;;
+        text)  extra="$(wc -l < "$source" 2>/dev/null || echo 0) lines" ;;
+        pages) [ -n "$pages" ] && extra="$pages page$([ "$pages" = 1 ] || echo s)" ;;
+    esac
+    printf '%s' "${extra:+$extra  ·  }$size"
+}
+
+focused_screen() {
+    hyprctl monitors -j 2>/dev/null \
+        | python3 -c 'import json,sys; print(next((m["name"] for m in json.load(sys.stdin) if m["focused"]), ""))' 2>/dev/null \
+        || true
+}
+
+# ---------------------------------------------------------------- lifecycle
+
+running_pid() {
+    local pid
+    [ -f "$PIDFILE" ] || return 1
+    pid=$(cat "$PIDFILE" 2>/dev/null) || return 1
+    [ -n "$pid" ] || return 1
+    # Only ever claim a pid we know is our own preview process.
+    grep -qa 'koompi-quicklook' "/proc/$pid/cmdline" 2>/dev/null || return 1
+    printf '%s' "$pid"
+}
+
+close_preview() {
+    local pid
+    if pid=$(running_pid); then
+        kill "$pid" 2>/dev/null || true
+        log "closed pid $pid"
+    fi
+    rm -f "$PIDFILE"
+}
+
+open_preview() {
+    local path="$1" mime kind source pagedir="" pagecount="" wave=""
+    path=$(readlink -f -- "$path")
+    [ -e "$path" ] || { echo "koompi-quicklook: no such file: $path" >&2; exit 1; }
+    [ -d "$path" ] && { echo "koompi-quicklook: directories are not previewable" >&2; exit 1; }
+
+    mime=$(mime_of "$path")
+    kind=$(ql_kind "$mime" "$path")
+    source="$path"
+
+    if [ "$kind" = pages ]; then
+        IFS=$'\t' read -r pagedir pagecount < <(render_pdf "$source") || true
+        [ -n "$pagedir" ] && [ -s "$pagedir/page-1.png" ] || kind=other
+    fi
+
+    [ "$kind" = audio ] && wave=$(waveform "$path")
+
+    log "open $path (mime=$mime kind=$kind${pagecount:+ pages=$pagecount})"
+    mkdir -p "$LOG_DIR"
+
+    KOOMPI_QUICKLOOK_FILE="$source" \
+    KOOMPI_QUICKLOOK_KIND="$kind" \
+    KOOMPI_QUICKLOOK_MIME="$mime" \
+    KOOMPI_QUICKLOOK_NAME="$(basename -- "$path")" \
+    KOOMPI_QUICKLOOK_META="$(describe "$kind" "$path" "$pagecount" "$source")" \
+    KOOMPI_QUICKLOOK_WAVE="$wave" \
+    KOOMPI_QUICKLOOK_PAGEDIR="$pagedir" \
+    KOOMPI_QUICKLOOK_PAGECOUNT="$pagecount" \
+    KOOMPI_QUICKLOOK_SCREEN="$(focused_screen)" \
+    QT_QPA_PLATFORM=wayland \
+        setsid quickshell -p "$APP_DIR/shell.qml" >>"$LOG" 2>&1 &
+    echo $! > "$PIDFILE"
+}
+
+# ---------------------------------------------------------------- entry
+
+case "${1:-}" in
+    -h|--help|help|"") usage ;;
+    close) close_preview ;;
+    install) install_dolphin ;;
+    drive)
+        [ -n "${2:-}" ] || usage 1
+        open_in_drive "$2"
+        ;;
+    kind)
+        [ -n "${2:-}" ] || usage 1
+        ql_kind "$(mime_of "$2")" "$(readlink -f -- "$2")"
+        ;;
+    selftest)
+        fail=0
+        check() {
+            got=$(ql_kind "$1")
+            if [ "$got" != "$2" ]; then
+                echo "FAIL  $1 -> $got (want $2)"
+                fail=1
+            else
+                echo "ok    $1 -> $got"
+            fi
+        }
+        check image/png image
+        check image/svg+xml image
+        check video/mp4 video
+        check video/x-matroska video
+        check audio/x-wav audio
+        check audio/mpeg audio
+        check text/plain text
+        check text/markdown text
+        check application/json text
+        check application/xml text
+        check application/x-shellscript text
+        check application/x-desktop text
+        check application/ogg video
+        check application/pdf pages
+        check application/vnd.openxmlformats-officedocument.wordprocessingml.document other
+        check application/vnd.oasis.opendocument.text other
+        check application/msword other
+        check application/octet-stream other
+        check application/zip other
+        echo
+        for t in quickshell pdftoppm pdfinfo ffmpeg ffprobe magick; do
+            command -v "$t" >/dev/null || { echo "missing: $t"; [ "$t" = quickshell ] && fail=1; }
+        done
+        [ "$fail" -eq 0 ] && echo "koompi-quicklook: dispatch table ok"
+        exit "$fail"
+        ;;
+    *)
+        # Toggle: a second press on the same key closes what is already up.
+        if running_pid >/dev/null; then
+            close_preview
+        else
+            open_preview "$1"
+        fi
+        ;;
+esac

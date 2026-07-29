@@ -1,0 +1,321 @@
+<section class="section" id="motion-language">
+  <div class="section-header">
+    <h2>Motion Language</h2>
+    <span class="tag ">Kinetics</span>
+  </div>
+  <p class="desc">
+    The OS-level motion specification the design-system audit found missing. Durations, easing curves, and a single animation grammar every panel obeys — defined once, so the whole OS feels like one calm, intentional object instead of forty surfaces each inventing their own physics. Motion here is not decoration: it tells you what the system is doing, where things went, and whether it is the machine or the AI that is busy. Includes the reduced-motion contract with §38, honored at the compositor, not faked per app.
+  </p>
+
+  <!-- =================== 1. DUAL ENGINE NOTE =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+    <div style="flex:1;min-width:220px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Two engines, one vocabulary</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.55;">Every motion token below ships as <b>two</b> implementations from a single source of truth. The shell panels (launcher, sidebar, OSD) animate in Quickshell/QML; windows, workspaces and special-workspaces animate in the Hyprland compositor. The token defines both so a single theme — or a single reduced-motion toggle — drives the entire screen.</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <div style="background:var(--accent-glow);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:var(--accent);">QML · <span style="color:var(--text-muted);">Behavior on x { NumberAnimation }</span></div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-family:var(--font-mono);font-size:11px;color:#0E7490;">Hypr · <span style="color:var(--text-muted);">bezier = name, …</span></div>
+    </div>
+  </div>
+
+  <!-- =================== 2. EASING-CURVE CATALOG =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Easing Curve Catalog</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">koompi-motion · v1.0 · 3 named curves</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;">
+
+      <!-- Entrance -->
+      <div style="padding:20px;border-right:1px solid var(--border2);">
+        <svg width="100%" height="92" viewBox="0 0 120 92" style="display:block;margin-bottom:12px;">
+          <rect x="0.5" y="0.5" width="119" height="91" rx="6" fill="var(--surface2)" stroke="var(--border2)"/>
+          <line x1="12" y1="80" x2="108" y2="80" stroke="var(--border)" stroke-width="0.6"/>
+          <line x1="12" y1="80" x2="12" y2="12" stroke="var(--border)" stroke-width="0.6"/>
+          <path d="M12 80 C 40 22, 60 16, 108 16" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="12" cy="80" r="2.4" fill="var(--accent)"/>
+          <circle cx="108" cy="16" r="2.4" fill="var(--accent)"/>
+        </svg>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:3px;">entrance</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Decelerate. Fast in, settles soft. Things arriving from off-screen or from nothing.</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:7px 9px;line-height:1.7;">
+          <span style="color:var(--accent);">QML</span>  Easing.OutCubic<br>
+          <span style="color:#0E7490;">Hypr</span> 0.16,1,0.3,1
+        </div>
+      </div>
+
+      <!-- Exit -->
+      <div style="padding:20px;border-right:1px solid var(--border2);">
+        <svg width="100%" height="92" viewBox="0 0 120 92" style="display:block;margin-bottom:12px;">
+          <rect x="0.5" y="0.5" width="119" height="91" rx="6" fill="var(--surface2)" stroke="var(--border2)"/>
+          <line x1="12" y1="80" x2="108" y2="80" stroke="var(--border)" stroke-width="0.6"/>
+          <line x1="12" y1="80" x2="12" y2="12" stroke="var(--border)" stroke-width="0.6"/>
+          <path d="M12 80 C 16 64, 36 16, 108 16" fill="none" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="12" cy="80" r="2.4" fill="var(--text-muted)"/>
+          <circle cx="108" cy="16" r="2.4" fill="var(--text-muted)"/>
+        </svg>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;">exit</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Accelerate. Slow start, quick away. Dismissals never linger — they get out of the way.</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:7px 9px;line-height:1.7;">
+          <span style="color:var(--accent);">QML</span>  Easing.InCubic<br>
+          <span style="color:#0E7490;">Hypr</span> 0.7,0,0.84,0
+        </div>
+      </div>
+
+      <!-- Spring -->
+      <div style="padding:20px;">
+        <svg width="100%" height="92" viewBox="0 0 120 92" style="display:block;margin-bottom:12px;">
+          <rect x="0.5" y="0.5" width="119" height="91" rx="6" fill="var(--surface2)" stroke="var(--border2)"/>
+          <line x1="12" y1="80" x2="108" y2="80" stroke="var(--border)" stroke-width="0.6"/>
+          <line x1="12" y1="80" x2="12" y2="12" stroke="var(--border)" stroke-width="0.6"/>
+          <line x1="12" y1="16" x2="108" y2="16" stroke="var(--border2)" stroke-width="0.6" stroke-dasharray="2 2"/>
+          <path d="M12 80 C 36 4, 52 10, 64 18 C 76 26, 84 14, 108 16" fill="none" stroke="var(--emerald)" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="12" cy="80" r="2.4" fill="var(--emerald)"/>
+          <circle cx="108" cy="16" r="2.4" fill="var(--emerald)"/>
+        </svg>
+        <div style="font-size:13px;font-weight:700;color:#047857;margin-bottom:3px;">spring</div>
+        <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Overshoot + settle. Reserved for direct manipulation — the thing followed your hand and bounced to rest.</div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);background:var(--surface2);border-radius:6px;padding:7px 9px;line-height:1.7;">
+          <span style="color:var(--accent);">QML</span>  Easing.OutBack (1.4)<br>
+          <span style="color:#0E7490;">Hypr</span> 0.34,1.56,0.64,1
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== 3. DURATION SCALE =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Duration Scale</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">Four steps. Nothing in the OS uses an off-scale duration. Hyprland speed is expressed in deciseconds (1&nbsp;=&nbsp;100&nbsp;ms); the token carries both.</div>
+
+    <!-- instant -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div style="width:96px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--text);">instant</div>
+      <div style="width:300px;flex-shrink:0;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;"><div style="width:6px;height:100%;background:var(--text-muted);border-radius:5px;"></div></div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);width:62px;flex-shrink:0;">0&nbsp;ms</div>
+      <div style="font-size:11px;color:var(--text-muted);">State that must read as a fact, not an event — focus rings, checkbox ticks, key repeat.</div>
+    </div>
+    <!-- quick -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div style="width:96px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--text);">quick</div>
+      <div style="width:300px;flex-shrink:0;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;"><div style="width:48px;height:100%;background:var(--cyan);border-radius:5px;"></div></div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:#0E7490;width:62px;flex-shrink:0;">120&nbsp;ms</div>
+      <div style="font-size:11px;color:var(--text-muted);">Hovers, button presses, tooltip fade, OSD value bumps. Felt, not watched.</div>
+    </div>
+    <!-- standard -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div style="width:96px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--accent);">standard</div>
+      <div style="width:300px;flex-shrink:0;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;"><div style="width:104px;height:100%;background:var(--accent);border-radius:5px;"></div></div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent);width:62px;flex-shrink:0;">240&nbsp;ms</div>
+      <div style="font-size:11px;color:var(--text-muted);">The default. Launcher open, sidebar slide, notification arrive, panel enter/exit.</div>
+    </div>
+    <!-- deliberate -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:96px;flex-shrink:0;font-size:13px;font-weight:600;color:#047857;">deliberate</div>
+      <div style="width:300px;flex-shrink:0;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;"><div style="width:170px;height:100%;background:var(--emerald);border-radius:5px;"></div></div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:#047857;width:62px;flex-shrink:0;">400&nbsp;ms</div>
+      <div style="font-size:11px;color:var(--text-muted);">Shared-element handoffs and overview zoom — long enough that the eye tracks where a thing <i>went</i>.</div>
+    </div>
+  </div>
+
+  <!-- =================== 4. PANEL CHOREOGRAPHY SPEC =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border2);font-size:14px;font-weight:700;color:var(--text);">Panel Choreography — enter / exit</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr style="background:var(--surface2);text-align:left;color:var(--text-subtle);">
+          <th style="padding:10px 20px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Surface</th>
+          <th style="padding:10px 12px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Origin</th>
+          <th style="padding:10px 12px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Enter</th>
+          <th style="padding:10px 12px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Exit</th>
+        </tr>
+      </thead>
+      <tbody style="color:var(--text-muted);">
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">Launcher (§03)</td>
+          <td style="padding:11px 12px;">screen center, scale 0.96→1</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);color:var(--accent);">standard · entrance</code> + opacity</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);">quick · exit</code></td>
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">AI Sidebar (§10)</td>
+          <td style="padding:11px 12px;">right edge, translateX</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);color:var(--accent);">standard · entrance</code></td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);">standard · exit</code></td>
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">OSD (§06)</td>
+          <td style="padding:11px 12px;">bottom-center, translateY 8px</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);color:#0E7490;">quick · entrance</code></td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);">quick · exit</code> (after 2s)</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">Notification (§04)</td>
+          <td style="padding:11px 12px;">top-right, translateX + scale</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);color:#047857;">standard · spring</code></td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);">quick · exit</code></td>
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">Overview (§07)</td>
+          <td style="padding:11px 12px;">in-place, zoom to grid</td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);color:#047857;">deliberate · entrance</code></td>
+          <td style="padding:11px 12px;"><code style="font-family:var(--font-mono);">deliberate · exit</code></td>
+        </tr>
+        <tr style="border-top:1px solid var(--border2);">
+          <td style="padding:11px 20px;color:var(--text);font-weight:600;">Workspace switch</td>
+          <td style="padding:11px 12px;">horizontal slide, Hypr</td>
+          <td style="padding:11px 12px;" colspan="2"><code style="font-family:var(--font-mono);color:#0E7490;">standard · entrance</code> — both directions, no spring (spring on a full-screen slide induces motion sickness)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- =================== 5. SHARED-ELEMENT HANDOFF =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Shared-Element Handoff Grammar</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">When a thing appears in two surfaces, it does not fade out here and fade in there — it <b>travels</b>. The same node is reparented and morphed across the gap on <code style="font-family:var(--font-mono);color:#047857;">deliberate · entrance</code>, so the eye never loses it. This is how the OS proves it is one space, not a stack of windows.</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <!-- Frame A -->
+      <div style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Frame A — Launcher result</div>
+        <div style="background:var(--accent-glow);border:1.5px solid var(--accent);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;width:160px;">
+          <div style="width:22px;height:22px;border-radius:4px;background:var(--accent);flex-shrink:0;"></div>
+          <div>
+            <div style="font-size:11px;color:var(--text);font-weight:600;">Q4-2025-Report.pdf</div>
+            <div style="font-size:9px;color:var(--text-subtle);">Documents/Finance/</div>
+          </div>
+        </div>
+      </div>
+      <!-- morph arrow -->
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:96px;">
+        <svg width="80" height="24" viewBox="0 0 80 24" fill="none"><path d="M2 12 H 70" stroke="var(--emerald)" stroke-width="2" stroke-dasharray="3 3"/><path d="M64 6 L 74 12 L 64 18" stroke="var(--emerald)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-family:var(--font-mono);font-size:9px;color:#047857;">deliberate</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-subtle);">morph · reparent</div>
+      </div>
+      <!-- Frame B -->
+      <div style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Frame B — File preview</div>
+        <div style="background:var(--surface);border:1.5px solid var(--accent);border-radius:8px;padding:10px;width:200px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:18px;height:18px;border-radius:4px;background:var(--accent);flex-shrink:0;"></div>
+            <div style="font-size:11px;color:var(--text);font-weight:600;">Q4-2025-Report.pdf</div>
+          </div>
+          <div style="height:34px;background:var(--surface3);border-radius:5px;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-subtle);margin-top:12px;line-height:1.5;">The icon is the <i>shared element</i>: same node id <code style="font-family:var(--font-mono);">file:Q4-2025-Report.pdf</code> in both surfaces. The launcher tile's icon scales and slides into the preview header rather than cross-fading — its world position is interpolated, label and chrome fade independently underneath.</div>
+  </div>
+
+  <!-- =================== 6. LOADING vs THINKING =================== -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+    <!-- System busy -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--cyan);"></div>
+        <span style="font-size:13px;font-weight:700;color:#0E7490;">System busy — loading</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;">Deterministic work with a known shape: file copy, index pass, package install. Cyan = data. Linear, measurable, honest about progress.</div>
+      <!-- determinate bar -->
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-subtle);margin-bottom:5px;"><span>Indexing ~/Documents</span><span style="font-family:var(--font-mono);color:#0E7490;">62%</span></div>
+        <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;"><div style="width:62%;height:100%;background:var(--cyan);border-radius:4px;"></div></div>
+      </div>
+      <!-- indeterminate stripe -->
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-subtle);margin-bottom:5px;"><span>Mounting BTRFS snapshot</span><span style="font-family:var(--font-mono);color:var(--text-subtle);">—</span></div>
+      <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;position:relative;"><div style="position:absolute;left:30%;width:34%;height:100%;background:linear-gradient(90deg,transparent,var(--cyan),transparent);border-radius:4px;"></div></div>
+      <div style="font-size:10px;color:var(--text-subtle);margin-top:10px;">Motion: left→right travel. Direction means progress. <code style="font-family:var(--font-mono);">quick</code> stripe loop, <code style="font-family:var(--font-mono);">linear</code> easing — a progress bar that eases is lying.</div>
+    </div>
+
+    <!-- AI thinking -->
+    <div style="background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);"></div>
+        <span style="font-size:13px;font-weight:700;color:var(--accent);">AI active — thinking</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;">Local LLM cognition with no known endpoint. Indigo = intelligence. Never a progress bar — a bar would imply a deadline the model cannot promise.</div>
+      <!-- cognition pulse -->
+      <div style="background:var(--accent-glow);border-radius:8px;padding:14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="display:flex;gap:5px;align-items:center;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:.6;"></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:.3;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--accent);">✦ KOOMPI AI · Sailor2 8B · reasoning…</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-subtle);line-height:1.5;">Motion: a soft breathing glow + drifting dots — <b>non-directional</b>, because thought has no left or right. <code style="font-family:var(--font-mono);color:var(--accent);">deliberate</code> period, sine in-out. The instant the first token streams, the pulse stops and text takes over: the user always knows whether the model is <i>thinking</i> or <i>answering</i>.</div>
+    </div>
+  </div>
+
+  <!-- =================== 7. KHMER REVEAL =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);">Khmer Text Reveal &amp; Typeset Motion</div>
+      <span style="background:var(--emerald);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.04em;">KHMER-NATIVE</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.55;">Streaming AI text reveals per <b>grapheme cluster</b>, never per codepoint. A Khmer character is a base consonant plus coeng (subscript) plus vowel signs — three to five codepoints stacked into one glyph. Revealing per codepoint flashes half-assembled stacks; the segmenter holds the cluster until it is whole, then fades it in on <code style="font-family:var(--font-mono);color:var(--accent);">quick · entrance</code>.</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:14px;">
+        <div style="font-size:10px;color:#B45309;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">✗ Per-codepoint (broken)</div>
+        <div style="font-size:22px;color:var(--text);margin-bottom:6px;">សុ​<span style="color:#B45309;opacity:.5;">▮</span>្ត</div>
+        <div style="font-size:10px;color:var(--text-subtle);">Coeng renders before its base lands — a flicker of dotted-circle placeholders.</div>
+      </div>
+      <div style="flex:1;min-width:220px;background:var(--surface2);border:1px solid var(--emerald);border-radius:8px;padding:14px;">
+        <div style="font-size:10px;color:#047857;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">✓ Per-cluster (KOOMPI)</div>
+        <div style="font-size:22px;color:var(--text);margin-bottom:6px;">សួស្តី​<span style="color:#047857;opacity:.4;">▮</span></div>
+        <div style="font-size:10px;color:var(--text-subtle);">Whole syllable appears at once. No space-delimited word wrap — line breaks fall on dictionary word boundaries via the ICU Khmer segmenter.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== 8. REDUCED-MOTION CONTRACT (§38) =================== -->
+  <div style="background:var(--surface);border:1px solid var(--emerald);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">Reduced-Motion Contract · with §38 Accessibility</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#047857;">opacity-only · motion-safe · swapped at compositor</span>
+    </div>
+    <div style="padding:4px 20px 14px;font-size:11px;color:var(--text-muted);line-height:1.5;border-bottom:1px solid var(--border2);">Reduced motion is a <b>first-class curve set</b>, not a degradation. One toggle in §38 swaps Hyprland's bezier table at the compositor — every app honors it at once, none re-implements it. Each named curve below has a defined reduced-motion sibling.</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:var(--surface2);text-align:left;color:var(--text-subtle);">
+        <th style="padding:9px 20px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Full-motion</th>
+        <th style="padding:9px 12px;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Reduced-motion sibling</th>
+      </tr></thead>
+      <tbody style="color:var(--text-muted);">
+        <tr style="border-top:1px solid var(--border2);"><td style="padding:10px 20px;"><code style="font-family:var(--font-mono);color:var(--accent);">entrance</code> (translate + scale + fade)</td><td style="padding:10px 12px;">opacity fade only · <code style="font-family:var(--font-mono);">quick</code></td></tr>
+        <tr style="border-top:1px solid var(--border2);"><td style="padding:10px 20px;"><code style="font-family:var(--font-mono);color:#047857;">spring</code> (overshoot)</td><td style="padding:10px 12px;">no overshoot → plain <code style="font-family:var(--font-mono);">entrance</code> fade</td></tr>
+        <tr style="border-top:1px solid var(--border2);"><td style="padding:10px 20px;">Workspace slide</td><td style="padding:10px 12px;"><b>instant cut</b> — 0 ms, no traversal</td></tr>
+        <tr style="border-top:1px solid var(--border2);"><td style="padding:10px 20px;">Overview zoom</td><td style="padding:10px 12px;">cross-fade in place, no scale</td></tr>
+        <tr style="border-top:1px solid var(--border2);background:var(--accent-glow);"><td style="padding:10px 20px;color:var(--text);">Magnifier edge-pan (§38)</td><td style="padding:10px 12px;color:var(--accent);"><b>stays smoothed</b> — an instant snap here is itself nauseating</td></tr>
+      </tbody>
+    </table>
+    <div style="padding:12px 20px;font-size:11px;color:var(--text-subtle);line-height:1.5;">The magnifier exception is the proof the contract is real and not a slogan: "reduce motion" does not mean "zero motion everywhere," it means "no motion that costs the user." §38 owns the toggle; this section owns the curve each setting resolves to.</div>
+  </div>
+
+  <!-- =================== 9. MEANING-OF-MOTION MAP =================== -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;">The Meaning of Motion — what direction and speed say</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;"><div style="font-size:18px;color:var(--accent);">↑</div><div><div style="font-size:12px;font-weight:600;color:var(--text);">Up / out from origin</div><div style="font-size:11px;color:var(--text-muted);">Created here, lives here. Returns to its origin on exit so you know where to find it again.</div></div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;"><div style="font-size:18px;color:var(--text-muted);">→</div><div><div style="font-size:12px;font-weight:600;color:var(--text);">Horizontal travel</div><div style="font-size:11px;color:var(--text-muted);">Same level, different place. Workspaces, sibling panels — lateral, never hierarchical.</div></div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;"><div style="font-size:18px;color:#0E7490;">⇒</div><div><div style="font-size:12px;font-weight:600;color:var(--text);">Fast = trivial, slow = consequential</div><div style="font-size:11px;color:var(--text-muted);"><code style="font-family:var(--font-mono);">quick</code> for the reversible, <code style="font-family:var(--font-mono);">deliberate</code> for the thing you should watch.</div></div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;"><div style="font-size:18px;color:#B45309;">⟳</div><div><div style="font-size:12px;font-weight:600;color:var(--text);">Looping = waiting on us</div><div style="font-size:11px;color:var(--text-muted);">Any repeating motion means "not done." When it stops, the work is genuinely finished — never a fake completion.</div></div></div>
+    </div>
+  </div>
+
+  <!-- =================== CALLOUTS =================== -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Specified once, obeyed everywhere <span class="badge new">Source of truth</span></div>
+      <p>Three curves, four durations — that is the entire vocabulary. The audit found §03, §06, §10 and §04 each animating with their own implied timing and no shared file. This section is that file: every downstream panel resolves its motion to a named token, so the OS reads as one calm object instead of forty improvising surfaces.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Motion is the honest status channel</div>
+      <p>Cyan determinate bars for system work that has a shape; indigo non-directional breathing for AI cognition that does not. The user can tell at a glance whether the <i>machine</i> is busy or the <i>model</i> is thinking — TRANSPARENT AI made literal. A looping animation always means "still working"; it never lies about completion.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A curve set that ages with the user</div>
+      <p>The token table is a versioned contract (<code style="font-family:var(--font-mono);">koompi-motion v1.0</code>): a re-theme in twenty years swaps values, never the grammar, so muscle memory survives. Reduced motion is a peer curve set, not a fallback — the install that feels right at 30 still feels right at 80, and §38 flips one toggle to get there.</p>
+    </div>
+  </div>
+</section>

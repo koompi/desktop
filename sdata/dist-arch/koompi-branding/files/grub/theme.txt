@@ -1,0 +1,26 @@
+# KOOMPI OS — GRUB theme (skeleton; replace with Naga art, see docs/naming.md).
+title-text: "KOOMPI OS"
+desktop-color: "#000000"
+terminal-font: "Unifont Regular 16"
+
++ boot_menu {
+  left = 30%
+  top = 35%
+  width = 40%
+  height = 40%
+  item_font = "Unifont Regular 16"
+  item_color = "#bbbbbb"
+  selected_item_color = "#ffffff"
+  item_height = 32
+  item_spacing = 8
+}
+
++ label {
+  top = 90%
+  left = 0
+  width = 100%
+  align = "center"
+  color = "#666666"
+  font = "Unifont Regular 16"
+  text = "KOOMPI OS — Naga"
+}

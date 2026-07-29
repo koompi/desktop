@@ -1,0 +1,261 @@
+<section class="section" id="compositor-visual-physics">
+  <div class="section-header">
+    <h2>Visual Physics</h2>
+    <span class="tag sys">Compositor</span>
+  </div>
+  <p class="desc">
+    The Hyprland layer beneath every pixel: blur, shadow, rounding, and the layer-shell render pipeline — specified with an honest GPU budget. The glassy, kinetic feel of §53 (Theme) and §54 (Motion Grammar) is only real if the compositor can draw it at 60fps on the affordable hardware KOOMPI exists to serve. Beauty that excludes is a bug.
+  </p>
+
+  <!-- ── 1. LAYERED RENDER STACK ─────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);">
+      <div style="font-size:14px;font-weight:700;color:var(--text);">Render Stack — composited bottom to top</div>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">Hyprland · wlr-layer-shell-unstable-v1</span>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:8px;">
+      <!-- overlays -->
+      <div style="border:1px solid rgba(99,102,241,0.3);background:var(--accent-glow);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-left:48px;">
+        <div><span style="font-size:13px;color:var(--accent);font-weight:600;">overlay</span> <span style="font-size:12px;color:var(--text-muted);">— AI sidebar, OSD, screen-lock</span></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">layer 3 · blur+shadow</span>
+      </div>
+      <!-- top layer-shell -->
+      <div style="border:1px solid rgba(34,211,238,0.3);background:var(--cyan-glow);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-left:32px;">
+        <div><span style="font-size:13px;color:#0E7490;font-weight:600;">top</span> <span style="font-size:12px;color:var(--text-muted);">— shell bar, launcher, notifications</span></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">layer 2 · blur (xray off)</span>
+      </div>
+      <!-- windows -->
+      <div style="border:1px solid var(--border);background:var(--surface3);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-left:16px;">
+        <div><span style="font-size:13px;color:var(--text);font-weight:600;">windows</span> <span style="font-size:12px;color:var(--text-muted);">— tiled + floating client surfaces</span></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">workspace · shadow+round</span>
+      </div>
+      <!-- bottom layer-shell -->
+      <div style="border:1px solid var(--border2);background:var(--surface2);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+        <div><span style="font-size:13px;color:var(--text-muted);font-weight:600;">bottom</span> <span style="font-size:12px;color:var(--text-subtle);">— desktop widgets, conky-style layers</span></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">layer 1 · no blur</span>
+      </div>
+      <!-- wallpaper / background -->
+      <div style="border:1px solid var(--border2);background:linear-gradient(135deg,#241F19 0%,#2D3652 60%,#3a2d52 100%);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">
+        <div><span style="font-size:13px;color:#fff;font-weight:600;">wallpaper</span> <span style="font-size:12px;color:rgba(255,255,255,.6);">— background layer, the only blur source</span></div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,.5);">layer 0 · damage = full</span>
+      </div>
+    </div>
+    <div style="padding:10px 18px;border-top:1px solid var(--border2);background:var(--surface2);font-size:12px;color:var(--text-muted);">
+      <span style="color:#B45309;font-weight:600;">Cost insight:</span> blur only ever samples what is <em>behind</em> a surface. Stack depth × blurred-surface area is the real bill — not the number of windows. The bar blurs the wallpaper, not the windows beneath it (<code style="font-family:var(--font-mono);">blur:xray = true</code> on the top layer), so scrolling a document costs zero recompute of the bar.
+  </div>
+  </div>
+
+  <!-- ── 2. TOKEN SET + LIVE COMPOSITED SAMPLE ───────────────── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- token table -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border2);font-size:14px;font-weight:700;color:var(--text);background:var(--surface2);">Decoration Tokens</div>
+      <div style="padding:6px 0;">
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--border2);"><span style="font-size:12px;color:var(--text-muted);">blur:size</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text);">8</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--border2);"><span style="font-size:12px;color:var(--text-muted);">blur:passes</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent);">2 <span style="color:var(--text-subtle);">(dual-Kawase)</span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--border2);"><span style="font-size:12px;color:var(--text-muted);">blur:noise / contrast</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text);">0.012 / 1.06</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--border2);"><span style="font-size:12px;color:var(--text-muted);">rounding</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text);">12px <span style="color:var(--text-subtle);">= --radius+2</span></span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--border2);"><span style="font-size:12px;color:var(--text-muted);">shadow:range / power</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text);">20 / 3</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 18px;"><span style="font-size:12px;color:var(--text-muted);">shadow:color</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text);">1A2235 · 28%</span></div>
+      </div>
+    </div>
+    <!-- live sample -->
+    <div style="flex:1;min-width:300px;border-radius:var(--radius-lg);overflow:hidden;position:relative;background:linear-gradient(135deg,#241F19 0%,#3b2d6b 45%,#22d3ee 130%);padding:28px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 70% 20%, rgba(245,158,11,.35), transparent 45%);"></div>
+      <div style="position:relative;width:100%;background:rgba(255,255,255,0.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.28);border-radius:12px;box-shadow:0 16px 40px rgba(64,55,38,0.45);padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--emerald);"></div>
+          <span style="font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);">Glass surface — composited</span>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.5;text-shadow:0 1px 2px rgba(0,0,0,.35);">Real backdrop-filter over a varied wallpaper. Text stays legible because contrast is boosted 6% inside the blur pass, not because the glass is opaque.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. CURVE → FRAME MAPPING ────────────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);">
+      <div style="font-size:14px;font-weight:700;color:var(--text);">§54 Curve → Compositor Frame Mapping</div>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">windowrule · bezier · 60–144Hz</span>
+    </div>
+    <div style="padding:18px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+      <!-- curve viz -->
+      <div style="flex:1;min-width:220px;">
+        <svg viewBox="0 0 200 90" style="width:100%;height:auto;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border2);">
+          <line x1="20" y1="75" x2="190" y2="75" stroke="var(--border)" stroke-width="1"/>
+          <line x1="20" y1="75" x2="20" y2="10" stroke="var(--border)" stroke-width="1"/>
+          <path d="M20 75 C 70 75, 70 15, 190 15" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+          <circle cx="20" cy="75" r="3" fill="var(--accent)"/>
+          <circle cx="190" cy="15" r="3" fill="var(--accent)"/>
+          <text x="95" y="50" font-family="monospace" font-size="9" fill="var(--text-subtle)">koompiSnap</text>
+        </svg>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:8px;">bezier = koompiSnap, 0.16, 1, 0.30, 1</div>
+      </div>
+      <!-- frame breakdown -->
+      <div style="flex:1.2;min-width:260px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="font-size:11px;color:var(--text-subtle);width:54px;font-family:var(--font-mono);">window open</span>
+          <div style="flex:1;height:18px;border-radius:4px;display:flex;overflow:hidden;border:1px solid var(--border2);">
+            <div style="width:18%;background:var(--accent);opacity:.45;"></div>
+            <div style="width:28%;background:var(--accent);opacity:.7;"></div>
+            <div style="width:34%;background:var(--accent);"></div>
+            <div style="width:20%;background:var(--accent);opacity:.6;"></div>
+          </div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">180ms</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">~11 frames @ 60Hz · ~26 @ 144Hz — same curve, sampled per refresh. The animation is time-based, not frame-counted, so a 60Hz panel and a 144Hz panel finish together; the faster panel just draws smoother.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="state-chip active-state" style="font-size:11px;">open 180ms</span>
+          <span class="state-chip active-state" style="font-size:11px;">workspace 320ms</span>
+          <span class="state-chip" style="font-size:11px;background:var(--surface3);color:var(--text-muted);border:1px solid var(--border);">fade 140ms</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 18px;border-top:1px solid var(--border2);background:var(--surface2);font-size:12px;color:var(--text-muted);">
+      <span style="color:#0E7490;font-weight:600;">Principal detail:</span> Hyprland animates via a monotonic timer driving the bezier, decoupled from frame delivery. We never tie motion to vsync-counted frames — that is the bug that makes GNOME animations feel different on a 90Hz vs 60Hz screen. KOOMPI motion is wall-clock identical everywhere.
+  </div>
+  </div>
+
+  <!-- ── 4 + 8. GPU BUDGET + DOWNGRADE TIERS ─────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);">Effects Budget — auto-tiered by detected GPU</div>
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">koompi-compositord · probed at first boot</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;">
+      <!-- HIGH tier -->
+      <div style="flex:1;min-width:240px;padding:16px 18px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></span><span style="font-size:13px;font-weight:700;color:var(--text);">Full Glass</span></div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-bottom:10px;">dGPU / Apple-class iGPU · ≥6GB VRAM</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.8;">passes 3 · size 10<br>shadow on · noise on<br>blur:xray on</div>
+        <div style="margin-top:10px;height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;"><div style="width:34%;height:100%;background:var(--accent);"></div></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">~2.1ms/frame · 12% GPU</div>
+      </div>
+      <!-- BALANCED -->
+      <div style="flex:1;min-width:240px;padding:16px 18px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);background:var(--accent-glow);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);"></span><span style="font-size:13px;font-weight:700;color:var(--text);">Balanced</span> <span class="badge new" style="font-size:10px;">default</span></div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-bottom:10px;">Intel UHD 620 · LPDDR4 dual-channel</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.8;">passes 2 · size 8<br>shadow on · noise on<br>blur:xray on</div>
+        <div style="margin-top:10px;height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;"><div style="width:58%;height:100%;background:var(--cyan);"></div></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">~5.8ms/frame · 38% GPU</div>
+      </div>
+      <!-- LIGHT -->
+      <div style="flex:1;min-width:240px;padding:16px 18px;border-bottom:1px solid var(--border2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--emerald);"></span><span style="font-size:13px;font-weight:700;color:var(--text);">Efficient</span></div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-bottom:10px;">Celeron N4020 · single-channel · netbook</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.8;">passes 1 · size 5<br>shadow off · noise off<br>blur on bar only</div>
+        <div style="margin-top:10px;height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;"><div style="width:80%;height:100%;background:var(--emerald);"></div></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">~7.4ms/frame · 61% GPU</div>
+      </div>
+    </div>
+    <div style="padding:10px 18px;font-size:12px;color:var(--text-muted);background:var(--surface2);">
+      Budget target is a hard <strong style="color:var(--text);">8.3ms</strong> per frame (120fps headroom on a 60Hz panel). Every tier is chosen so the compositor still has half its frame budget free for the local LLM to share the GPU during inference.
+    </div>
+  </div>
+
+  <!-- ── 8b. LIVE DOWNGRADE STATE (weak GPU, side-by-side) ──── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- full -->
+    <div style="flex:1;min-width:280px;border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border2);font-size:12px;font-weight:600;color:var(--text);display:flex;justify-content:space-between;"><span>Full Glass — rendered</span><span class="state-chip active-state" style="font-size:10px;">healthy GPU</span></div>
+      <div style="background:linear-gradient(135deg,#241F19,#3b2d6b 80%);padding:22px;">
+        <div style="background:rgba(255,255,255,0.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.25);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.4);padding:14px;">
+          <div style="font-size:12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);font-weight:600;">Notification</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.4);margin-top:4px;">Backup complete · 14:02</div>
+        </div>
+      </div>
+    </div>
+    <!-- downgraded -->
+    <div style="flex:1;min-width:280px;border:1px solid rgba(245,158,11,0.4);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:8px 14px;background:var(--amber-glow);border-bottom:1px solid rgba(245,158,11,0.3);font-size:12px;font-weight:600;color:var(--text);display:flex;justify-content:space-between;"><span>Auto-downgraded — solid fallback</span><span class="state-chip warn-state" style="font-size:10px;">thermal throttle</span></div>
+      <div style="background:linear-gradient(135deg,#241F19,#3b2d6b 80%);padding:22px;">
+        <div style="background:#262d40;border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.3);padding:14px;">
+          <div style="font-size:12px;color:#fff;font-weight:600;">Notification</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px;">Backup complete · 14:02</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--amber);display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-triangle-exclamation"></i> GPU at 78°C — blur paused, layout unchanged. Re-enables when cool.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. TEARING / LATENCY CONTROL ───────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);font-size:14px;font-weight:700;color:var(--text);">Tearing-Free ⇄ Low-Latency — per-window <span style="font-weight:400;font-size:12px;color:var(--text-subtle);">(ties to §57 Gaming)</span></div>
+    <div style="padding:18px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+      <div style="flex:1;min-width:240px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:12px;color:#047857;font-weight:600;width:80px;">Smooth</span>
+          <div style="flex:1;height:6px;border-radius:3px;background:var(--surface3);position:relative;">
+            <div style="position:absolute;left:0;width:74%;height:100%;background:linear-gradient(90deg,var(--emerald),var(--amber));border-radius:3px;"></div>
+            <div style="position:absolute;left:74%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,.2);"></div>
+          </div>
+          <span style="font-size:12px;color:#B45309;font-weight:600;width:80px;text-align:right;">Responsive</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.7;">vrr = 2 · adaptive sync<br>tearing = on (fullscreen only)<br>render-ahead = 1 frame</div>
+      </div>
+      <div style="flex:1;min-width:240px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px;">
+        <div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:8px;">Per-window policy</div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--text-muted);"><span>Desktop / shell</span><span style="color:#047857;font-family:var(--font-mono);">vsync · tearless</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border2);"><span>dota2.exe <span style="color:var(--text-subtle);">(fullscreen)</span></span><span style="color:#B45309;font-family:var(--font-mono);">tearing on</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border2);"><span>mpv <span style="color:var(--text-subtle);">(video)</span></span><span style="color:#0E7490;font-family:var(--font-mono);">vrr cap 60</span></div>
+      </div>
+    </div>
+    <div style="padding:10px 18px;border-top:1px solid var(--border2);background:var(--surface2);font-size:12px;color:var(--text-muted);">
+      Tearing is a per-window <em>opt-in</em>, never global. The shell stays buttery; only the focused fullscreen game tears — and only if it asks via the <code style="font-family:var(--font-mono);">wp-tearing-control</code> protocol. Switch focus away and the tear hint is dropped instantly.
+  </div>
+  </div>
+
+  <!-- ── 6 + 7. VIBRANCY + DAMAGE/BATTERY ───────────────────── -->
+  <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+    <!-- vibrancy over wallpapers -->
+    <div style="flex:1;min-width:300px;border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text);">Luminance-Adaptive Vibrancy</div>
+      <div style="display:flex;">
+        <div style="flex:1;background:#0d1117;padding:18px 12px;display:flex;align-items:center;justify-content:center;">
+          <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:8px 10px;"><span style="font-size:11px;color:#fff;font-weight:600;">Aa legible</span></div>
+        </div>
+        <div style="flex:1;background:#f4e8d0;padding:18px 12px;display:flex;align-items:center;justify-content:center;">
+          <div style="background:rgba(20,25,40,0.22);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,0.15);border-radius:8px;padding:8px 10px;"><span style="font-size:11px;color:#fff;font-weight:600;">Aa legible</span></div>
+        </div>
+        <div style="flex:1;background:linear-gradient(135deg,#f59e0b,#22d3ee);padding:18px 12px;display:flex;align-items:center;justify-content:center;">
+          <div style="background:rgba(20,25,40,0.30);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:8px 10px;"><span style="font-size:11px;color:#fff;font-weight:600;">Aa legible</span></div>
+        </div>
+      </div>
+      <div style="padding:11px 16px;font-size:12px;color:var(--text-muted);">A fixed alpha fails: glass that reads on a dark wallpaper vanishes on a bright one. The compositor samples mean backdrop luminance per surface each blur pass and shifts the tint (light scrim ⇄ dark scrim) to hold <strong style="color:var(--text);">≥4.5:1</strong> text contrast — WCAG AA, automatically, over any wallpaper.</div>
+    </div>
+    <!-- damage tracking -->
+    <div style="flex:1;min-width:300px;border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text);display:flex;justify-content:space-between;"><span>Damage Tracking → Battery</span><span class="state-chip priv-state" style="font-size:10px;">on battery</span></div>
+      <div style="padding:16px;">
+        <div style="position:relative;height:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 9px,rgba(203,213,225,.25) 9px,rgba(203,213,225,.25) 10px);"></div>
+          <div style="position:absolute;top:14px;left:14px;width:90px;height:40px;border:2px solid var(--cyan);background:var(--cyan-glow);border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="font-size:10px;font-family:var(--font-mono);color:#0E7490;">dirty: caret</span></div>
+          <div style="position:absolute;bottom:14px;right:14px;width:84px;height:34px;border:2px solid var(--cyan);background:var(--cyan-glow);border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="font-size:10px;font-family:var(--font-mono);color:#0E7490;">dirty: clock</span></div>
+          <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;color:var(--text-subtle);">clean — not recomposited</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:11px;">Only the blinking caret and the bar clock are damaged each frame — two small rects, not the whole screen. The expensive blur pass re-runs <em>only</em> over damaged regions intersecting glass. A typing user idles the GPU ~94% of the time.</div>
+        <div style="display:flex;gap:8px;margin-top:10px;"><span class="state-chip priv-state" style="font-size:11px;">+47min runtime</span><span class="state-chip" style="font-size:11px;background:var(--surface3);color:var(--text-muted);border:1px solid var(--border);">vs full-redraw</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CALLOUTS ────────────────────────────────────────────── -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">No beauty that excludes <span class="badge new">KOOMPI</span></div>
+      <p>The default tier is tuned for an Intel UHD 620 — a real laptop a Cambodian student or teacher can actually afford, not a gaming rig. Glass, motion, and shadow are specified to land at 60fps <em>there</em>. The high tier is a bonus, never the baseline. If an effect can't ship beautifully on the affordable machine, it isn't in the design system.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Honest budget over hidden cost</div>
+      <p>macOS and Windows 11 hide compositor cost behind "your PC doesn't meet requirements." KOOMPI probes the GPU at first boot, picks a tier, and shows you the frame budget it's spending. Every effect is a line item you can read, raise, or cut — the same transparency we apply to AI, applied to pixels.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shares the GPU with the local LLM</div>
+      <p>Because all AI inference is on-device (§43), the compositor and the model contend for one GPU. Every tier reserves half the frame budget so that when the local model is generating, the shell never stutters. Beauty and local intelligence are co-tenants, budgeted together — a constraint no cloud-AI desktop has to think about.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Ages without a hardware tax</div>
+      <p>A Lifetime OS must look right on a 2026 netbook in 2040. Tokens are resolution- and refresh-independent (time-based motion, luminance-adaptive tint), so a future 4K/240Hz panel sharpens the same design rather than demanding a rewrite — and a decade-old iGPU simply settles into the Efficient tier, still composited, never abandoned.</p>
+    </div>
+  </div>
+</section>

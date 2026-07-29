@@ -1,0 +1,131 @@
+<section class="section" id="index-status">
+  <div class="section-header">
+    <h2>Index Status</h2>
+    <span class="tag data">Data</span>
+  </div>
+  <p class="desc">
+    koompi-contextd continuously watches the filesystem and maintains a local semantic index for AI RAG queries. This panel shows indexing health, coverage, and per-source stats — all processed on-device.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Becomes the <b>Index</b> tab of Privacy Center · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- Status overview bar -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div style="width:10px;height:10px;background:var(--emerald);border-radius:50%;box-shadow:0 0 8px var(--emerald);flex-shrink:0;animation:pulse-dot 2s infinite;"></div>
+      <span style="font-weight:600;color:var(--text);">Context Engine · Active</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--text-subtle);font-family:var(--font-mono);">koompi-contextd 0.4.1</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:#0E7490;font-family:var(--font-mono);">47,382</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:2px;">Files Indexed</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--font-mono);">2.1 GB</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:2px;">Vector Store Size</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:#047857;font-family:var(--font-mono);">99.4%</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:2px;">Coverage</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;">
+        <div style="font-size:22px;font-weight:700;color:#B45309;font-family:var(--font-mono);">138</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:2px;">Pending Queue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active indexing job -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">Currently Indexing</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="4" width="10" height="8" rx="1" stroke="var(--cyan)" stroke-width="1.5"/><path d="M4 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" stroke="var(--cyan)" stroke-width="1.5"/></svg>
+      <span style="font-family:var(--font-mono);font-size:13px;color:var(--text);">~/Documents/Projects/koompi-desktop/</span>
+    </div>
+    <div style="background:var(--surface3);border-radius:6px;height:6px;overflow:hidden;margin-bottom:8px;">
+      <div style="width:73%;height:100%;background:linear-gradient(90deg,var(--cyan),var(--accent));border-radius:6px;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-subtle);">
+      <span>1,843 / 2,521 files</span>
+      <span>73% · ~12 sec remaining</span>
+    </div>
+  </div>
+
+  <!-- Source breakdown -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">By File Type</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">Documents (md, pdf, docx)</span><span style="color:var(--text-muted);">21,440</span></div>
+          <div style="background:var(--surface3);border-radius:3px;height:4px;"><div style="width:65%;height:100%;background:var(--accent);border-radius:3px;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">Source Code</span><span style="color:var(--text-muted);">14,209</span></div>
+          <div style="background:var(--surface3);border-radius:3px;height:4px;"><div style="width:43%;height:100%;background:var(--cyan);border-radius:3px;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">Images (captioned)</span><span style="color:var(--text-muted);">7,301</span></div>
+          <div style="background:var(--surface3);border-radius:3px;height:4px;"><div style="width:22%;height:100%;background:var(--emerald);border-radius:3px;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:var(--text);">Email / Calendar</span><span style="color:var(--text-muted);">4,432</span></div>
+          <div style="background:var(--surface3);border-radius:3px;height:4px;"><div style="width:14%;height:100%;background:var(--amber);border-radius:3px;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">Recent Indexing Events</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px;background:var(--surface2);border-radius:6px;">
+          <div style="width:6px;height:6px;background:var(--cyan);border-radius:50%;margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:12px;color:var(--text);">docs/prd.md</div><div style="font-size:11px;color:var(--text-subtle);">42 sec ago · re-indexed (modified)</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px;background:var(--surface2);border-radius:6px;">
+          <div style="width:6px;height:6px;background:var(--emerald);border-radius:50%;margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:12px;color:var(--text);">src/koompi-assistantd/main.rs</div><div style="font-size:11px;color:var(--text-subtle);">3 min ago · newly added</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px;background:var(--surface2);border-radius:6px;">
+          <div style="width:6px;height:6px;background:var(--amber);border-radius:50%;margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:12px;color:var(--text);">Downloads/invoice-may.pdf</div><div style="font-size:11px;color:var(--text-subtle);">11 min ago · excluded by rule</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px;background:var(--surface2);border-radius:6px;">
+          <div style="width:6px;height:6px;background:var(--text-subtle);border-radius:50%;margin-top:5px;flex-shrink:0;"></div>
+          <div><div style="font-size:12px;color:var(--text);">Music/ (2,341 files)</div><div style="font-size:11px;color:var(--text-subtle);">18 min ago · skipped (audio, no caption)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exclusion rules -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;">Exclusion Rules</div>
+      <button style="font-size:11px;color:var(--accent);background:var(--accent-glow);border:none;border-radius:4px;padding:3px 10px;cursor:pointer;">+ Add Rule</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">~/.ssh/</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">~/.gnupg/</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">*.env</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">/proc/, /sys/</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">node_modules/</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--surface3);padding:4px 10px;border-radius:20px;color:var(--text-muted);">*.key, *.pem</span>
+      <span style="font-family:var(--font-mono);font-size:12px;background:var(--amber-glow);padding:4px 10px;border-radius:20px;color:#B45309;">Downloads/Finance/ (manual)</span>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">100% local processing <span class="badge new">Privacy</span></div>
+      <p>All embedding and vector generation runs on-device via a quantized local model. No file content is transmitted externally during indexing.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Incremental watch via inotify</div>
+      <p>koompi-contextd subscribes to kernel inotify events. Only modified or new files are re-indexed — full reindex only on schema upgrades or user request.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Semantic + keyword dual index</div>
+      <p>Each file produces both a vector embedding (semantic search) and a keyword token index (exact match). The AI sidebar queries both and merges results by relevance score.</p>
+    </div>
+  </div>
+</section>

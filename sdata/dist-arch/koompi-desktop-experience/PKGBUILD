@@ -1,0 +1,29 @@
+# koompi-desktop-experience — KOOMPI Desktop Experience, the complete desktop
+# as one install. The Hyprland edition (koompi-desktop-hyprland) plus what
+# turns it into a first-class desktop of its own: the bootable KOOMPI session
+# (koompi-session) and, through it, the package-owned shell and tools
+# (koompi-shell). This is the package name marketing and documentation point
+# users at; the edition metas remain the installer-facing split.
+groups=(koompi)
+pkgname=koompi-desktop-experience
+pkgver=1.1
+pkgrel=1
+pkgdesc='KOOMPI Desktop Experience (metapackage)'
+arch=(any)
+license=(None)
+depends=(
+  # The full Hyprland desktop stack (base, compositor, shell runtime, widgets,
+  # /etc/skel dotfiles).
+  koompi-desktop-hyprland
+  # The bootable KOOMPI session; pulls koompi-shell (package-owned shell tree
+  # in /etc/xdg/quickshell/koompi and the /usr/bin koompi-* tools).
+  koompi-session
+  # The applications the shipped config expects to find: wezterm, zed, the
+  # browsers, the viewers, LibreOffice. Only here, not in koompi-desktop-hyprland
+  # - an edition is a desktop, and this package is the complete experience.
+  koompi-apps
+)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOOMPI OS — UX Brainstorm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;600;700&family=Source+Serif+4:wght@600;700&display=swap">
+<link rel="stylesheet" href="css/base.css?v=4">
+<link rel="stylesheet" href="css/bar.css?v=4">
+<link rel="stylesheet" href="css/widgets.css?v=4">
+<link rel="stylesheet" href="css/desktop-sim.css?v=4">
+</head>
+<body>
+
+<!-- ── Sidebar Navigation ──────────────────────────────────── -->
+<nav id="sidenav">
+  <div class="logo">
+    <h1>KOOMPI OS</h1>
+    <p>UX Brainstorm — v0.1</p>
+  </div>
+
+  <div class="section-label">Frame</div>
+  <a href="#frame" class="active"><span class="dot"></span>What is KOOMPI OS?</a>
+  <a href="#document-map"><span class="dot"></span>The Document Map</a>
+  <a href="#blueprint"><span class="dot"></span>Blueprint &amp; Horizon</a>
+  <a href="#system-map"><span class="dot"></span>System Map</a>
+  <a href="#near-future"><span class="dot"></span>The Near Future</a>
+
+  <div class="section-label">Foundation</div>
+  <a href="#design-system"><span class="dot"></span>Design System</a>
+  <a href="#shell-bar"><span class="dot"></span>Shell Bar</a>
+
+  <div class="section-label">Shell</div>
+  <a href="#launcher"><span class="dot"></span>Launcher / Search</a>
+  <a href="#notifications"><span class="dot"></span>Notification Center</a>
+  <a href="#quick-settings"><span class="dot"></span>Quick Settings</a>
+  <a href="#osd"><span class="dot"></span>OSD Overlays</a>
+  <a href="#overview"><span class="dot"></span>Workspace Overview</a>
+  <a href="#widget-overlay"><span class="dot"></span>Widget Overlay</a>
+  <a href="#cheatsheet"><span class="dot"></span>Cheatsheet</a>
+  <a href="#session"><span class="dot"></span>Session Screen</a>
+  <a href="#window-management"><span class="dot"></span>Window Management</a>
+  <a href="#file-manager"><span class="dot"></span>File Manager</a>
+  <a href="#clipboard-manager"><span class="dot"></span>Clipboard Manager</a>
+  <a href="#browser"><span class="dot"></span>The Partner Window</a>
+  <a href="#partner-mobile"><span class="dot"></span>Pocket &amp; Tablet</a>
+  <a href="#app-suite"><span class="dot"></span>The App Suite</a>
+
+  <div class="section-label">AI Layer</div>
+  <a href="#tool-approval"><span class="dot"></span>Tool Approval</a>
+  <a href="#rag-sources"><span class="dot"></span>RAG / Sources</a>
+  <a href="#memory"><span class="dot"></span>Memory View</a>
+  <a href="#briefing"><span class="dot"></span>Daily Briefing</a>
+  <a href="#ai-failure-correction"><span class="dot"></span>AI Failure &amp; Fixes</a>
+  <a href="#ai-model-manager"><span class="dot"></span>AI Model Manager</a>
+
+  <div class="section-label">Data</div>
+  <a href="#index-status"><span class="dot"></span>Index Status</a>
+  <a href="#privacy-dash"><span class="dot"></span>Privacy Dashboard</a>
+  <a href="#egress-ledger"><span class="dot"></span>Egress Ledger</a>
+  <a href="#app-permissions"><span class="dot"></span>App Permissions</a>
+  <a href="#web3-native"><span class="dot"></span>Web3 Native</a>
+
+  <div class="section-label">System</div>
+  <a href="#first-boot"><span class="dot"></span>First Boot</a>
+  <a href="#settings"><span class="dot"></span>Settings App</a>
+  <a href="#factory-reset"><span class="dot"></span>Factory Reset</a>
+  <a href="#subsystem"><span class="dot"></span>Profiles</a>
+  <a href="#installer"><span class="dot"></span>Installer TUI</a>
+  <a href="#implementation-stack"><span class="dot"></span>Implementation Stack</a>
+  <a href="#khmer"><span class="dot"></span>Khmer / i18n</a>
+  <a href="#biometrics-auth"><span class="dot"></span>Auth &amp; Lock Screen</a>
+  <a href="#accessibility"><span class="dot"></span>Accessibility</a>
+  <a href="#update-management"><span class="dot"></span>Update Management</a>
+  <a href="#network-manager"><span class="dot"></span>Network Manager</a>
+  <a href="#backup-restore"><span class="dot"></span>Backup &amp; Restore</a>
+  <a href="#multi-user-profiles"><span class="dot"></span>Profiles &amp; Sharing</a>
+  <a href="#digital-wellbeing"><span class="dot"></span>Digital Wellbeing</a>
+  <a href="#multi-device-continuity"><span class="dot"></span>Device Continuity</a>
+  <a href="#error-recovery"><span class="dot"></span>Error &amp; Recovery</a>
+  <a href="#app-store"><span class="dot"></span>Software Center</a>
+
+  <div class="section-label">UX Philosophy</div>
+  <a href="#theme-engine"><span class="dot"></span>Theme Engine</a>
+  <a href="#motion-language"><span class="dot"></span>Motion Language</a>
+  <a href="#sound-design"><span class="dot"></span>Sound Design</a>
+
+  <div class="section-label">Hardware &amp; Platform</div>
+  <a href="#display-color"><span class="dot"></span>Display &amp; Color</a>
+  <a href="#developer-mode"><span class="dot"></span>Developer Mode</a>
+  <a href="#compositor-visual-physics"><span class="dot"></span>Visual Physics</a>
+  <a href="#gaming-mode"><span class="dot"></span>Gaming Mode</a>
+
+  <div class="section-label">Vision</div>
+  <a href="#ambient-intelligence"><span class="dot"></span>Ambient Intelligence</a>
+  <a href="#memory-palace"><span class="dot"></span>Memory Palace</a>
+  <a href="#proactive-os"><span class="dot"></span>Proactive OS</a>
+  <a href="#appless-computing"><span class="dot"></span>App-less Computing</a>
+  <a href="#khmer-ai"><span class="dot"></span>Khmer-Native AI</a>
+  <a href="#data-sovereignty"><span class="dot"></span>Data Sovereignty</a>
+  <a href="#cognitive-os"><span class="dot"></span>Cognitive OS</a>
+  <a href="#lifetime-os"><span class="dot"></span>Lifetime OS</a>
+  <a href="#thinking-os"><span class="dot"></span>The Thinking OS</a>
+  <a href="#memory-architecture"><span class="dot"></span>Memory Architecture</a>
+  <a href="#memory-lifecycle"><span class="dot"></span>Memory Lifecycle</a>
+  <a href="#agent-memory-impl"><span class="dot"></span>Agent Memory Blueprint</a>
+
+  <div class="section-label">Horizon — A Life</div>
+  <a href="#death-protocol"><span class="dot"></span>Death &amp; Digital Estate</a>
+  <a href="#os-that-raises-you"><span class="dot"></span>The OS That Raises You</a>
+  <a href="#aging-with-dignity"><span class="dot"></span>Aging With Dignity</a>
+  <a href="#cognitive-sovereignty"><span class="dot"></span>Cognitive Sovereignty</a>
+  <a href="#conversations-past-self"><span class="dot"></span>Past Self</a>
+
+  <div class="section-label">Horizon — A Century</div>
+  <a href="#hardware-succession"><span class="dot"></span>Hardware Succession</a>
+  <a href="#format-archaeology"><span class="dot"></span>Format Archaeology</a>
+  <a href="#continuity-charter"><span class="dot"></span>Continuity Charter</a>
+  <a href="#refugee-mode"><span class="dot"></span>Refugee Mode</a>
+  <a href="#energy-sovereignty"><span class="dot"></span>Energy Sovereignty</a>
+  <a href="#repair-culture"><span class="dot"></span>Repair Culture</a>
+
+  <div class="section-label">Horizon — Memory Ethics</div>
+  <a href="#ceremonial-forgetting"><span class="dot"></span>Ceremonial Forgetting</a>
+  <a href="#model-succession"><span class="dot"></span>Model Succession</a>
+  <a href="#household-constitution"><span class="dot"></span>Household Constitution</a>
+  <a href="#memory-etiquette"><span class="dot"></span>Memory Etiquette</a>
+  <a href="#personal-provenance"><span class="dot"></span>OS as Witness</a>
+
+  <div class="section-label">Horizon — Beyond One User</div>
+  <a href="#exit-door"><span class="dot"></span>The Exit Door</a>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<main id="main"></main>
+
+<script src="js/desktop-sim.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
+</body>
+</html>

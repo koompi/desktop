@@ -1,0 +1,15 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+ "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+<!-- KOOMPI minimal application menu. KDE apps (Dolphin's Open With, kbuildsycoca6)
+     need an XDG menu definition to index applications at all; Plasma's menu left
+     with the M5 plasma removal. One flat menu of everything installed is all the
+     desktop needs, since the KOOMPI launcher reads .desktop files directly. -->
+<Menu>
+  <Name>Applications</Name>
+  <DefaultAppDirs/>
+  <DefaultDirectoryDirs/>
+  <DefaultMergeDirs/>
+  <Include>
+    <All/>
+  </Include>
+</Menu>

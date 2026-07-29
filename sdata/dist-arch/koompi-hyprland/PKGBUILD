@@ -1,0 +1,12 @@
+groups=(koompi)
+pkgname=koompi-hyprland
+pkgver=1.0
+pkgrel=5
+pkgdesc='KOOMPI Hyprland compositor + tools (metapackage)'
+arch=(any)
+license=(None)
+depends=(
+  hyprland
+  hyprsunset
+  wl-clipboard
+)

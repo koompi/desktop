@@ -1,0 +1,25 @@
+/diagnose.result
+/cache
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+/dots/.config/quickshell/ii/.qmlls.ini
+
+# exp-update
+/.update-lock
+
+# custom os-release
+/os-release
+
+# Emacs auto backup file
+*~
+.nimmit/
+
+# graphify knowledge-graph output
+/graphify-out/
+
+# global-menu zig build artifacts
+/dots/.config/quickshell/koompi/scripts/global-menu/.zig-cache/
+/dots/.config/quickshell/koompi/scripts/global-menu/zig-out/

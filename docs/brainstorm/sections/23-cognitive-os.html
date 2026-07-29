@@ -1,0 +1,38 @@
+<section class="section" id="cognitive-os">
+  <div class="section-header">
+    <h2>Cognitive OS</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    The "cognitive modes" idea ships as a concrete 1.x feature: <strong>Profiles presets</strong>. Rather than the OS inferring your mental state, you pick a preset — Deep Work, Meeting, Creative — and the shell switches layout, notification posture, and power profile in one action. There is no cognitive-state sensing and no cadence inference here; the reshaping is user-selected and explicit. This section is now a pointer: the buildable form of this idea lives in <a href="#subsystem" style="color:var(--accent); font-weight:600;">§31 Profiles</a>.
+  </p>
+
+  <div style="max-width:760px;">
+    <div class="card-label" style="margin-bottom:10px;">Realized as Profiles presets — one tap, no inference</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:10px;">
+      <div style="background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius); padding:12px 14px; box-shadow:0 0 0 3px var(--accent-glow);">
+        <div style="font-size:11px; font-weight:700; color:var(--accent); margin-bottom:4px;">⌖ DEEP WORK</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">Bar collapses to a thin line · notifications held · single workspace</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+        <div style="font-size:11px; font-weight:700; color:#047857; margin-bottom:4px;">◎ MEETING</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">Comms mode · mic + notes up · screen-share guard on</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+        <div style="font-size:11px; font-weight:700; color:#0E7490; margin-bottom:4px;">✦ CREATIVE</div>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">Spatial canvas · references fanned out · free-tiling unlocked</div>
+      </div>
+    </div>
+    <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+      Each preset is a saved shell posture the user invokes. See <a href="#subsystem" style="color:var(--accent); font-weight:600;">§31 Profiles</a> for the schema, the switch mechanism, and the naming boundary against the isolation Subsystem.
+    </p>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "OS reads your cognitive state and reshapes your mind" framing — fatigue detection, cadence-based mode inference, automatic thought capture — stays on the horizon shelf (<code>horizon.md</code>); Profiles ships the switching, not the sensing.</p>
+    </div>
+  </div>
+</section>

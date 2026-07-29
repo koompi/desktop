@@ -1,0 +1,306 @@
+<section class="section" id="biometrics-auth">
+  <div class="section-header">
+    <h2>Auth &amp; Lock Screen</h2>
+    <span class="tag priv">Sovereign Gate</span>
+  </div>
+  <p class="desc">
+    The most-seen screen on any computer — and the gate to a lifetime of personal data. Every other section assumes the user is already in. This one earns it: a Khmer-first greeter, local biometrics, a Selendra identity key that never leaves the TPM, and privilege-elevation consent the AI cannot bypass. Authentication is local, key-sovereign, and beautiful — because the screen you see ten thousand times should signal respect, not friction.
+  </p>
+
+  <!-- ───────────────── 1. LOCK SCREEN / GREETER ───────────────── -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;">
+    <div style="flex:2;min-width:380px;border-radius:14px;overflow:hidden;border:1px solid var(--border2);position:relative;background:linear-gradient(155deg,#10162B 0%,#1E2746 55%,#2A2150 100%);min-height:420px;display:flex;flex-direction:column;justify-content:space-between;padding:26px 28px;">
+      <!-- top posture strip -->
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);border-radius:20px;padding:5px 12px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 8px var(--emerald);"></div>
+          <span style="font-size:11px;color:#A7F3D0;font-weight:600;">ឆ្លាក់ទុក &nbsp;·&nbsp; Encrypted &amp; locked</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span style="font-size:11px;color:#8FA1C7;">ខ្មែរ (ផ្លូវការ)</span>
+          <span style="font-size:11px;color:#5C6B91;">·</span>
+          <span style="font-size:11px;color:#8FA1C7;">⌥ EN</span>
+          <span style="font-size:12px;color:#8FA1C7;">▁▃▅ 87%</span>
+        </div>
+      </div>
+
+      <!-- Khmer-first clock -->
+      <div style="text-align:center;margin-top:-10px;">
+        <div style="font-size:74px;font-weight:200;color:#fff;letter-spacing:2px;line-height:1;font-feature-settings:'tnum';">០៨:៤២</div>
+        <div style="font-size:15px;color:#B7C4E2;margin-top:10px;">ថ្ងៃច័ន្ទ ៩ មិថុនា ២០២៦</div>
+        <div style="font-size:11px;color:#5C6B91;margin-top:3px;letter-spacing:.5px;">Monday, 9 June 2026</div>
+      </div>
+
+      <!-- formal greeting + avatar + auth affordance -->
+      <div style="text-align:center;">
+        <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#6366F1,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;font-weight:600;box-shadow:0 0 0 3px rgba(255,255,255,.12),0 8px 30px rgba(99,102,241,.4);">រ</div>
+        <div style="font-size:17px;color:#fff;font-weight:500;">សូមស្វាគមន៍មកវិញ លោក រិទ្ធី</div>
+        <div style="font-size:11px;color:#6B7AA0;margin-top:2px;">register: formal · greeting a user is a formal context</div>
+        <div style="margin-top:18px;display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.16);border:1px solid rgba(99,102,241,.4);border-radius:24px;padding:9px 18px;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1C5.8 1 4 2.8 4 5v2H3.2A1.2 1.2 0 002 8.2v5.6A1.2 1.2 0 003.2 15h9.6a1.2 1.2 0 001.2-1.2V8.2A1.2 1.2 0 0012.8 7H12V5c0-2.2-1.8-4-4-4zm0 1.6A2.4 2.4 0 0110.4 5v2H5.6V5A2.4 2.4 0 018 2.6z" fill="#A5B4FC"/></svg>
+          <span style="font-size:13px;color:#C7D2FE;">ប៉ះម្រាមដៃ ឬមើលកាមេរ៉ា ដើម្បីដោះសោ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- "what's hidden while locked" explainer (#6) -->
+    <div style="flex:1;min-width:240px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;">ខណៈពេលជាប់សោ · While locked</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">Content is redacted at the compositor, not just hidden behind a panel.</div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">Telegram</div><div style="font-size:11px;color:#047857;">notifications hidden</div></div>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5c-3 0-5 3-5.5 5.5C2 9.5 4 12.5 7 12.5s5-3 5.5-5.5C12 4.5 10 1.5 7 1.5z" stroke="var(--text-subtle)" stroke-width="1.1"/><line x1="2" y1="2" x2="12" y2="12" stroke="var(--text-subtle)" stroke-width="1.1" stroke-linecap="round"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--emerald);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">Mail · Q4 report</div><div style="font-size:11px;color:#047857;">sender &amp; body hidden</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);"></div>
+          <div style="flex:1;"><div style="font-size:12px;color:var(--text);">KOOMPI AI</div><div style="font-size:11px;color:var(--text-muted);">paused · no inference</div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:10px;background:var(--emerald-glow);border-radius:8px;border:1px solid rgba(16,185,129,.25);">
+        <div style="font-size:11px;color:var(--text);line-height:1.5;"><b>Allowed while locked:</b> media keys, alarms, reply-from-notification <i>only after re-auth</i>. The local index (koompi-contextd) stops emitting previews.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 2. BIOMETRIC UNLOCK CEREMONY ───────────────── -->
+  <div style="font-size:13px;font-weight:700;color:var(--text);margin:6px 0 10px;">Biometric ceremony — fingerprint first, honest fallback. Face unlock exists only on IR-depth hardware; an RGB webcam is photo-spoofable and is never sold as "liveness."</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <!-- scanning -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+      <div style="width:54px;height:54px;border-radius:50%;margin:0 auto 10px;border:2px solid var(--accent);background:var(--accent-glow);display:flex;align-items:center;justify-content:center;position:relative;">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 3a8 8 0 00-8 8c0 2 .5 4 1 5.5M13 6a5 5 0 00-5 5c0 3 1 6 1.5 7.5M13 9a2 2 0 00-2 2c0 4 1 7 1.5 8.5M16.5 6.5c.8 1.3 1.3 3 1.3 4.5 0 1 0 2-.3 3M19.5 4.5c1 1.8 1.5 4 1.5 6.5" stroke="var(--accent)" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <div style="position:absolute;left:6px;right:6px;height:2px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);top:50%;border-radius:2px;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--accent);font-weight:600;">កំពុងស្កេន…</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">fingerprint · matching</div>
+    </div>
+    <!-- liveness (face) -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:center;">
+      <div style="width:54px;height:54px;border-radius:50%;margin:0 auto 10px;border:2px solid var(--cyan);background:var(--cyan-glow);display:flex;align-items:center;justify-content:center;">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="9" stroke="var(--cyan)" stroke-width="1.3"/><circle cx="10" cy="11" r="1.2" fill="var(--cyan)"/><circle cx="16" cy="11" r="1.2" fill="var(--cyan)"/><path d="M10 16c1.5 1.2 4.5 1.2 6 0" stroke="var(--cyan)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div style="font-size:12px;color:#0E7490;font-weight:600;">Liveness ✓</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">IR-depth hardware only · blink + warmth</div>
+    </div>
+    <!-- success -->
+    <div style="background:var(--surface);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:16px;text-align:center;">
+      <div style="width:54px;height:54px;border-radius:50%;margin:0 auto 10px;background:var(--emerald);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(16,185,129,.5);">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M6 13.5l5 5L20 8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-size:12px;color:#047857;font-weight:600;">ដោះសោបាន</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">match · 142 ms</div>
+    </div>
+    <!-- spoof / fallback -->
+    <div style="background:var(--surface);border:1px solid rgba(245,158,11,.4);border-radius:12px;padding:16px;text-align:center;">
+      <div style="width:54px;height:54px;border-radius:50%;margin:0 auto 10px;border:2px solid var(--amber);background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4l8 14H4L12 4z" stroke="var(--amber)" stroke-width="1.4" stroke-linejoin="round"/><line x1="12" y1="10" x2="12" y2="14" stroke="var(--amber)" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1" fill="var(--amber)"/></svg>
+      </div>
+      <div style="font-size:12px;color:#B45309;font-weight:600;">Liveness failed</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">photo/mask rejected → PIN</div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 3 + 4. TPM/DID  +  PIN FALLBACK / LOCKOUT ───────────────── -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <!-- Selendra DID from TPM -->
+    <div style="flex:1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;">
+      <div style="padding:12px 16px;background:var(--cyan-glow);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="2.5" width="10" height="10" rx="2" stroke="var(--cyan)" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="2" fill="var(--cyan)"/></svg>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Selendra Identity · TPM 2.0</span>
+        <span style="margin-left:auto;font-size:10px;color:#0E7490;">sealed to PCR 0,2,7</span>
+      </div>
+      <div style="padding:16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#22D3EE,#10B981);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l6 3v5c0 4-3 6.5-6 8-3-1.5-6-4-6-8V5l6-3z" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 10l2 2 4-4" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;color:var(--text);font-weight:600;">did:selendra:rithy</div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">0x7f…a91c · key never leaves TPM</div>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:11px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);line-height:1.7;">
+          <div><span style="color:#0E7490;">→</span> challenge nonce e2b9…</div>
+          <div><span style="color:#0E7490;">→</span> TPM2_Sign (sealed, in-chip)</div>
+          <div><span style="color:#047857;">←</span> signature verified · <span style="color:#047857;">no key in RAM</span></div>
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--emerald-glow);border:1px solid rgba(16,185,129,.25);border-radius:8px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="var(--emerald)" stroke-width="1.2"/><path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="var(--emerald)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size:11px;color:var(--text);">Identity confirmed via challenge-response. If firmware (PCR) changes, the key stays sealed — tamper-evident by design.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIN / passphrase fallback + lockout -->
+    <div style="flex:1;min-width:320px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;">
+      <div style="padding:12px 16px;background:rgba(245,158,11,.1);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">PIN fallback · failed-attempt state</span>
+        <span style="margin-left:auto;font-size:10px;color:#B45309;">attempt 4 / 5</span>
+      </div>
+      <div style="padding:16px;text-align:center;">
+        <!-- dots -->
+        <div style="display:flex;gap:10px;justify-content:center;margin:6px 0 14px;">
+          <div style="width:13px;height:13px;border-radius:50%;background:var(--amber);"></div>
+          <div style="width:13px;height:13px;border-radius:50%;background:var(--amber);"></div>
+          <div style="width:13px;height:13px;border-radius:50%;background:var(--amber);"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--border);"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--border);"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:1.5px solid var(--border);"></div>
+        </div>
+        <div style="font-size:12px;color:#B45309;font-weight:600;">លេខសម្ងាត់មិនត្រឹមត្រូវ · Incorrect</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5;">Message is identical whether or not the account exists — no username enumeration.</div>
+
+        <!-- keypad -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:200px;margin:14px auto 0;">
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">១</div>
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">២</div>
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">៣</div>
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">៤</div>
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">៥</div>
+          <div style="padding:10px 0;background:var(--surface2);border-radius:8px;font-size:15px;color:var(--text);">៦</div>
+        </div>
+        <div style="margin-top:14px;padding:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;">
+          <div style="font-size:11px;color:var(--text);line-height:1.5;">One attempt left, then a <b>30-second cooldown</b> (exponential backoff). Biometrics disabled after lockout — passphrase only. No data is wiped: lockout throttles, it does not destroy.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 5. POLKIT PRIVILEGE-ELEVATION CONSENT ───────────────── -->
+  <div style="font-size:13px;font-weight:700;color:var(--text);margin:6px 0 10px;">Privilege elevation — when the AI asks to act as you</div>
+  <div style="max-width:560px;margin:0 auto 22px;background:var(--surface);border:1px solid rgba(245,158,11,.35);border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(16,22,43,.12);">
+    <div style="padding:16px 20px;display:flex;align-items:flex-start;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-glow);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:18px;color:var(--accent);">✦</span>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">KOOMPI AI ស្នើសុំសិទ្ធិអ្នកគ្រប់គ្រង</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">An action requires administrator privileges</div>
+      </div>
+    </div>
+    <div style="padding:0 20px 4px;">
+      <div style="background:var(--surface2);border-radius:10px;padding:13px 15px;font-size:13px;color:var(--text);line-height:1.6;">
+        Install <b>obs-studio</b> and 3 dependencies from the Arch repos.
+        <div style="margin-top:8px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:8px;">pacman -S obs-studio ffmpeg x264 v4l2loopback-dkms</div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--text-muted);">
+        <span><b style="color:var(--accent);">Requested by</b> · AI agent (your "set up streaming" task)</span>
+        <span><b style="color:#0E7490;">Action ID</b> · org.koompi.pkg.install</span>
+      </div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;background:var(--amber-glow,rgba(245,158,11,.1));border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:9px 11px;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2l5 8.5H2L7 2z" stroke="var(--amber)" stroke-width="1.2" stroke-linejoin="round"/><line x1="7" y1="6" x2="7" y2="8.5" stroke="var(--amber)" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span style="font-size:11px;color:var(--text);">The AI cannot self-approve. You authenticate; the grant is logged to the audit trail (§reversible).</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;padding:16px 20px;">
+      <div style="flex:1;text-align:center;padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;font-size:13px;color:var(--text-muted);">បដិសេធ · Deny</div>
+      <div style="flex:1.4;text-align:center;padding:11px;background:var(--accent);border-radius:9px;font-size:13px;color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1C5.8 1 4 2.8 4 5v2H3.2A1.2 1.2 0 002 8.2v5.6A1.2 1.2 0 003.2 15h9.6a1.2 1.2 0 001.2-1.2V8.2A1.2 1.2 0 0012.8 7H12V5c0-2.2-1.8-4-4-4z" fill="#fff"/></svg>
+        ប៉ះម្រាមដៃ ដើម្បីអនុញ្ញាត
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 6. AUTH-ON-WAKE RE-LOCK ───────────────── -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:16px 18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px;">Auth-on-wake · the re-lock timeline</div>
+      <div style="display:flex;flex-direction:column;gap:0;position:relative;">
+        <div style="display:flex;gap:12px;align-items:center;padding:7px 0;"><div style="width:9px;height:9px;border-radius:50%;background:var(--emerald);flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);">Active session</div><div style="margin-left:auto;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">0s</div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:7px 0;"><div style="width:9px;height:9px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);">Idle threshold</div><div style="margin-left:auto;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">5 min</div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:7px 0;"><div style="width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);">Locker grabs session</div><div style="margin-left:auto;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">+0ms</div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:7px 0;"><div style="width:9px;height:9px;border-radius:50%;background:var(--cyan);flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);">Panel DPMS off</div><div style="margin-left:auto;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);">+250ms</div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:7px 0;"><div style="width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div><div style="font-size:12px;color:var(--text);">Wake → locker paints first</div><div style="margin-left:auto;font-size:11px;color:#047857;font-family:var(--font-mono);">no flash</div></div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--accent-glow);border-radius:8px;border:1px solid rgba(99,102,241,.25);">
+        <div style="font-size:11px;color:var(--text);line-height:1.5;">On wake, DPMS-on is <b>gated behind the locker's first-frame callback</b> — the panel never powers on showing the unlocked desktop. The X11-era "flash of desktop" bug is structurally impossible here.</div>
+      </div>
+    </div>
+
+    <!-- 7. DURESS / DECOY — refused (C-11) -->
+    <div style="flex:1;min-width:300px;background:var(--surface);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:16px 18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Duress decoys · refused</span>
+        <span style="font-size:10px;background:var(--red-glow);color:#B91C1C;border-radius:10px;padding:2px 8px;">✕ security theater</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">An earlier draft designed a silent decoy profile here. It is <b>cut, honestly</b>: a second LUKS keyslot and a decoy subvolume are visible to any competent forensic examination — fake deniability is worse than none, and a discovered decoy can convert into an obstruction charge. KOOMPI does not ship protections that only work if the adversary is careless.</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;background:var(--surface2);border-radius:8px;">
+          <span style="font-size:14px;"><i class="fa-solid fa-power-off"></i></span>
+          <div><div style="font-size:12px;color:var(--text);font-weight:600;">The honest protections</div><div style="font-size:11px;color:var(--text-muted);">Power off — LUKS at rest is the real defense. Lockout throttling. A guest profile that genuinely holds nothing.</div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;background:var(--surface2);border-radius:8px;">
+          <span style="font-size:14px;"><i class="fa-solid fa-flask"></i></span>
+          <div><div style="font-size:12px;color:var(--text);font-weight:600;">If the science arrives</div><div style="font-size:11px;color:var(--text-muted);">Credible deniable storage for a Linux root earns a capability-gate row first (<code>blueprint.md §3</code>) — never a quiet checkbox.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 8. MULTI-USER PICKER ───────────────── -->
+  <div style="font-size:13px;font-weight:700;color:var(--text);margin:6px 0 10px;">Multi-user greeter · separate sovereign vaults</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
+    <div style="flex:1;min-width:150px;background:var(--surface);border:2px solid var(--accent);border-radius:12px;padding:18px 14px;text-align:center;">
+      <div style="width:50px;height:50px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#6366F1,#22D3EE);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">រ</div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;">រិទ្ធី</div>
+      <div style="font-size:10px;color:#047857;margin-top:2px;">active · vault unlocked</div>
+    </div>
+    <div style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 14px;text-align:center;">
+      <div style="width:50px;height:50px;border-radius:50%;margin:0 auto 10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted);">ស</div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;">សុភា</div>
+      <div style="font-size:10px;color:var(--text-subtle);margin-top:2px;">locked · own DID + key</div>
+    </div>
+    <div style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px 14px;text-align:center;">
+      <div style="width:50px;height:50px;border-radius:50%;margin:0 auto 10px;background:rgba(16,185,129,.12);border:1.5px dashed rgba(16,185,129,.4);display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke="var(--emerald)" stroke-width="1.3"/><path d="M5 18c0-3 2.7-5 6-5s6 2 6 5" stroke="var(--emerald)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;">Guest</div>
+      <div style="font-size:10px;color:var(--text-subtle);margin-top:2px;">ephemeral · wiped on logout</div>
+    </div>
+    <div style="flex:1;min-width:150px;background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="width:50px;height:50px;border-radius:50%;margin:0 auto 10px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><line x1="9" y1="3" x2="9" y2="15" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="9" x2="15" y2="9" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);">Add user</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;line-height:1.5;background:var(--surface2);border-radius:8px;padding:10px 12px;">
+    Each user is a fully separate vault — own Selendra DID, own TPM-sealed key, own LUKS keyslot, own AI memory (assistantd's per-user store). Switching users <b>unmounts</b> the previous vault; there is no shared decryptable state. Ties to §44 profiles.
+  </div>
+
+  <!-- ───────────────── CALLOUTS ───────────────── -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Local, key-sovereign auth <span class="badge new">Local-first</span></div>
+      <p>No cloud auth, ever. Biometrics match on-device against templates that never leave the secure enclave; the Selendra DID is signed inside the TPM via challenge-response. The key never enters RAM — you prove who you are without exposing what proves it.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">ext-session-lock-v1, not an X11 grab</div>
+      <p>The locker uses Wayland's <b>ext-session-lock-v1</b>: the compositor guarantees desktop content is unreadable even if the locker process crashes. No screenshot, no overlay race, no "Xorg locker froze and exposed the desktop" — a whole bug class deleted by protocol.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Khmer-first, register-aware</div>
+      <p>Khmer numerals on the clock (០៨:៤២), Khmer day/month names, and a greeting in the <b>formal register</b> — because a machine addressing its owner is a formal context. Not translated chrome bolted onto English; the lock screen was authored in Khmer.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The AI cannot let itself in</div>
+      <p>Every privilege escalation routes through polkit with the AI named as requester. The agent can <i>ask</i>; only a human biometric or passphrase grants. Each grant is logged, attributable, and reversible — the consent gate the rest of the OS leans on.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Theater refused — no duress decoys</div>
+      <p>A decoy that forensics can find is a trap dressed as a feature: it teaches a user to rely on deniability that evaporates exactly when it matters, and its discovery can make things legally worse. The honest answers are boring and real — LUKS at rest, lockout throttling, a guest profile that holds nothing. Honesty over capability, even here.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Ages across a lifetime</div>
+      <p>Templates re-enroll as fingers age; the DID survives hardware migration via sealed backup; lockout throttles but never wipes. In 20 years the face model is retrained, the key is re-sealed to new firmware — the identity persists, the screen stays beautiful.</p>
+    </div>
+  </div>
+</section>

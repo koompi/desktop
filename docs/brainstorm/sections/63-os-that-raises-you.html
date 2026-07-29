@@ -1,0 +1,56 @@
+<section class="section" id="os-that-raises-you">
+  <div class="section-header">
+    <h2>The OS That Raises You</h2>
+    <span class="tag">Futures</span>
+    <span class="tag ai">RULE · v1</span>
+  </div>
+  <p class="desc">
+    The concrete, shipping piece is the per-user policy LOCK floor from architecture §10. A guardian sets a policy floor on a managed profile — allowed capabilities, egress destinations, tool-approval strictness — and locks it. The locked profile cannot raise its own ceiling; it can only operate at or below the floor. Release is an explicit, dual-signed transfer, not an automatic birthday. This is an access-control mechanism the policy engine already enforces, not the OS "parenting" anyone.
+  </p>
+
+  <!-- Policy floor spec -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); overflow:hidden;">
+    <div style="padding:14px 16px; background:var(--surface2); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;"><i class="fa-solid fa-lock"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">LOCK floor — managed profile policy (arch §10)</span>
+      <span class="state-chip priv-state" style="font-size:9px;">enforced by policy engine</span>
+    </div>
+    <div style="padding:16px;">
+      <div class="tool-code" style="font-size:11px; line-height:1.9;">
+        <span class="code-key">profile</span>       <span class="code-val">managed · guardian = Vathna</span><br>
+        <span class="code-key">lock</span>          <span class="code-str">floor set — profile cannot raise its own ceiling</span><br>
+        <span class="code-key">capabilities</span>  <span class="code-val">shell: sandboxed · fs: home only</span><br>
+        <span class="code-key">egress</span>        <span class="code-str">new destinations require guardian co-sign</span><br>
+        <span class="code-key">tool-approval</span> <span class="code-val">strict — every write action prompts</span><br>
+        <span class="code-key">release</span>       <span class="code-str">dual-signed transfer only (guardian ✓ + holder ✓)</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+        The floor is a locked policy record, not a settings toggle the profile owner can flip. Attempts to widen scope below a guardian co-sign are refused at the policy gate and logged. Lifting the floor requires both signatures, which the OS records as a one-way, verifiable event.
+      </p>
+    </div>
+  </div>
+
+  <!-- Transfer receipt -->
+  <div style="max-width:760px; margin-top:20px; background:linear-gradient(135deg, var(--emerald-glow), transparent); border:1px solid var(--emerald); border-radius:var(--radius-lg); padding:16px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+      <span style="font-size:16px;"><i class="fa-solid fa-key"></i></span>
+      <div style="flex:1;"><div style="font-size:14px; font-weight:700;">Floor release — dual-signed transfer</div><div style="font-size:10px; color:var(--text-muted);">recorded as a one-way policy event</div></div>
+    </div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8;">
+      <span class="code-key">transfer</span>   <span class="code-val">managed → self-governed</span><br>
+      <span class="code-key">egress</span>     <span class="code-str">co-sign removed · ledger now the holder's</span><br>
+      <span class="code-key">signed</span>     <span class="code-val">holder ✓ · guardian ✓</span>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <span class="state-chip active-state" style="font-size:9px;">both signatures verified</span>
+      <span class="state-chip priv-state" style="font-size:9px;">guardian access revoked</span>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The developmental-companion narrative — an interface that grows complexity, register, and Khmer literacy over a decade of childhood — stays on the horizon shelf (<code>horizon.md</code>); v1 ships only the locked policy floor and its dual-signed release.</p>
+    </div>
+  </div>
+</section>

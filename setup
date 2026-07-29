@@ -1,0 +1,247 @@
+#!/usr/bin/env bash
+# KOOMPI desktop installer.
+#
+#   ./setup install      install the desktop for the current user
+#   ./setup update       pull and re-apply, on a machine that already runs it
+#   ./setup uninstall    remove what a previous install put in $HOME
+#   ./setup doctor       report what is detected and what is missing
+#
+# Most files install into $HOME. The login entry and a small launcher are
+# registered system-wide so GDM, SDDM and other display managers can discover
+# KOOMPI before login. On KOOMPI OS itself those arrive through packages.
+
+set -uo pipefail
+
+REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT
+
+# shellcheck source=sdata/lib/common.sh
+source "$REPO_ROOT/sdata/lib/common.sh"
+# shellcheck source=sdata/lib/distro.sh
+source "$REPO_ROOT/sdata/lib/distro.sh"
+# shellcheck source=sdata/install/deps.sh
+source "$REPO_ROOT/sdata/install/deps.sh"
+# shellcheck source=sdata/install/apps.sh
+source "$REPO_ROOT/sdata/install/apps.sh"
+# shellcheck source=sdata/install/setups.sh
+source "$REPO_ROOT/sdata/install/setups.sh"
+# shellcheck source=sdata/install/files.sh
+source "$REPO_ROOT/sdata/install/files.sh"
+# shellcheck source=sdata/install/uninstall.sh
+source "$REPO_ROOT/sdata/install/uninstall.sh"
+# shellcheck source=sdata/install/update.sh
+source "$REPO_ROOT/sdata/install/update.sh"
+
+usage() {
+    cat <<'EOF'
+KOOMPI desktop installer
+
+Usage:
+  ./setup <command> [options]
+
+Commands:
+  install      Install the desktop into $HOME
+  update       Pull the latest config and re-apply it, then reload the session.
+               For a machine that already runs KOOMPI: it never re-offers the
+               application set, and leaves ~/.config/hypr/custom alone.
+               On KOOMPI OS the desktop comes from packages instead; there,
+               `koompi-update` is the command.
+  uninstall    Remove the files a previous install recorded
+  doctor       Report the detected distro and any missing runtime commands
+  help         This message
+
+Install and update options:
+  --no-deps        Skip package installation (use if you manage packages yourself)
+  --no-apps        Skip the opinionated application set
+  --no-setups      Skip the venv, groups, modules and services step
+  --no-files       Skip copying config files
+  --only-deps      Only install packages
+  --only-apps      Only install the application set
+  --only-setups    Only run the setups step
+  --only-files     Only copy config files
+  --no-backup      Do not copy existing config aside first (not recommended)
+  -y, --yes        Do not ask anything; abort instead of prompting on failure
+  -n, --dry-run    Print what would happen and change nothing
+
+Supported distros: Arch (and derivatives), Fedora, Debian, Ubuntu.
+Anything else can still use --no-deps; see docs/dependencies.md.
+EOF
+}
+
+DO_DEPS=true
+DO_APPS=true
+DO_SETUPS=true
+DO_FILES=true
+SKIP_BACKUP=false
+
+parse_install_options() {
+    local only_set=false
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --no-deps)     DO_DEPS=false ;;
+            --no-apps)     DO_APPS=false ;;
+            --no-setups)   DO_SETUPS=false ;;
+            --no-files)    DO_FILES=false ;;
+            --only-deps)   only_set=true; DO_DEPS=true;  DO_APPS=false; DO_SETUPS=false; DO_FILES=false ;;
+            --only-apps)   only_set=true; DO_DEPS=false; DO_APPS=true;  DO_SETUPS=false; DO_FILES=false ;;
+            --only-setups) only_set=true; DO_DEPS=false; DO_APPS=false; DO_SETUPS=true;  DO_FILES=false ;;
+            --only-files)  only_set=true; DO_DEPS=false; DO_APPS=false; DO_SETUPS=false; DO_FILES=true ;;
+            --no-backup)   SKIP_BACKUP=true ;;
+            -y|--yes)      ASSUME_YES=true ;;
+            -n|--dry-run)  DRY_RUN=true ;;
+            -h|--help)     usage; exit 0 ;;
+            *)             usage >&2; die "unknown option: $1" ;;
+        esac
+        shift
+    done
+    $only_set && info "running a single step only"
+    return 0
+}
+
+# The commands the session cannot start without, separated from the ones that
+# only disable a feature, so `doctor` can tell a broken install from a partial one.
+readonly REQUIRED_CMDS=(Hyprland hyprctl qs)
+readonly OPTIONAL_CMDS=(
+    matugen fuzzel hypridle hyprlock hyprpicker wl-paste cliphist
+    brightnessctl playerctl ydotool wlogout uv jq rsync gsettings zig
+)
+# The application set. Missing entries are not a broken install, only a
+# keybind that will land somewhere other than where KOOMPI intended, so these
+# are reported apart from the two lists above.
+readonly APP_CMDS=(
+    wezterm konsole zeditor google-chrome-stable brave dolphin okular
+    loupe mpv ark libreoffice btop gnome-system-monitor nm-connection-editor
+    kdeconnect-app nvim git gh rg fd fzf bat eza zoxide direnv shellcheck shfmt just
+)
+readonly AGENT_CMDS=(claude codex pi herdr)
+
+doctor() {
+    step "KOOMPI desktop doctor"
+    detect_distro
+    report_distro || true
+
+    step "Required commands"
+    local cmd missing_required=0
+    for cmd in "${REQUIRED_CMDS[@]}"; do
+        if have "$cmd"; then ok "$cmd"; else err "$cmd is missing"; missing_required=$((missing_required + 1)); fi
+    done
+
+    step "Optional commands"
+    for cmd in "${OPTIONAL_CMDS[@]}"; do
+        if have "$cmd"; then ok "$cmd"; else warn "$cmd is missing"; fi
+    done
+
+    step "Applications"
+    local missing_apps=0
+    for cmd in "${APP_CMDS[@]}"; do
+        if have "$cmd"; then ok "$cmd"; else missing_apps=$((missing_apps + 1)); fi
+    done
+    if (( missing_apps == 0 )); then
+        ok "the whole KOOMPI application set is installed"
+    else
+        info "$missing_apps not installed; ./setup install --only-apps adds them"
+    fi
+
+    step "KOOMPI Workbench"
+    local missing_agents=0
+    for cmd in "${AGENT_CMDS[@]}"; do
+        if have "$cmd"; then ok "$cmd"; else err "$cmd is missing"; missing_agents=$((missing_agents + 1)); fi
+    done
+    if (( missing_agents == 0 )); then
+        ok "agent workbench ready"
+    else
+        info "$missing_agents agent tool(s) missing; ./setup install --only-apps repairs them"
+    fi
+
+    step "Install state"
+    if [[ -f "$MANIFEST" ]]; then ok "manifest: $MANIFEST ($(wc -l < "$MANIFEST") paths)"
+    else warn "no manifest; this was not installed by ./setup"; fi
+    if [[ -d "$VENV_DIR" ]]; then ok "venv: $VENV_DIR"
+    else warn "no venv at $VENV_DIR"; fi
+    if [[ -d "$XDG_CONFIG_HOME/quickshell/koompi" ]]; then ok "shell tree present"
+    else warn "no shell at $XDG_CONFIG_HOME/quickshell/koompi"; fi
+    if [[ -f /usr/share/wayland-sessions/koompi.desktop ]] \
+       && { [[ -x /usr/bin/koompi-session ]] || [[ -x /usr/local/bin/koompi-session ]]; }; then
+        ok "system KOOMPI login session registered"
+    elif [[ -f "$XDG_DATA_HOME/wayland-sessions/koompi.desktop" ]]; then
+        warn "only the user-local session entry exists; some display managers will not show it"
+    else
+        err "KOOMPI login session is not registered"
+    fi
+    if [[ -f "$REPO_PATH_FILE" ]]; then ok "update source: $(< "$REPO_PATH_FILE")"
+    else warn "no recorded checkout path; koompi-update will have to guess where to pull from"; fi
+    local menu="$XDG_CONFIG_HOME/quickshell/koompi/scripts/global-menu/zig-out/bin/global-menu-daemon"
+    if [[ -x "$menu" ]]; then ok "global-menu-daemon built"
+    else warn "global-menu-daemon not built"; fi
+
+    (( missing_required == 0 )) || return 1
+    return 0
+}
+
+main() {
+    local cmd="${1:-help}"
+    shift || true
+
+    case "$cmd" in
+        help|--help|-h|'') usage; exit 0 ;;
+        doctor)            doctor; exit $? ;;
+        install|update|uninstall) ;;
+        *)                 usage >&2; die "unknown command: $cmd" ;;
+    esac
+
+    require_not_root
+    parse_install_options "$@"
+
+    if [[ "$cmd" == uninstall ]]; then
+        run_uninstall
+        exit 0
+    fi
+
+    if [[ "$cmd" == update ]]; then
+        run_update
+        exit 0
+    fi
+
+    detect_distro
+    report_distro || { DO_DEPS=false; DO_APPS=false; }
+
+    printf '\n%sAbout to install the KOOMPI desktop for %s%s\n' "${C_BOLD}" "$(id -un)" "${C_RST}"
+    $DO_DEPS   && printf '  - install packages with the %s recipe\n' "$OS_GROUP_ID"
+    $DO_APPS   && printf '  - offer the application set and KOOMPI agent workbench\n'
+    $DO_SETUPS && printf '  - configure the venv, services and KOOMPI login session\n'
+    $DO_FILES  && printf '  - copy config files into %s\n' "$HOME"
+    [[ "$DRY_RUN" == true ]] && printf '  %s(dry run: nothing will change)%s\n' "${C_YELLOW}" "${C_RST}"
+    printf '\n'
+    confirm "Continue?" || die "aborted"
+
+    if $DO_DEPS || $DO_APPS || $DO_SETUPS; then
+        sudo_start
+        trap 'sudo_stop' EXIT INT TERM
+    fi
+
+    $DO_DEPS   && install_deps
+    $DO_APPS   && install_apps
+    $DO_SETUPS && run_setups
+    $DO_FILES  && install_files
+
+    record_repo_path
+
+    sudo_stop
+    trap - EXIT INT TERM
+
+    step "Done"
+    cat <<EOF
+  Log out and pick ${C_BOLD}KOOMPI${C_RST} at your display manager.
+  Already in Hyprland? ${C_BOLD}hyprctl reload${C_RST} picks up the new config.
+  Later on, ${C_BOLD}koompi-update${C_RST} (or ${C_BOLD}./setup update${C_RST}) brings you up to date.
+
+  ${C_BOLD}Super + /${C_RST}       keybind cheatsheet
+  ${C_BOLD}Super + Shift + Return${C_RST} KOOMPI Workbench (Herdr)
+  ${C_BOLD}Ctrl + Super + T${C_RST} pick a wallpaper (this also generates the colour scheme)
+
+  Group changes need a fresh login before ddcutil and ydotool work.
+  Run ${C_BOLD}./setup doctor${C_RST} if something is missing.
+EOF
+}
+
+main "$@"

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=KDE Material You Colors (KOOMPI)
+Comment=Apply wallpaper-driven Material You colors in the Plasma session
+Exec=kde-material-you-colors
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;

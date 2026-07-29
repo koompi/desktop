@@ -1,0 +1,17 @@
+groups=(koompi)
+pkgname=koompi-kde
+pkgver=1.0
+pkgrel=4
+pkgdesc='KOOMPI core desktop services and KDE application compatibility'
+arch=(any)
+license=(None)
+# Pruned 2026-07-24 to the M5 survivors: the Plasma infrastructure (bluedevil,
+# plasma-nm, polkit-kde-agent, systemsettings) was removed from the desktop;
+# what remains is the KDE app layer (dolphin, kdialog) plus the core services
+# the shell depends on (gnome-keyring as Secret Service, NetworkManager).
+depends=(
+  dolphin
+  kdialog
+  gnome-keyring
+  networkmanager
+)

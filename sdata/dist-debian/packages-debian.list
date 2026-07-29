@@ -1,0 +1,8 @@
+# Debian-only packages: present in Debian (main, or trixie-backports) but with
+# no Ubuntu equivalent under the same name.
+
+hyprsunset                      # not in any Ubuntu archive or PPA; built from source there
+yq-go                           # mikefarah/yq. Ubuntu has no such package at all
+starship
+fprintd
+libpam-fprintd

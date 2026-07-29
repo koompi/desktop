@@ -1,0 +1,60 @@
+# Fedora application packages for the KOOMPI desktop, one per line. Blank lines
+# and #-comments are ignored. Read by sdata/dist-fedora/install-apps.sh.
+#
+# The Arch equivalent is sdata/dist-arch/koompi-apps/PKGBUILD, and the comments
+# there explain why each program is the one KOOMPI picks. Keep the two in step.
+#
+# Installed with --skip-unavailable, so a name Fedora drops costs one program
+# rather than the whole step.
+
+# --- terminals ---------------------------------------------------------------
+wezterm
+konsole
+
+# --- KOOMPI Workbench --------------------------------------------------------
+neovim
+nodejs
+npm
+git
+gh
+ripgrep
+fd-find
+fzf
+jq
+bat
+eza
+zoxide
+direnv
+ShellCheck
+shfmt
+just
+
+# --- editor ------------------------------------------------------------------
+# Zed is not packaged for Fedora; install-apps.sh runs its official installer.
+
+# --- browsers ----------------------------------------------------------------
+# Both come from vendor repositories the recipe enables first.
+google-chrome-stable
+brave-browser
+
+# --- files, archives and viewers ---------------------------------------------
+ark
+kio-admin
+kdegraphics-thumbnailers
+ffmpegthumbs
+okular
+loupe
+mpv
+
+# --- office ------------------------------------------------------------------
+libreoffice-writer
+libreoffice-calc
+libreoffice-impress
+
+# --- system ------------------------------------------------------------------
+btop
+gnome-system-monitor
+nm-connection-editor
+
+# --- connectivity ------------------------------------------------------------
+kde-connect                     # Fedora's name for kdeconnect

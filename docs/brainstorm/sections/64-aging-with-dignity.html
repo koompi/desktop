@@ -1,0 +1,53 @@
+<section class="section" id="aging-with-dignity">
+  <div class="section-header">
+    <h2>Aging With Dignity</h2>
+    <span class="tag">Futures</span>
+    <span class="tag sys">2.x</span>
+  </div>
+  <p class="desc">
+    The buildable piece is a set of accessibility scaling profiles, targeted at 2.x. You pick a profile — or nudge individual axes — and the whole shell scales: text size, UI density, click-target area, contrast, plus a simplified mode that reduces on-screen options. Every axis is user-set and reversible in one step. The OS does not silently infer decline and never watches you to guess a profile — you choose it, or you don't.
+  </p>
+
+  <!-- Scaling profile picker -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); overflow:hidden;">
+    <div style="padding:14px 16px; background:var(--surface2); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;"><i class="fa-solid fa-text-height"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Accessibility profiles — text &amp; UI scaling</span>
+      <span class="state-chip" style="font-size:9px;">2.x</span>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-font"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Default</div><div style="font-size:10px; color:var(--text-muted);">100% text · standard density · standard contrast</div></div>
+        <span class="state-chip" style="font-size:9px;">baseline</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid rgba(99,102,241,0.35); border-radius:var(--radius); padding:11px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Large</div><div style="font-size:10px; color:var(--text-muted);">130% text · +22% click-target area · +2 contrast steps</div></div>
+        <span class="state-chip active-state" style="font-size:9px;">active</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-table-cells-large"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Simplified</div><div style="font-size:10px; color:var(--text-muted);">large text · fewer options per screen · primary actions only</div></div>
+        <span class="state-chip" style="font-size:9px;">available</span>
+      </div>
+      <div class="tool-code" style="font-size:11px; line-height:1.8; margin-top:4px;">
+        <span class="code-key">text-scale</span>     <span class="code-val">100% – 200%</span>  <span class="code-str">per-user, applies shell-wide</span><br>
+        <span class="code-key">click-targets</span>  <span class="code-val">+0% to +40% area</span><br>
+        <span class="code-key">simplified</span>     <span class="code-str">reduced option density · optional</span><br>
+        <span class="code-key">revert</span>         <span class="code-val">"restore defaults" — one step, any time</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Chosen, never inferred</div>
+      <p>Profiles are user-set and reversible; the OS does not observe your motor precision, vision, or recall to auto-adjust. No behavioral inference of "decline" crosses the egress gate, because none is produced.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The decades-long "silent adaptation" narrative — an OS that grows old with you and drifts settings imperceptibly over twenty years, plus the Memory-Palace-as-prosthesis story — stays on the horizon shelf (<code>horizon.md</code>).</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# koompi-useradd - interactive "add a user" flow for the Account settings page.
+# Runs in a terminal; privilege comes from pkexec, so the polkit agent prompts.
+set -euo pipefail
+
+echo "KOOMPI - add a new user"
+echo
+read -rp "New username: " username
+
+if [[ ! "$username" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
+    echo "Invalid username. Use lowercase letters, digits, - and _." >&2
+    read -rp "Press enter to close." _
+    exit 1
+fi
+if id "$username" >/dev/null 2>&1; then
+    echo "User '$username' already exists." >&2
+    read -rp "Press enter to close." _
+    exit 1
+fi
+
+read -rp "Give '$username' admin rights (wheel group)? [y/N] " admin
+groups_flag=""
+[[ "${admin,,}" == y* ]] && groups_flag="-G wheel"
+
+# ponytail: word-splitting of $groups_flag is intentional, it is "" or "-G wheel"
+# shellcheck disable=SC2086
+pkexec useradd -m $groups_flag "$username"
+echo "Now set the password for '$username':"
+pkexec passwd "$username"
+
+echo
+echo "User '$username' created."
+read -rp "Press enter to close." _

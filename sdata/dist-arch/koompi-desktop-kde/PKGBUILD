@@ -1,0 +1,24 @@
+# koompi-desktop-kde — the KOOMPI OS Plasma (KDE) edition metapackage. Installs
+# the DE-agnostic base, shared branding (via koompi-base), the curated lean
+# Plasma session, and the KOOMPI Plasma /etc/skel layout. The second of the two
+# installer-selectable editions (the other is koompi-desktop-hyprland).
+groups=(koompi)
+pkgname=koompi-desktop-kde
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI OS — Plasma (KDE) edition (metapackage)'
+arch=(any)
+license=(None)
+depends=(
+  # DE-agnostic foundation (incl. shared branding + sddm — see koompi-base).
+  koompi-base
+  # Curated lean Plasma session (plasma-desktop + kscreen + plasma-pa).
+  koompi-plasma
+  # KOOMPI Plasma layout + shared theming into /etc/skel (conflicts
+  # koompi-hyprland-config — one edition per machine).
+  koompi-kde-config
+)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

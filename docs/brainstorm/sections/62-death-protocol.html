@@ -1,0 +1,76 @@
+<section class="section" id="death-protocol">
+  <div class="section-header">
+    <h2>Death Protocol &amp; Digital Estate</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    Inheritance is the <code>legacy</code> preset of the shared Lifeboat export engine (§24) plus a documented estate handoff. At 1.x you map each memory domain to an heir, split the executor key among people you chose, and gate release behind a dead-man timer and executor quorum. Unbequeathed per-object keys are shredded with the master key — no vendor holds a copy, so there is nothing to subpoena. This is a key-rewrap and export flow, not a "digital afterlife".
+  </p>
+
+  <!-- Will editor -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); overflow:hidden;">
+    <div style="padding:14px 16px; background:var(--surface2); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;"><i class="fa-solid fa-scroll"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;"><code>legacy</code> preset — inheritance mapped by memory domain</span>
+      <span class="state-chip" style="font-size:9px;">Lifeboat engine · v1</span>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-microscope"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Research &amp; lectures</div><div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">domain: @work · re-wrapped on trigger</div></div>
+        <span style="color:var(--text-subtle); font-size:11px;">→</span>
+        <span class="state-chip active-state" style="font-size:10px;">students (group of 9)</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-book"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Journals &amp; thought captures</div><div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">domain: @personal</div></div>
+        <span style="color:var(--text-subtle); font-size:11px;">→</span>
+        <span class="state-chip" style="font-size:10px; color:#0E7490; border-color:rgba(34,211,238,0.3); background:var(--cyan-glow);">Bopha (daughter)</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px;">
+        <span style="font-size:16px;"><i class="fa-solid fa-receipt"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Finances, deeds, accounts</div><div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">domain: @finance</div></div>
+        <span style="color:var(--text-subtle); font-size:11px;">→</span>
+        <span class="state-chip warn-state" style="font-size:10px;">executor only · 90-day access</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px dashed var(--border); border-radius:var(--radius); padding:10px 14px; opacity:0.85;">
+        <span style="font-size:16px;"><i class="fa-solid fa-monument"></i></span>
+        <div style="flex:1;"><div style="font-size:12px; font-weight:600;">Everything else</div><div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">unbequeathed</div></div>
+        <span style="color:var(--text-subtle); font-size:11px;">→</span>
+        <span class="state-chip" style="font-size:10px; color:#B91C1C; border-color:rgba(239,68,68,0.3); background:var(--red-glow);">DEKs destroyed with master key</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+        Each domain's per-object keys are re-wrapped to the heir's key only when the protocol fires; the Lifeboat then exports that heir's slice as a portable bundle. Everything unmapped is cryptographically shredded.
+      </p>
+    </div>
+  </div>
+
+  <!-- Shamir split + trigger -->
+  <div style="max-width:760px; margin-top:20px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">Executor key — Shamir split, 3 of 5</div>
+    <div style="display:flex; gap:6px; margin-bottom:12px;">
+      <div style="flex:1; text-align:center; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 2px;"><div style="font-size:15px;"><i class="fa-solid fa-key"></i></div><div style="font-size:9px; font-weight:600; color:#047857;">Bopha</div></div>
+      <div style="flex:1; text-align:center; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 2px;"><div style="font-size:15px;"><i class="fa-solid fa-key"></i></div><div style="font-size:9px; font-weight:600; color:#047857;">Vathna</div></div>
+      <div style="flex:1; text-align:center; background:var(--emerald-glow); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 2px;"><div style="font-size:15px;"><i class="fa-solid fa-key"></i></div><div style="font-size:9px; font-weight:600; color:#047857;">Sokha</div></div>
+      <div style="flex:1; text-align:center; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 2px; opacity:0.6;"><div style="font-size:15px;"><i class="fa-solid fa-key"></i></div><div style="font-size:9px; font-weight:600; color:var(--text-muted);">lawyer</div></div>
+      <div style="flex:1; text-align:center; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 2px; opacity:0.6;"><div style="font-size:15px;"><i class="fa-solid fa-key"></i></div><div style="font-size:9px; font-weight:600; color:var(--text-muted);">brother</div></div>
+    </div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8;">
+      <span class="code-key">quorum</span>      <span class="code-val">3 of 5 shares present</span><br>
+      <span class="code-key">dead-man</span>    <span class="code-str">no unlock for 180 days</span><br>
+      <span class="code-key">protocol</span>    <span class="code-val">BOTH required — the OS never infers death from silence</span><br>
+      <span class="code-key">anchor</span>      <span class="code-str">will hash on Selendra · Merkle root only</span>
+    </div>
+    <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+      Three living people you trusted, together, after long silence. No single heir, no vendor, no government can open the estate alone.
+    </p>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>"Memorial mode" — a consultable, cite-only archive of the deceased's own words — stays on the horizon shelf (<code>horizon.md</code>); 1.x ships the inheritance handoff, not an interface to the dead.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,430 @@
+<section class="section" id="memory-lifecycle">
+  <div class="section-header">
+    <h2>Memory Lifecycle</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    How a single perception event travels through <code style="color:#0E7490;">koompi-assistantd</code>'s memory engine (Rust, ADR-0004). Perception → Working Memory → Episodic log → Sleep consolidation → Semantic graph → Reconstructive retrieval. Two invariants hold the whole pipeline up: <strong style="color:var(--text);">raw episodic records are immortal by default</strong>, and <strong style="color:var(--text);">the derived index is disposable and rebuildable</strong>. Forgetting is a ranking property, never a delete — with one owner-only exception: cryptographic destruction through Ceremonial Forgetting, never automatic, never a side effect. Everything runs on-device — no episodic data ever egresses to cloud. The consolidation job and tiered scheduler here land across 1.x; v1 provides the append path and the durability split.
+  </p>
+
+  <!-- ─────────────────────── TWO INVARIANTS ─────────────────────── -->
+  <div class="callout-group" style="margin-bottom:28px;">
+    <div class="callout" style="border:1px solid rgba(16,185,129,.35);">
+      <div class="callout-title">Invariant A — Durability split <span class="badge new">LOAD-BEARING</span></div>
+      <p>Decay, pruning, and the Ebbinghaus curve govern the <em>derived retrieval index</em> — edge weights, salience, eviction. They <strong style="color:#047857;">never</strong> touch raw episodic records. Pruning lowers a node's <em>rank</em>, not its existence. The cue still lives in <code style="color:#0E7490;">@data</code>. The single exception belongs to the owner alone — the destroy verb of Ceremonial Forgetting; no daemon holds it.</p>
+    </div>
+    <div class="callout" style="border:1px solid rgba(99,102,241,.35);">
+      <div class="callout-title">Invariant B — Model obsolescence</div>
+      <p>The default embedder <code style="color:#0E7490;">BGE-M3</code> will not exist in 2050. Every vector is locked to a frozen model. So raw text must be the durable substrate — precisely so the index can be <strong style="color:var(--accent);">re-embedded under future models</strong>. Each row carries <code>embed_model_id</code> for era-correct recall.</p>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── PIPELINE DIAGRAM ─────────────────────── -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:28px;">
+    <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:18px;">The Pipeline — one event, end to end</div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:0;">
+      <!-- Stage chips -->
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-eye"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Perception</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">UI signal capture</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:6px;font-family:var(--font-mono);">&lt;1ms</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--text-subtle);padding:0 6px;font-size:18px;">→</div>
+
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-brain"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Working Memory</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">attention slots</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:6px;font-family:var(--font-mono);">&lt;5ms</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--text-subtle);padding:0 6px;font-size:18px;">→</div>
+
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--emerald);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-book"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Episodic</div>
+        <div style="font-size:11px;color:#047857;margin-top:3px;">immortal · @data</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:6px;font-family:var(--font-mono);">~20ms</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--text-subtle);padding:0 6px;font-size:18px;">→</div>
+
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-moon"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Sleep Cycle</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">async · local LLM</div>
+        <div style="font-size:10px;color:#B45309;margin-top:6px;font-family:var(--font-mono);">~03:00</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-top:14px;">
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-circle-nodes"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Semantic Graph</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">nodes · edges · salience</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:6px;font-family:var(--font-mono);">rebuildable</div>
+      </div>
+      <div style="display:flex;align-items:center;color:var(--text-subtle);padding:0 6px;font-size:18px;">→</div>
+
+      <div style="flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">Reconstruction</div>
+        <div style="font-size:11px;color:var(--text-subtle);margin-top:3px;">blend · expand · cite</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:6px;font-family:var(--font-mono);">~120ms</div>
+      </div>
+      <div style="flex:2;min-width:160px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,0.06);border:1px dashed var(--emerald);border-radius:10px;padding:14px;margin-left:6px;">
+        <div style="font-size:11px;color:#047857;text-align:center;line-height:1.5;">↺ Sleep cycle feeds back into the graph nightly.<br>Episodic stays untouched forever.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── STAGE-BY-STAGE ─────────────────────── -->
+  <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;">Each stage: input → transform → output</div>
+
+  <!-- STAGE 1: Perception → Working -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:18px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-size:18px;"><i class="fa-solid fa-eye"></i></span>
+      <span style="font-weight:600;color:var(--text);">1 · Perception → Working Memory</span>
+      <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--accent);">latency &lt;5ms</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#047857;"><i class="fa-solid fa-lock"></i> in-RAM only</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <div style="padding:16px 18px;border-right:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">input — raw perception</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">{
+  <span style="color:#0E7490;">"ts"</span>:        1749513842,
+  <span style="color:#0E7490;">"source"</span>:    "editor",
+  <span style="color:#0E7490;">"workspace"</span>: 2,
+  <span style="color:#0E7490;">"text"</span>:      "&lt;code + error E0502&gt;",
+  <span style="color:#0E7490;">"ui_signal"</span>: {
+    typing_burst: true,
+    deleted_then_retyped: true,
+    dwell_ms: 540000
+  }
+}</pre>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">output — attention slot</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">slot = {
+  node_ref,
+  <span style="color:#B45309;">token_cost</span>:  412,
+  <span style="color:var(--accent);">salience</span>:    0.71,  <span style="color:var(--text-subtle);"># novelty+arousal</span>
+  last_touch:  now
+}
+<span style="color:var(--text-subtle);"># if budget exceeded:</span>
+evict min(salience·recency)
+  → flush to episodic
+  → record co-activation edge</pre>
+      </div>
+    </div>
+    <div style="padding:10px 18px;background:rgba(99,102,241,0.05);border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);">
+      <strong style="color:var(--text);">transform:</strong> tokenize · seed salience from novelty + UI arousal · admit to ring buffer capped at <code>ctx_window − reserve</code>. Eviction is rehearsal→consolidation in miniature: the evicted slot is <em>not lost</em>, it flushes to episodic.
+    </div>
+  </div>
+
+  <!-- STAGE 2: Working → Episodic -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:18px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-size:18px;"><i class="fa-solid fa-book"></i></span>
+      <span style="font-weight:600;color:var(--text);">2 · Working → Episodic <span style="color:var(--text-subtle);font-weight:400;">(T0 micro, post-session)</span></span>
+      <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--accent);">latency ~20ms</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#047857;"><i class="fa-solid fa-lock"></i> encrypted @data</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <div style="padding:16px 18px;border-right:1px solid var(--border);">
+        <div style="font-size:11px;color:#047857;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">output — episodic_row (IMMORTAL)</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">APPEND <span style="color:#047857;">@data</span> (SQLite WAL, AES):
+{
+  id: 0x8f2a,
+  ts: 1749513842,
+  source: "editor",
+  <span style="color:#0E7490;">raw_text</span>: "...",  <span style="color:var(--text-subtle);"># verbatim →</span>
+  context_blob: {...},  <span style="color:var(--text-subtle);"># re-embed</span>
+  emotional_tag: {
+    valence: -0.4, arousal: 0.8
+  }
+}</pre>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="font-size:11px;color:#B45309;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">output — index row (DISPOSABLE)</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">APPEND <span style="color:#B45309;">~/.local/state/koompi</span>:
+embed(raw_text) → vector[384]
+  <span style="color:var(--accent);">TAG embed_model_id</span> =
+    "BGE-M3@2026"
+insert sqlite-vec + FTS5
+
+<span style="color:var(--text-subtle);"># episodic id IMMORTAL</span>
+<span style="color:var(--text-subtle);"># vector REBUILDABLE</span></pre>
+      </div>
+    </div>
+    <div style="padding:10px 18px;background:rgba(16,185,129,0.05);border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);">
+      <strong style="color:#047857;">privacy:</strong> raw record encrypted at rest, append-only, synced only E2EE opt-in. The vector carries provenance so a 2050 model can re-read 2026 <em>as your 2026 self framed it</em>.
+    </div>
+  </div>
+
+  <!-- STAGE 3: Sleep consolidation -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:18px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-size:18px;"><i class="fa-solid fa-moon"></i></span>
+      <span style="font-weight:600;color:var(--text);">3 · Sleep Consolidation <span style="color:var(--text-subtle);font-weight:400;">(T2 deep)</span></span>
+      <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:#B45309;">~03:00 · AC + idle</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#047857;"><i class="fa-solid fa-lock"></i> local LLM only</span>
+    </div>
+    <div style="padding:16px 18px;">
+      <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">transform — local LLM extracts durable structure from the episodic window</div>
+      <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">local_LLM(CONSOLIDATION_PROMPT, window=episodic_since(last_run)) → strict JSON {
+  <span style="color:#0E7490;">entities</span>:   [{borrow-checker, concept}, {E0502, concept}, {retrieve.rs, project}],
+  <span style="color:#0E7490;">relations</span>:  [{subj: E0502, pred: <span style="color:var(--accent);">causal</span>,   obj: "frustration",  conf: 0.7},
+               {subj: "you", pred: <span style="color:var(--accent);">personal</span>, obj: "perseverance", conf: 0.6, evidence: "retried"}],
+  <span style="color:#0E7490;">emotional_valence</span>: {arousal: 0.8, valence: -0.4 → resolves +0.5 on fix},
+  <span style="color:#0E7490;">open_loops</span>: [],   <span style="color:#0E7490;">contradicts</span>: []
+}
+─────────────────────────────────────────────────────────────────────────
+MERGE → upsert nodes (dedup sim&gt;0.92 AND name match) · edges weighted by confidence
+PageRank salience pass · STDP: E0502 <span style="color:var(--accent);">→</span> fix-pattern (forward strengthened)
+procedural: reinforce  open(VSCode,ws2) → open(Terminal,ws2)  observed again</pre>
+    </div>
+    <div style="padding:10px 18px;background:rgba(245,158,11,0.05);border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);">
+      <strong style="color:#B45309;">deterministic degrade:</strong> no AC / no idle / no capable local LLM → consolidation <em>defers</em>, never falls back to cloud. The raw record is immortal, so deferral costs nothing. <strong style="color:var(--text);">Append-and-reconcile:</strong> contradictions are timestamped and kept, never overwritten — that's how the OS shows you <em>how your mind changed</em>.
+    </div>
+  </div>
+
+  <!-- STAGE 4: Reconstruction -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0;margin-bottom:28px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+      <span style="font-size:18px;"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <span style="font-weight:600;color:var(--text);">4 · Reconstructive Retrieval</span>
+      <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--accent);">latency ~120ms</span>
+      <span style="font-family:var(--font-mono);font-size:11px;color:#047857;"><i class="fa-solid fa-lock"></i> every span cited</span>
+    </div>
+    <div style="padding:16px 18px;">
+      <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">transform — blend, expand, rerank, narrate-with-provenance</div>
+      <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">query_vector = <span style="color:var(--accent);">blend</span>(w_g·goal, w_e·valence_bias, w_t·temporal_anchor, w_a·active_set)
+candidates   = <span style="color:#0E7490;">hybrid_retrieve</span>(query_vector)      <span style="color:var(--text-subtle);"># vector KNN ⊕ FTS5, RRF</span>
+candidates   = <span style="color:#0E7490;">graph_expand</span>(candidates, depth=2, weight≥θ)  <span style="color:var(--text-subtle);"># association</span>
+ranked       = rerank by retrieval_rank(n) · goal_alignment(n)
+∀ recalled n: access_count++ · stability ×= 1.05      <span style="color:var(--text-subtle);"># testing effect</span></pre>
+    </div>
+    <div style="padding:10px 18px;background:rgba(99,102,241,0.05);border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);">
+      <strong style="color:var(--accent);">provenance mandate:</strong> reconstruction without citation is confabulation. Every span tagged <code style="color:#047857;">recorded</code> (episodic row + timestamp) or <code style="color:#B45309;">inferred</code> (flagged "I'm reconstructing this, not recalling it").
+    </div>
+  </div>
+
+  <!-- ─────────────────────── WORKED EXAMPLE ─────────────────────── -->
+  <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;">Worked example — traced end to end <span class="badge new">KOOMPI</span></div>
+
+  <div style="background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:20px;margin-bottom:28px;">
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+      <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">User says</div>
+      <div style="font-size:15px;color:var(--text);font-weight:500;">"I need to redesign the KOOMPI settings page."</div>
+      <div style="font-size:11px;color:var(--text-subtle);margin-top:4px;font-family:var(--font-mono);">2026-06-09 21:18 · Focus mode active · evening session</div>
+    </div>
+
+    <!-- step 1 -->
+    <div style="display:flex;gap:14px;margin-bottom:14px;">
+      <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(99,102,241,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">1</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:6px;">Working memory — tokenize · classify · pull active slots</div>
+        <pre style="margin:0;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">intent: <span style="color:var(--accent);">"ui_redesign_task"</span>   tokens: 11
+active_slots: [{file: settings.qml}, {mode: focus}, {prior: theme-edit 14m ago}]
+salience: 0.66  <span style="color:var(--text-subtle);"># goal-driven, low arousal</span></pre>
+      </div>
+    </div>
+
+    <!-- step 2 -->
+    <div style="display:flex;gap:14px;margin-bottom:14px;">
+      <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(16,185,129,0.15);color:#047857;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">2</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:6px;">Episodic — log the event <span style="color:#047857;font-weight:400;font-size:11px;">(immortal · @data)</span></div>
+        <pre style="margin:0;background:var(--surface2);border:1px solid var(--emerald);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">{
+  id: 0xC41E, ts: 1749503880,
+  raw_text: "I need to redesign the KOOMPI settings page",
+  <span style="color:#0E7490;">emotional_valence</span>: "focused",    arousal: 0.45,
+  <span style="color:#0E7490;">linked_entities</span>: ["settings", "redesign", "KOOMPI"],
+  context: { mode: "focus", hour: 21, session: "evening" }
+}</pre>
+      </div>
+    </div>
+
+    <!-- step 3 -->
+    <div style="display:flex;gap:14px;margin-bottom:14px;">
+      <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(245,158,11,0.15);color:#B45309;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">3</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:6px;">Sleep cycle <span style="color:#B45309;font-weight:400;font-size:11px;">(async · runs at 03:00 · reads last 7 days)</span></div>
+        <pre style="margin:0;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6;color:var(--text-muted);white-space:pre-wrap;">local_LLM reads 7-day episodic window → notices pattern across 6 events:
+  • theme-edit  (Mon 22:04, focus)     • icon-set redo (Wed 21:40, focus)
+  • settings.qml (Thu 21:18, focus)    • +3 prior UI sessions, all evening+focus
+<span style="color:var(--accent);">EXTRACT</span>: "Rithy frequently works on UI redesign tasks when in Focus mode,
+          in the evening."  → confidence 0.78  → new semantic node</pre>
+      </div>
+    </div>
+
+    <!-- step 4 -->
+    <div style="display:flex;gap:14px;margin-bottom:14px;">
+      <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(34,211,238,0.15);color:#0E7490;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">4</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:6px;">Semantic graph — node + edges added</div>
+        <div style="background:var(--surface2);border:1px solid var(--cyan);border-radius:8px;padding:16px;text-align:center;">
+          <div style="display:inline-block;background:rgba(34,211,238,0.12);border:1px solid var(--cyan);border-radius:20px;padding:8px 18px;font-weight:600;color:#0E7490;font-size:13px;margin-bottom:14px;">node: "UI Design Habit"</div>
+          <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;font-size:11px;font-family:var(--font-mono);">
+            <div style="background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;"><span style="color:var(--accent);">─personal→</span> Focus Mode</div>
+            <div style="background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;"><span style="color:var(--accent);">─conceptual→</span> Settings</div>
+            <div style="background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;"><span style="color:var(--accent);">─temporal→</span> Evening Sessions</div>
+          </div>
+          <div style="font-size:11px;color:var(--text-subtle);margin-top:12px;font-family:var(--font-mono);">salience 0.61 · stability 1.0 · embed_model_id "BGE-M3@2026" · refs → [0xC41E, …]</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- step 5 -->
+    <div style="display:flex;gap:14px;">
+      <div style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:rgba(99,102,241,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;">5</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:6px;">Retrieval — next time the user opens settings</div>
+        <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:14px;font-size:12.5px;line-height:1.7;color:var(--text-muted);">
+          <span style="color:#047857;font-family:var(--font-mono);font-size:11px;">[recorded · src:0xC41E · 2026-06-09 21:18]</span> You last touched the settings redesign in a Friday evening focus session.<br>
+          <span style="color:#B45309;font-family:var(--font-mono);font-size:11px;">[inferred]</span> You do your best UI work in <strong style="color:var(--text);">Focus mode in the evening</strong> — want me to enable Focus mode and pull up your theme + icon-set history now?
+          <div style="margin-top:10px;font-size:11px;color:var(--text-subtle);font-family:var(--font-mono);border-top:1px solid var(--border);padding-top:8px;">reconstructed:true · sources:[0xC41E,0x9A02,…] · embed_eras:["BGE-M3@2026"]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── EBBINGHAUS CURVE ─────────────────────── -->
+  <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;">Ebbinghaus forgetting curve — decay + rescue (index rank only)</div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:28px;">
+    <!-- CSS-drawn curve via gradient bars -->
+    <div style="display:flex;align-items:flex-end;gap:3px;height:160px;margin-bottom:6px;padding:0 4px;">
+      <!-- decay bars: e^(-t/S), each subsequent shorter, then a rescue spike -->
+      <div style="flex:1;background:linear-gradient(180deg,var(--emerald),rgba(16,185,129,0.2));height:100%;border-radius:3px 3px 0 0;" title="day 0: R=1.00"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--cyan),rgba(34,211,238,0.2));height:74%;border-radius:3px 3px 0 0;" title="day 1: R=0.74"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--cyan),rgba(34,211,238,0.2));height:54%;border-radius:3px 3px 0 0;" title="day 2: R=0.54"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--accent),rgba(99,102,241,0.2));height:40%;border-radius:3px 3px 0 0;" title="day 4: R=0.40"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--accent),rgba(99,102,241,0.2));height:29%;border-radius:3px 3px 0 0;" title="day 7: R=0.29"></div>
+      <!-- RESCUE: recall on day 9 → stability jumps, curve resets higher -->
+      <div style="flex:1;background:linear-gradient(180deg,var(--amber),var(--emerald));height:95%;border-radius:3px 3px 0 0;position:relative;" title="day 9: RECALLED → S↑">
+        <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:13px;">↑</div>
+      </div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--emerald),rgba(16,185,129,0.2));height:84%;border-radius:3px 3px 0 0;" title="day 11: R=0.84 (slower decay, S grew)"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--emerald),rgba(16,185,129,0.2));height:72%;border-radius:3px 3px 0 0;" title="day 16: R=0.72"></div>
+      <div style="flex:1;background:linear-gradient(180deg,var(--cyan),rgba(34,211,238,0.2));height:60%;border-radius:3px 3px 0 0;" title="day 24: R=0.60"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-subtle);font-family:var(--font-mono);padding:0 4px;margin-bottom:18px;">
+      <span>d0</span><span>d1</span><span>d2</span><span>d4</span><span>d7</span><span style="color:#B45309;">d9 ⟲recall</span><span>d11</span><span>d16</span><span>d24</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div>
+        <div style="font-size:11px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">decay</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.7;color:var(--text-muted);white-space:pre-wrap;"><span style="color:#0E7490;">R(n)</span> = e^(−Δt / S(n))      <span style="color:var(--text-subtle);"># retention</span>
+<span style="color:#0E7490;">S(n)</span> = S₀·(1 + β·access_count)  <span style="color:var(--text-subtle);"># stability</span>
+
+retrieval_rank =
+  salience · recency_boost
+  · log(1+accesses) · R(n)</pre>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#B45309;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">rescue (testing effect)</div>
+        <pre style="margin:0;font-family:var(--font-mono);font-size:11.5px;line-height:1.7;color:var(--text-muted);white-space:pre-wrap;">on successful recall:
+  <span style="color:#047857;">S(n) ×= 1.05</span>   <span style="color:var(--text-subtle);"># harder to forget</span>
+  access_count++
+
+<span style="color:var(--text-subtle);"># a future CUE (a photo, a name)</span>
+<span style="color:var(--text-subtle);"># raises rank from @data —</span>
+<span style="color:#047857;"># the record never left.</span></pre>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:10px 14px;background:rgba(16,185,129,0.06);border:1px dashed var(--emerald);border-radius:8px;font-size:11.5px;color:var(--text-muted);">
+      The curve governs <strong style="color:#047857;">rank</strong>, not existence. A memory that "faded" to rank 0.05 is still in <code style="color:#0E7490;">@data</code> — exactly like forgetting your 3rd-grade teacher's name until the class photo cues it back.
+    </div>
+  </div>
+
+  <!-- ─────────────────────── SLEEP SCHEDULER ─────────────────────── -->
+  <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;">Sleep cycle scheduler — tiered, deterministic degradation</div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:28px;">
+    <div style="display:grid;grid-template-columns:80px 1fr 1.4fr 110px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-subtle);font-weight:600;">
+      <div style="padding:10px 14px;">tier</div>
+      <div style="padding:10px 14px;">trigger</div>
+      <div style="padding:10px 14px;">work</div>
+      <div style="padding:10px 14px;">model</div>
+    </div>
+    <div style="display:grid;grid-template-columns:80px 1fr 1.4fr 110px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-muted);align-items:center;">
+      <div style="padding:12px 14px;"><span style="color:#047857;font-weight:600;font-family:var(--font-mono);">T0</span><br><span style="font-size:10px;color:var(--text-subtle);">micro</span></div>
+      <div style="padding:12px 14px;">post-session (app/workspace close)</div>
+      <div style="padding:12px 14px;">embed new rows · append to index · light dedup</div>
+      <div style="padding:12px 14px;font-family:var(--font-mono);font-size:10.5px;">embedder<br>only</div>
+    </div>
+    <div style="display:grid;grid-template-columns:80px 1fr 1.4fr 110px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-muted);align-items:center;">
+      <div style="padding:12px 14px;"><span style="color:#0E7490;font-weight:600;font-family:var(--font-mono);">T1</span><br><span style="font-size:10px;color:var(--text-subtle);">light</span></div>
+      <div style="padding:12px 14px;">CPU idle &gt; 5 min · battery OK</div>
+      <div style="padding:12px 14px;">edge potentiation · FTS5 reindex · salience delta</div>
+      <div style="padding:12px 14px;font-family:var(--font-mono);font-size:10.5px;">heuristic<br>no LLM</div>
+    </div>
+    <div style="display:grid;grid-template-columns:80px 1fr 1.4fr 110px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-muted);align-items:center;background:rgba(245,158,11,0.04);">
+      <div style="padding:12px 14px;"><span style="color:#B45309;font-weight:600;font-family:var(--font-mono);">T2</span><br><span style="font-size:10px;color:var(--text-subtle);">deep</span></div>
+      <div style="padding:12px 14px;">idle + <strong style="color:var(--text);">AC power</strong> + capable local LLM + ~03:00</div>
+      <div style="padding:12px 14px;">semantic extraction · contradiction resolution · graph merge</div>
+      <div style="padding:12px 14px;font-family:var(--font-mono);font-size:10.5px;color:#B45309;">local LLM<br>(gated)</div>
+    </div>
+    <div style="display:grid;grid-template-columns:80px 1fr 1.4fr 110px;font-size:11.5px;color:var(--text-muted);align-items:center;">
+      <div style="padding:12px 14px;"><span style="color:var(--accent);font-weight:600;font-family:var(--font-mono);">T3</span><br><span style="font-size:10px;color:var(--text-subtle);">epochal</span></div>
+      <div style="padding:12px 14px;">weekly/monthly · AC + idle</div>
+      <div style="padding:12px 14px;">re-embed flagged eras · narrative-arc summary · prune sweep</div>
+      <div style="padding:12px 14px;font-family:var(--font-mono);font-size:10.5px;">LLM + new<br>embedder</div>
+    </div>
+    <div style="padding:10px 16px;background:rgba(245,158,11,0.05);border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);">
+      <strong style="color:#B45309;">No AC / no idle / no capable local LLM?</strong> T2/T3 <em>defer</em> — they never reach for cloud. On a 4GB CPU-only floor the deep tiers simply wait for a capable session. Episodic is immortal, so waiting costs nothing.
+    </div>
+  </div>
+
+  <!-- ─────────────────────── CONSOLIDATION LOG ─────────────────────── -->
+  <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;">Consolidation log — last night's run</div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:24px;font-family:var(--font-mono);font-size:11.5px;">
+    <div style="padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);color:var(--text-subtle);">
+      assistantd consolidate --tier T2 · 2026-06-09 03:00:11 · AC ✓ idle 41m ✓ llm:sailor2 ✓ · window: 7d (214 episodic rows)
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);color:#047857;display:flex;gap:10px;">
+      <span style="flex-shrink:0;">PROMOTE</span><span style="color:var(--text-muted);">"UI Design Habit" · salience 0.40→0.61 · S↑ · pinned to semantic (high access + valence)</span>
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);color:#047857;display:flex;gap:10px;">
+      <span style="flex-shrink:0;">PROMOTE</span><span style="color:var(--text-muted);">edge E0502→fix-pattern · w 0.31→0.58 · STDP forward strengthened</span>
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);color:#B45309;display:flex;gap:10px;">
+      <span style="flex-shrink:0;">ARCHIVE</span><span style="color:var(--text-muted);">"random Tuesday standup 2026-05-26" · rank 0.07 · hot→cold index · edges kept thin · <span style="color:#047857;">@data untouched</span></span>
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-subtle);display:flex;gap:10px;">
+      <span style="flex-shrink:0;">PRUNE&nbsp;&nbsp;</span><span style="color:var(--text-muted);">"another E0502 last week" · near-dup sim 0.94 · index row removed · collapsed → representative · <span style="color:#047857;">back-pointer → episodic 0x7711 kept</span></span>
+    </div>
+    <div style="padding:8px 16px;border-bottom:1px solid var(--border);color:#0E7490;display:flex;gap:10px;">
+      <span style="flex-shrink:0;">RECONCILE</span><span style="color:var(--text-muted);">claim "prefers tabs" superseded_at:now · new "prefers spaces" added · revises edge · <span style="color:#047857;">old claim KEPT (true as of its era)</span></span>
+    </div>
+    <div style="padding:8px 16px;color:var(--text-subtle);display:flex;gap:10px;">
+      <span style="flex-shrink:0;">SUMMARY&nbsp;</span><span style="color:var(--text-muted);">+3 nodes · +7 edges · 1 pruned · 1 archived · 1 reconciled · 0 episodic deletions · index 18.2MB → 18.4MB</span>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── CLOSING CALLOUTS ─────────────────────── -->
+  <div class="callout-group">
+    <div class="callout" style="border:1px solid rgba(99,102,241,.35);">
+      <div class="callout-title">Survives its own substrate <span class="badge new">LIFETIME</span></div>
+      <p>Raw episodic text is immortal and provenanced, so your 2026 memories are re-readable under the 2050 embedder that doesn't exist yet — and re-readable <em>as your 2026 self framed them</em>. The layering isn't biomimicry; it's the only structure that outlives 30 years of model churn.</p>
+    </div>
+    <div class="callout" style="border:1px solid rgba(34,211,238,.40);">
+      <div class="callout-title">Models the shape of thought</div>
+      <p>STDP edge asymmetry + procedural DAGs make <em>how you sequence ideas</em> a first-class, queryable object. The OS can show that your debugging mind grew a "minimal-repro" node between 25 and 45 — evidence, with sources, of who you are becoming.</p>
+    </div>
+    <div class="callout" style="border:1px solid rgba(16,185,129,.35);">
+      <div class="callout-title">Never lies about your past</div>
+      <p>Every reconstruction separates <code style="color:#047857;">recorded</code> from <code style="color:#B45309;">inferred</code>, auditable down to the timestamped episodic row. Forgetting is a ranking property; remembering is reconstruction with citations — on your machine, owned by you.</p>
+    </div>
+    <div class="callout" style="border:1px solid rgba(245,158,11,.35);">
+      <div class="callout-title">Shelved</div>
+      <p>The "watched you from 18, narrates who you are becoming across decades" framing stays on the horizon shelf (<code>horizon.md</code>); what ships across 1.x is this pipeline — append, consolidate, decay-as-rank, reconstruct-with-citations — nothing above it.</p>
+    </div>
+  </div>
+</section>

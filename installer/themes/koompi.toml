@@ -1,0 +1,109 @@
+# KOOMPI OS installer theme — the single source of truth for the installer's
+# look, brand identity, seed defaults, and desktop profiles.
+#
+# The installer binary ships ZERO hard-coded colors, glyphs, product strings,
+# or default values: every visible byte and every pre-filled answer routes
+# through this file. Rebrand the installer by replacing THIS FILE + the logo
+# asset + an engine adapter — the face binary stays identical.
+#
+# Schema + rationale: installer/docs/ui-ux.md
+# Every key below is required; the binary fails closed (named error) on a
+# missing token rather than silently defaulting.
+
+[meta]
+# Internal label, shown nowhere user-facing. (Distinct from [brand].name,
+# which IS drawn on every screen.)
+name       = "koompi-naga"
+# SGR params for /etc/os-release parity. Must encode the same color as
+# colors.brand — #1793D1 = rgb(23, 147, 209). The ';' here are inside the
+# quoted string, so this is one valid TOML value.
+brand_ansi = "38;2;23;147;209"
+
+[brand]
+# Product identity drawn on every screen header.
+name    = "KOOMPI OS"
+edition = "Naga"
+
+[logo]
+path           = "/usr/share/koompi/installer/logo.txt"
+fallback_glyph = "◆"
+
+[font]
+# true  = a Nerd-Font icon set is available; the icon_* glyphs below render.
+# false = force the binary's ASCII fallback column everywhere (@ # * & % ! +),
+#         regardless of what icon_* hold. (The TERM=linux degradation tier
+#         also forces ASCII at runtime — see docs/ui-ux.md Accessibility.)
+nerd_fallback = true
+
+[defaults]
+# Seed values the wizard pre-fills; every one is user-overridable on its
+# screen. These live in the THEME, not in the (distro-neutral) InstallSpec.
+locale   = "en_US.UTF-8"
+keymap   = "us"
+timezone = "Asia/Phnom_Penh"
+hostname = "koompi"
+
+[colors]
+# All 12 tokens, "#RRGGBB". Anchored on the KOOMPI brand blue #1793D1.
+# brand and selectionBg are intentionally the same blue; selection is ALSO
+# marked by the `select` glyph, so it never relies on color alone.
+bg          = "#0B0E14"
+surface     = "#161B22"
+brand       = "#1793D1"
+brandAlt    = "#0F6FA8"
+text        = "#E6EDF3"
+textDim     = "#8B98A5"
+accent      = "#56C2E6"
+success     = "#3FB950"
+warn        = "#D6A015"
+danger      = "#E5534B"
+selectionBg = "#1793D1"
+selectionFg = "#06121A"
+
+[glyphs]
+# Box drawing — light single-line, used for every border and rule.
+tl    = "┌"
+tr    = "┐"
+bl    = "└"
+br    = "┘"
+h     = "─"
+v     = "│"
+tee_l = "├"
+tee_r = "┤"
+cross = "┼"
+# Stepper rail. CANONICAL — these override the ●/○ shown in the screens-section
+# mockups (those are illustrative; this table is the source of truth).
+step_done     = "✓"
+step_current  = "▶"
+step_upcoming = "·"
+# Selection marker (content panel). Same glyph as the colorblind-safe
+# affordance: structure marks the selection even with all color removed.
+select = "▸"
+# Icons (Nerd-Font column; ignored when font.nerd_fallback = false).
+icon_lang    = ""
+icon_disk    = ""
+icon_lock    = ""
+icon_user    = ""
+icon_desktop = ""
+icon_warn    = ""
+icon_ok      = ""
+# Motion. Frames cycle; all motion degrades to a static frame under the
+# TERM=linux / NO_COLOR tiers.
+spinner        = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+progress_full  = "█"
+progress_empty = "░"
+check_pop      = ["·", "∘", "○", "◉", "✓"]
+
+# The cards on the Desktop screen. The face carries the neutral `id`; the
+# engine resolves it to a package-set (the two koompi-desktop-* metapackages,
+# which conflicts= each other so pacman enforces one edition per machine).
+# Add a [[profiles]] block to offer another card — no face changes needed.
+[[profiles]]
+id      = "koompi-desktop-hyprland"
+label   = "KOOMPI Hyprland"
+summary = "Fast, keyboard-driven, animated. Quickshell bar."
+
+[[profiles]]
+id      = "koompi-desktop-kde"
+label   = "KOOMPI KDE"
+summary = "Familiar, mouse-friendly Plasma. Single top panel."

@@ -1,0 +1,257 @@
+#!/usr/bin/env bash
+# koompi-stacking - switch the desktop between tiling and traditional stacking.
+#
+#   koompi-stacking [toggle|on|off|status|clamp|cascade|maximize]
+#
+# Hyprland has no stacking mode, so "stacking" is: every existing window
+# floated, plus a runtime rule that floats every new one. Going back to tiling
+# drops that rule by reloading the config from disk - the shipped rules are the
+# tiling ones, so a reload IS the off switch.
+set -euo pipefail
+
+XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+STATE="$XDG_RUNTIME_DIR/koompi-stacking"
+LOG_DIR="$XDG_STATE_HOME/koompi/logs"
+
+log() {
+    mkdir -p "$LOG_DIR"
+    printf '%s koompi-stacking: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG_DIR/stacking.log"
+}
+
+notify() {
+    command -v notify-send >/dev/null || return 0
+    notify-send -a "KOOMPI" -i "preferences-system-windows" -t 1800 "$1" "$2" || true
+}
+
+# Every window on every workspace, so switching modes does not leave the other
+# workspaces in the old one.
+each_window() {
+    hyprctl clients -j | python3 -c '
+import json, sys
+for c in json.load(sys.stdin):
+    if c.get("mapped") and c.get("address"):
+        print(c["address"])'
+}
+
+already_floating() {
+    hyprctl clients -j | python3 -c '
+import json, sys
+for c in json.load(sys.stdin):
+    if c.get("floating") and c.get("address"):
+        print(c["address"])'
+}
+
+set_float() {
+    local action="$1" addr keep=0 total=0
+    # A single failed "off" used to poison this permanently: the next "on" would
+    # record every still-floating window as one the user floated, so "off" then
+    # skipped all of them and tiling could never come back. If the exempt list
+    # covers everything, it is not a user preference, it is a stale state file.
+    if [ "$action" = disable ] && [ -s "$STATE" ]; then
+        keep=$(wc -l < "$STATE")
+        total=$(each_window | wc -l)
+        if [ "$keep" -ge "$total" ]; then
+            log "ignoring stale exempt list ($keep of $total windows)"
+            : > "$STATE"
+        fi
+    fi
+    while read -r addr; do
+        [ -n "$addr" ] || continue
+        if [ "$action" = disable ] && grep -qx "$addr" "$STATE" 2>/dev/null; then
+            continue
+        fi
+        hyprctl dispatch "hl.dsp.window.float({ action = \"$action\", window = \"address:$addr\" })" >/dev/null 2>&1 || true
+    done < <(each_window)
+}
+
+# Hyprland exempts floating windows from the reserved area, so a floated window
+# happily sits under the top panel. Nothing in Hyprland clamps it, so we do.
+# "place cascade" also fans windows out the way macOS and Windows do instead of
+# leaving them exactly stacked; "place clamp" only rescues what is out of bounds.
+place() {
+    hyprctl monitors -j > /tmp/.koompi-stacking-mon.$$
+    hyprctl clients -j > /tmp/.koompi-stacking-cli.$$
+    python3 - "$1" /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-cli.$$ <<'PY'
+import json, subprocess, sys
+
+mode, monf, clif = sys.argv[1], sys.argv[2], sys.argv[3]
+mons = {m["id"]: m for m in json.load(open(monf))}
+clients = json.load(open(clif))
+
+STEP, MARGIN, FILL = 32, 8, 0.72
+
+def work(m):
+    # reserved is [left, top, right, bottom], verified against live geometry
+    l, t, r, b = m["reserved"]
+    s = m.get("scale") or 1
+    return (m["x"] + l, m["y"] + t,
+            int(m["width"] / s) - l - r, int(m["height"] / s) - t - b)
+
+cmds, seat = [], {}
+for c in clients:
+    if not (c.get("mapped") and c.get("floating") and c.get("address")):
+        continue
+    m = mons.get(c.get("monitor"))
+    if not m:
+        continue
+    wx, wy, ww, wh = work(m)
+    cw, ch = c["size"]
+    cx, cy = c["at"]
+
+    if mode == "cascade":
+        # Size every window to the same fraction of the work area. Keeping the
+        # original size looks tidier for one window but leaves tall windows no
+        # room to fan out, so they all wrap back to the corner and overlap
+        # exactly - which is the opposite of a cascade.
+        cw, ch = int(ww * FILL), int(wh * FILL)
+    cw, ch = min(cw, ww - 2 * MARGIN), min(ch, wh - 2 * MARGIN)
+
+    if mode == "cascade":
+        # Wrap by modulo over the seats that actually fit, so the fan restarts
+        # cleanly instead of piling every oversized window on seat 0.
+        fits = max(1, min((ww - 2 * MARGIN - cw) // STEP,
+                          (wh - 2 * MARGIN - ch) // STEP) + 1)
+        i = seat.get(m["id"], 0)
+        nx = wx + MARGIN + (i % fits) * STEP
+        ny = wy + MARGIN + (i % fits) * STEP
+        seat[m["id"]] = i + 1
+    else:
+        nx, ny = cx, cy
+
+    # Clamp last, so cascade can never push a window out of bounds either.
+    nx = max(wx + MARGIN, min(nx, wx + ww - cw - MARGIN))
+    ny = max(wy + MARGIN, min(ny, wy + wh - ch - MARGIN))
+
+    a = c["address"]
+    resized = (cw, ch) != tuple(c["size"])
+    if resized:
+        cmds.append(f'hl.dsp.window.resize({{ x = {cw}, y = {ch}, "exact", window = "address:{a}" }})')
+    # An exact resize re-centres the window, so a resize ALWAYS needs the move
+    # after it, even when the position looked unchanged beforehand.
+    if resized or (nx, ny) != (cx, cy):
+        cmds.append(f'hl.dsp.window.move({{ x = {nx}, y = {ny}, "exact", window = "address:{a}" }})')
+
+for c in cmds:
+    subprocess.run(["hyprctl", "dispatch", c], capture_output=True)
+print(len(cmds))
+PY
+    rm -f /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-cli.$$
+}
+
+# Hyprland's maximized fullscreen leaves a floating window at its float size, so
+# fill the work area ourselves. Work area, not monitor, is the whole point: a
+# maximized window must stop at the panel, not run under it.
+maximize() {
+    hyprctl monitors -j > /tmp/.koompi-stacking-mon.$$
+    hyprctl activewindow -j > /tmp/.koompi-stacking-act.$$
+    python3 - "$STATE.max" /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-act.$$ <<'PY'
+import json, os, subprocess, sys
+
+store, monf, actf = sys.argv[1], sys.argv[2], sys.argv[3]
+c = json.load(open(actf))
+if not c.get("address"):
+    sys.exit(0)
+mons = {m["id"]: m for m in json.load(open(monf))}
+m = mons.get(c.get("monitor"))
+if not m:
+    sys.exit(0)
+
+l, t, r, b = m["reserved"]
+s = m.get("scale") or 1
+wx, wy = m["x"] + l, m["y"] + t
+ww, wh = int(m["width"] / s) - l - r, int(m["height"] / s) - t - b
+MARGIN = 8
+
+saved = {}
+if os.path.exists(store):
+    try:
+        saved = json.load(open(store))
+    except Exception:
+        saved = {}
+
+a = c["address"]
+tw, th = ww - 2 * MARGIN, wh - 2 * MARGIN
+maxed = tuple(c["size"]) == (tw, th) and tuple(c["at"]) == (wx + MARGIN, wy + MARGIN)
+
+if maxed and a in saved:
+    prev = saved.pop(a)
+    nx, ny = prev["at"]
+    nw, nh = prev["size"]
+else:
+    saved[a] = {"at": c["at"], "size": c["size"]}
+    nx, ny, nw, nh = wx + MARGIN, wy + MARGIN, tw, th
+
+# Never let a restore land under the panel or off-screen.
+nw, nh = min(nw, tw), min(nh, th)
+nx = max(wx + MARGIN, min(nx, wx + ww - nw - MARGIN))
+ny = max(wy + MARGIN, min(ny, wy + wh - nh - MARGIN))
+
+json.dump(saved, open(store, "w"))
+for cmd in (f'hl.dsp.window.resize({{ x = {nw}, y = {nh}, "exact", window = "address:{a}" }})',
+            f'hl.dsp.window.move({{ x = {nx}, y = {ny}, "exact", window = "address:{a}" }})'):
+    subprocess.run(["hyprctl", "dispatch", cmd], capture_output=True)
+print(f"{nw}x{nh}+{nx}+{ny}")
+PY
+    rm -f /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-act.$$
+}
+
+stacking_on() {
+    # Re-running "on" while already stacking would record every window this
+    # script floated as one the user floated, which is what latched tiling off.
+    if [ -e "$STATE" ]; then
+        log "already stacking, ignoring"
+        return 0
+    fi
+    already_floating > "$STATE"
+    # Float-only. A `.*` rule that also forces size and move fires on every
+    # transient dialog, popup and menu too, which churns the layout and was the
+    # likely source of the brief freezes. Panel safety comes from `place`
+    # instead, which runs once per toggle rather than on every map.
+    hyprctl eval 'hl.window_rule({match = {class = ".*"}, float = true})' >/dev/null
+    set_float enable
+    # Hyprland applies float asynchronously; placing too early skips whatever
+    # has not flipped yet and leaves two windows on the same spot.
+    sleep 0.5
+    place cascade >/dev/null
+    log "stacking on"
+    notify "Stacking windows" "New windows open floating. Press again for tiling."
+}
+
+stacking_off() {
+    # Reload restores the shipped rules, which is what removes the float-all
+    # rule; there is no per-rule removal at runtime. It does NOT untile existing
+    # windows, so set_float has to do that itself.
+    hyprctl reload >/dev/null
+    sleep 0.3
+    set_float disable
+    rm -f "$STATE" "$STATE.max"
+    # Verify, because silently leaving everything floating is exactly the
+    # failure this had. One retry with no exempt list at all.
+    sleep 0.5
+    if [ "$(hyprctl clients -j | python3 -c 'import json,sys; print(sum(1 for c in json.load(sys.stdin) if c.get("mapped") and c.get("floating")))')" -gt 0 ]; then
+        log "windows still floating after off, retrying without exempt list"
+        : > "$STATE"
+        set_float disable
+        rm -f "$STATE"
+    fi
+    log "stacking off"
+    notify "Tiling windows" "Back to the tiling layout."
+}
+
+case "${1:-toggle}" in
+    on)     stacking_on ;;
+    off)    stacking_off ;;
+    status) [ -e "$STATE" ] && echo stacking || echo tiling ;;
+    toggle) [ -e "$STATE" ] && stacking_off || stacking_on ;;
+    clamp)  echo "$(place clamp) window(s) pulled back into the work area" ;;
+    cascade) echo "$(place cascade) placement(s) applied" ;;
+    maximize) maximize ;;
+    -h|--help|help)
+        sed -n '2,4p' "$0" | sed 's/^# \{0,1\}//'
+        ;;
+    *)
+        echo "koompi-stacking: unknown command '$1'" >&2
+        exit 1
+        ;;
+esac

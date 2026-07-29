@@ -1,0 +1,145 @@
+<section class="section" id="installer">
+  <div class="section-header">
+    <h2>Installer TUI</h2>
+    <span class="tag sys">System</span>
+  </div>
+  <p class="desc">
+    KOOMPI Installer is a terminal-UI wizard built with a Zig + Ratatui-style renderer. Fast, keyboard-first, and beautiful enough to make the installation experience feel like the first KOOMPI impression it is.
+  </p>
+
+  <!-- TUI mockup -->
+  <div style="background:#0D1117;border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;font-family:'JetBrains Mono','Fira Code',monospace;">
+    <!-- Terminal title bar -->
+    <div style="padding:10px 16px;background:#161B22;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="display:flex;gap:6px;">
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#3A3A3A;"></div>
+      </div>
+      <span style="margin-left:8px;font-size:12px;color:rgba(255,255,255,0.4);">koompi-installer</span>
+    </div>
+
+    <!-- TUI content -->
+    <div style="padding:24px 32px;">
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:20px;font-weight:700;color:#6366F1;letter-spacing:.05em;">KOOMPI OS</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px;">Installer v2.0 · The OS That Thinks</div>
+      </div>
+
+      <!-- Step breadcrumb -->
+      <div style="display:flex;align-items:center;gap:0;margin-bottom:24px;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#6366F1;display:flex;align-items:center;justify-content:center;">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);">Language</span>
+        </div>
+        <div style="width:20px;height:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#6366F1;display:flex;align-items:center;justify-content:center;">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);">Disk</span>
+        </div>
+        <div style="width:20px;height:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#6366F1;border:2px solid #818CF8;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;color:white;font-weight:700;">3</span>
+          </div>
+          <span style="font-size:11px;color:white;">User</span>
+        </div>
+        <div style="width:20px;height:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.35);">4</span>
+          </div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.35);">AI Setup</span>
+        </div>
+        <div style="width:20px;height:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.35);">5</span>
+          </div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.35);">Install</span>
+        </div>
+      </div>
+
+      <!-- Step 3: User Setup -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:20px 24px;margin-bottom:16px;">
+        <div style="font-size:14px;color:white;font-weight:600;margin-bottom:16px;">Step 3 — User Account</div>
+
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">Full Name</div>
+          <div style="background:rgba(99,102,241,0.1);border:1px solid #6366F1;border-radius:4px;padding:7px 12px;color:white;font-size:13px;display:flex;align-items:center;gap:2px;">
+            Rithy Thul<span style="display:inline-block;width:2px;height:14px;background:#6366F1;animation:blink 1s step-start infinite;"></span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">Username</div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:7px 12px;color:rgba(255,255,255,0.7);font-size:13px;">rithy</div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">Password</div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:7px 12px;color:rgba(255,255,255,0.7);font-size:13px;">••••••••••</div>
+        </div>
+
+        <!-- Selendra ID -->
+        <div style="background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.2);border-radius:6px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="width:8px;height:8px;background:#22D3EE;border-radius:50%;"></div>
+            <span style="font-size:12px;color:#22D3EE;font-weight:600;">Selendra Digital ID (optional)</span>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;">Link a blockchain identity for data portability and proof of ownership across devices.</div>
+          <div style="display:flex;gap:8px;">
+            <div style="padding:5px 12px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.3);border-radius:4px;font-size:11px;color:#22D3EE;cursor:pointer;">Generate new DID</div>
+            <div style="padding:5px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;font-size:11px;color:rgba(255,255,255,0.4);cursor:pointer;">Import existing</div>
+            <div style="padding:5px 12px;background:transparent;border:none;font-size:11px;color:rgba(255,255,255,0.25);cursor:pointer;">Skip</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.2);">← Back  ↑↓ Navigate  Tab Switch  Enter Select</div>
+        <div style="padding:8px 20px;background:#6366F1;border-radius:5px;font-size:12px;color:white;cursor:pointer;">Next → AI Setup</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 preview: AI setup -->
+  <div style="background:#0D1117;border-radius:12px;padding:20px 32px;margin-bottom:16px;font-family:'JetBrains Mono','Fira Code',monospace;">
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:16px;text-align:center;">Step 4 — AI Setup (preview)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:14px;">
+        <div style="font-size:12px;color:#6366F1;margin-bottom:6px;">Local Model</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:10px;">Runs entirely on your hardware, from signed weight packages (ADR-0014). The installer detects your tier and says what it gets: search and recall at 4 GB, local chat from 8 GB — never a silent cloud fallback.</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.35);">
+          <div style="width:8px;height:8px;border-radius:50%;border:2px solid #6366F1;background:#6366F1;"></div> Detected 8 GB (T1) · Khmer-capable 1–3B Q4 — license-gated (ADR-0006)
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;">Cloud Hybrid (opt-in)</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:10px;">Augment local AI with cloud APIs for complex tasks. You control routing.</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.25);">
+          <div style="width:8px;height:8px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);"></div> Requires consent per-session
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Zig-native TUI renderer <span class="badge new">Zig</span></div>
+      <p>The installer TUI is a single statically-linked Zig binary. No Python, no bash dependency chains. Boots in under 100ms and runs on any terminal with VT100 support.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI setup is step 4, not optional</div>
+      <p>AI configuration is a first-class install step — not buried in settings post-install. The local model is selected from the signed packages and verified before the user ever reaches the desktop — and the detected tier is printed honestly: a 4 GB machine is told it gets search and recall, with chat by explicit consent or an upgrade, never by stealth.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Selendra ID at install time</div>
+      <p>Users can generate or import a decentralized identity during setup. This anchors their KOOMPI profile to a portable, verifiable identity they can carry across devices.</p>
+    </div>
+  </div>
+</section>

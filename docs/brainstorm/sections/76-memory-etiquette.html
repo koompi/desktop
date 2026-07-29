@@ -1,0 +1,49 @@
+<section class="section" id="memory-etiquette">
+  <div class="section-header">
+    <h2>Memory Etiquette</h2>
+    <span class="tag">Futures</span>
+    <span class="tag ai">RULE · v1</span>
+  </div>
+  <p class="desc">
+    A conversation belongs to more than one person, so the v1 default is conservative: <strong>other people's content is excluded from the index by default.</strong> When koompi-assistantd captures a session, spans it attributes to a third party are not embedded and not written as derived facts unless the owner explicitly opts them in. The exclusion happens at write time inside the assistant daemon — not as an after-the-fact filter — so nothing about a guest ever enters the searchable store to begin with.
+  </p>
+
+  <!-- Write-time exclusion rule -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:12px 16px; border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:14px;"><i class="fa-solid fa-user-shield"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Write path · koompi-assistantd · third-party content is dropped before indexing</span>
+      <span class="state-chip priv-state" style="font-size:9px;">default deny</span>
+    </div>
+    <div style="padding:16px;">
+      <div class="tool-code" style="font-size:11px; line-height:1.8;">
+        assistantd capture · session 19:32<br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">attributor</span>  <span class="code-str">tag spans by speaker (owner vs. other)</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">owner spans</span> <span class="code-val">embedded + indexed as normal</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">other spans</span> <span class="code-val">NOT embedded · NO derived facts · default</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">opt-in</span>      <span class="code-str">owner may include a party explicitly · logged</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+        The rule is a default, not a promise about anyone else's machine: content the owner did not author is simply never handed to the embedder. Because the exclusion is enforced at write time, there is nothing to redact later and nothing to leak.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Excluded at write time, not filtered after <span class="badge new">KOOMPI</span></div>
+      <p>Every memory platform treats whatever the user hears as the user's data. KOOMPI's v1 default is the opposite: other people's content never enters the index, enforced by koompi-assistantd when the record is written.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">A conservative default, honestly scoped</div>
+      <p>The rule governs this machine's own index — the one thing the OS can actually enforce. Including a third party is an explicit, logged opt-in, never the silent default.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The fuller etiquette vision — machines exchanging remembering-preferences over the local mesh, dual-ledger receipts, and a printed door notice for guests without a KOOMPI — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

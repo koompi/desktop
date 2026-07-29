@@ -1,0 +1,19 @@
+# KOOMPI OS — os-release for the LIVE environment.
+#
+# This is the os-release the *live ISO* boots with.  The installer writes the SAME
+# content to the TARGET's /etc/os-release.  On a fresh Arch target that path is a
+# symlink to ../usr/lib/os-release owned by the `filesystem` package, so the
+# installer REPLACES it (os-release is intentionally not shipped by any koompi-*
+# package — see koompi-branding's header note).
+NAME="KOOMPI OS"
+PRETTY_NAME="KOOMPI OS — Naga"
+ID=koompi
+ID_LIKE=arch
+BUILD_ID=rolling
+VERSION_CODENAME=naga
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://koompi.org/"
+DOCUMENTATION_URL="https://koompi.org/docs/"
+SUPPORT_URL="https://koompi.org/support/"
+BUG_REPORT_URL="https://github.com/rithythul/koompi-desktop/issues"
+LOGO=koompi

@@ -1,0 +1,115 @@
+<section class="section" id="widget-overlay">
+  <div class="section-header">
+    <h2>Widget Overlay</h2>
+    <span class="tag">Super+G</span>
+  </div>
+  <p class="desc">
+    end-4 inspired overlay canvas. Draggable, resizable widget cards float above the desktop. KOOMPI adds an AI quick-ask widget.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ One Ask (Quick Ask) + widgets are views of suite apps · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <div class="widget-overlay-demo">
+    <div class="widget-grid">
+
+      <!-- Notes widget -->
+      <div class="widget-card" style="width:180px;">
+        <div class="widget-card-drag">
+          <span style="font-size:8px; color:var(--text-subtle);">⠿</span>
+          <span class="widget-card-title"><i class="fa-solid fa-pen-to-square"></i> Notes</span>
+          <span class="widget-card-close">✕</span>
+        </div>
+        <div class="widget-card-body">
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.6;">
+            <div>- Review investor deck</div>
+            <div>- Update CONTEXT.md</div>
+            <div>- Demo prep Thursday</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource monitor widget -->
+      <div class="widget-card" style="width:190px;">
+        <div class="widget-card-drag">
+          <span style="font-size:8px; color:var(--text-subtle);">⠿</span>
+          <span class="widget-card-title"><i class="fa-solid fa-chart-column"></i> Resources</span>
+          <span class="widget-card-close">✕</span>
+        </div>
+        <div class="widget-card-body">
+          <div class="res-bar">
+            <span class="res-label">CPU</span>
+            <div class="res-track"><div class="res-fill" style="width:68%; background:var(--accent);"></div></div>
+            <span class="res-val">68%</span>
+          </div>
+          <div class="res-bar">
+            <span class="res-label">MEM</span>
+            <div class="res-track"><div class="res-fill" style="width:45%; background:var(--cyan);"></div></div>
+            <span class="res-val">45%</span>
+          </div>
+          <div class="res-bar">
+            <span class="res-label">GPU</span>
+            <div class="res-track"><div class="res-fill" style="width:22%; background:var(--emerald);"></div></div>
+            <span class="res-val">22%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer widget -->
+      <div class="widget-card" style="width:160px;">
+        <div class="widget-card-drag">
+          <span style="font-size:8px; color:var(--text-subtle);">⠿</span>
+          <span class="widget-card-title">⏱ Timer</span>
+          <span class="widget-card-close">✕</span>
+        </div>
+        <div class="widget-card-body" style="text-align:center;">
+          <div style="font-size:28px; font-weight:200; font-family:var(--font-mono); color:var(--text); letter-spacing:-1px; margin-bottom:8px;">18:33</div>
+          <div style="display:flex; gap:5px; justify-content:center;">
+            <div style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:var(--radius-sm); background:var(--red); color:white; cursor:pointer;">⏸</div>
+            <div style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:var(--radius-sm); background:var(--surface2); border:1px solid var(--border2); color:var(--text-muted); cursor:pointer;">↺</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Quick Ask widget -->
+      <div class="widget-card" style="width:200px;">
+        <div class="widget-card-drag">
+          <span style="font-size:8px; color:var(--text-subtle);">⠿</span>
+          <span class="widget-card-title" style="color:var(--accent);">✦ Quick Ask</span>
+          <span class="widget-card-close">✕</span>
+        </div>
+        <div class="widget-card-body">
+          <div style="display:flex; align-items:center; gap:5px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:6px 8px;">
+            <span style="flex:1; font-size:11px; color:var(--text-subtle);">Ask KOOMPI anything...</span>
+            <div style="width:20px; height:20px; border-radius:4px; background:var(--accent); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; cursor:pointer; flex-shrink:0;">↵</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="widget-overlay-toolbar">
+      <div class="widget-add-btn">+ Notes</div>
+      <div class="widget-add-btn">+ Monitor</div>
+      <div class="widget-add-btn">+ Timer</div>
+      <div class="widget-add-btn">+ AI</div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Draggable canvas</div>
+      <p>Widgets are free-floating. Drag by the header bar. Resize from any edge. Position persists across sessions per workspace.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">AI Quick Ask widget <span class="badge new">KOOMPI</span></div>
+      <p>Inline AI chat box that stays on screen. Ask about current context without opening the full sidebar. Results appear inline in the widget.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Persistence</div>
+      <p>Widget layout saved per workspace. Desktop 1 can have resource monitor; Desktop 2 can have notes. Super+G toggles the overlay canvas without disturbing running apps.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">KOOMPI widgets vs end-4</div>
+      <p>end-4's ags has a widget system; KOOMPI adds the AI Quick Ask as a first-party widget. All other widgets (notes, monitor, timer) follow the same drag/resize API.</p>
+    </div>
+  </div>
+</section>

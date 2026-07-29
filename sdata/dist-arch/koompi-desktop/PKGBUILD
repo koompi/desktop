@@ -1,0 +1,17 @@
+# koompi-desktop — TRANSITIONAL alias. Historically this was the single top-level
+# metapackage for the (only) Hyprland desktop. KOOMPI OS now ships two editions
+# (koompi-desktop-hyprland, koompi-desktop-kde); this name is kept only so existing
+# installs that explicitly hold `koompi-desktop` upgrade cleanly to the Hyprland
+# edition. New ISOs/installers should depend on koompi-desktop-hyprland directly.
+groups=(koompi)
+pkgname=koompi-desktop
+pkgver=1.1
+pkgrel=1
+pkgdesc='KOOMPI OS desktop (transitional — pulls the Hyprland edition)'
+arch=(any)
+license=(None)
+depends=(koompi-desktop-hyprland)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

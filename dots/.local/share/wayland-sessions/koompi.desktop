@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=KOOMPI
+Comment=KOOMPI Desktop Experience, powered by Hyprland
+Exec=/usr/bin/koompi-session
+Type=Application
+DesktopNames=KOOMPI;Hyprland
+Keywords=hyprland;wayland;koompi;
+Icon=koompi
+X-KOOMPI-Managed=true

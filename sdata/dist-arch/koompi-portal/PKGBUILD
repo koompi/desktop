@@ -1,0 +1,14 @@
+groups=(koompi)
+pkgname=koompi-portal
+pkgver=1.0
+pkgrel=4
+pkgdesc='KOOMPI XDG Desktop Portals'
+arch=(any)
+license=(None)
+# xdg-desktop-portal-kde dropped in M5: FileChooser is served by the GTK
+# portal, screenshare by the Hyprland one.
+depends=(
+  xdg-desktop-portal
+  xdg-desktop-portal-gtk
+  xdg-desktop-portal-hyprland
+)

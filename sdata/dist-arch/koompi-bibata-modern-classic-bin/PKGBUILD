@@ -1,0 +1,18 @@
+groups=(koompi)
+pkgname=koompi-bibata-modern-classic-bin
+pkgver=2.0.6
+pkgrel=2
+pkgdesc="Material Based Cursor Theme, installed for koompi dotfiles"
+arch=('any')
+url="https://github.com/ful1e5/Bibata_Cursor"
+license=('GPL-3.0-or-later')
+conflicts=("bibata-cursor-theme" "bibata-cursor-theme-bin")
+options=('!strip')
+_variant=Bibata-Modern-Classic
+source=("${pkgname%-bin}-$pkgver.tar.xz::$url/releases/download/v$pkgver/$_variant.tar.xz")
+sha256sums=('4cfe5256374d7a465e05d6590dbc10745dc9d362bf955eaa2ac79b4070b0f3aa')
+
+package() {
+  install -dm755 "$pkgdir/usr/share/icons"
+  cp -dr --no-preserve=mode $_variant "$pkgdir/usr/share/icons"
+}

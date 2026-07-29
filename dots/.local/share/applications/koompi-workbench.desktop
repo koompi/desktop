@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=KOOMPI Workbench
+Comment=Persistent workspace for Claude Code, Codex and Pi
+Exec=koompi-workbench
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Development;IDE;
+Keywords=claude;codex;pi;herdr;agent;terminal;
+StartupNotify=true

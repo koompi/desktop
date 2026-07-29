@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# koompi-session - launch the KOOMPI desktop session.
+#
+# KOOMPI is a Hyprland-based desktop. This wraps the proven Hyprland launcher
+# and stamps the KOOMPI session identity. It does NOT reimplement Hyprland's
+# lua config loading: stock `Hyprland --config file.lua` cannot parse the lua
+# config, so we exec the packaged `start-hyprland` that sets that up.
+set -euo pipefail
+
+# Session identity. When launched from a display manager, DesktopNames in
+# koompi.desktop already sets XDG_CURRENT_DESKTOP; exporting here keeps the
+# session self-contained when started from a TTY. The "Hyprland" token is kept
+# so hyprland-keyed integrations (portals, etc.) still match.
+export XDG_CURRENT_DESKTOP="KOOMPI:Hyprland"
+export XDG_SESSION_DESKTOP="KOOMPI"
+: "${XDG_SESSION_TYPE:=wayland}"
+export XDG_SESSION_TYPE
+
+# KOOMPI commands and the user-local agent toolchain must be visible even
+# though display managers start with a minimal PATH.
+for koompi_path in "$HOME/.local/share/koompi/npm/bin" "$HOME/.local/bin"; do
+    case ":$PATH:" in
+        *":$koompi_path:"*) ;;
+        *) export PATH="$koompi_path:$PATH" ;;
+    esac
+done
+unset koompi_path
+
+launcher="${KOOMPI_HYPRLAND_LAUNCHER:-/usr/bin/start-hyprland}"
+if [[ ! -x "$launcher" ]]; then
+    echo "koompi-session: $launcher not found or not executable" >&2
+    echo "koompi-session: install the 'hyprland' package" >&2
+    exit 1
+fi
+
+exec "$launcher" "$@"

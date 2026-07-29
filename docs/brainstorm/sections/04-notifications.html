@@ -1,0 +1,101 @@
+<section class="section" id="notifications">
+  <div class="section-header">
+    <h2>Notification Center</h2>
+    <span class="tag">Super+N</span>
+  </div>
+  <p class="desc">
+    Right sidebar upper panel. Notifications grouped by app. AI summarizes dense groups so you see the signal without reading every message.
+  </p>
+
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+    <!-- Sidebar panel on a desktop stage -->
+    <div class="panel-stage">
+    <div class="sidebar-panel">
+      <div class="sidebar-header">
+        <span style="font-size:14px;"><i class="fa-solid fa-bell"></i></span>
+        <span class="sidebar-header-title">Notifications</span>
+        <span style="font-size:11px; color:var(--accent); cursor:pointer; margin-right:4px;">Clear all</span>
+        <div class="sidebar-close-btn">✕</div>
+      </div>
+
+      <!-- Telegram group -->
+      <div class="notif-section">
+        <div class="notif-group-header">
+          <div class="notif-group-icon" style="background:#229ED9; color:white;">T</div>
+          <span class="notif-group-name">Telegram</span>
+          <span class="notif-group-count">5 messages</span>
+          <span style="font-size:10px; color:var(--text-subtle); cursor:pointer; padding:0 2px;">⌄</span>
+        </div>
+        <div class="notif-ai-summary">✦ Team discussing KOOMPI demo date — Rithy asked Thursday, Vathna confirmed.</div>
+        <div class="notif-item">
+          <div class="notif-avatar">V</div>
+          <div class="notif-body">
+            <div class="notif-title">Vathna <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-left:3px; vertical-align:1px;"></span></div>
+            <div class="notif-text">Thursday works for me, I'll prepare the slides tonight</div>
+            <div class="notif-actions">
+              <div class="notif-action-btn primary">Reply</div>
+              <div class="notif-action-btn">Open</div>
+            </div>
+          </div>
+          <span class="notif-time">2m</span>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar">S</div>
+          <div class="notif-body">
+            <div class="notif-title">Sopheak <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-left:3px; vertical-align:1px;"></span></div>
+            <div class="notif-text">Can we push to Friday? I have the investor call Thursday morning</div>
+            <div class="notif-actions">
+              <div class="notif-action-btn primary">Reply</div>
+              <div class="notif-action-btn">Open</div>
+            </div>
+          </div>
+          <span class="notif-time">5m</span>
+        </div>
+      </div>
+
+      <!-- Calendar group -->
+      <div class="notif-section" style="border-top:1px solid var(--border2);">
+        <div class="notif-group-header">
+          <div class="notif-group-icon" style="background:var(--accent-glow); color:var(--accent);"><i class="fa-solid fa-calendar-days"></i></div>
+          <span class="notif-group-name">Calendar</span>
+          <span class="notif-group-count">2 upcoming</span>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:var(--accent-glow); color:var(--accent); font-size:10px;">11:00</div>
+          <div class="notif-body">
+            <div class="notif-title">KOOMPI Investor Call</div>
+            <div class="notif-text">Starting in 45 minutes · Google Meet</div>
+            <div class="notif-actions">
+              <div class="notif-action-btn primary">Join</div>
+              <div class="notif-action-btn">Snooze</div>
+            </div>
+          </div>
+          <span class="notif-time">45m</span>
+        </div>
+      </div>
+
+      <!-- DND footer -->
+      <div style="padding:10px 12px; display:flex; align-items:center; gap:8px; border-top:1px solid var(--border2); background:var(--surface2);">
+        <span style="font-size:12px; color:var(--text-muted); flex:1;">Do Not Disturb</span>
+        <div class="toggle-pill off"></div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Callouts -->
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:200px;">
+      <div class="callout">
+        <div class="callout-title">AI Group Summary <span class="badge new">KOOMPI</span></div>
+        <p>When a group has 3+ messages, KOOMPI AI synthesizes a 1-sentence summary. No need to read every notification to understand the thread.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Action buttons</div>
+        <p>Each notification surfaces contextual quick-actions. Telegram gets Reply/Open. Calendar gets Join/Snooze. Actions are provided by the app via the notification spec.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-title">Do Not Disturb</div>
+        <p>DND toggle at footer. When on, notifications queue silently — badge count on bar bell still updates. AI summary still runs in background.</p>
+      </div>
+    </div>
+  </div>
+</section>

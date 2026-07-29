@@ -1,0 +1,50 @@
+<section class="section" id="cognitive-sovereignty">
+  <div class="section-header">
+    <h2>Cognitive Sovereignty</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    The concrete piece is local, on-device usage statistics — a 1.x extension of Digital Wellbeing (§47). The OS counts what you already do on the machine: time per app, how often a task was done by hand versus delegated to the assistant. It computes the summary locally and shows it only to you. No score crosses the egress gate, and the OS never acts on the numbers — it just makes them visible if you look.
+  </p>
+
+  <!-- Local usage stats panel -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--accent-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;"><i class="fa-solid fa-chart-simple"></i></span>
+      <div style="flex:1;"><div style="font-size:14px; font-weight:700;">Usage summary — this month</div><div style="font-size:10px; color:var(--text-muted);">computed locally · ties to Digital Wellbeing §47 · shown only to you</div></div>
+      <span class="state-chip priv-state" style="font-size:9px;">on-device</span>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="state-chip" style="font-size:9px; width:96px; justify-content:center;">hand / delegated</span>
+        <div style="flex:1; font-size:12px;">Writing — drafted by hand 82% of documents</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="state-chip" style="font-size:9px; width:96px; justify-content:center;">hand / delegated</span>
+        <div style="flex:1; font-size:12px;">File navigation — assistant-driven 91% (up from 40%)</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="state-chip" style="font-size:9px; width:96px; justify-content:center;">time</span>
+        <div style="flex:1; font-size:12px;">Editor 41h · Browser 22h · Terminal 9h</div>
+      </div>
+      <div class="tool-code" style="font-size:11px; line-height:1.8; margin-top:4px;">
+        <span class="code-key">source</span>   <span class="code-str">app focus + assistant action counts, on-device only</span><br>
+        <span class="code-key">compute</span>  <span class="code-val">summarized locally · no model call required</span><br>
+        <span class="code-key">action</span>   <span class="code-str">none — the OS displays, it does not intervene</span><br>
+        <span class="code-key">egress</span>   <span class="code-val">none — this summary never leaves the machine</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Local by construction</div>
+      <p>Usage stats are counted and summarized on-device and gated behind the egress boundary like the rest of §47's wellbeing data. There is no server to send them to and no product incentive to.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "sovereignty of mind" framing — per-capability dependence dials, atrophy hand-back prompts, and an assistant that offers refresher weeks — stays on the horizon shelf (<code>horizon.md</code>); 1.x ships the numbers, not the intervention.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,7 @@
+.{
+    .name = .global_menu_daemon,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .paths = .{""},
+    .fingerprint = 0x2bc9db3de9abbf46,
+}

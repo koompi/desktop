@@ -1,0 +1,68 @@
+<section class="section" id="session">
+  <div class="section-header">
+    <h2>Session Screen</h2>
+    <span class="tag">Ctrl+Alt+Del</span>
+  </div>
+  <p class="desc">
+    Power and session management overlay. Full-screen with semi-transparent scrim. Keyboard navigable. Destructive actions (Shutdown, Reboot) require a second confirmation.
+  </p>
+
+  <div class="session-demo">
+    <div class="session-title">Session</div>
+
+    <div class="session-grid">
+      <!-- Row 1 -->
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-lock"></i></span>
+        <span class="session-btn-label">Lock</span>
+      </div>
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-bed"></i></span>
+        <span class="session-btn-label">Sleep</span>
+      </div>
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-user"></i></span>
+        <span class="session-btn-label">Logout</span>
+      </div>
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-chart-column"></i></span>
+        <span class="session-btn-label">Task Mgr</span>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-snowflake"></i></span>
+        <span class="session-btn-label">Hibernate</span>
+      </div>
+      <div class="session-btn danger">
+        <span class="session-btn-icon">⏻</span>
+        <span class="session-btn-label" style="color:rgba(239,68,68,0.6);">Shutdown</span>
+      </div>
+      <div class="session-btn danger">
+        <span class="session-btn-icon"><i class="fa-solid fa-rotate"></i></span>
+        <span class="session-btn-label" style="color:rgba(239,68,68,0.6);">Reboot</span>
+      </div>
+      <div class="session-btn">
+        <span class="session-btn-icon"><i class="fa-solid fa-gear"></i></span>
+        <span class="session-btn-label">Firmware</span>
+      </div>
+    </div>
+
+    <div class="session-hint">Arrow keys · Enter to confirm · Esc to cancel</div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Full-screen scrim</div>
+      <p>Session overlay uses a dark semi-transparent scrim (rgba(7,11,19,0.88)) covering the entire screen. Click outside the grid dismisses. Esc also dismisses.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Keyboard navigation</div>
+      <p>Arrow keys navigate the grid. Enter selects. Tab wraps. Focused button gets a subtle white border highlight. Fully accessible without a mouse.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Danger confirmation for Shutdown/Reboot</div>
+      <p>Shutdown and Reboot show a secondary confirmation step: button text changes to "Confirm?" with a 3-second auto-cancel timer. Prevents accidental power-off.</p>
+    </div>
+  </div>
+</section>

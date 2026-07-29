@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# koompi-migrate - bring an existing user's KOOMPI desktop up to the packaged defaults.
+#
+# /etc/skel only seeds NEW users; a package upgrade changes nothing in an
+# existing $HOME. This closes that gap: it syncs the KOOMPI-owned code trees
+# (shell QML, shipped Hyprland modules) from the packaged defaults into the
+# user config, taking a tar backup first.
+#
+# Never touched, by design:
+#   ~/.config/koompi/            user data; config.json is the source of truth
+#   ~/.config/hypr/custom/       user overrides
+#   ~/.config/hypr/monitors.lua, workspaces.conf   machine-local
+#   ~/.config/hypr/hyprlock.conf, hypridle.conf    machine-tuned
+#
+# Dry run by default; nothing changes without --apply.
+set -euo pipefail
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE_DIR="${KOOMPI_STATE_DIR:-$HOME/.local/state/koompi}"
+BACKUP_DIR="$STATE_DIR/backups"
+LOG_FILE="$STATE_DIR/logs/migrate.log"
+CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$XDG_CONFIG_HOME/koompi/config.json}"
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-migrate [--apply]
+
+Sync the KOOMPI-owned code trees (shell QML, shipped Hyprland modules) from
+the packaged defaults into your user config. Without --apply this is a dry
+run that only reports what would change.
+
+--apply backs up the affected trees to ~/.local/state/koompi/backups/ as a
+tarball before changing anything. Your settings (~/.config/koompi/), Hyprland
+overrides (~/.config/hypr/custom/), and machine-local files (monitors.lua,
+workspaces.conf, hyprlock.conf, hypridle.conf) are never touched.
+USAGE
+}
+
+apply=false
+case "${1:-}" in
+    --apply) apply=true ;;
+    -h|--help|help) usage; exit 0 ;;
+    "") ;;
+    *) echo "koompi-migrate: unknown argument '$1'" >&2; usage >&2; exit 1 ;;
+esac
+
+command -v rsync >/dev/null || { echo "koompi-migrate: rsync required" >&2; exit 1; }
+
+# Packaged defaults, best source first: the koompi-shell package tree, then
+# the /etc/skel seed shipped by koompi-hyprland-config. The env overrides
+# exist so the flow is testable without installed packages.
+SKEL="${KOOMPI_MIGRATE_SKEL:-/etc/skel}"
+XDG_SYS="${KOOMPI_MIGRATE_XDG:-/etc/xdg}"
+shell_src=""
+for d in "$XDG_SYS/quickshell/koompi" "$SKEL/.config/quickshell/koompi"; do
+    [[ -d "$d" ]] && { shell_src="$d"; break; }
+done
+hypr_src=""
+[[ -d "$SKEL/.config/hypr/hyprland" ]] && hypr_src="$SKEL/.config/hypr"
+
+if [[ -z "$shell_src" && -z "$hypr_src" ]]; then
+    echo "koompi-migrate: no packaged defaults found (install koompi-shell or koompi-hyprland-config)" >&2
+    exit 1
+fi
+
+# Each pair is "src|dst|extra rsync args". A missing dst is skipped: that tree
+# runs straight off the packaged defaults, syncing would freeze a stale copy.
+pairs=()
+[[ -n "$shell_src" ]] && pairs+=("$shell_src/|$XDG_CONFIG_HOME/quickshell/koompi/|")
+if [[ -n "$hypr_src" ]]; then
+    pairs+=("$hypr_src/hyprland/|$XDG_CONFIG_HOME/hypr/hyprland/|--exclude=colors.lua")
+    [[ -f "$hypr_src/hyprland.lua" ]] && pairs+=("$hypr_src/hyprland.lua|$XDG_CONFIG_HOME/hypr/hyprland.lua|")
+fi
+
+echo "koompi-migrate: $($apply && echo applying || echo 'dry run (use --apply to make changes)')"
+
+changes=0
+dirty=()
+for pair in "${pairs[@]}"; do
+    IFS='|' read -r src dst extra <<<"$pair"
+    if [[ ! -e "$dst" ]]; then
+        echo "  skip  ${dst/#$HOME/\~}  (absent: runs packaged defaults directly)"
+        continue
+    fi
+    # -c: compare by content, not size+mtime; skel-seeded copies share sizes
+    # but never install times, so the quick check is wrong in both directions.
+    # shellcheck disable=SC2086  # extra is deliberately word-split rsync args
+    delta="$(rsync -nac --itemize-changes --delete $extra "$src" "$dst" | grep -vc '^\.d' || true)"
+    if [[ "$delta" -eq 0 ]]; then
+        echo "  ok    ${dst/#$HOME/\~}  (up to date)"
+    else
+        echo "  sync  ${dst/#$HOME/\~}  ($delta changes from $src)"
+        changes=$((changes + delta))
+        dirty+=("$pair")
+    fi
+done
+
+if $apply && [[ "$changes" -gt 0 ]]; then
+    mkdir -p "$BACKUP_DIR"
+    tarball="$BACKUP_DIR/migrate-$(date +%Y%m%d-%H%M%S).tar.gz"
+    rels=()
+    for pair in "${dirty[@]}"; do
+        IFS='|' read -r _ dst _ <<<"$pair"
+        rels+=("${dst#"$HOME"/}")
+    done
+    tar -C "$HOME" -czf "$tarball" "${rels[@]}"
+    echo "  backup written: ${tarball/#$HOME/\~}"
+    for pair in "${dirty[@]}"; do
+        IFS='|' read -r src dst extra <<<"$pair"
+        # shellcheck disable=SC2086
+        rsync -ac --delete $extra "$src" "$dst"
+    done
+fi
+
+if [[ -f "$CONFIG_FILE" ]] && command -v jq >/dev/null; then
+    ver="$(jq -r '.configVersion // "unset"' "$CONFIG_FILE" 2>/dev/null || echo unreadable)"
+    echo "  config.json untouched (configVersion: $ver)"
+fi
+
+mkdir -p "$(dirname "$LOG_FILE")"
+printf '%s %s changes=%s\n' "$(date -Iseconds)" "$($apply && echo apply || echo dry-run)" "$changes" >> "$LOG_FILE"
+
+if $apply && [[ "$changes" -gt 0 ]]; then
+    echo "koompi-migrate: done. Restart the shell (or log out and back in) to load it."
+elif ! $apply && [[ "$changes" -gt 0 ]]; then
+    echo "koompi-migrate: $changes pending changes. Run 'koompi-migrate --apply' to sync."
+else
+    echo "koompi-migrate: everything up to date."
+fi

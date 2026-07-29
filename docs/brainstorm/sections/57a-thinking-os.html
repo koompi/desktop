@@ -1,0 +1,87 @@
+<section class="section" id="thinking-os">
+  <div class="section-header">
+    <h2>The Thinking OS</h2>
+    <span class="tag ai">AI</span>
+    <span class="tag priv">v1</span>
+  </div>
+  <p class="desc">
+    The one thing every other OS drops on reboot — your working thread — KOOMPI keeps in a store, not in your head. <code>koompi-assistantd</code>'s memory engine (Rust, ADR-0004) stamps every episodic record with a timestamp and an <code>embed_model_id</code>; that era tag <em>is</em> the thread. Close the lid, switch devices, or upgrade the embedder years later and the working set, the open loops, and the raw records are all still re-readable — recall always separates what was <strong>recorded</strong> from what the engine <strong>inferred</strong>. Everything is local, encrypted in <code>@data</code>, never synced except opt-in E2EE. v1 ships the schema, the store, and the restore path — not the decades-long narrative.
+  </p>
+
+  <!-- ── THOUGHT CONTINUITY: working set restored from the store ──────────── -->
+  <div style="max-width:860px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden; margin-bottom:22px;">
+    <div style="display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border2); background:linear-gradient(135deg, var(--cyan-glow), transparent);">
+      <span style="font-size:14px;"><i class="fa-solid fa-timeline"></i></span>
+      <span style="font-size:13px; font-weight:700; flex:1;">Thread Restore</span>
+      <span style="font-size:11px; color:var(--text-muted);">lid closed 18h ago · reopened now</span>
+    </div>
+    <div style="padding:18px; display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+      <div style="flex:1; min-width:280px;">
+        <div style="font-size:14px; line-height:1.6; margin-bottom:14px;">
+          Reopened after the lid was closed. The store restored the last working set for <span style="color:#0E7490; font-weight:600;">settings.qml</span> and the <strong>3 open loops</strong> that were recorded before sleep.
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; padding:7px 10px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius);">
+            <span style="color:#B45309;">◷</span><span style="flex:1;">Should sync be opt-in per-folder or global?</span><span style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">open loop</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; padding:7px 10px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius);">
+            <span style="color:#B45309;">◷</span><span style="flex:1;">Where does the Khmer toggle live?</span><span style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">open loop</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; padding:7px 10px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius);">
+            <span style="color:#B45309;">◷</span><span style="flex:1;">Do we need a reset confirmation?</span><span style="font-size:9px; color:var(--text-subtle); font-family:var(--font-mono);">open loop</span>
+          </div>
+        </div>
+      </div>
+      <div style="width:200px; flex-shrink:0; text-align:center;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">working set, restored exactly</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:11px; padding:6px; background:var(--accent-glow); border:1px solid var(--accent); border-radius:var(--radius); color:var(--accent); font-weight:600;">settings.qml — line 214</div>
+          <div style="font-size:11px; padding:6px; background:var(--surface3); border:1px solid var(--border2); border-radius:var(--radius);">3 reference tabs</div>
+          <div style="font-size:11px; padding:6px; background:var(--surface3); border:1px solid var(--border2); border-radius:var(--radius);">the half-written note</div>
+        </div>
+        <button style="margin-top:12px; width:100%; padding:8px; background:var(--accent); color:white; border:none; border-radius:var(--radius); font-size:12px; font-weight:600; cursor:pointer;">Resume the thread →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROVENANCE: recorded vs inferred, every span sourced ─────────────── -->
+  <div style="max-width:860px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px; margin-bottom:22px;">
+    <div class="card-label" style="margin-bottom:10px;">Why this isn't a guess — every span is sourced</div>
+    <div style="font-size:12px; line-height:1.7;">
+      <span style="background:var(--emerald-glow); border-bottom:1px solid var(--emerald); padding:1px 3px; border-radius:3px;">You fought error E0502 for 9 minutes and pushed through.</span>
+      <span style="font-size:10px; color:#047857; font-family:var(--font-mono);"> [recorded]</span><br>
+      <span style="background:var(--accent-glow); border-bottom:1px dashed var(--accent); padding:1px 3px; border-radius:3px;">Across the year your approach shifted to forming a hypothesis before editing.</span>
+      <span style="font-size:10px; color:var(--accent); font-family:var(--font-mono);"> [inferred]</span>
+    </div>
+    <p style="font-size:11px; color:var(--text-subtle); margin-top:10px; line-height:1.5;">
+      Solid underline = an episodic row you can click (source + timestamp). Dashed = the engine reconstructing, and saying so. A store trusted with your past that confabulates it is a betrayal — so recall is auditable down to the row.
+    </p>
+  </div>
+
+  <!-- Khmer-native angle -->
+  <div style="border:1px solid rgba(34,211,238,.40);max-width:860px; background:var(--surface);   border-radius:var(--radius-lg); padding:16px 18px; margin-bottom:22px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <span style="font-size:15px;"><i class="fa-solid fa-flag"></i></span>
+      <span style="font-size:13px; font-weight:700;">Records kept in the language they were written in</span>
+      <span class="badge new" style="margin-left:auto;">KHMER-NATIVE</span>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted); line-height:1.65;">
+      BGE-M3 (ADR-0006) embeds Khmer text directly — a note to your <span style="color:var(--text);">ម្តាយ</span> is stored and searched in Khmer, not flattened through an English model first. Because the raw text is immortal and each vector carries its <code>embed_model_id</code>, a 2026 Khmer record re-embeds under a better 2030 model without being stranded or translated away.
+    </p>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">It survives its own substrate <span class="badge new">KOOMPI</span></div>
+      <p>Raw episodic text is immortal; the vector index is disposable and provenanced. Because every row carries <code>embed_model_id</code>, an older record stays re-readable under a future embedder that doesn't exist yet — and re-readable <em>as it was framed at the time</em>, never silently re-interpreted.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">It never lies to you about your past</div>
+      <p>Every reconstruction separates <span style="color:#047857;">recorded</span> from <span style="color:var(--accent);">inferred</span>, down to the timestamped episodic row — citable, auditable, never a flattering fiction.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "OS that has watched you since 18 and reconstructs how you thought across a 50-year life" narrative stays on the horizon shelf (<code>horizon.md</code>); v1 ships the era-tagged store and the restore path, nothing above it.</p>
+    </div>
+  </div>
+</section>

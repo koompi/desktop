@@ -1,0 +1,36 @@
+# koompi-base — the DE-agnostic foundation shared by every KOOMPI OS edition.
+# Both the Hyprland and the Plasma (KDE) edition depend on this: audio, brightness,
+# the baseline CLI tooling, fonts/themes, the KDE app + system-integration layer
+# (file manager, network/bluetooth/keyring/polkit), portals, the Python/GTK
+# runtime, screen capture, the input toolkit, the cursor theme, shared branding,
+# and the SDDM login manager. Edition packages add only their compositor/shell.
+groups=(koompi)
+pkgname=koompi-base
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI Base Dependencies (DE-agnostic foundation shared by all editions)'
+arch=(any)
+license=(None)
+depends=(
+  koompi-audio
+  koompi-backlight
+  koompi-basic
+  koompi-fonts-themes
+  # KDE app + system-integration layer (Dolphin, systemsettings, plasma-nm,
+  # bluedevil, polkit-kde-agent, NetworkManager, gnome-keyring) — used by BOTH
+  # the Hyprland session and the Plasma edition, so it belongs in the base.
+  koompi-kde
+  koompi-portal
+  koompi-python
+  koompi-screencapture
+  koompi-toolkit
+  koompi-bibata-modern-classic-bin
+  # Shared branding (wallpapers, plymouth/grub/sddm theming, sddm enablement).
+  koompi-branding
+  # Login manager — no koompi-* package declared one before; both editions use it.
+  sddm
+)
+
+package() {
+  :  # metapackage: no payload, only depends
+}

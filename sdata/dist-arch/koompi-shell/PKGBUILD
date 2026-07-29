@@ -1,0 +1,58 @@
+# koompi-shell — the KOOMPI desktop shell (Quickshell config) and the koompi-*
+# command-line tools, installed to package-owned paths.
+#
+# The shell tree goes to /etc/xdg/quickshell/koompi: quickshell resolves
+# `qs -c koompi` from every XDG config dir, user dir first, so a user copy in
+# ~/.config/quickshell/koompi (seeded from /etc/skel by koompi-hyprland-config)
+# overrides this one and the packaged tree is the always-present fallback.
+# The tools go to /usr/bin; ~/.local/bin copies still win via session PATH.
+# koompi-migrate syncs existing users' copies up to these defaults.
+#
+# BUILD NOTE: via the existing sdata/dist-arch flow (plain makepkg in-tree) this
+# reads ../../../dots through $startdir. For clean-chroot / repo builds (devtools,
+# the koompi pacman repo), that relative tree is absent — switch `source` to a
+# pinned git tag of this repo and copy from "$srcdir/koompi-desktop/dots".
+groups=(koompi)
+pkgname=koompi-shell
+pkgver=1.0
+pkgrel=3
+pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
+arch=(any)
+license=(GPL-3.0-only)
+# xorg-xprop and xorg-xwayland are not optional: Qt exports its menubar over
+# D-Bus only on X11, so the global menu reads the menu address off XWayland
+# window properties with xprop. Without either one the bar is silently empty.
+depends=(koompi-quickshell-git rsync jq xorg-xprop xorg-xwayland)
+
+package() {
+  local _repo_root
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  if [[ ! -d "$_repo_root/dots" ]]; then
+    echo "koompi-shell: dots/ not found at repo root ($_repo_root)." >&2
+    echo "Building in a clean chroot? Switch source to a pinned git tag (see header)." >&2
+    return 1
+  fi
+
+  install -dm755 "$pkgdir/etc/xdg/quickshell"
+  cp -a "$_repo_root/dots/.config/quickshell/koompi" "$pkgdir/etc/xdg/quickshell/koompi"
+  # Quick Look is a separate quickshell config, not a panel of the main shell,
+  # so a crash in a file preview cannot take the bar down with it.
+  cp -a "$_repo_root/dots/.config/quickshell/koompi-quicklook" \
+    "$pkgdir/etc/xdg/quickshell/koompi-quicklook"
+
+  local tool
+  for tool in koompi-health koompi-theme koompi-settings koompi-displays koompi-migrate \
+              koompi-useradd koompi-stacking koompi-quicklook koompi-flatpak-open \
+              koompi-workbench koompi-update; do
+    install -Dm755 "$_repo_root/dots/.local/bin/$tool" "$pkgdir/usr/bin/$tool"
+  done
+  # In dots/ this is a symlink into the hypr tree; installed system-wide it is
+  # the real script.
+  install -Dm755 "$_repo_root/dots/.config/hypr/custom/scripts/koompi-wallpaper.sh" \
+    "$pkgdir/usr/bin/koompi-wallpaper"
+
+  # KDE apps (Dolphin's Open With) need an XDG menu to index applications;
+  # Plasma's menu left with the plasma removal.
+  install -Dm644 "$_repo_root/dots/.config/menus/applications.menu" \
+    "$pkgdir/etc/xdg/menus/applications.menu"
+}

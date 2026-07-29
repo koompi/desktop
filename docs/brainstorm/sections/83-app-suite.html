@@ -1,0 +1,81 @@
+<section class="section" id="app-suite">
+  <div class="section-header">
+    <h2>The App Suite</h2>
+    <span class="tag">Apps</span>
+    <span class="tag ai">AI</span>
+  </div>
+  <p class="desc">
+    What KOOMPI builds, what it adopts, and why. On every other OS an app is a silo with its own data, sync, and account. Here the index, memory, consent, and egress are <strong>OS services</strong> — so a first-party app is a <em>lens over shared memory</em> plus capabilities on the bus. That changes the build/adopt calculus completely: the suite stays small, deep, and composable.
+  </p>
+
+  <!-- ── The build test ── -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;">Build first-party only when at least one is true — otherwise adopt the best FOSS app and wrap it</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div style="background:var(--red-glow);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;font-weight:700;color:#B91C1C;">1 · Privacy is existential</div><div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;">mail, photos, money, health, credentials — the incumbent's business model <em>is</em> the data</div></div>
+      <div style="background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;font-weight:700;color:var(--accent);">2 · Memory transforms it</div><div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;">local AI + lifetime memory changes the category, not decorates it</div></div>
+      <div style="background:var(--amber-glow);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;font-weight:700;color:#B45309;">3 · Underserved-language need</div><div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;">no incumbent will build it — Khmer first among them</div></div>
+      <div style="background:var(--emerald-glow);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:10px 12px;"><div style="font-size:11px;font-weight:700;color:#047857;">4 · Daily partner surface</div><div style="font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;">where the partner must be present every day</div></div>
+    </div>
+  </div>
+
+  <!-- ── Tier 1: the Partner Suite ── -->
+  <div class="card-label">Tier 1 — The Partner Suite · build first-party</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-pen-to-square"></i> Notes · <span lang="km">កំណត់ត្រា</span></span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">The capture surface of the memory palace. Ctrl+T lands a thought already linked to its context; notes are editable views of the assistant's memory store; provenance marks on every paragraph.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-book-open"></i> Reader</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">PDF, EPUB, articles, RSS in one calm surface. Ask-the-document margins, inline translate, Khmer TTS. Every highlight feeds memory and Study. The student's #1 app.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-globe"></i> Translate</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-glow);padding:1px 7px;border-radius:10px;">1.x · first</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">Fully offline, register-aware Khmer ↔ EN/TH/VI/ZH/FR + camera OCR. A bilingual country's daily tool — every rival ships your words to a cloud. Highest value per engineering hour.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-user-lock"></i> Vault</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-glow);padding:1px 7px;border-radius:10px;">1.x · first</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">The sovereignty control room: passkeys via the credential Broker, the Web3 wallet + Selendra DID (TPM-sealed, multichain), and a document vault for the papers that matter — ID, family book, land titles — with Shamir recovery.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-calendar-days"></i> Day</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">Calendar + briefing + focus blocks, with the Khmer lunar calendar first-class (Pchum Ben, Chol Chnam). Knows your rhythm; delivers future-self messages.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-terminal"></i> Terminal</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">Natural language → command with dry-run diff and Tool Approval; explain-this-error locally; session memory across years; Khmer grapheme-correct cursor.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-comment"></i> Comms</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">One inbox for a human — IMAP + Telegram + Matrix bridged locally. The AI reads it on-device: summaries, drafts in your voice, register-correct Khmer replies, Memory Etiquette per correspondent.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-image"></i> Gallery</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">The anti-Google-Photos: on-device captioning, OCR, face clustering; search by meaning; family sharing over LAN/mesh. The visual wing of the memory palace — Ceremonial Forgetting applies.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-microphone"></i> Capture</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">Voice memos and meetings transcribed locally (whisper.cpp; Khmer behind gate G-KM-STT-1, dialects refused until a corpus exists), summaries with zero egress.</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:13px 15px;"><div style="display:flex;align-items:baseline;gap:7px;"><span style="font-size:12.5px;font-weight:700;color:var(--text);"><i class="fa-solid fa-graduation-cap"></i> Study</span><span style="margin-left:auto;font-size:9px;font-weight:700;color:#B45309;background:var(--amber-glow);padding:1px 7px;border-radius:10px;">1.x</span></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;margin-top:4px;">Spaced repetition auto-fed by what you read; a tutor that remembers what you struggled with; teach-me mode wired to the Cognitive Sovereignty dial; offline classroom capsules.</div></div>
+  </div>
+
+  <!-- ── Tier 2 + adopt strip ── -->
+  <div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div class="card-label">Tier 2 — signature apps, after the memory stack matures</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:4px 11px;border-radius:16px;"><i class="fa-solid fa-coins"></i> Ledger — KHQR-aware finance, no fintech reads it</span>
+        <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:4px 11px;border-radius:16px;"><i class="fa-solid fa-map"></i> Maps — offline OSM, location never transmitted</span>
+        <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:4px 11px;border-radius:16px;"><i class="fa-solid fa-mobile-screen"></i> Connect — the Partner Window's pocket mount: stream, capsules, camera-translate, wallet ceremony</span>
+        <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:4px 11px;border-radius:16px;"><i class="fa-solid fa-house-chimney"></i> Commons — the village memory client</span>
+        <span style="font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border2);padding:4px 11px;border-radius:16px;"><i class="fa-solid fa-heart-pulse"></i> Health — on-device only, dignity rules</span>
+      </div>
+    </div>
+    <div style="flex:1;min-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;">
+      <div class="card-label">Adopt + wrap — never rebuild</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.7;margin-top:8px;">
+        LibreOffice/OnlyOffice · VS Code/Zed · GIMP/Krita/Inkscape · Kdenlive · mpv + music · OBS. Each gets a <strong style="color:var(--text);">busd capability manifest</strong> (so the assistant can drive it), a <strong style="color:var(--text);">default-deny egress profile</strong>, contextd ingestion consent, and the shell's theme. The integration is the product; the app stays upstream.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── The Naga Eight ── -->
+  <div style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--accent-glow),transparent);border:1px solid rgba(99,102,241,.3);border-radius:var(--radius);padding:14px 18px;margin-bottom:8px;">
+    <span style="font-size:22px;"><i class="fa-solid fa-dragon"></i></span>
+    <div style="flex:1;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);">The Naga Eight — the destination, one app per release</div>
+      <div style="font-size:11px;color:var(--text-muted);line-height:1.6;">v1 ships the shell surfaces (launcher, the Partner rail, Settings, Software Center) and adopts Files, Firefox, and a terminal — the settled bare-environment policy. First-party apps then land <strong>one per release behind the build test</strong>: Translate and the document Vault lead (the two no one else on earth is positioned to build), then Notes, Reader, Day. The Naga Eight names where the suite is going, not what the v1 box contains.</div>
+    </div>
+    <span class="state-chip active-state" style="font-size:9px;">one per release</span>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Small suite, deep apps <span class="badge new">KOOMPI</span></div>
+      <p>Because memory, consent, and intelligence are OS services, ten first-party apps deliver what other platforms need fifty for — and every one is unbeatable <em>because</em> of the thesis, not despite it. An app that can't pass the build test ships as an adopted FOSS citizen instead.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">What only KOOMPI will build</div>
+      <p>Translate, Khmer Capture, the land-title Vault, the lunar-calendar Day, Commons — these exist because of who builds this OS and the underserved markets it serves. No Valley roadmap will ever prioritize them; on KOOMPI they're defaults — and the data-ownership moat that makes them trustworthy is universal.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Apps as views, widgets as glances</div>
+      <p>The §08 widgets (Notes, Timer, Quick Ask) are glanceable views of these same apps, and every app exposes its verbs on the bus — so "summarize this PDF into my notes" is one capability call, not a copy-paste ritual. The suite composes because nothing owns its own silo.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+<section class="section" id="appless-computing">
+  <div class="section-header">
+    <h2>App-less Computing</h2>
+    <span class="tag">Futures</span>
+    <span class="tag data">1.x</span>
+  </div>
+  <p class="desc">
+    A <strong>composer</strong> surface that invokes <strong>MCP capabilities</strong> instead of launching apps. You state an outcome; the composer resolves it into a chain of capability calls routed through the L3 policy-leashed MCP host (<a href="#adr" style="color:var(--accent);font-weight:600;">ADR-0013</a>). Capabilities read and draft freely, but any step that sends, pays, or leaves the device stops at an approval tap. Apps don't disappear — they become MCP servers the composer can call.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ This composer is the Partner Window's do-bar (<a href="#browser" style="color:var(--accent);font-weight:600;">§82</a>)</div>
+
+  <!-- Composer -->
+  <div style="max-width:760px;">
+    <div style="background:linear-gradient(135deg, var(--accent-glow), transparent); border:1px solid var(--accent); border-radius:var(--radius-lg); padding:16px;">
+      <div style="display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:var(--radius); padding:12px 16px;">
+        <span style="color:var(--accent); font-size:16px;">⤳</span>
+        <span style="flex:1; font-size:14px;">Draft a summary of the Q4 report and send it to the board group</span>
+        <span class="launcher-kbd" style="font-size:10px;">do ↵</span>
+      </div>
+      <div style="font-size:10px; color:var(--text-subtle); margin-top:8px; padding-left:4px;">You name the outcome; the composer routes it to MCP capabilities — each call leashed by L3 policy.</div>
+    </div>
+
+    <!-- Capability resolution flow -->
+    <div style="background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); margin-top:14px; padding:16px;">
+      <div class="card-label" style="margin-bottom:12px;">Resolved into a chain of MCP capability calls</div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span class="state-chip" style="background:var(--cyan-glow); color:#0E7490; border-color:rgba(34,211,238,0.3);"><i class="fa-solid fa-file-lines"></i> read · Q4 report</span>
+        <span style="color:var(--text-subtle);">→</span>
+        <span class="state-chip active-state">✦ summarize · local LLM</span>
+        <span style="color:var(--text-subtle);">→</span>
+        <span class="state-chip" style="background:var(--emerald-glow); color:#047857; border-color:rgba(16,185,129,0.3);"><i class="fa-solid fa-envelope"></i> compose · board group</span>
+        <span style="color:var(--text-subtle);">→</span>
+        <span class="state-chip warn-state">⏸ await approval</span>
+      </div>
+      <div style="margin-top:14px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 14px;">
+        <div style="font-size:10px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-subtle); margin-bottom:6px;">Staged · Telegram → "KOOMPI Board"</div>
+        <div style="font-size:12px; line-height:1.6; color:var(--text-muted);">Q4 in three lines: ARR up 38% to $2.1M, runway 19 months, two senior hires closed. Full deck attached. — held until you approve.</div>
+        <div class="tool-actions" style="margin-top:10px;">
+          <div class="tool-btn allow">✓ Send</div><div class="tool-btn">Edit</div><div class="tool-btn deny">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Capabilities over MCP <span class="badge new">KOOMPI</span></div>
+      <p>You describe the outcome; the composer picks MCP capabilities to fulfill it. Backends are interchangeable — swap the server behind a capability and the workflow is unchanged.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Approval survives the abstraction</div>
+      <p>The L3 host leashes every call by policy. Any capability that sends, pays, or leaves the device still stops for your yes — routing verbs never erases the boundary.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "apps disappear forever" utopia — a world with no application behind any capability — stays on the horizon shelf (<code>horizon.md</code>).</p>
+    </div>
+  </div>
+</section>

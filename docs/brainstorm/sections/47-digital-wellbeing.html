@@ -1,0 +1,352 @@
+<section class="section" id="digital-wellbeing">
+  <div class="section-header">
+    <h2>Digital Wellbeing</h2>
+    <span class="tag ai">AI</span>
+  </div>
+  <p class="desc">
+    Healthy computing across a lifetime. KOOMPI reads its own Cognitive OS signals — focus, fatigue, posture, ambient light — and turns them into gentle, attributable care. Wellbeing data never leaves the device. The AI advises; you decide the goal. A caretaker, not a warden.
+  </p>
+  <div style="display:inline-flex;align-items:center;gap:7px;margin:-16px 0 24px;font-size:11px;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(99,102,241,.25);padding:4px 12px;border-radius:20px;">⊕ Wellbeing owns the focus score — Ambient §16 and the bar read it, never recompute it · <a href="#system-map" style="color:var(--accent);font-weight:600;">System Map</a></div>
+
+  <!-- ============ PANEL 1: Today / Week dashboard ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <!-- title bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#6366F1,#22D3EE);display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v3M7 1.5a5.5 5.5 0 105.5 5.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Wellbeing</div>
+          <div style="font-size:11px;color:var(--text-subtle);">Monday, 8 June 2026 · on-device only</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <span style="padding:5px 12px;font-size:12px;border-radius:6px;background:var(--accent-glow);border:1px solid var(--accent);color:var(--accent);cursor:pointer;">Day</span>
+        <span style="padding:5px 12px;font-size:12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);cursor:pointer;">Week</span>
+        <span style="padding:5px 10px;font-size:12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:5px;">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="2" y="3" width="8" height="7" rx="1.5" stroke="var(--emerald)" stroke-width="1.2"/><path d="M4 3V2a2 2 0 014 0v1" stroke="var(--emerald)" stroke-width="1.2"/></svg>
+          Local
+        </span>
+      </div>
+    </div>
+
+    <div style="display:flex;">
+      <!-- LEFT: screen time breakdown -->
+      <div style="flex:1.5;padding:18px;border-right:1px solid var(--border2);">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <span style="font-size:28px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">5h 12m</span>
+            <span style="font-size:12px;color:var(--text-muted);margin-left:6px;">screen time today</span>
+          </div>
+          <span style="font-size:11px;color:#047857;">↓ 34m vs your 7-day average</span>
+        </div>
+
+        <!-- stacked bar by activity -->
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:6px;">
+          <div style="width:38%;background:var(--accent);" title="Deep work"></div>
+          <div style="width:22%;background:var(--cyan);" title="Communication"></div>
+          <div style="width:18%;background:var(--emerald);" title="Reading"></div>
+          <div style="width:14%;background:var(--amber);" title="Browsing"></div>
+          <div style="width:8%;background:var(--text-subtle);" title="Other"></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px;">
+          <!-- row template -->
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:var(--accent);"></div>
+            <div style="flex:1;font-size:13px;color:var(--text);">Deep work — Zed, koompi-contextd, Terminal</div>
+            <div style="font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;">1h 58m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:var(--cyan);"></div>
+            <div style="flex:1;font-size:13px;color:var(--text);">Communication — Telegram, Mail, Meet</div>
+            <div style="font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;">1h 09m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:var(--emerald);"></div>
+            <div style="flex:1;font-size:13px;color:var(--text);">Reading — Documents/, Firefox (3 articles)</div>
+            <div style="font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;">56m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:var(--amber);"></div>
+            <div style="flex:1;font-size:13px;color:var(--text);">Browsing — mixed</div>
+            <div style="font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;">44m</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;border-radius:3px;background:var(--text-subtle);"></div>
+            <div style="flex:1;font-size:13px;color:var(--text-subtle);">Other / idle reclassified</div>
+            <div style="font-size:13px;color:var(--text-subtle);font-variant-numeric:tabular-nums;">25m</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding:8px 10px;background:var(--surface2);border-radius:7px;font-size:11px;color:var(--text-subtle);display:flex;align-items:center;gap:7px;">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="var(--text-subtle)" stroke-width="1"/><path d="M6 3.5v3M6 8.2v.3" stroke="var(--text-subtle)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Categories are inferred by the local model from window class + file context. "Idle reclassified" excludes time the screen was on but you were away (detected by ambient + input gap, §16).
+        </div>
+      </div>
+
+      <!-- RIGHT: focus score + breaks -->
+      <div style="width:240px;flex-shrink:0;padding:18px;display:flex;flex-direction:column;gap:16px;">
+        <!-- focus ring -->
+        <div style="text-align:center;">
+          <div style="position:relative;width:108px;height:108px;margin:0 auto;">
+            <svg width="108" height="108" viewBox="0 0 108 108" style="transform:rotate(-90deg);">
+              <circle cx="54" cy="54" r="46" stroke="var(--surface3)" stroke-width="9" fill="none"/>
+              <circle cx="54" cy="54" r="46" stroke="url(#fgrad)" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="78"/>
+              <defs><linearGradient id="fgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span style="font-size:26px;font-weight:700;color:var(--text);">73</span>
+              <span style="font-size:10px;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;">focus</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Good day. 4 deep sessions, 1 fragmented.</div>
+        </div>
+
+        <!-- breaks taken -->
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Breaks Today</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></div>
+            <span style="font-size:12px;color:var(--text);flex:1;">20-20-20 eye breaks</span>
+            <span style="font-size:12px;color:var(--text-muted);">6 / 9</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--emerald);"></div>
+            <span style="font-size:12px;color:var(--text);flex:1;">Stand / move</span>
+            <span style="font-size:12px;color:var(--text-muted);">3</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--amber);"></div>
+            <span style="font-size:12px;color:var(--text);flex:1;">Longest unbroken</span>
+            <span style="font-size:12px;color:#B45309;">1h 47m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 2: Nudges row (3 states) ============ -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+    <!-- 20-20-20 break -->
+    <div style="background:var(--surface);border:1px solid var(--emerald);border-radius:11px;padding:15px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:22px;height:22px;border-radius:6px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 7s2.2-3.6 6-3.6S13 7 13 7s-2.2 3.6-6 3.6S1 7 1 7z" stroke="var(--emerald)" stroke-width="1.2"/><circle cx="7" cy="7" r="1.6" stroke="var(--emerald)" stroke-width="1.2"/></svg>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Eye break</span>
+        <span style="margin-left:auto;font-size:10px;color:#047857;">now</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.55;margin:0 0 12px;">You've been reading for 21 minutes. Look at something ~6m away for 20 seconds. I'll fade everything down for you.</p>
+      <div style="display:flex;gap:8px;">
+        <span style="flex:1;text-align:center;padding:7px;font-size:12px;border-radius:6px;background:var(--emerald);color:white;cursor:pointer;">Take it</span>
+        <span style="padding:7px 12px;font-size:12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);cursor:pointer;">Not now</span>
+      </div>
+    </div>
+
+    <!-- posture + ambient (warning state) -->
+    <div style="background:var(--surface);border:1px solid var(--amber);border-radius:11px;padding:15px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:22px;height:22px;border-radius:6px;background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="3" r="1.6" stroke="var(--amber)" stroke-width="1.2"/><path d="M7 5v4m0 0l-2.5 3M7 9l2.5 3M4.5 6.5h5" stroke="var(--amber)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Posture &amp; light</span>
+        <span style="margin-left:auto;font-size:10px;color:#B45309;">§16</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.55;margin:0 0 12px;">Ambient light dropped to <b style="color:var(--text);">38 lux</b> and you've leaned closer over the last 15m. Raise brightness or sit back a little?</p>
+      <div style="display:flex;gap:8px;">
+        <span style="flex:1;text-align:center;padding:7px;font-size:12px;border-radius:6px;background:var(--amber);color:white;cursor:pointer;">Adjust display</span>
+        <span style="padding:7px 12px;font-size:12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);cursor:pointer;">Dismiss</span>
+      </div>
+    </div>
+
+    <!-- wind-down (AI suggestion) -->
+    <div style="background:linear-gradient(160deg,var(--surface),rgba(99,102,241,.05));border:1px solid var(--accent);border-radius:11px;padding:15px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:22px;height:22px;border-radius:6px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M11 8.5A4.5 4.5 0 015.5 3a4.5 4.5 0 105.5 5.5z" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">Wind-down</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--accent);">✦ suggested</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.55;margin:0 0 12px;">It's 22:40 and you have a 09:00 call. Want me to warm the screen, mute non-urgent pings, and start a 30-min fade?</p>
+      <div style="display:flex;gap:8px;">
+        <span style="flex:1;text-align:center;padding:7px;font-size:12px;border-radius:6px;background:var(--accent);color:white;cursor:pointer;">Start wind-down</span>
+        <span style="padding:7px 12px;font-size:12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);cursor:pointer;">Not tonight</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 3: Focus timeline with honest 'why' ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);">Focus timeline — today</div>
+      <span style="font-size:11px;color:var(--text-subtle);display:flex;align-items:center;gap:5px;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v2M6 1a5 5 0 105 5" stroke="var(--accent)" stroke-width="1.1" stroke-linecap="round"/></svg>
+        Attribution by local model — every score has a reason
+      </span>
+    </div>
+
+    <!-- timeline bars -->
+    <div style="display:flex;align-items:flex-end;gap:4px;height:72px;margin-bottom:6px;">
+      <div style="flex:1;background:var(--accent);height:62%;border-radius:3px 3px 0 0;" title="09:00"></div>
+      <div style="flex:1;background:var(--accent);height:78%;border-radius:3px 3px 0 0;" title="10:00"></div>
+      <div style="flex:1;background:var(--cyan);height:34%;border-radius:3px 3px 0 0;" title="11:00 — call"></div>
+      <div style="flex:1;background:var(--accent);height:88%;border-radius:3px 3px 0 0;" title="12:00"></div>
+      <div style="flex:1;background:var(--amber);height:26%;border-radius:3px 3px 0 0;" title="13:00 — fragmented"></div>
+      <div style="flex:1;background:var(--emerald);height:18%;border-radius:3px 3px 0 0;" title="14:00 — break"></div>
+      <div style="flex:1;background:var(--accent);height:70%;border-radius:3px 3px 0 0;" title="15:00"></div>
+      <div style="flex:1;background:var(--accent);height:81%;border-radius:3px 3px 0 0;" title="16:00"></div>
+      <div style="flex:1;background:var(--amber);height:40%;border-radius:3px 3px 0 0;" title="17:00"></div>
+    </div>
+    <div style="display:flex;gap:4px;font-size:9px;color:var(--text-subtle);margin-bottom:14px;">
+      <span style="flex:1;text-align:center;">9</span><span style="flex:1;text-align:center;">10</span><span style="flex:1;text-align:center;">11</span><span style="flex:1;text-align:center;">12</span><span style="flex:1;text-align:center;">13</span><span style="flex:1;text-align:center;">14</span><span style="flex:1;text-align:center;">15</span><span style="flex:1;text-align:center;">16</span><span style="flex:1;text-align:center;">17</span>
+    </div>
+
+    <!-- the honest 'why' -->
+    <div style="border:1px solid rgba(245,158,11,.40);background:var(--surface2);border-radius:0 8px 8px 0;padding:12px 14px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">Why 13:00 scored low — honestly</div>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin:0;">You switched windows 47 times in 22 minutes between Telegram and Zed. That usually means an unresolved decision, not laziness. I'm not certain — this is a correlation from your own patterns, kept on this device. <span style="color:var(--accent);cursor:pointer;">See the signals →</span></p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 4: Goal setup (you decide) + Khmer nudge + family ============ -->
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-bottom:16px;">
+
+    <!-- you decide the goal -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">You decide the goal</span>
+        <span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(16,185,129,.12);color:#047857;">not platform-imposed</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-subtle);margin:0 0 14px;">KOOMPI ships with no default limit. These are <i>your</i> boundaries — set, change, or delete them anytime.</p>
+
+      <!-- goal row 1 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);">
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Stop deep work by</div>
+          <div style="font-size:11px;color:var(--text-subtle);">soft nudge, never a lock</div>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent);background:var(--accent-glow);padding:4px 10px;border-radius:6px;">21:30</span>
+      </div>
+      <!-- goal row 2 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);">
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Eye break cadence</div>
+          <div style="font-size:11px;color:var(--text-subtle);">20-20-20, pauses while presenting</div>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);background:var(--surface2);padding:4px 10px;border-radius:6px;">every 20m</span>
+      </div>
+      <!-- goal row 3 (off) -->
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;">
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--text);">Daily screen-time cap</div>
+          <div style="font-size:11px;color:var(--text-subtle);">you left this off — that's fine</div>
+        </div>
+        <div style="width:38px;height:21px;border-radius:11px;background:var(--surface3);position:relative;cursor:pointer;">
+          <div style="position:absolute;left:2px;top:2px;width:17px;height:17px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Khmer register-aware nudge -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text);">Gentle, in your language</span>
+        <span style="font-size:10px;padding:2px 7px;border-radius:5px;background:var(--accent-glow);color:var(--accent);">ខ្មែរ</span>
+      </div>
+
+      <!-- informal register -->
+      <div style="background:var(--surface2);border-radius:9px;padding:12px;margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:4px;">Informal · close friend tone</div>
+        <p style="font-size:15px;color:var(--text);line-height:1.7;margin:0;">សម្រាកភ្នែកបន្តិចសិនណា — អង្គុយយូរហើយ។</p>
+      </div>
+      <!-- formal register -->
+      <div style="background:var(--surface2);border-radius:9px;padding:12px;">
+        <div style="font-size:10px;color:var(--text-subtle);margin-bottom:4px;">Formal · respectful tone</div>
+        <p style="font-size:15px;color:var(--text);line-height:1.7;margin:0;">សូមអញ្ជើញសម្រាកភ្នែករយៈពេលខ្លី ដើម្បីសុខភាពរបស់លោកអ្នក។</p>
+      </div>
+
+      <div style="margin-top:auto;padding-top:12px;font-size:11px;color:var(--text-subtle);line-height:1.5;">
+        Register is chosen from who's logged in and your set preference — not literal translation. The nudge <i>feels</i> Khmer, not subtitled.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 5: Family / child wellbeing (ties to §44 profiles) ============ -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--surface2);">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="5" cy="5" r="2.4" stroke="var(--cyan)" stroke-width="1.2"/><circle cx="10.5" cy="6" r="1.8" stroke="var(--accent)" stroke-width="1.2"/><path d="M1.5 13c.5-2.2 2-3.4 3.5-3.4S8 10.8 8.5 13M9 11c.4-1 1.2-1.6 2-1.6s1.6.6 2 1.6" stroke="var(--text-subtle)" stroke-width="1.1" stroke-linecap="round"/></svg>
+      <span style="font-size:13px;font-weight:700;color:var(--text);">Family wellbeing</span>
+      <span style="font-size:11px;color:var(--text-subtle);margin-left:6px;">tied to profiles (§44) · each profile's data stays in its own vault</span>
+    </div>
+
+    <div style="display:flex;">
+      <!-- child profile -->
+      <div style="flex:1;padding:16px 18px;border-right:1px solid var(--border2);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#22D3EE,#10B981);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;">សុ</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);">Sotear · age 9</div>
+            <div style="font-size:11px;color:var(--text-subtle);">child profile</div>
+          </div>
+          <span style="margin-left:auto;font-size:11px;color:#047857;">2h 10m / 2h 30m today</span>
+        </div>
+        <div style="height:8px;border-radius:4px;background:var(--surface3);overflow:hidden;margin-bottom:6px;">
+          <div style="width:86%;height:100%;background:linear-gradient(90deg,var(--emerald),var(--amber));"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-subtle);">Learning apps don't count toward the limit. At the cap, KOOMPI asks Sotear to wrap up — it doesn't slam the screen off mid-sentence.</div>
+      </div>
+
+      <!-- parent control note -->
+      <div style="width:280px;flex-shrink:0;padding:16px 18px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-subtle);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Guardian view</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:1px;flex-shrink:0;"><path d="M7 1.5L2 3.5v3.2C2 9.6 4.2 11.7 7 12.5c2.8-.8 5-2.9 5-5.8V3.5L7 1.5z" stroke="var(--emerald)" stroke-width="1.1"/></svg>
+          <span style="font-size:12px;color:var(--text-muted);line-height:1.5;">You see <b style="color:var(--text);">summaries and limits</b> — not keystrokes, messages, or content. Care, not surveillance.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:1px;flex-shrink:0;"><circle cx="7" cy="7" r="5.5" stroke="var(--accent)" stroke-width="1.1"/><path d="M7 4.5v3M7 9.3v.2" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span style="font-size:12px;color:var(--text-muted);line-height:1.5;">At 16, the profile graduates: limits become self-managed and the guardian view retires automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EDGE CASE strip ============ -->
+  <div style="display:flex;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;background:var(--surface2);border:1px dashed var(--border);border-radius:9px;padding:11px 13px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;">Presenting → all nudges muted</div>
+      <div style="font-size:11px;color:var(--text-subtle);line-height:1.5;">Screen-share or fullscreen detected: KOOMPI never pops a break overlay in front of your audience. It queues silently and resumes after.</div>
+    </div>
+    <div style="flex:1;min-width:200px;background:var(--surface2);border:1px dashed var(--border);border-radius:9px;padding:11px 13px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;">No camera? Posture inferred softly</div>
+      <div style="font-size:11px;color:var(--text-subtle);line-height:1.5;">Posture uses ambient light + input rhythm, never a mandatory webcam. If you decline the optional pose sensor, that card simply hides — no degraded nagging.</div>
+    </div>
+    <div style="flex:1;min-width:200px;background:var(--surface2);border:1px dashed var(--border);border-radius:9px;padding:11px 13px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;">Snooze fatigue guard</div>
+      <div style="font-size:11px;color:var(--text-subtle);line-height:1.5;">Dismiss the same nudge 3× and KOOMPI stops asking for the rest of the day and asks once whether to retune the goal. A warden repeats; a caretaker learns.</div>
+    </div>
+  </div>
+
+  <!-- ============ CALLOUTS ============ -->
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Care, not surveillance <span class="badge new">Local</span></div>
+      <p>Every signal — screen time, focus score, posture, light — is computed by on-device daemons and stored in the user's encrypted vault. Nothing is uploaded, not even anonymized. There is no "wellbeing cloud" to leak.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The AI advises, you decide</div>
+      <p>Unlike Screen Time or Digital Wellbeing, KOOMPI imposes no defaults and never locks you out. Goals are user-set, dismissals are honored, and persistent dismissal retunes the goal instead of escalating the nag.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Honest attribution</div>
+      <p>Focus scores always carry a plain-language "why" and a link to the raw signals — and admit uncertainty ("I'm not certain — this is a correlation"). No opaque productivity grade. Transparent AI is reviewable AI.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Designed to age <span class="badge">Lifetime</span></div>
+      <p>A child profile graduates to self-management at 16; an aging user's eye-break cadence can lengthen and reminders enlarge. Decades of wellbeing history stay portable via Selendra identity — the OS grows old <i>with</i> you, never against you.</p>
+    </div>
+  </div>
+</section>

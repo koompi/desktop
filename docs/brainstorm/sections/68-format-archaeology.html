@@ -1,0 +1,73 @@
+<section class="section" id="format-archaeology">
+  <div class="section-header">
+    <h2>Format Archaeology</h2>
+    <span class="tag">Futures</span>
+    <span class="tag ai">RULE</span>
+  </div>
+  <p class="desc">
+    This is an engineering rule enforced now, not a far-future ambition: KOOMPI writes and exports only open, documented formats. Every format the OS emits has a published schema, and the Lifeboat export is exercised in CI — a test round-trips a real archive and asserts a system holding only the bytes, with no KOOMPI code, can read it back. Originals are never discarded; a proprietary import sits beside its open transcription, checksummed.
+  </p>
+
+  <!-- The RULE + its CI gate -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">The rule — open formats only · schemas documented · export exercised in CI</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; width:150px; color:var(--text);">export targets</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">.md / .txt / .csv / .odt / PDF/A · open specs only</span>
+        <span class="state-chip active-state" style="font-size:9px;">enforced</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; width:150px; color:var(--text);">schemas</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">memory / egress / archive container — each versioned &amp; published</span>
+        <span class="state-chip active-state" style="font-size:9px;">documented</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; width:150px; color:var(--text);">proprietary imports</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">transcribed to an open target · original kept, checksummed</span>
+        <span class="state-chip warn-state" style="font-size:9px;">addition, not replacement</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 12px;">
+        <span style="font-family:var(--font-mono); font-size:11px; width:150px; color:var(--text);">CI round-trip</span>
+        <span style="font-size:11px; color:var(--text-muted); flex:1;">export → read back with no KOOMPI binary → assert lossless</span>
+        <span class="state-chip" style="font-size:9px; color:#0E7490; border-color:rgba(34,211,238,0.3); background:var(--cyan-glow);">gates the build</span>
+      </div>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+      Every artifact in <span style="font-family:var(--font-mono); color:#0E7490;">@data</span> is self-describing: bytes travel with a plain-text header naming the format, the spec version, and how to read them. If a future PR adds a closed export target or breaks the round-trip, the CI gate fails.
+    </div>
+  </div>
+
+  <!-- CI round-trip log -->
+  <div style="max-width:760px; margin-top:24px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:14px 16px;">
+    <div class="card-label" style="margin-bottom:10px;">CI · ci/lifeboat-export-roundtrip</div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8;">
+      koompi-restore export --legacy && verify --no-koompi-code<br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">container</span>   <span class="code-str">self-describing · plain-text map at byte 0</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">schemas</span>     <span class="code-str">bundled inside the archive · versioned</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">read-back</span>    <span class="code-str">generic reader · no KOOMPI binary present</span><br>
+      <span style="color:var(--text-subtle);">└─</span> <span class="code-key">assert</span>      <span class="code-val">lossless · 0 records unreadable · PASS</span>
+    </div>
+    <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+      Same discipline already protects memories: koompi-assistantd tags every vector with its <span style="font-family:var(--font-mono); color:#0E7490;">embed_model_id</span>, so recall is era-correct. Format archaeology extends that rule from meaning to bytes.
+    </p>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Openness is a gate, not an aspiration <span class="badge new">KOOMPI</span></div>
+      <p>Many projects say they use open formats; KOOMPI proves it on every commit. The export is round-tripped in CI against a reader that has no KOOMPI code, so "your data outlives our software" is a test that must stay green, not a slogan.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Originals are sacred</div>
+      <p>Transcription is addition, never replacement. A proprietary import sits beside its open descendant forever, checksummed, in case a future reader can do better than ours did.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The "100-year test" framing — a daemon continuously transcribing endangered formats forward for decades so a 2126 system can reconstruct a whole life — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>

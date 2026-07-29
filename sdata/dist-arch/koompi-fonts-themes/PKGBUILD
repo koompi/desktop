@@ -1,0 +1,29 @@
+groups=(koompi)
+pkgname=koompi-fonts-themes
+pkgver=1.0
+pkgrel=7
+pkgdesc='KOOMPI Fonts and Theming Dependencies'
+arch=(any)
+license=(None)
+depends=(
+  adw-gtk-theme-git
+  breeze
+  breeze-plus
+  darkly-bin
+  eza
+  fish
+  fontconfig
+  kitty
+  matugen
+  otf-space-grotesk
+  # env.lua sets QT_QPA_PLATFORMTHEME=qt6ct and switchwall.sh renders it a
+  # palette, but nothing ever pulled the package in, so Qt apps silently kept
+  # their stock colours. The Fedora and Debian lists have carried it all along.
+  qt6ct
+  starship
+  ttf-jetbrains-mono-nerd
+  ttf-material-symbols-variable-git
+  ttf-readex-pro
+  ttf-rubik-vf
+  ttf-twemoji
+)

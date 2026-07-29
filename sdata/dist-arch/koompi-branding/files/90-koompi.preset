@@ -1,0 +1,4 @@
+# Enable the SDDM login manager by default on KOOMPI OS.
+# Applied on `systemctl preset-all`; the installer also enables sddm.service
+# explicitly on the target so a fresh install boots to the greeter.
+enable sddm.service

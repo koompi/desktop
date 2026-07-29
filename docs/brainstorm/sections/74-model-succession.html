@@ -1,0 +1,66 @@
+<section class="section" id="model-succession">
+  <div class="section-header">
+    <h2>Model Succession</h2>
+    <span class="tag">Futures</span>
+    <span class="tag ai">RULE · v1</span>
+  </div>
+  <p class="desc">
+    A local model gets swapped; its embeddings should never be load-bearing. The v1 data rule: <strong>raw captured text is canonical and kept forever; vectors are a derived, era-tagged, disposable index.</strong> Every vector carries the <span style="font-family:var(--font-mono); color:#0E7490;">embed_model_id</span> that produced it (BGE-M3 at v1, per ADR-0006), so recall stays era-correct, and any embedder can be replaced by re-deriving vectors from the text that never moved. There is no "soul file" and no succession ceremony to build — just the discipline that the index is rebuildable and the source of truth is the raw text.
+  </p>
+
+  <!-- The data rule -->
+  <div style="max-width:760px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-lg); padding:16px;">
+    <div class="card-label" style="margin-bottom:12px;">Canonical vs. derived — what survives an embedder swap</div>
+    <div class="tool-code" style="font-size:11px; line-height:1.8;">
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">raw text</span>       <span class="code-str">canonical · kept forever · never re-derived</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">vectors</span>        <span class="code-val">derived · disposable · rebuilt on demand</span><br>
+      <span style="color:var(--text-subtle);">├─</span> <span class="code-key">embed_model_id</span> <span class="code-val">stamped per record (v1: BGE-M3, ADR-0006)</span><br>
+      <span style="color:var(--text-subtle);">└─</span> <span class="code-key">recall</span>         <span class="code-str">era-correct: read a record with the model that indexed it</span>
+    </div>
+    <p style="font-size:11px; color:var(--text-muted); margin-top:10px; line-height:1.5;">
+      Retiring a model is a re-index, not a migration. Because nothing derived is treated as ground truth, a new embedder changes retrieval quality, never the record.
+    </p>
+  </div>
+
+  <!-- Re-embed runbook / gate G-EMB-2 -->
+  <div style="max-width:760px; margin-top:16px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius-xl); overflow:hidden;">
+    <div style="padding:14px 16px; background:linear-gradient(135deg, var(--amber-glow), transparent); border-bottom:1px solid var(--border2); display:flex; align-items:center; gap:10px;">
+      <div style="flex:1;">
+        <div style="font-size:15px; font-weight:700;">Re-embed runbook</div>
+        <div style="font-size:11px; color:var(--text-muted);">embedder succession is gated · G-EMB-2</div>
+      </div>
+      <span class="state-chip" style="font-size:9px; color:#B45309; border-color:rgba(245,158,11,0.35); background:var(--amber-glow);">GATED · G-EMB-2</span>
+    </div>
+    <div style="padding:16px;">
+      <div class="tool-code" style="font-size:11px; line-height:1.8;">
+        koompi-mem reindex --embedder &lt;new&gt;<br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">read</span>      <span class="code-str">raw text (canonical store, untouched)</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">derive</span>    <span class="code-val">new vectors · stamp new embed_model_id</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">shadow</span>    <span class="code-val">new index built alongside old · both readable</span><br>
+        <span style="color:var(--text-subtle);">├─</span> <span class="code-key">eval</span>      <span class="code-val">≥ +5% on KOOMPI-EVAL-RETRIEVAL · license gate</span><br>
+        <span style="color:var(--text-subtle);">└─</span> <span class="code-key">cutover</span>   <span class="code-str">old vectors dropped only after eval passes</span>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+        G-EMB-2 blocks any embedder change until a re-embed runbook exists in CI and the candidate clears the retrieval and license bars. Until it does, BGE-M3 stands. The runbook runs on the raw text, so a swap is always reversible — the index can be rebuilt from source at any later date.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Derived data is never load-bearing <span class="badge new">KOOMPI</span></div>
+      <p>Vectors are an index, not a record. Treating raw text as the single source of truth is what lets the embedder be replaced without touching a lifetime of memory.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Succession is a CI job, not a ceremony</div>
+      <p>Every vector's embed_model_id keeps recall era-correct, and G-EMB-2 makes replacing the embedder a gated, tested re-index against KOOMPI-EVAL-RETRIEVAL.</p>
+    </div>
+  </div>
+
+  <div class="callout-group">
+    <div class="callout">
+      <div class="callout-title">Shelved</div>
+      <p>The fifty-year "one soul, many brains" narrative — a signed soul manifest, a verification ritual per model generation, twenty archived eras of weights — stays on the horizon shelf (<span style="font-family:var(--font-mono);">horizon.md</span>).</p>
+    </div>
+  </div>
+</section>
