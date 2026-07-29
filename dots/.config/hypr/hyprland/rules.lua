@@ -65,8 +65,8 @@ hl.window_rule({match = {title = ".*Shell conflicts.*" },                    flo
 hl.window_rule({match = {class = "^(Zotero)$" },                             float = true})
 hl.window_rule({match = {class = "^(Zotero)$" },                             size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
 -- Chat-widget scratchpads (toggled via scripts/toggle_app_scratchpad.sh). Each
--- app is pinned to its own special workspace by class, floated and centered in
--- the same overlay box declared above. See keybinds App: *.
+-- app is pinned to its own special workspace, floated and centered in the same
+-- overlay box declared above. See keybinds App: *.
 -- Telegram was previously TILED, on the theory that a floating half-width dock
 -- cramped the call/video window. The overlay box is far larger than that old
 -- dock, so calls open at a usable size while floating.
@@ -76,11 +76,20 @@ hl.window_rule({match = {class = "^(Zotero)$" },                             siz
 -- the Wayland app_id "org.telegram.desktop". Matching only the app_id silently
 -- stopped matching anything, which is why it started opening tiled. Any rule
 -- keyed on a Qt app's Wayland app_id has the same problem.
+--
+-- Its reaction/context menu is a separate XWayland transient with the SAME
+-- TelegramDesktop class but initial title "TelegramDesktop". Class-only rules
+-- therefore treated that popup as another main window: moved it to the special
+-- workspace, expanded it to overlay size and centered it at the top-left.
+-- Telegram's real window starts as "Telegram" or "Telegram (<unread count>)",
+-- so initial_title keeps the scratchpad behavior on the main window while
+-- leaving transient placement to Telegram.
 local telegramClass = "^(org\\.telegram\\.desktop|TelegramDesktop)$"
-hl.window_rule({match = {class = telegramClass },                            workspace = "special:telegram silent"})
-hl.window_rule({match = {class = telegramClass },                            float = true})
-hl.window_rule({match = {class = telegramClass },                            size = {overlayW, overlayH} })
-hl.window_rule({match = {class = telegramClass },                            center = true})
+local telegramTitle = "^Telegram( \\([0-9]+\\))?$"
+hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, workspace = "special:telegram silent"})
+hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, float = true})
+hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, size = {overlayW, overlayH} })
+hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, center = true})
 -- Discord: SUPER + SHIFT + D
 hl.window_rule({match = {class = "^(discord)$" },                            workspace = "special:discord silent"})
 hl.window_rule({match = {class = "^(discord)$" },                            float = true})

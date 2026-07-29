@@ -14,15 +14,26 @@
 # pinned git tag of this repo and copy from "$srcdir/koompi-desktop/dots".
 groups=(koompi)
 pkgname=koompi-shell
-pkgver=1.0
-pkgrel=3
+pkgver=1.1
+pkgrel=1
 pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
-arch=(any)
+arch=(x86_64 aarch64)
 license=(GPL-3.0-only)
 # xorg-xprop and xorg-xwayland are not optional: Qt exports its menubar over
 # D-Bus only on X11, so the global menu reads the menu address off XWayland
 # window properties with xprop. Without either one the bar is silently empty.
 depends=(koompi-quickshell-git rsync jq xorg-xprop xorg-xwayland)
+makedepends=(zig)
+
+build() {
+  local _repo_root
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  cd "$_repo_root/cli"
+  zig build \
+    --cache-dir "$srcdir/koompi-cli-cache" \
+    --prefix "$srcdir/koompi-cli-out" \
+    -Doptimize=ReleaseSafe
+}
 
 package() {
   local _repo_root
@@ -40,10 +51,15 @@ package() {
   cp -a "$_repo_root/dots/.config/quickshell/koompi-quicklook" \
     "$pkgdir/etc/xdg/quickshell/koompi-quicklook"
 
+  install -Dm755 "$srcdir/koompi-cli-out/bin/koompi" "$pkgdir/usr/bin/koompi"
+  install -Dm755 "$_repo_root/dots/.local/share/koompi/libexec/update" \
+    "$pkgdir/usr/lib/koompi/update"
+  ln -s koompi "$pkgdir/usr/bin/koompi-update"
+
   local tool
   for tool in koompi-health koompi-theme koompi-settings koompi-displays koompi-migrate \
               koompi-useradd koompi-stacking koompi-quicklook koompi-flatpak-open \
-              koompi-workbench koompi-update; do
+              koompi-workbench koompi-reload koompi-signature; do
     install -Dm755 "$_repo_root/dots/.local/bin/$tool" "$pkgdir/usr/bin/$tool"
   done
   # In dots/ this is a symlink into the hypr tree; installed system-wide it is

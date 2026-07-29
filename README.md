@@ -68,10 +68,11 @@ curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/insta
 On a machine that already runs KOOMPI, one command, from anywhere:
 
 ```sh
-koompi-update
+koompi update
 ```
 
-For an older install that predates `koompi-update`, send the bootstrap
+`koompi-update` remains as a compatibility name. For an older install that
+predates the CLI, send the bootstrap
 one-liner again. It refreshes (or recreates) the managed checkout from `main`,
 installs new dependencies, reapplies the desktop files, and keeps the existing
 application choices:
@@ -86,6 +87,27 @@ On an install from a checkout it is a `git pull` followed by `./setup update`,
 which re-applies the config, leaves your `~/.config/hypr/custom/` overrides
 alone, and reloads the running session so you do not have to log out.
 See [Updating](docs/install.md#updating).
+
+## KOOMPI command line
+
+The desktop ships one native Zig command as the front door to its maintenance
+and tools:
+
+```sh
+koompi --help
+koompi update
+koompi doctor
+koompi settings
+koompi theme mode dark
+koompi wallpaper status
+koompi reload
+```
+
+It also exposes display arrangement, tiling/stacking mode, Quick Look,
+Workbench, signature capture, packaged-default migration, installation paths,
+version information, and completions for bash, zsh and fish. The subcommands
+delegate to the focused `koompi-*` tools, so those tools remain independently
+scriptable while users only need to remember `koompi`.
 
 ## Applications
 

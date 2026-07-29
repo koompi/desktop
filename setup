@@ -45,7 +45,7 @@ Commands:
                For a machine that already runs KOOMPI: it never re-offers the
                application set, and leaves ~/.config/hypr/custom alone.
                On KOOMPI OS the desktop comes from packages instead; there,
-               `koompi-update` is the command.
+               `koompi update` is the command.
   uninstall    Remove the files a previous install recorded
   doctor       Report the detected distro and any missing runtime commands
   help         This message
@@ -103,7 +103,7 @@ parse_install_options() {
 readonly REQUIRED_CMDS=(Hyprland hyprctl qs)
 readonly OPTIONAL_CMDS=(
     matugen fuzzel hypridle hyprlock hyprpicker wl-paste cliphist
-    brightnessctl playerctl ydotool wlogout uv jq rsync gsettings zig
+    brightnessctl playerctl ydotool wlogout uv jq rsync gsettings zig koompi
 )
 # The application set. Missing entries are not a broken install, only a
 # keybind that will land somewhere other than where KOOMPI intended, so these
@@ -169,7 +169,7 @@ doctor() {
         err "KOOMPI login session is not registered"
     fi
     if [[ -f "$REPO_PATH_FILE" ]]; then ok "update source: $(< "$REPO_PATH_FILE")"
-    else warn "no recorded checkout path; koompi-update will have to guess where to pull from"; fi
+    else warn "no recorded checkout path; koompi update will have to guess where to pull from"; fi
     local menu="$XDG_CONFIG_HOME/quickshell/koompi/scripts/global-menu/zig-out/bin/global-menu-daemon"
     if [[ -x "$menu" ]]; then ok "global-menu-daemon built"
     else warn "global-menu-daemon not built"; fi
@@ -233,7 +233,7 @@ main() {
     cat <<EOF
   Log out and pick ${C_BOLD}KOOMPI${C_RST} at your display manager.
   Already in Hyprland? ${C_BOLD}hyprctl reload${C_RST} picks up the new config.
-  Later on, ${C_BOLD}koompi-update${C_RST} (or ${C_BOLD}./setup update${C_RST}) brings you up to date.
+  Later on, ${C_BOLD}koompi update${C_RST} (or ${C_BOLD}./setup update${C_RST}) brings you up to date.
 
   ${C_BOLD}Super + /${C_RST}       keybind cheatsheet
   ${C_BOLD}App launcher${C_RST}      KOOMPI Workbench (Herdr)

@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+# Internal update engine for `koompi update`.
+#
+# There are two ways to end up running KOOMPI, and they update differently:
+#
+#   packaged   KOOMPI OS, where koompi-shell and koompi-hyprland-config put the
+#              desktop under /usr. Updating means a pacman upgrade.
+#   from git   ./setup install, which copies dots/ into $HOME. Updating means
+#              pulling the checkout and re-running ./setup update.
+#
+# Nobody should have to remember which one they have, so the CLI works it out. The
+# checkout's path is read from ~/.local/state/koompi/repo-path, which ./setup
+# writes at install time (see sdata/lib/common.sh).
+set -uo pipefail
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/koompi"
+REPO_PATH_FILE="$STATE_DIR/repo-path"
+
+if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
+    C_RED=$'\e[31m'; C_GREEN=$'\e[32m'; C_YELLOW=$'\e[33m'
+    C_BLUE=$'\e[34m'; C_CYAN=$'\e[36m'; C_BOLD=$'\e[1m'; C_DIM=$'\e[2m'; C_RST=$'\e[0m'
+else
+    C_RED=''; C_GREEN=''; C_YELLOW=''; C_BLUE=''; C_CYAN=''; C_BOLD=''; C_DIM=''; C_RST=''
+fi
+
+step() { printf '\n%s==> %s%s\n' "${C_BOLD}${C_CYAN}" "$*" "${C_RST}"; }
+info() { printf '%s  ->%s %s\n' "${C_BLUE}" "${C_RST}" "$*"; }
+ok()   { printf '%s  ok%s %s\n' "${C_GREEN}" "${C_RST}" "$*"; }
+warn() { printf '%s  !!%s %s\n' "${C_YELLOW}" "${C_RST}" "$*" >&2; }
+die()  { printf '%s  xx%s %s\n' "${C_RED}" "${C_RST}" "$*" >&2; exit 1; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+DRY_RUN=false
+ASSUME_YES=false
+NO_RELOAD=false
+
+run() {
+    printf '%s     $ %s%s\n' "${C_DIM}" "$*" "${C_RST}"
+    [[ "$DRY_RUN" == true ]] && return 0
+    "$@"
+}
+
+usage() {
+    cat <<'EOF'
+koompi update - bring an installed KOOMPI desktop up to date
+
+Usage:
+  koompi update [options]
+
+It detects how KOOMPI was installed and does the right thing:
+  packaged (KOOMPI OS)   pacman -Syu, plus the AUR helper if you have one
+  from a git checkout    git pull, then ./setup update
+
+Options:
+  -n, --dry-run    Print what would happen and change nothing
+  -y, --yes        Do not ask anything
+      --no-reload  Leave the running session alone (changes apply at next login)
+  -h, --help       This message
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -n|--dry-run) DRY_RUN=true ;;
+        -y|--yes)     ASSUME_YES=true ;;
+        --no-reload)  NO_RELOAD=true ;;
+        -h|--help)    usage; exit 0 ;;
+        *)            usage >&2; die "unknown option: $1" ;;
+    esac
+    shift
+done
+
+[[ "$(id -u)" -ne 0 ]] || die "do not run this as root; it calls sudo itself where needed"
+
+confirm() {
+    [[ "$ASSUME_YES" == true ]] && return 0
+    local reply
+    read -rp "${C_BOLD}$1${C_RST} [Y/n] " reply
+    [[ -z "$reply" || "$reply" =~ ^[yY] ]]
+}
+
+# Reload the running session so the update is visible without logging out.
+#
+# The QT_QPA_PLATFORM override is not optional: the KOOMPI session runs Qt on
+# xcb so the global menu works, and a Quickshell that inherits that maps no
+# layer surfaces at all, which looks exactly like the shell failing to start.
+# Same command as the CTRL+SUPER+R bind in hyprland/keybinds.lua.
+reload_session() {
+    if [[ "$NO_RELOAD" == true ]]; then
+        info "not reloading; the update applies at your next login"
+        return 0
+    fi
+    if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || ! have hyprctl; then
+        info "not inside a Hyprland session; the update applies at your next login"
+        return 0
+    fi
+    step "Reloading the running session"
+    run hyprctl reload
+    if have qs; then
+        run killall -w -q global-menu-daemon qs quickshell
+        [[ "$DRY_RUN" == true ]] || \
+            ( setsid env QT_QPA_PLATFORM=wayland qs -c koompi >/dev/null 2>&1 & )
+        ok "shell restarted"
+    fi
+}
+
+# The packages that actually ship the desktop. The dependency metas
+# (koompi-hyprland, koompi-toolkit, ...) are NOT evidence of a packaged install:
+# ./setup install puts those on an ordinary Arch machine too, and answering
+# "packaged" there would upgrade the system while leaving the $HOME copy that
+# really owns the config untouched.
+is_packaged() {
+    have pacman || return 1
+    pacman -Qq koompi-shell >/dev/null 2>&1 \
+        || pacman -Qq koompi-hyprland-config >/dev/null 2>&1
+}
+
+update_packaged() {
+    step "Updating KOOMPI OS packages"
+    info "the desktop is installed from packages; updating the system"
+    confirm "Run a full system upgrade?" || die "aborted"
+
+    local -a noconfirm=()
+    [[ "$ASSUME_YES" == true ]] && noconfirm=(--noconfirm)
+
+    run sudo pacman -Syu "${noconfirm[@]}" \
+        || die "pacman upgrade failed; fix that before reloading the session"
+
+    # KOOMPI's own -git packages (quickshell, microtex) live in the AUR, and
+    # pacman will not rebuild them. Only bother if a helper is already there.
+    local helper
+    for helper in yay paru; do
+        if have "$helper"; then
+            info "$helper found; refreshing AUR packages too"
+            run "$helper" -Sua "${noconfirm[@]}" || \
+                warn "$helper reported a failure; the repo half of the upgrade still applied"
+            break
+        fi
+    done
+    ok "packages up to date"
+}
+
+update_from_git() {
+    local repo=''
+    if [[ -f "$REPO_PATH_FILE" ]]; then
+        repo="$(< "$REPO_PATH_FILE")"
+    fi
+    if [[ -z "$repo" || ! -x "$repo/setup" ]]; then
+        # A checkout that moved, or an install from before this file existed.
+        local guess
+        # koompi-hyprland is the pre-rename name, still on disk for older installs.
+        for guess in "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
+                     "$HOME/src/koompi-desktop" "$HOME/.local/share/koompi-desktop" \
+                     "$HOME/koompi-hyprland" "$HOME/workspace/koompi-hyprland" \
+                     "$HOME/src/koompi-hyprland" "$HOME/.local/share/koompi-hyprland" \
+                     "$HOME/.local/share/koompi-os"; do
+            [[ -x "$guess/setup" ]] && { repo="$guess"; break; }
+        done
+    fi
+    [[ -n "$repo" && -x "$repo/setup" ]] || die \
+"cannot find the koompi-desktop checkout this desktop was installed from.
+  Clone it and run ./setup update there, or record the path:
+    mkdir -p $STATE_DIR && echo /path/to/koompi-desktop > $REPO_PATH_FILE"
+
+    step "Updating from $repo"
+    local -a args=()
+    [[ "$DRY_RUN"    == true ]] && args+=(--dry-run)
+    [[ "$ASSUME_YES" == true ]] && args+=(--yes)
+    # ./setup update reloads the session itself, so suppress the second reload.
+    NO_RELOAD=true
+    "$repo/setup" update "${args[@]}" || die "./setup update failed"
+}
+
+main() {
+    if is_packaged; then
+        update_packaged
+        reload_session
+    else
+        update_from_git
+    fi
+
+    step "Done"
+    printf '  KOOMPI is up to date. %skoompi-health%s reports on the session.\n' \
+        "${C_BOLD}" "${C_RST}"
+}
+
+main

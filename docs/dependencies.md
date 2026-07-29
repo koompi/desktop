@@ -10,12 +10,16 @@ Read on only if you are on an unsupported distro, or want to know why something 
 
 ## Not packages
 
-Two requirements are not satisfied by any package manager, and `./setup` handles both in its setups step:
+Three requirements are built or created by `./setup` in its setups step:
 
 - **A Python virtualenv** at `~/.local/state/quickshell/.venv`, built by `uv` from `sdata/uv/requirements.txt`.
   The colour generation, thumbnailing and image-analysis helpers in `dots/.config/quickshell/koompi/scripts/` run out of it, addressed through `$ILLOGICAL_IMPULSE_VIRTUAL_ENV`.
   It is created with `--system-site-packages` so PyGObject and OpenCV come from distro packages rather than being compiled.
   Without it, wallpaper colour extraction and thumbnails silently do nothing.
+- **The native KOOMPI CLI**, built from `cli/` into `~/.local/bin/koompi`.
+  It is the user-facing entry point for update, health, settings, theme,
+  wallpaper, display, window-mode and desktop-tool commands. KOOMPI OS builds
+  the same source into the `koompi-shell` package.
 - **The global-menu daemon**, Zig source at `dots/.config/quickshell/koompi/scripts/global-menu/`.
   `zig-out/` is gitignored, so a fresh clone has no binary and the global menu stays empty until `zig build` runs.
   This makes `zig` a build-time dependency of the desktop, not just of the repo.
@@ -43,7 +47,7 @@ The core session, in dependency order:
 
 | Meta | Pulls in | Why |
 |---|---|---|
-| `koompi-basic` | coreutils, curl, wget, jq, rsync, ripgrep, cliphist, bc, go-yq, xdg-user-dirs, fprintd, cmake | shell scripts and clipboard history |
+| `koompi-basic` | coreutils, curl, wget, jq, rsync, ripgrep, cliphist, bc, go-yq, xdg-user-dirs, fprintd, cmake, zig | shell scripts and native KOOMPI tools |
 | `koompi-audio` | pipewire-pulse, wireplumber, playerctl, pavucontrol-qt, cava | sound and media controls |
 | `koompi-backlight` | brightnessctl, ddcutil, geoclue | brightness and night light |
 | `koompi-fonts-themes` | matugen, adw-gtk-theme, breeze-plus, darkly, kitty, fish, starship, the KOOMPI font set | theming pipeline and default terminal |

@@ -186,13 +186,13 @@ the entry uses it; otherwise it uses the managed `/usr/local/bin` copy.
 ## Updating
 
 ```sh
-koompi-update
+koompi update
 ```
 
 One command from anywhere, on any KOOMPI machine.
 It works out how this machine got its desktop and does the matching thing:
 
-| How KOOMPI was installed | What `koompi-update` runs |
+| How KOOMPI was installed | What `koompi update` runs |
 |---|---|
 | KOOMPI OS, from packages (`koompi-shell`, `koompi-hyprland-config`) | `pacman -Syu`, then `yay -Sua` or `paru -Sua` if you have one |
 | From a checkout, via `./setup install` | `git pull` in that checkout, then `./setup update` |
@@ -200,7 +200,8 @@ It works out how this machine got its desktop and does the matching thing:
 The checkout's path is read from `~/.local/state/koompi/repo-path`, written at install time.
 An install from before that file existed still works: the command looks in the usual places, and tells you how to record the path if it cannot find the checkout.
 
-If the install is old enough not to have `koompi-update`, rerun the bootstrap.
+`koompi-update` remains as a compatibility name. If the install is old enough
+not to have the `koompi` CLI, rerun the bootstrap.
 It refreshes (or recreates) the managed checkout from `main`, installs newly
 required dependencies, reapplies the desktop files, and does not re-offer the
 optional application set:
@@ -227,6 +228,33 @@ A pull that would clobber local edits is refused with a warning, because `hypr/c
 
 The reload is `hyprctl reload` plus a restart of the shell, with `QT_QPA_PLATFORM=wayland` forced.
 That override is not cosmetic: the session puts Qt on `xcb` so the global menu works, and a Quickshell that inherits it maps no layer surfaces at all, which looks exactly like the shell failing to start.
+
+## KOOMPI command line
+
+`./setup` builds the native Zig CLI under `~/.cache/koompi/build/cli` and
+installs only the finished binary into `~/.local/bin/koompi`; it does not create
+`cli/zig-out` in the source checkout. KOOMPI OS packages install the same binary
+at `/usr/bin/koompi`.
+
+| Command | Purpose |
+|---|---|
+| `koompi update` | Update either a packaged KOOMPI OS or checkout install |
+| `koompi doctor` / `health` | Check the running desktop and support services |
+| `koompi reload` | Reload Hyprland and restart Quickshell |
+| `koompi settings [page]` | Open the control center |
+| `koompi theme …` | Regenerate colors or change mode, scheme, and accent |
+| `koompi wallpaper …` | Inspect and manage workspace wallpapers |
+| `koompi display …` | Arrange monitors |
+| `koompi windows …` | Switch or arrange tiling/stacking mode |
+| `koompi preview …` | Use and configure Quick Look |
+| `koompi workbench [project]` | Open Herdr in the preferred terminal |
+| `koompi signature …` | Capture signatures and install them into Okular |
+| `koompi migrate [--apply]` | Bring an existing packaged user to current defaults |
+| `koompi paths` | Show the active config, data, state, and update-source paths |
+| `koompi completion <shell>` | Print bash, zsh, or fish completion |
+
+`koompi help <command>` gives focused usage. The underlying `koompi-*` tools
+remain available for scripts and backward compatibility.
 `--no-reload` leaves the running session alone; the update then applies at your next login.
 
 The older, more manual route still works:

@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-basic
 pkgver=1.0
-pkgrel=4
+pkgrel=5
 pkgdesc='KOOMPI Basic Dependencies'
 arch=(any)
 license=(None)
@@ -10,6 +10,7 @@ depends=(
   coreutils
   cliphist
   cmake
+  zig
   curl
   wget
   ripgrep

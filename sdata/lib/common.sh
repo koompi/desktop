@@ -18,7 +18,7 @@ fi
 KOOMPI_STATE_DIR="${XDG_STATE_HOME}/koompi"
 MANIFEST="${KOOMPI_STATE_DIR}/installed-files"
 SYSTEM_MANIFEST="${KOOMPI_STATE_DIR}/installed-system-files"
-# Read by dots/.local/bin/koompi-update, which has no other way to find the
+# Read by the `koompi update` helper, which has no other way to find the
 # checkout. Keep the two in step if this ever moves.
 REPO_PATH_FILE="${KOOMPI_STATE_DIR}/repo-path"
 BACKUP_ROOT="${BACKUP_ROOT:-$HOME/.koompi-dots-backup}"
@@ -119,7 +119,7 @@ manifest_finalize() {
     sort -u -- "$MANIFEST" > "$tmp" && mv -f -- "$tmp" "$MANIFEST"
 }
 
-# Where the checkout that installed this desktop lives. `koompi-update` runs
+# Where the checkout that installed this desktop lives. `koompi update` runs
 # from $PATH with no idea where the repo is, and asking the user to remember is
 # the kind of thing that makes people stop updating.
 record_repo_path() {

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Reload the compositor configuration and restart the KOOMPI shell so QML
+# changes become visible immediately.
+set -euo pipefail
+
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || ! command -v hyprctl >/dev/null 2>&1; then
+    echo "koompi reload: no running Hyprland session" >&2
+    exit 1
+fi
+
+hyprctl reload
+
+if command -v qs >/dev/null 2>&1; then
+    killall -w -q global-menu-daemon qs quickshell 2>/dev/null || true
+    setsid env QT_QPA_PLATFORM=wayland qs -c koompi >/dev/null 2>&1 &
+fi
+
+echo "KOOMPI desktop reloaded"
