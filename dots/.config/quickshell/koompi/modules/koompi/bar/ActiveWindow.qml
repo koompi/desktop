@@ -13,7 +13,12 @@ Item { // Faux global menu: app icon + bold app name + window title
     property alias globalMenuOpen: globalMenu.menuOpen
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
     readonly property var activeWindow: HyprlandData.activeWindow
-    property bool focusingThisMonitor: root.activeWindow?.monitor === root.monitor?.id
+    // Which output holds the keyboard, asked of Hyprland rather than inferred
+    // from where the focused window sits. The window's monitor arrives through
+    // polled hyprctl and lags, and it keeps naming the old output when focus
+    // moves to a monitor with no windows on it, which left both bars claiming
+    // the same one. Same source Workspaces.qml already reads.
+    readonly property bool focusingThisMonitor: Hyprland.focusedMonitor?.id === root.monitor?.id
     property var biggestWindow: HyprlandData.biggestWindowForWorkspace(HyprlandData.monitors[root.monitor?.id]?.activeWorkspace.id)
 
     readonly property bool hasWindow: root.focusingThisMonitor && (root.activeWindow?.mapped ?? false)
