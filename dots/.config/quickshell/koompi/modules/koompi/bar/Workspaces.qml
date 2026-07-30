@@ -28,7 +28,7 @@ Item {
     // Pitch, and therefore the pointer target, of one workspace button. A bar
     // height wide so every button is a bar-height square to click; the pills
     // drawn inside stay `workspaceVisualSize` so the bar looks unchanged.
-    property int workspaceButtonWidth: 40
+    property int workspaceButtonWidth: Appearance.sizes.baseBarHeight
     property int workspaceVisualSize: 26
     property real activeWorkspaceMargin: 2
     property real workspaceIconSize: workspaceVisualSize * 0.69
