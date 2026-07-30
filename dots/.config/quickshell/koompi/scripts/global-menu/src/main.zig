@@ -499,6 +499,15 @@ fn logLine(msg: []const u8) void {
     _ = linux.write(2, msg.ptr, msg.len);
 }
 
+/// Where systemd puts this user's runtime directory. Only used when
+/// XDG_RUNTIME_DIR is unset; hard-coding /run/user/1000 named somebody else's
+/// directory on any host whose user is not uid 1000, and KOOMPI OS installs for
+/// whoever is at the keyboard. `buf` must outlive the returned slice.
+fn defaultRuntimeDir(buf: *[24]u8) []const u8 {
+    // "/run/user/" plus ten digits at most, so the buffer cannot be too small.
+    return std.fmt.bufPrint(buf, "/run/user/{d}", .{linux.getuid()}) catch unreachable;
+}
+
 pub fn main(init: std.process.Init) !void {
     const gpa = init.gpa;
 
@@ -515,6 +524,9 @@ pub fn main(init: std.process.Init) !void {
         return error.NoSessionBus;
     };
 
+    var runtime_buf: [24]u8 = undefined;
+    const runtime_dir = init.environ_map.get("XDG_RUNTIME_DIR") orelse defaultRuntimeDir(&runtime_buf);
+
     var daemon = Daemon{
         .gpa = gpa,
         .io = init.io,
@@ -528,7 +540,7 @@ pub fn main(init: std.process.Init) !void {
     // Lets the registrar mirror its table somewhere that outlives this process
     // but not this session, so a daemon restart does not cost every application
     // its menu.
-    daemon.reg.runtime_dir = init.environ_map.get("XDG_RUNTIME_DIR") orelse "/run/user/1000";
+    daemon.reg.runtime_dir = runtime_dir;
 
     if (!registrar.publish(&daemon.reg)) {
         logLine("global-menu: could not publish the AppMenu registrar\n");
@@ -540,7 +552,7 @@ pub fn main(init: std.process.Init) !void {
             return error.NoHyprland;
         };
         daemon.session = .{
-            .runtime_dir = init.environ_map.get("XDG_RUNTIME_DIR") orelse "/run/user/1000",
+            .runtime_dir = runtime_dir,
             .signature = sig,
         };
         const fd = try hypr.connectEvents(gpa, daemon.session.?);
