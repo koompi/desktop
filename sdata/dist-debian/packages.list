@@ -14,6 +14,7 @@ cmake
 curl
 wget
 ripgrep
+fd-find
 jq
 xdg-user-dirs
 rsync

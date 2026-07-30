@@ -14,6 +14,7 @@ depends=(
   curl
   wget
   ripgrep
+  fd
   jq
   xdg-user-dirs
   # Used in install script

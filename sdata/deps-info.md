@@ -46,6 +46,8 @@ Tips:
   - Used in Quickshell config.
 - `ripgrep`
   - Not sure where been used.
+- `fd` (`fd-find` on Debian and Fedora)
+  - Search's file provider. `FileSearch.qml` resolves whichever name is present.
 - `jq`
   - Widely used.
 - `xdg-user-dirs`

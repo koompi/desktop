@@ -14,8 +14,10 @@ Singleton {
 
     property string query: ""
 
+    readonly property list<string> allPrefixes: [Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.file, Config.options.search.prefix.math, Config.options.search.prefix.settings, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch, Config.options.search.prefix.window]
+
     function ensurePrefix(prefix) {
-        if ([Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch,].some(i => root.query.startsWith(i))) {
+        if (root.allPrefixes.some(i => root.query.startsWith(i))) {
             root.query = prefix + root.query.slice(1);
         } else {
             root.query = prefix + root.query;
@@ -170,6 +172,78 @@ Singleton {
         }
     }
 
+    readonly property var preparedWindows: HyprlandData.windowList.map(window => ({
+        name: Fuzzy.prepare(`${window.title} ${window.class}`),
+        entry: window
+    }))
+
+    // Window titles run long enough that subsequence matching finds a query in
+    // almost any of them, so this scope needs a floor the app list does not.
+    readonly property real windowScoreThreshold: 0.5
+
+    function windowResults(search: string): var {
+        const matches = search.trim() === "" ? HyprlandData.windowList : Fuzzy.go(search, preparedWindows, {
+            all: true,
+            key: "name",
+            threshold: root.windowScoreThreshold
+        }).map(r => r.obj.entry);
+        return matches.map(window => resultComp.createObject(null, {
+            name: window.title,
+            type: Translation.tr("Window"),
+            verb: Translation.tr("Switch"),
+            iconName: AppSearch.guessIcon(window.class),
+            iconType: LauncherSearchResult.IconType.System,
+            execute: () => {
+                Hyprland.dispatch(`focuswindow address:${window.address}`);
+            }
+        }));
+    }
+
+    readonly property var preparedSettingsPages: SettingsPages.list.map(page => ({
+        name: Fuzzy.prepare(`${page.name} ${SettingsPages.pageArg(page)}`),
+        entry: page
+    }))
+
+    function settingsResults(search: string): var {
+        const matches = search.trim() === "" ? SettingsPages.list : Fuzzy.go(search, preparedSettingsPages, {
+            all: true,
+            key: "name"
+        }).map(r => r.obj.entry);
+        return matches.map(page => resultComp.createObject(null, {
+            name: page.name,
+            type: Translation.tr("Settings"),
+            verb: Translation.tr("Open"),
+            iconName: page.icon,
+            iconType: LauncherSearchResult.IconType.Material,
+            execute: () => {
+                SettingsPages.open(page);
+            }
+        }));
+    }
+
+    function fileResults(entries, type): var {
+        return entries.map(file => resultComp.createObject(null, {
+            rawValue: file.path,
+            name: FileSearch.displayPath(file.path),
+            type: type,
+            verb: Translation.tr("Open"),
+            iconName: "draft",
+            iconType: LauncherSearchResult.IconType.Material,
+            fontType: LauncherSearchResult.FontType.Monospace,
+            execute: () => {
+                FileSearch.open(file.path);
+            },
+            actions: [resultComp.createObject(null, {
+                    name: Translation.tr("Show folder"),
+                    iconName: "folder_open",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    execute: () => {
+                        FileSearch.revealParent(file.path);
+                    }
+                })]
+        }));
+    }
+
     property list<var> results: {
         // Search results are handled here
         ////////////////// Skip? //////////////////
@@ -230,6 +304,20 @@ Singleton {
                     }
                 });
             }).filter(Boolean);
+        } else if (root.query.startsWith(Config.options.search.prefix.window)) {
+            // Open windows
+            return root.windowResults(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.window));
+        } else if (root.query.startsWith(Config.options.search.prefix.settings)) {
+            // Settings pages
+            return root.settingsResults(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.settings));
+        } else if (root.query.startsWith(Config.options.search.prefix.file)) {
+            // Recent documents first, because they need no disk search to answer,
+            // then whatever fd has finished finding for the same string.
+            const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.file);
+            FileSearch.query = searchString;
+            const recents = FileSearch.fuzzyRecents(searchString);
+            const seen = recents.map(entry => entry.path);
+            return root.fileResults(recents, Translation.tr("Recent")).concat(root.fileResults(FileSearch.files.filter(file => !seen.includes(file.path)), Translation.tr("File")));
         }
 
         ////////////////// Init ///////////////////
@@ -345,6 +433,16 @@ Singleton {
 
         //////////////// Apps //////////////////
         result = result.concat(appResultObjects);
+
+        ///////// Windows and settings /////////
+        // Both are small in-memory sets, so they can answer without a prefix.
+        // Files cannot: they need a disk search, so they stay behind their prefix.
+        // ponytail: capped so they cannot drown the app list. The prefixes give
+        // the full set when someone actually wants it.
+        if (!root.query.startsWith(Config.options.search.prefix.app)) {
+            result = result.concat(root.windowResults(root.query).slice(0, 5));
+            result = result.concat(root.settingsResults(root.query).slice(0, 3));
+        }
 
         ////////// Launcher actions ////////////
         result = result.concat(launcherActionObjects);

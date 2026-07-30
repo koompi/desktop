@@ -552,9 +552,12 @@ Singleton {
                     property string app: ">"
                     property string clipboard: ";"
                     property string emojis: ":"
+                    property string file: "~"
                     property string math: "="
+                    property string settings: "#"
                     property string shellCommand: "$"
                     property string webSearch: "?"
+                    property string window: "@"
                 }
                 property JsonObject imageSearch: JsonObject {
                     property string imageSearchEngineBaseUrl: "https://lens.google.com/uploadbyurl?url="
