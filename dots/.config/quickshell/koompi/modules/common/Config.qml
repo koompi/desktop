@@ -635,6 +635,13 @@ Singleton {
                 property string savePath: `${Directories.pictures}/Screenshots`.replace("file://", "")
             }
 
+            property JsonObject session: JsonObject {
+                // Reopen the last session's windows and workspace at login.
+                // Off by default: this runs before anything else is on screen,
+                // so it is opted into rather than out of.
+                property bool restore: false
+            }
+
             property JsonObject sounds: JsonObject {
                 property bool battery: false
                 property bool pomodoro: false
