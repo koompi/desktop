@@ -288,7 +288,7 @@ Item {
         y: unscaledY * scaleFactor
         width: unscaledWidth * scaleFactor
         height: unscaledHeight * scaleFactor
-        radius: 4
+        radius: Appearance.rounding.unsharpenmore
     }
 
     component TextItem: VisionBoundingBoxRect {

@@ -54,7 +54,7 @@ LockScreen {
                 target: bg
                 property: "y"
                 to: 0
-                duration: 350
+                duration: Looks.transition.duration.deliberate
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
             }
@@ -75,7 +75,7 @@ LockScreen {
 
             Behavior on scale {
                 NumberAnimation {
-                    duration: 400
+                    duration: Looks.transition.duration.slow
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
                 }
@@ -104,7 +104,7 @@ LockScreen {
                 property: "y"
                 from: 0
                 to: -height * 1.1
-                duration: 250
+                duration: Looks.transition.duration.moderate
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
             }

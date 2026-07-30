@@ -192,13 +192,13 @@ Variants {
                 fillMode: Image.PreserveAspectCrop
                 Behavior on x {
                     NumberAnimation {
-                        duration: 600
+                        duration: Appearance.animationDuration.slowest
                         easing.type: Easing.OutCubic
                     }
                 }
                 Behavior on y {
                     NumberAnimation {
-                        duration: 600
+                        duration: Appearance.animationDuration.slowest
                         easing.type: Easing.OutCubic
                     }
                 }

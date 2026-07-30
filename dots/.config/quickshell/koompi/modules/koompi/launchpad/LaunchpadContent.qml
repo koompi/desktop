@@ -572,7 +572,7 @@ FocusScope {
                     required property int index
                     width: 8
                     height: 8
-                    radius: 4
+                    radius: Appearance.rounding.full
                     color: Appearance.colors.colOnLayer0
                     // Read off the live position rather than the settled page,
                     // so the dots hand over gradually as the grid is dragged and

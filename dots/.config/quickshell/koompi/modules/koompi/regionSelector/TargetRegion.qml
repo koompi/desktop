@@ -23,7 +23,7 @@ Rectangle {
     color: fillColor
     border.color: borderColor
     border.width: targeted ? 4 : 2
-    radius: 4
+    radius: Appearance.rounding.unsharpenmore
 
     Behavior on color {
         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -50,7 +50,7 @@ Rectangle {
         sourceComponent: Rectangle {
             property real verticalPadding: 5
             property real horizontalPadding: 10
-            radius: 10
+            radius: Appearance.rounding.small
             color: root.colBackground
             border.width: 1
             border.color: Appearance.m3colors.m3outlineVariant

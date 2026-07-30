@@ -143,6 +143,7 @@ Singleton {
         property int medium: 4
         property int large: 8
         property int xLarge: 12
+        property int full: 9999
     }
 
     font: QtObject {
@@ -175,6 +176,10 @@ Singleton {
 
         property int velocity: 850
 
+        // Waffle keeps its own curves, which are what give it a different
+        // character, but shares the shell's one duration ladder.
+        property QtObject duration: Appearance.animationDuration
+
         property QtObject easing: QtObject {
             property QtObject bezierCurve: QtObject {
                 readonly property list<real> easeInOut: [0.42,0.00,0.58,1.00,1,1]
@@ -185,7 +190,7 @@ Singleton {
 
         property Component color: Component {
             ColorAnimation {
-                duration: 80
+                duration: transition.duration.snap
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeIn
             }
@@ -193,7 +198,7 @@ Singleton {
 
         property Component opacity: Component {
             NumberAnimation {
-                duration: 120
+                duration: transition.duration.snap
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeIn
             }
@@ -201,7 +206,7 @@ Singleton {
 
         property Component resize: Component { // TODO: better curve needed
             NumberAnimation {
-                duration: 200
+                duration: transition.duration.fast
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeIn
             }
@@ -209,7 +214,7 @@ Singleton {
 
         property Component enter: Component {
             NumberAnimation {
-                duration: 250
+                duration: transition.duration.moderate
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeIn
             }
@@ -217,7 +222,7 @@ Singleton {
 
         property Component exit: Component {
             NumberAnimation {
-                duration: 250
+                duration: transition.duration.moderate
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeOut
             }
@@ -225,7 +230,7 @@ Singleton {
 
         property Component move: Component {
             NumberAnimation {
-                duration: 170
+                duration: transition.duration.quick
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeInOut
             }
@@ -233,7 +238,7 @@ Singleton {
 
         property Component rotate: Component {
             NumberAnimation {
-                duration: 170
+                duration: transition.duration.quick
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeInOut
             }
@@ -241,7 +246,7 @@ Singleton {
 
         property Component anchor: Component {
             AnchorAnimation {
-                duration: 160
+                duration: transition.duration.quick
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: transition.easing.bezierCurve.easeIn
             }
@@ -257,7 +262,7 @@ Singleton {
 
         property Component scroll: Component {
             NumberAnimation {
-                duration: 250
+                duration: transition.duration.moderate
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: [0.0, 0.0, 0.25, 1.0, 1, 1]
             }

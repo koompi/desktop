@@ -18,7 +18,7 @@ Item {
     Component.onCompleted: overlayColor = ColorUtils.transparentize("#000000", 0.4)
     Behavior on overlayColor {
         ColorAnimation {
-            duration: 150
+            duration: Looks.transition.duration.quick
             easing.type: Easing.InOutQuad
         }
     }

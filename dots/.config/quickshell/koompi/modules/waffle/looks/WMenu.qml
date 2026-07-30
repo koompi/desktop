@@ -29,7 +29,7 @@ Menu {
             property: "sourceEdgeMargin"
             from: -root.implicitHeight
             to: root.margins
-            duration: 200
+            duration: Looks.transition.duration.fast
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
         }
@@ -39,7 +39,7 @@ Menu {
             property: "sourceEdgeMargin"
             from: root.margins
             to: -root.implicitHeight
-            duration: 150
+            duration: Looks.transition.duration.quick
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Looks.transition.easing.bezierCurve.easeOut
         }

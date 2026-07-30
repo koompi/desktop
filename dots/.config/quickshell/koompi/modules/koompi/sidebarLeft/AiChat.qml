@@ -670,7 +670,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
             visible: Ai.tokenCount.total > 0
             Layout.fillWidth: true
             height: 3
-            radius: 1
+            radius: Appearance.rounding.full
             color: Appearance.colors.colLayer1
             Rectangle {
                 readonly property real fill: Ai.tokenCount.total / Math.max(1, Config.options?.ai?.memory?.contextWindow ?? 128000)

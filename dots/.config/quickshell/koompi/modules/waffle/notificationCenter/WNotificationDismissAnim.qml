@@ -20,7 +20,7 @@ SequentialAnimation {
         target: root.target
         property: "x"
         to: root.target.width
-        duration: 250
+        duration: Looks.transition.duration.moderate
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
     }

@@ -85,7 +85,7 @@ Item {
     component OpenAnim: PropertyAnimation {
         target: panelContent
         to: root.visualMargin
-        duration: 200
+        duration: Looks.transition.duration.fast
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
     }

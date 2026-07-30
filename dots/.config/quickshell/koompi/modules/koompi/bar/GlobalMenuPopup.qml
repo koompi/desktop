@@ -233,7 +233,7 @@ PopupWindow {
             bottomMargin: popup.bottomPadding
         }
         color: ColorUtils.applyAlpha(Appearance.colors.colLayer0Base, Appearance.m3colors.darkmode ? 0.96 : 0.94)
-        radius: 10
+        radius: Appearance.rounding.small
         border.width: 1
         border.color: Appearance.m3colors.darkmode
             ? Qt.rgba(1, 1, 1, 0.16)
@@ -252,13 +252,13 @@ PopupWindow {
         }
         Behavior on opacity {
             NumberAnimation {
-                duration: 90
+                duration: Appearance.animationDuration.snap
                 easing.type: Easing.OutCubic
             }
         }
         Behavior on scale {
             NumberAnimation {
-                duration: 110
+                duration: Appearance.animationDuration.snap
                 easing.type: Easing.OutCubic
             }
         }

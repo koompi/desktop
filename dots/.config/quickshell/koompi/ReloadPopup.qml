@@ -1,3 +1,7 @@
+// Deliberately imports nothing from `qs`. This is the surface that renders when
+// the configuration failed to load, so a dependency on Appearance would take it
+// down with whatever broke. Its radii and colours stay literal for that reason;
+// they are not sites the token sweep missed.
 import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects

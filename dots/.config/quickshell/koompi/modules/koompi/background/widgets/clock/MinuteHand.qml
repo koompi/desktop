@@ -17,7 +17,7 @@ Item {
     Behavior on rotation {
         animation: RotationAnimation {
             direction: RotationAnimation.Clockwise
-            duration: 300
+            duration: Appearance.animationDuration.normal
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Appearance.animationCurves.emphasized
         }

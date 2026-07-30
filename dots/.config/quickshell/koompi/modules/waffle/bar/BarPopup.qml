@@ -79,7 +79,7 @@ Loader {
             target: popupWindow
             property: "sourceEdgeMargin"
             to: (root.ambientShadowWidth + root.visualMargin)
-            duration: 200
+            duration: Looks.transition.duration.fast
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Looks.transition.easing.bezierCurve.easeIn
         }
@@ -89,7 +89,7 @@ Loader {
                 target: popupWindow
                 property: "sourceEdgeMargin"
                 to: -implicitHeight
-                duration: 150
+                duration: Looks.transition.duration.quick
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Looks.transition.easing.bezierCurve.easeOut
             }

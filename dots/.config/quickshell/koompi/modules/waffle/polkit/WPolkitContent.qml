@@ -172,7 +172,7 @@ Rectangle {
                 top: parent.top
                 right: parent.right
             }
-            radius: 0
+            radius: Looks.radius.none
             implicitWidth: 32
             implicitHeight: 32
 

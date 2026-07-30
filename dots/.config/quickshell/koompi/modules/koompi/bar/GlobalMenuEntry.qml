@@ -41,12 +41,12 @@ Item {
             bottomMargin: 1
         }
         visible: root.selected
-        radius: 6
+        radius: Appearance.rounding.unsharpenmore
         color: root.selectionColor
 
         Behavior on color {
             ColorAnimation {
-                duration: 70
+                duration: Appearance.animationDuration.snap
             }
         }
     }

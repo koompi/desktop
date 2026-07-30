@@ -9,6 +9,7 @@ Singleton {
     property QtObject m3colors
     property QtObject animation
     property QtObject animationCurves
+    property QtObject animationDuration
     property QtObject colors
     property QtObject rounding
     property QtObject font
@@ -254,6 +255,21 @@ Singleton {
         }
     }
 
+    // The one duration ladder. Every animation in the shell picks a step here,
+    // through an `animation` role below where one fits the intent. A duration
+    // that is not on the ladder is a design decision, not a free number.
+    animationDuration: QtObject {
+        property int snap: 100 // hover and selection tracking
+        property int quick: 150 // a small state flip
+        property int fast: 200 // the default effect
+        property int moderate: 250 // a panel arrives or leaves
+        property int normal: 300 // something changes size
+        property int deliberate: 350 // a small spatial move
+        property int slow: 400 // an entrance that overshoots
+        property int slower: 500 // the default spatial move
+        property int slowest: 650 // a long spatial move
+    }
+
     animationCurves: QtObject {
         readonly property list<real> expressiveFastSpatial: [0.42, 1.67, 0.21, 0.90, 1, 1] // Default, 350ms
         readonly property list<real> expressiveDefaultSpatial: [0.38, 1.21, 0.22, 1.00, 1, 1] // Default, 500ms
@@ -267,10 +283,10 @@ Singleton {
         readonly property list<real> standard: [0.2, 0, 0, 1, 1, 1]
         readonly property list<real> standardAccel: [0.3, 0, 1, 1, 1, 1]
         readonly property list<real> standardDecel: [0, 0, 0, 1, 1, 1]
-        readonly property real expressiveFastSpatialDuration: 350
-        readonly property real expressiveDefaultSpatialDuration: 500
-        readonly property real expressiveSlowSpatialDuration: 650
-        readonly property real expressiveEffectsDuration: 200
+        readonly property real expressiveFastSpatialDuration: root.animationDuration.deliberate
+        readonly property real expressiveDefaultSpatialDuration: root.animationDuration.slower
+        readonly property real expressiveSlowSpatialDuration: root.animationDuration.slowest
+        readonly property real expressiveEffectsDuration: root.animationDuration.fast
     }
 
     animation: QtObject {
@@ -303,7 +319,7 @@ Singleton {
         }
 
         property QtObject elementMoveEnter: QtObject {
-            property int duration: 400
+            property int duration: root.animationDuration.slow
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedDecel
             property int velocity: 650
@@ -318,7 +334,7 @@ Singleton {
         }
 
         property QtObject elementMoveExit: QtObject {
-            property int duration: 200
+            property int duration: root.animationDuration.fast
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedAccel
             property int velocity: 650
@@ -351,7 +367,7 @@ Singleton {
         }
 
         property QtObject elementResize: QtObject {
-            property int duration: 300
+            property int duration: root.animationDuration.normal
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasized
             property int velocity: 650
@@ -366,7 +382,7 @@ Singleton {
         }
 
         property QtObject clickBounce: QtObject {
-            property int duration: 400
+            property int duration: root.animationDuration.slow
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
             property int velocity: 850
@@ -379,13 +395,13 @@ Singleton {
         }
         
         property QtObject scroll: QtObject {
-            property int duration: 200
+            property int duration: root.animationDuration.fast
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: root.animationCurves.standardDecel
         }
 
         property QtObject menuDecel: QtObject {
-            property int duration: 350
+            property int duration: root.animationDuration.deliberate
             property int type: Easing.OutExpo
         }
     }

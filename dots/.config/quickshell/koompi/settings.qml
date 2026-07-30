@@ -254,7 +254,7 @@ ApplicationWindow {
                             properties: "opacity"
                             from: 1
                             to: 0
-                            duration: 100
+                            duration: Appearance.animationDuration.snap
                             easing.type: Appearance.animation.elementMoveExit.type
                             easing.bezierCurve: Appearance.animationCurves.emphasizedFirstHalf
                         }
@@ -276,7 +276,7 @@ ApplicationWindow {
                                 properties: "opacity"
                                 from: 0
                                 to: 1
-                                duration: 200
+                                duration: Appearance.animationDuration.fast
                                 easing.type: Appearance.animation.elementMoveEnter.type
                                 easing.bezierCurve: Appearance.animationCurves.emphasizedLastHalf
                             }
@@ -284,7 +284,7 @@ ApplicationWindow {
                                 target: pageLoader
                                 properties: "anchors.topMargin"
                                 to: 0
-                                duration: 200
+                                duration: Appearance.animationDuration.fast
                                 easing.type: Appearance.animation.elementMoveEnter.type
                                 easing.bezierCurve: Appearance.animationCurves.emphasizedLastHalf
                             }

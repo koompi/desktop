@@ -38,7 +38,7 @@ WMouseAreaButton {
     Behavior on scale {
         NumberAnimation {
             id: scaleAnim
-            duration: 300
+            duration: Looks.transition.duration.normal
             easing.type: Easing.OutExpo
         }
     }
