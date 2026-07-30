@@ -43,7 +43,7 @@ report_distro() {
         warn "no dependency recipe for this distro."
         warn "Supported: Arch (and derivatives), Fedora, Debian, Ubuntu."
         warn "Run './setup install --no-deps' to install the config files only,"
-        warn "then install the packages in docs/dependencies.md by hand."
+        warn "then install the packages in sdata/dist-arch/install-deps.sh by hand."
         return 1
     fi
     info "package recipe: sdata/dist-${OS_GROUP_ID}"

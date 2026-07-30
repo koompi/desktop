@@ -207,4 +207,4 @@ warn "  darkly      - Qt apps fall back to Fusion; the qt6ct palette still appli
 warn "  breeze-plus - some icons fall back to plain Breeze"
 warn "  songrec     - the music-recognition widget will do nothing"
 warn "  microtex    - LaTeX rendering in the shell is off"
-warn "See docs/dependencies.md if you want them."
+warn "Install them by hand if you want them."

@@ -45,4 +45,5 @@ so prefer letting a command fail loudly over swallowing its error.
 
 `dist-arch/` also holds the OS-image side of the repo (PKGBUILDs, the archiso
 profile, the signed-repo scaffold). That is a separate product from `./setup`;
-see [`../docs/os-build.md`](../docs/os-build.md).
+see [`dist-arch/iso/koompi/`](dist-arch/iso/koompi/) and
+[`dist-arch/repo/`](dist-arch/repo/).

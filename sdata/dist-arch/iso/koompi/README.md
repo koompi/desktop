@@ -8,7 +8,8 @@ UEFI) to a networked root shell with the keyring initialized. The KOOMPI-*brande
 path (pacstrap a `koompi-desktop-*` edition from the signed repo, autostart the Zig
 installer) is still deferred — see **Status** below.
 
-Base: **Arch Linux only** (x86_64). Release era: **Naga** (v1, see `docs/naming.md`).
+Base: **Arch Linux only** (x86_64). Release era: **Naga** (v1). The era codename
+is set in `profiledef.sh`.
 
 ## Where this sits in the ISO chain
 

@@ -6,7 +6,7 @@
 # the koompi-desktop-* editions - are deliberately left out: ./setup installs
 # that content into $HOME, and having both would give you two copies of the
 # shell fighting over the same paths. Building the full OS image is a separate
-# path; see docs/os-build.md.
+# path; see sdata/dist-arch/iso/koompi/.
 
 have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 
@@ -35,7 +35,7 @@ ARCH_DEP_PKGBUILDS=(
 # Package names from the pre-KOOMPI era. Left installed they sit as orphans and,
 # worse, the -git builds shadow the repo versions the metas now pull in.
 arch_drop_deprecated() {
-    local stale=(
+    local superseded=(
         illogical-impulse-{microtex,pymyc-aur,oneui4-icons-git}
         illogical-impulse-{quickshell-git,audio,backlight,basic,bibata-modern-classic-bin}
         illogical-impulse-{fonts-themes,hyprland,kde,microtex-git,portal,python}
@@ -45,6 +45,15 @@ arch_drop_deprecated() {
         {hyprland-qtutils,hyprlock,xdg-desktop-portal-hyprland,hyprcursor}-git
         {hyprwayland-scanner,hyprland}-git
     )
+    # Each of those was built by makepkg on a machine whose /etc/makepkg.conf
+    # carries the `debug` option, so each left a `-debug` split package behind
+    # that owns files under /usr/lib/debug. Naming them here is the only way
+    # they go: makepkg's create_debug_package() rewrites the split package's
+    # metadata and empties conflicts, provides and replaces outright, so no
+    # amount of conflicts= in the successor's PKGBUILD can displace one. Names
+    # that are not installed cost nothing, because arch_exact_installed_packages
+    # prints literal installed names only.
+    local stale=("${superseded[@]}" "${superseded[@]/%/-debug}")
     local exact
     exact="$(arch_exact_installed_packages "${stale[@]}")" ||
         die "could not read the installed pacman package database"
@@ -75,13 +84,18 @@ else
     # Only now is the upgrade worth its cost. It still has to happen before any
     # AUR build: building against a half-upgraded system is how Arch breaks.
     step "Arch: refreshing packages"
+    sudo_refresh
     run sudo pacman -Syu --noconfirm
 
     arch_install_yay
 
     for _koompi_pkg in "${_koompi_pending[@]}"; do
         step "Arch: $_koompi_pkg"
-        arch_install_pkgbuild "$_koompi_pkg"
+        # Unchecked, a metapackage that failed to build leaves the loop building
+        # the ones after it against the version it was supposed to replace, and
+        # the run still ends with "dependencies installed".
+        arch_install_pkgbuild "$_koompi_pkg" ||
+            die "$_koompi_pkg failed to install; fix that before re-running"
     done
     unset _koompi_pkg
 fi

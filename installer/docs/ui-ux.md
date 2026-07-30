@@ -1128,8 +1128,8 @@ screens in our flow (§ screen flow above).
    are either views or jobs.[^calamares-modules] Our **Install**
    screen (9) should render named phases — *Partitioning → LUKS →
    pacstrap → bootloader → post-install hook (snapper, @baseline,
-   os-release)* — matching the engine/face split in
-   `docs/os-build.md §6`. The user sees *which* phase is running
+   os-release)* — matching the engine/face split in the OS-build
+   architecture. The user sees *which* phase is running
    and that destructive ones (partition/LUKS) come first, so a
    failure has an obvious locus.
 
@@ -1190,8 +1190,8 @@ screens in our flow (§ screen flow above).
 
 14. **Validate the whole config before the point of no return.**
     Subiquity gates progression on model readiness via
-    `asyncio.Event`,[^subiquity-design] and our own audit
-    (`docs/os-build.md §6`) shows a malformed config makes
+    `asyncio.Event`,[^subiquity-design] and our own audit of the
+    archinstall backend shows a malformed config makes
     `--silent` "silently produce a broken system." **Review** (8)
     must run `cfg.isComplete()` *and* schema-validate the generated
     `user_configuration.json` against the pinned archinstall before
@@ -1219,7 +1219,7 @@ screens in our flow (§ screen flow above).
 
 - **A3 — Hand-writing engine config / faking progress.** Do not
   hand-author `user_configuration.json` (schema drifts; `obj_id`
-  UUIDs can only be minted by archinstall — `docs/os-build.md §6`),
+  UUIDs can only be minted by archinstall),
   and do not show a progress bar that interpolates a guessed
   percentage. Subiquity drives progress from *real* backend state
   transitions (`meta.status.GET`, long-poll
@@ -1320,7 +1320,8 @@ is the order the spec implies:
 - `installer/src/post_install.sh` — the post-install finish (snapper
   `@baseline`, snap-pac, grub-btrfs, os-release).
 - `docs/os-build.md` §6 — the OS-build architecture and the archinstall
-  schema-drift blocker table.
+  schema-drift blocker table. Deleted 2026-07-29 with the rest of `docs/`;
+  recover from git history if the blocker table is needed.
 - `installer/themes/koompi.toml` — the shipped, parse-verified KOOMPI theme.
 
 *Sections §1–§4 were produced by a multi-track design pass; §4 draws on the

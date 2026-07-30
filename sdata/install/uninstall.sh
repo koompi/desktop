@@ -72,5 +72,5 @@ run_uninstall() {
 
     printf '\n'
     info "Backups of your pre-install config are still under ${BACKUP_ROOT}"
-    info "Packages were not removed. See docs/dependencies.md for the list."
+    info "Packages were not removed. See sdata/dist-*/install-deps.sh for the list."
 }

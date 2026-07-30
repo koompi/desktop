@@ -12,7 +12,7 @@
 # This file is sourced by mkarchiso; every variable below is consumed there.
 
 iso_name="koompi"                       # base name of the output .iso file
-# Release-era codename slot.  docs/naming.md: era v1 == "Naga".  Bump per era.
+# Release-era codename slot.  Era v1 == "Naga".  Bump per era.
 codename="naga"
 # Volume label burned into the ISO9660 filesystem.  Upper-cased codename + YYYYMM
 # so each monthly snapshot is distinguishable.  Keep <= 32 chars, [A-Z0-9_] only.
