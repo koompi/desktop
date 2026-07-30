@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -72,8 +73,27 @@ ContentPage {
                     id: wallpaperPreview
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectCrop
-                    source: Config.options.background.wallpaperPath
+                    // The wallpaper of the workspace being looked at, not the
+                    // global one. With per-workspace wallpapers on, a pick lands
+                    // on the current workspace and the global path never moves,
+                    // so this showed an image nothing was displaying and never
+                    // changed however many wallpapers were applied.
+                    readonly property string path: Wallpapers.forWorkspace(Hyprland.focusedMonitor?.activeWorkspace?.id ?? 1)
+                    // A re-roll writes each workspace's wallpaper to a fixed
+                    // filename, so the file changes while the path does not, and
+                    // an unchanged source is never re-read whatever `cache` says.
+                    // The counter rides in the URL fragment: Qt keys its pixmaps
+                    // on the whole URL and drops the fragment when it opens the
+                    // file. `retainWhileLoading` holds the old frame meanwhile.
+                    property int reloads: 0
+                    source: path.length > 0 ? `${Qt.resolvedUrl(path)}#${reloads}` : ""
                     cache: false
+                    Connections {
+                        target: Config
+                        function onReloaded() {
+                            wallpaperPreview.reloads += 1;
+                        }
+                    }
                     layer.enabled: true
                     layer.effect: OpacityMask {
                         maskSource: Rectangle {

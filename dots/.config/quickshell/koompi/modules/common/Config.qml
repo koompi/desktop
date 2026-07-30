@@ -13,6 +13,11 @@ Singleton {
     property int readWriteDelay: 50 // milliseconds
     property bool blockWrites: false
 
+    // The config file was re-read. Raised even when no value ended up different,
+    // which is the only hint anything gets that a file named by a path in here
+    // was rewritten in place - a wallpaper re-roll keeps the same filename.
+    signal reloaded()
+
     function setNestedValue(nestedKey, value) {
         let keys = nestedKey.split(".");
         let obj = root.options;
@@ -68,7 +73,10 @@ Singleton {
         blockWrites: root.blockWrites
         onFileChanged: fileReloadTimer.restart()
         onAdapterUpdated: fileWriteTimer.restart()
-        onLoaded: root.ready = true
+        onLoaded: {
+            root.ready = true;
+            root.reloaded();
+        }
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
                 writeAdapter();

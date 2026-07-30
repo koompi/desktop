@@ -9,6 +9,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 
 MouseArea {
     id: root
@@ -315,14 +316,20 @@ MouseArea {
 
                         model: Wallpapers.folderModel
                         onModelChanged: currentIndex = 0
+                        // Which entry is marked as the one in use. Has to be the
+                        // wallpaper of the workspace being looked at: a pick
+                        // lands there, not on the global path, so comparing
+                        // against the global path marked a wallpaper that is not
+                        // on any screen.
+                        readonly property string appliedWallpaper: Wallpapers.forWorkspace(Hyprland.focusedMonitor?.activeWorkspace?.id ?? 1)
                         delegate: WallpaperDirectoryItem {
                             required property var modelData
                             required property int index
                             fileModelData: modelData
                             width: grid.cellWidth
                             height: grid.cellHeight
-                            colBackground: (index === grid?.currentIndex || containsMouse) ? Appearance.colors.colPrimary : (fileModelData.filePath === Config.options.background.wallpaperPath) ? Appearance.colors.colSecondaryContainer : ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
-                            colText: (index === grid.currentIndex || containsMouse) ? Appearance.colors.colOnPrimary : (fileModelData.filePath === Config.options.background.wallpaperPath) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer0
+                            colBackground: (index === grid?.currentIndex || containsMouse) ? Appearance.colors.colPrimary : (fileModelData.filePath === grid.appliedWallpaper) ? Appearance.colors.colSecondaryContainer : ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
+                            colText: (index === grid.currentIndex || containsMouse) ? Appearance.colors.colOnPrimary : (fileModelData.filePath === grid.appliedWallpaper) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer0
 
                             onEntered: {
                                 grid.currentIndex = index;
