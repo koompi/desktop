@@ -79,6 +79,11 @@ Item {
     // rather than the height of the text row it sits on.
     implicitHeight: Appearance.sizes.baseBarHeight
 
+    /// Where the titles are drawn within that bar-height target, relative to its
+    /// centre. The bar sets this so the menu lines up with the row it belongs to
+    /// rather than with the middle of whatever sits beside it.
+    property real labelYOffset: 0
+
     // Every command the shell sends names an item id, so they all carry the
     // generation that id came from and the daemon refuses the stale ones.
     function send(command) {
@@ -344,6 +349,7 @@ Item {
 
         Rectangle {
             anchors.centerIn: parent
+            anchors.verticalCenterOffset: root.labelYOffset
             width: parent.width
             height: Math.min(parent.height, 26)
             radius: Appearance.rounding.small
@@ -357,6 +363,7 @@ Item {
         StyledText {
             id: buttonLabel
             anchors.centerIn: parent
+            anchors.verticalCenterOffset: root.labelYOffset
             text: button.label
             font.pixelSize: Appearance.font.pixelSize.smaller
             color: Appearance.colors.colOnLayer0

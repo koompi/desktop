@@ -82,12 +82,16 @@ Item { // Faux global menu: app icon + bold app name + window title
 
         ColumnLayout { // App name stacked over window title, as one bounded block
             id: identityColumn
-            // Pinned rather than left to the row's spare-space sharing, which
-            // grew the block to its cap and pushed the menu away from a short
-            // app name. Wide enough for the text, never wider than the cap.
-            // Without an explicit floor the column inherits a minimum width from
-            // its text children, which outranks the cap and is why the title
-            // used to run on instead of eliding.
+            // A nested layout stretches by default, so this block took the whole
+            // cap however short the app name was and pushed the menu a third of
+            // the screen to the right, up against the centered workspaces. Opting
+            // out of the stretch is what makes the preferred width below the
+            // width it actually gets.
+            Layout.fillWidth: false
+            // Wide enough for the text, never wider than the cap. Without an
+            // explicit floor the column inherits a minimum width from its text
+            // children, which outranks the cap and is why the title used to run
+            // on instead of eliding.
             Layout.minimumWidth: 0
             Layout.maximumWidth: root.identityMaxWidth
             Layout.preferredWidth: Math.min(identityColumn.implicitWidth, root.identityMaxWidth)
@@ -119,6 +123,11 @@ Item { // Faux global menu: app icon + bold app name + window title
             id: globalMenu
             Layout.fillHeight: true
             visible: root.focusingThisMonitor && menuItems.length > 0
+            // The titles read as a menubar continuing the app name, so they sit on
+            // the app-name row with the window title running under both. Only the
+            // labels move: the item still spans the bar, so each title keeps the
+            // bar-height pointer target it is clicked by.
+            labelYOffset: identityColumn.y + appName.y + appName.height / 2 - (globalMenu.y + globalMenu.height / 2)
             // On a narrow bar the menu yields to the app name and icon;
             // whatever is left over goes into its overflow button. Measured from
             // the column's implicit width, which does not depend on the layout.
