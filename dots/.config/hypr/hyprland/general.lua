@@ -135,9 +135,12 @@ hl.config({
             color = "rgba(00000020)"
 
         },
-        -- Dim
+        -- Dim. Which window has the keyboard is told entirely by the unfocused
+        -- side, so a single focused window gains nothing: it is never the one
+        -- being dimmed. 0.05 was too slight to separate three tiled windows at
+        -- a glance; this is the knob to turn if it still is.
         dim_inactive = true,
-        dim_strength = 0.05,
+        dim_strength = 0.15,
         dim_special = 0.2
     },
     animations = {
