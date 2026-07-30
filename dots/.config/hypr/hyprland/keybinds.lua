@@ -211,6 +211,13 @@ hl.bind("SUPER + ALT + M", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_SOURCE@ togg
 --##! Window
 --# Focusing
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" })
+-- Snap preview rides along with the drag above rather than taking a chord of
+-- its own: Quickshell gets the press and the release of this global shortcut,
+-- which is the whole span of the drag. Deliberately not `transparent`, so the
+-- click still does not reach the window under it, exactly as the drag bind
+-- alone did. With the shell's `windows.snapPreview` off nothing is registered
+-- under this name and the dispatch does nothing.
+hl.bind("SUPER + mouse:272", hl.dsp.global("quickshell:snapPreviewDrag"))
 hl.bind("SUPER + mouse:274", hl.dsp.window.drag(), { mouse = true })
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Window: Resize" })
 --#/# bind = SUPER + ←/↑/→/↓,, -- Focus in direction
