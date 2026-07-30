@@ -17,6 +17,7 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.modules.koompi.firstrun
 
 ApplicationWindow {
     id: root
@@ -140,6 +141,10 @@ ApplicationWindow {
             ContentPage {
                 id: contentColumn
                 anchors.fill: parent
+
+                // First on the page, because a first-time user should learn the
+                // four things before they meet a single setting.
+                FirstRunGuide {}
 
                 ContentSection {
                     Layout.fillWidth: true
