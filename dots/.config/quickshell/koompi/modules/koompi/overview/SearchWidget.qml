@@ -136,6 +136,11 @@ Item { // Wrapper
         implicitHeight: columnLayout.implicitHeight
         radius: searchBar.height / 2 + searchBar.verticalPadding
         color: Appearance.colors.colBackgroundSurfaceContainer
+        border.width: 1
+        // The outline carries the keyboard, matching the sidebar and cheatsheet.
+        // `Window.active` is this surface's own focus, not `searchOpen`: the
+        // sidebar can be open underneath and only one of them gets the keys.
+        border.color: Window.active ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
 
         Behavior on implicitHeight {
             id: searchHeightBehavior
