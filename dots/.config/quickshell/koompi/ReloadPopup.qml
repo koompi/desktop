@@ -128,7 +128,7 @@ Scope {
 				// Its bg
 				Rectangle {
 					z: 1
-					id: bar_bg
+					id: barBackground
 					color: failed ? "#30af1b25" : "#4027643e"
 					anchors.bottom: parent.bottom
 					anchors.left: parent.left
