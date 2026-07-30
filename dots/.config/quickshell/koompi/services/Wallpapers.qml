@@ -174,6 +174,34 @@ Singleton {
         }
     }
 
+    function isVideoPath(path: string): bool {
+        return [".mp4", ".webm", ".mkv", ".avi", ".mov"].some(ext => path.endsWith(ext));
+    }
+
+    // The wallpaper a workspace is showing, resolved once here so the desktop
+    // background and anything that has to match it cannot drift apart. Only
+    // workspaces 1..10 can carry their own; everything else inherits.
+    function rawForWorkspace(workspaceId: int): string {
+        const perWorkspace = Config.options.background.workspaceWallpapers;
+        const key = (workspaceId >= 1 && workspaceId <= 10) ? `ws${workspaceId}` : "";
+        const fallback = Config.options.background.wallpaperPath ?? "";
+
+        if (!perWorkspace?.enabled || key.length === 0)
+            return fallback;
+
+        const entry = perWorkspace.workspaces[key];
+        const mode = entry?.mode || perWorkspace.defaultMode || "inherit";
+        return (mode === "static" && (entry?.path ?? "").length > 0) ? entry.path : fallback;
+    }
+
+    // As above, but as something that can actually be shown: a video wallpaper
+    // has no decodable frame outside the background panel, so its extracted
+    // thumbnail stands in.
+    function forWorkspace(workspaceId: int): string {
+        const path = root.rawForWorkspace(workspaceId);
+        return root.isVideoPath(path) ? (Config.options.background.thumbnailPath ?? "") : path;
+    }
+
     IpcHandler {
         target: "wallpapers"
 

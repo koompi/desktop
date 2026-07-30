@@ -27,6 +27,11 @@ MouseArea {
     id: root
     required property LockContext context
 
+    // Set by the Loader in LockScreen. Empty only if this is ever instantiated
+    // outside one, in which case the context falls back to a live lookup.
+    readonly property string screenName: parent?.lockScreenName ?? ""
+    readonly property string wallpaperPath: root.context.wallpaperForScreen(root.screenName)
+
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
 
     // ---------------------------------------------------------------------
@@ -45,8 +50,8 @@ MouseArea {
     // Wallpaper treatment
     // ---------------------------------------------------------------------
     // A bright photo needs a heavier veil than a dark one for the same text to
-    // read. The luminance comes from the picker in LockContext.
-    readonly property real scrimOpacity: Math.max(0.22, Math.min(0.66, 0.22 + root.context.wallpaperLuminance * 0.45))
+    // read, and two screens on two workspaces can need two different veils.
+    readonly property real scrimOpacity: Math.max(0.22, Math.min(0.66, 0.22 + root.context.luminanceForScreen(root.screenName) * 0.45))
     // The scrim is always a dark veil, so anything drawn on it is light. Tinted
     // with the theme accent so the lock screen still belongs to the palette.
     readonly property color colOnScrim: ColorUtils.mix("#FFFFFF", Appearance.colors.colPrimary, 0.85)
@@ -176,10 +181,7 @@ MouseArea {
         // full-resolution frame and costs a fraction of the memory. Without
         // blur the image is shown as-is, so it has to stay sharp.
         sourceSize.height: Config.options.lock.blur.enable ? Math.min(1080, root.height) : 0
-        source: root.context.wallpaperPath.length > 0 ? `file://${root.context.wallpaperPath}` : ""
-        onStatusChanged: {
-            if (status === Image.Error) root.context.reportWallpaperFailure();
-        }
+        source: root.wallpaperPath.length > 0 ? `file://${root.wallpaperPath}` : ""
 
         visible: !blurLoader.active && status === Image.Ready
         opacity: status === Image.Ready ? 1 : 0

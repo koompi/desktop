@@ -14,6 +14,24 @@ Scope {
 
     required property Component lockSurface
     property alias context: lockContext
+
+    // Raised once the password is accepted and before the surface goes away,
+    // so anything that rearranged the desktop for the lock can undo it out of
+    // sight.
+    signal aboutToUnlock()
+
+    Timer {
+        id: unlockDelayTimer
+        // One hyprctl round trip, spawned as a detached process. Shorter than
+        // this and the restore is still in flight when the surface drops.
+        interval: 200
+        onTriggered: {
+            // Unlock the screen before exiting, or the compositor will display
+            // a fallback lock you can't interact with.
+            GlobalStates.screenLocked = false;
+            lockContext.reset();
+        }
+    }
     property Component sessionLockSurface: WlSessionLockSurface {
         id: sessionLockSurface
         // Opaque from the very first frame. A transparent lock surface lets the
@@ -24,6 +42,10 @@ Scope {
             active: GlobalStates.screenLocked
             anchors.fill: parent
             opacity: active ? 1 : 0
+            // Read by the loaded surface as `parent.lockScreenName`: workspaces
+            // carry their own wallpapers, so a surface has to know which screen
+            // it is on to show the right one.
+            readonly property string lockScreenName: sessionLockSurface.screen?.name ?? ""
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }
@@ -56,13 +78,8 @@ Scope {
             function onScreenLockedChanged() {
                 if (GlobalStates.screenLocked) {
                     lockContext.reset();
-                    lockContext.promotePreparedWallpaper();
                     lockContext.refreshCapsLock();
                     lockContext.tryFingerUnlock();
-                } else {
-                    // Line up the next one now, so the following lock does not
-                    // wait on a disk walk before it has anything to show.
-                    lockContext.prepareWallpaper();
                 }
             }
         }
@@ -80,18 +97,20 @@ Scope {
             // Unlock the keyring if configured to do so
             if (Config.options.lock.security.unlockKeyring) root.unlockKeyring(); // Async
 
-            // Unlock the screen before exiting, or the compositor will display a
-            // fallback lock you can't interact with.
-            GlobalStates.screenLocked = false;
-
-            // Reset
-            lockContext.reset();
-
             // Post-unlock actions
             if (lockContext.alsoInhibitIdle) {
                 lockContext.alsoInhibitIdle = false;
                 Idle.toggleInhibit(true);
             }
+
+            // Let whatever moved the desktop out of the way put it back while
+            // this surface is still covering it, then unlock. Dropping the
+            // surface first shows the bare workspace underneath for as long as
+            // the restore takes.
+            // Armed BEFORE the signal, never after: a handler that throws must
+            // not be able to cost someone the only way out of the lock.
+            unlockDelayTimer.restart();
+            root.aboutToUnlock();
         }
     }
 
@@ -141,7 +160,6 @@ Scope {
 
     function initIfReady() {
         if (!Config.ready || !Persistent.ready) return;
-        lockContext.prepareWallpaper();
         if (Config.options.lock.launchOnStartup && Persistent.isNewHyprlandInstance) {
             root.lock();
         } else {

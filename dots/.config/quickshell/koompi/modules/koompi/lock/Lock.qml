@@ -70,23 +70,27 @@ LockScreen {
         }
     }
 
-    Timer {
-        id: restoreTimer
-        interval: 150
-        onTriggered: {
-            var batch = "";
-            for (var i = 0; i < Quickshell.screens.length; ++i) {
-                var name = Quickshell.screens[i].name;
-                var workspaceId = root.savedWorkspaces[name];
-                if (workspaceId === undefined)
-                    continue;
-                batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${name}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${workspaceId}})';`;
-            }
-            root.savedWorkspaces = ({});
-            if (batch.length > 0)
-                Quickshell.execDetached(["bash", "-c", batch]);
+    // Clearing savedWorkspaces makes this idempotent, so calling it twice costs
+    // nothing and the second caller is a safety net rather than a second move.
+    function restoreMonitors() {
+        pushRetryTimer.stop();
+        root.pendingScreens = [];
+        var batch = "";
+        for (var i = 0; i < Quickshell.screens.length; ++i) {
+            var name = Quickshell.screens[i].name;
+            var workspaceId = root.savedWorkspaces[name];
+            if (workspaceId === undefined)
+                continue;
+            batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${name}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${workspaceId}})';`;
         }
+        root.savedWorkspaces = ({});
+        if (batch.length > 0)
+            Quickshell.execDetached(["bash", "-c", batch]);
     }
+
+    // The password has been accepted but the surface is still up, which is the
+    // only moment the desktop can be put back without the move being watched.
+    onAboutToUnlock: root.restoreMonitors()
 
     // One batch for lock and one for unlock, so multiple hyprctl calls cannot
     // race each other into the wrong workspace.
@@ -96,15 +100,20 @@ LockScreen {
             if (GlobalStates.screenLocked) {
                 pushRetryTimer.stop();
                 root.savedWorkspaces = ({});
+                // Read which wallpaper each monitor is showing BEFORE moving
+                // any of them, in the same handler, so no other connection can
+                // run in between and read the pushed-away workspace instead.
+                root.context.clearCapturedWallpapers();
+                root.context.captureWallpapers(Quickshell.screens);
                 root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
                 if (root.pendingScreens.length > 0) {
                     pushRetryTimer.attemptsLeft = 5;
                     pushRetryTimer.restart();
                 }
             } else {
-                pushRetryTimer.stop();
-                root.pendingScreens = [];
-                restoreTimer.restart();
+                // Anything that clears the flag without going through the
+                // unlock path still gets its workspaces back.
+                root.restoreMonitors();
             }
         }
     }
@@ -116,6 +125,7 @@ LockScreen {
         function onScreensChanged() {
             if (!GlobalStates.screenLocked)
                 return;
+            root.context.captureWallpapers(Quickshell.screens);
             root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
             root.context.shouldReFocus();
         }

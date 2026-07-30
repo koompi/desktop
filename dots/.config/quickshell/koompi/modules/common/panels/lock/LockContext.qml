@@ -5,6 +5,7 @@ import qs.modules.common.functions
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Services.Pam
 
 Scope {
@@ -139,82 +140,86 @@ Scope {
     // ---------------------------------------------------------------------
     // Wallpaper
     // ---------------------------------------------------------------------
-    // One wallpaper for every monitor, chosen once per lock rather than once
-    // per surface, and chosen ahead of time so locking does not wait on a disk
-    // walk. prepareWallpaper() runs at startup and after each unlock.
-    property string preparedWallpaper: ""
-    property real preparedLuminance: 0.5
-    property string pickedWallpaper: ""
-    property real pickedLuminance: 0.5
-    property bool pickedWallpaperFailed: false
+    // The lock owns no wallpaper. Each surface shows whatever its workspace was
+    // already showing, blurred, so locking reads as a frosted pane over the
+    // desktop rather than as a different machine. Workspaces carry their own
+    // wallpapers, so this is per screen and cannot be one shared path.
+    //
+    // It has to be a snapshot rather than a live binding: the koompi lock moves
+    // every monitor to an out-of-range workspace while it is up, and asking
+    // after that returns the inherited wallpaper instead of the one that was on
+    // screen. captureWallpapers() runs before anything moves.
+    property var screenWallpapers: ({})
 
-    // The configured desktop wallpaper is the last resort. A video wallpaper
-    // has no decodable frame here, so its extracted thumbnail stands in.
-    readonly property string configuredWallpaper: {
-        const raw = Config.options.background.wallpaperPath ?? "";
-        const isVideo = [".mp4", ".webm", ".mkv", ".avi", ".mov"].some(ext => raw.endsWith(ext));
-        return isVideo ? (Config.options.background.thumbnailPath ?? "") : raw;
-    }
-    readonly property bool usingPickedWallpaper: !root.pickedWallpaperFailed && root.pickedWallpaper.length > 0
-    readonly property string wallpaperPath: root.usingPickedWallpaper ? root.pickedWallpaper : root.configuredWallpaper
-    // 0 is black, 1 is white. Drives the scrim so a bright photo is dimmed
-    // harder than a dark one and the clock reads on both.
-    readonly property real wallpaperLuminance: root.usingPickedWallpaper ? root.pickedLuminance : 0.5
-
-    // Called by a surface whose Image failed to decode. Drops to the configured
-    // wallpaper rather than leaving a bare surface.
-    function reportWallpaperFailure() {
-        if (root.usingPickedWallpaper) root.pickedWallpaperFailed = true;
+    function clearCapturedWallpapers() {
+        root.screenWallpapers = ({});
     }
 
-    function prepareWallpaper() {
-        wallpaperPickProc.running = false;
-        wallpaperPickProc.running = true;
-    }
-
-    function promotePreparedWallpaper() {
-        root.pickedWallpaperFailed = false;
-        if (root.preparedWallpaper.length > 0) {
-            root.pickedWallpaper = root.preparedWallpaper;
-            root.pickedLuminance = root.preparedLuminance;
-            return;
+    // Only ever answers for a screen it has no answer for yet. A monitor that
+    // arrives mid-lock can be captured without re-reading the ones that have
+    // already been moved out of the way, which would read back the wrong
+    // workspace.
+    function captureWallpapers(screens) {
+        const captured = Object.assign({}, root.screenWallpapers);
+        for (let i = 0; i < screens.length; ++i) {
+            const name = screens[i].name;
+            if (captured[name] !== undefined)
+                continue;
+            const workspaceId = Hyprland.monitorFor(screens[i])?.activeWorkspace?.id ?? -1;
+            captured[name] = Wallpapers.forWorkspace(workspaceId);
         }
-        // Nothing prepared yet, which happens when the shell locks on startup.
-        // The configured wallpaper is shown meanwhile and the pick swaps in as
-        // soon as it lands.
-        root.prepareWallpaper();
+        root.screenWallpapers = captured;
+        root.measureLuminance();
+    }
+
+    // For a surface nobody captured - a monitor plugged in while locked, or a
+    // lock that never moves anything. An unknown workspace inherits.
+    function liveWallpaperFor(screenName: string): string {
+        const monitor = Hyprland.monitors.values.find(m => m.name === screenName);
+        return Wallpapers.forWorkspace(monitor?.activeWorkspace?.id ?? -1);
+    }
+
+    function wallpaperForScreen(screenName: string): string {
+        return root.screenWallpapers[screenName] ?? root.liveWallpaperFor(screenName);
+    }
+
+    // 0 is black, 1 is white. Drives each surface's scrim so a bright photo is
+    // dimmed harder than a dark one and the clock reads on both. Keyed by path,
+    // because two screens showing two workspaces need two answers, and two
+    // screens showing the same one should only be measured once.
+    property var wallpaperLuminances: ({})
+
+    function luminanceForScreen(screenName: string): real {
+        return root.wallpaperLuminances[root.wallpaperForScreen(screenName)] ?? 0.5;
+    }
+
+    function measureLuminance() {
+        const paths = Object.values(root.screenWallpapers).filter((path, index, all) => path.length > 0 && all.indexOf(path) === index);
+        if (paths.length === 0)
+            return;
+        luminanceProc.running = false;
+        // Paths are passed as arguments rather than spliced into the script, so
+        // a quote or a space in a filename cannot break out of it.
+        luminanceProc.command = ["sh", "-c", 'for p in "$@"; do printf "%s\\t" "$p"; magick "$p" -resize 1x1\\! -format "%[fx:(r+g+b)/3]" info: 2>/dev/null; echo; done', "sh"].concat(paths);
+        luminanceProc.running = true;
     }
 
     Process {
-        id: wallpaperPickProc
-        // The greeter pool first, so the login screen and the lock screen show
-        // the same set. A machine without koompi-branding installed has no such
-        // directory, so fall back to the user's own wallpaper library rather
-        // than locking to a black screen. Every candidate is existence-tested
-        // before it is printed.
-        readonly property string libraryScript: FileUtils.trimFileProtocol(Directories.scriptPath) + "/colors/random/random_library_wall.sh"
-        command: ["sh", "-c",
-            'pick=$(find /usr/share/backgrounds/koompi -type f 2>/dev/null | shuf -n 1); '
-            + '[ -f "$pick" ] || pick=$("' + wallpaperPickProc.libraryScript + '" --print 2>/dev/null); '
-            + '[ -f "$pick" ] || pick=""; '
-            + 'lum=""; '
-            + '[ -n "$pick" ] && lum=$(magick "$pick" -resize 1x1\\! -format "%[fx:(r+g+b)/3]" info: 2>/dev/null); '
-            + 'printf "%s\\n%s\\n" "$pick" "$lum"']
+        id: luminanceProc
         stdout: StdioCollector {
-            id: wallpaperPickCollector
+            id: luminanceCollector
             onStreamFinished: {
-                const lines = wallpaperPickCollector.text.split("\n");
-                const path = (lines[0] ?? "").trim();
-                const luminance = parseFloat((lines[1] ?? "").trim());
-                root.preparedWallpaper = path;
-                // No ImageMagick, or an image it cannot measure: the middle of
-                // the range gives the scrim its neutral value.
-                root.preparedLuminance = isNaN(luminance) ? 0.5 : Math.max(0, Math.min(1, luminance));
-                // Locked with nothing picked yet: swap it in now rather than
-                // leaving the configured wallpaper up for the whole session.
-                if (GlobalStates.screenLocked && root.pickedWallpaper.length === 0) {
-                    root.promotePreparedWallpaper();
+                const measured = ({});
+                for (const line of luminanceCollector.text.split("\n")) {
+                    const parts = line.split("\t");
+                    if (parts.length < 2)
+                        continue;
+                    const luminance = parseFloat(parts[1].trim());
+                    // No ImageMagick, or an image it cannot measure: the middle
+                    // of the range gives the scrim its neutral value.
+                    measured[parts[0]] = isNaN(luminance) ? 0.5 : Math.max(0, Math.min(1, luminance));
                 }
+                root.wallpaperLuminances = measured;
             }
         }
     }
