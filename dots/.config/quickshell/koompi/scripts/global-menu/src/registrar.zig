@@ -26,8 +26,16 @@ pub const Registrar = struct {
     entries: std.ArrayListUnmanaged(Entry) = .empty,
     serial: u64 = 0,
     /// Whether we actually hold the well-known name. Exporting the object
-    /// succeeds even when the name went to somebody else, and an application
-    /// only ever registers with whoever holds the name.
+    /// succeeds even when the name went to somebody else, so this is the only
+    /// thing that says whether our table is the one the session is using.
+    ///
+    /// It gates the mirror, and nothing else. RegisterWindow deliberately still
+    /// answers when it is false: an application registers exactly once, on the
+    /// first NameOwnerChanged that says somebody owns the name, and never
+    /// retries. Refusing it because our own name_acquired callback has not been
+    /// dispatched yet would cost that application its menu for its whole
+    /// lifetime. Accepting one costs nothing, because a daemon that does not own
+    /// the name receives no queries and no longer writes the mirror.
     owns_name: bool = false,
     /// Where the table is mirrored so it survives our own restart.
     runtime_dir: ?[]const u8 = null,
