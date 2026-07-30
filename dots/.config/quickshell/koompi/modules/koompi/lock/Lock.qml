@@ -11,67 +11,113 @@ import Quickshell.Hyprland
 LockScreen {
     id: root
 
-    // Monitor name -> workspace id to restore on unlock (set when locking)
-    property var savedWorkspaces: ({})
-
-    Timer {
-        id: restoreTimer
-        interval: 150
-        repeat: false
-        onTriggered: {
-            var batch = ""
-            for (var j = 0; j < Quickshell.screens.length; ++j) {
-                var monName = Quickshell.screens[j].name
-                var wsId = root.savedWorkspaces[monName]
-                if (wsId !== undefined) {
-                    batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${monName}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${wsId}})';`
-                }
-            }
-            if (batch.length > 0) {
-                Quickshell.execDetached(["bash", "-c", batch])
-            }
-        }
-    }
-
     lockSurface: LockSurface {
         context: root.context
     }
 
-    // Single batch for lock and unlock so we don't race multiple hyprctl calls
+    // Monitor name -> workspace id to restore on unlock. Only monitors this
+    // actually moved get an entry, so a monitor that was never pushed is never
+    // "restored" to a workspace it was not on.
+    property var savedWorkspaces: ({})
+
+    function activeWorkspaceIdFor(screen) {
+        // The live Hyprland object first; HyprlandData is a polled cache and is
+        // briefly empty after a hot-plug or a compositor restart.
+        const live = Hyprland.monitorFor(screen)?.activeWorkspace?.id;
+        if (live !== undefined && live !== null)
+            return live;
+        const cached = HyprlandData.monitors?.find(m => m.name === screen.name)?.activeWorkspace?.id;
+        return (cached !== undefined && cached !== null) ? cached : null;
+    }
+
+    // Move each monitor to a workspace far outside the usable range, so the
+    // desktop is not sitting behind the lock surface waiting to be revealed by
+    // a compositor bug. A monitor whose workspace is not known yet is skipped
+    // and retried; it must not cost every other monitor its push.
+    function pushMonitorsAway(screens) {
+        var batch = "";
+        var pending = [];
+        var saved = root.savedWorkspaces;
+        for (var i = 0; i < screens.length; ++i) {
+            var screen = screens[i];
+            if (saved[screen.name] !== undefined)
+                continue;
+            var workspaceId = root.activeWorkspaceIdFor(screen);
+            if (workspaceId === null) {
+                pending.push(screen);
+                continue;
+            }
+            saved[screen.name] = workspaceId;
+            batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${screen.name}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${2147483647 - workspaceId}})';`;
+        }
+        root.savedWorkspaces = saved;
+        if (batch.length > 0)
+            Quickshell.execDetached(["bash", "-c", batch]);
+        return pending;
+    }
+
+    property var pendingScreens: []
+    Timer {
+        id: pushRetryTimer
+        interval: 200
+        repeat: true
+        property int attemptsLeft: 0
+        onTriggered: {
+            root.pendingScreens = root.pushMonitorsAway(root.pendingScreens);
+            attemptsLeft -= 1;
+            if (root.pendingScreens.length === 0 || attemptsLeft <= 0)
+                stop();
+        }
+    }
+
+    Timer {
+        id: restoreTimer
+        interval: 150
+        onTriggered: {
+            var batch = "";
+            for (var i = 0; i < Quickshell.screens.length; ++i) {
+                var name = Quickshell.screens[i].name;
+                var workspaceId = root.savedWorkspaces[name];
+                if (workspaceId === undefined)
+                    continue;
+                batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${name}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${workspaceId}})';`;
+            }
+            root.savedWorkspaces = ({});
+            if (batch.length > 0)
+                Quickshell.execDetached(["bash", "-c", batch]);
+        }
+    }
+
+    // One batch for lock and one for unlock, so multiple hyprctl calls cannot
+    // race each other into the wrong workspace.
     Connections {
         target: GlobalStates
         function onScreenLockedChanged() {
             if (GlobalStates.screenLocked) {
-                // Lock: save workspace per monitor and move all to temp workspace in one batch
-                var next = {}
-                var batch = "keyword animation workspaces,1,7,menu_decel,slidevert; "
-                for (var i = 0; i < Quickshell.screens.length; ++i) {
-                    var mon = Quickshell.screens[i].name
-                    var mData = HyprlandData.monitors.find(m => m.name === mon)
-                    if (mData?.activeWorkspace == undefined) {
-                        return;
-                    }
-                    var ws = (mData?.activeWorkspace?.id ?? 1)
-                    next[mon] = ws
-                    batch += `hyprctl dispatch 'hl.dsp.focus({monitor="${mon}"})'; hyprctl dispatch 'hl.dsp.focus({workspace=${2147483647 - ws}})';`
+                pushRetryTimer.stop();
+                root.savedWorkspaces = ({});
+                root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
+                if (root.pendingScreens.length > 0) {
+                    pushRetryTimer.attemptsLeft = 5;
+                    pushRetryTimer.restart();
                 }
-                root.savedWorkspaces = next
-                Quickshell.execDetached(["bash", "-c", batch])
             } else {
-                restoreTimer.start()
+                pushRetryTimer.stop();
+                root.pendingScreens = [];
+                restoreTimer.restart();
             }
         }
     }
 
-    // Push everything down (visual only; workspace switch is in Connections above)
-    Variants {
-        model: Quickshell.screens
-        delegate: Scope {
-            required property ShellScreen modelData
-            property bool shouldPush: GlobalStates.screenLocked
-            property string targetMonitorName: modelData.name
-            property int verticalMovementDistance: modelData.height
-            property int horizontalSqueeze: modelData.width * 0.2
+    // A monitor plugged in while locked has no saved workspace, so it is pushed
+    // now and restored with the rest.
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            if (!GlobalStates.screenLocked)
+                return;
+            root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
+            root.context.shouldReFocus();
         }
     }
 }

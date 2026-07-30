@@ -8,7 +8,6 @@ import qs.modules.common.widgets.widgetCanvas
 import qs.modules.common.functions as CF
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -30,7 +29,7 @@ Variants {
         // Hide when fullscreen
         property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
         property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
-        visible: GlobalStates.screenLocked || (!(activeWorkspaceWithFullscreen != undefined)) || !Config?.options.background.hideWhenFullscreen
+        visible: (!(activeWorkspaceWithFullscreen != undefined)) || !Config?.options.background.hideWhenFullscreen
 
         // Workspaces
         property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
@@ -93,13 +92,12 @@ Variants {
         property real parallaxTotalPixelsY: Math.max(0, scaledWallpaperHeight - screen.height)
         readonly property bool verticalParallax: (Config.options.background.parallax.autoVertical && wallpaperHeight > wallpaperWidth) || Config.options.background.parallax.vertical
         // Colors
-        property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
         property color dominantColor: Appearance.colors.colPrimary // Default, to be changed
         property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
         property color colText: {
             if (wallpaperSafetyTriggered)
                 return CF.ColorUtils.mix(Appearance.colors.colOnLayer0, Appearance.colors.colPrimary, 0.75);
-            return (GlobalStates.screenLocked && shouldBlur) ? Appearance.colors.colOnLayer0 : CF.ColorUtils.colorWithLightness(Appearance.colors.colPrimary, (dominantColorIsDark ? 0.8 : 0.12));
+            return CF.ColorUtils.colorWithLightness(Appearance.colors.colPrimary, (dominantColorIsDark ? 0.8 : 0.12));
         }
         Behavior on colText {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -108,8 +106,11 @@ Variants {
         // Layer props
         screen: modelData
         exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: (GlobalStates.screenLocked && !scaleAnim.running) ? WlrLayer.Overlay : WlrLayer.Bottom
-        // WlrLayershell.layer: WlrLayer.Bottom
+        // Strictly the desktop background. The session lock draws its own
+        // wallpaper on its own surface, which the compositor composites above
+        // every layer-shell layer, so raising this one while locked only ever
+        // produced a second wallpaper nobody could see.
+        WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.namespace: "quickshell:background"
         anchors {
             top: true
@@ -164,7 +165,7 @@ Variants {
             // Wallpaper
             StyledImage {
                 id: wallpaper
-                visible: opacity > 0 && !blurLoader.active
+                visible: opacity > 0
                 // Workspace switches swap source mid-slide. retainWhileLoading
                 // keeps the old frame while the next decodes, so stay visible
                 // during Loading instead of fading through black; hide only
@@ -238,32 +239,6 @@ Variants {
                 height: bgRoot.scaledWallpaperHeight
             }
 
-            Loader {
-                id: blurLoader
-                active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
-                anchors.fill: wallpaper
-                scale: GlobalStates.screenLocked ? Config.options.lock.blur.extraZoom : 1
-                Behavior on scale {
-                    NumberAnimation {
-                        id: scaleAnim
-                        duration: 400
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Appearance.animationCurves.expressiveDefaultSpatial
-                    }
-                }
-                sourceComponent: GaussianBlur {
-                    source: wallpaper
-                    radius: GlobalStates.screenLocked ? Config.options.lock.blur.radius : 0
-                    samples: radius * 2 + 1
-
-                    Rectangle {
-                        opacity: GlobalStates.screenLocked ? 1 : 0
-                        anchors.fill: parent
-                        color: CF.ColorUtils.transparentize(Appearance.colors.colLayer0, 0.7)
-                    }
-                }
-            }
-
             WidgetCanvas {
                 id: widgetCanvas
                 width: parent.width
@@ -276,9 +251,8 @@ Variants {
                 readonly property real baseWallpaperOffsetY: (bgRoot.screen.height - wallpaper.height) / 2
                 readonly property real wallpaperTotalOffsetX: wallpaper.x - baseWallpaperOffsetX
                 readonly property real wallpaperTotalOffsetY: wallpaper.y - baseWallpaperOffsetY
-                readonly property bool locked: GlobalStates.screenLocked
-                x: wallpaperTotalOffsetX * parallaxFactor * !locked
-                y: wallpaperTotalOffsetY * parallaxFactor * !locked
+                x: wallpaperTotalOffsetX * parallaxFactor
+                y: wallpaperTotalOffsetY * parallaxFactor
 
                 transitions: Transition {
                     PropertyAnimation {

@@ -16,7 +16,10 @@ Scope {
     property alias context: lockContext
     property Component sessionLockSurface: WlSessionLockSurface {
         id: sessionLockSurface
-        color: "transparent"
+        // Opaque from the very first frame. A transparent lock surface lets the
+        // compositor show the desktop underneath for the length of the fade-in,
+        // which is exactly the frame this screen exists to prevent.
+        color: Appearance.m3colors.m3background
         Loader {
             active: GlobalStates.screenLocked
             anchors.fill: parent
@@ -53,7 +56,13 @@ Scope {
             function onScreenLockedChanged() {
                 if (GlobalStates.screenLocked) {
                     lockContext.reset();
+                    lockContext.promotePreparedWallpaper();
+                    lockContext.refreshCapsLock();
                     lockContext.tryFingerUnlock();
+                } else {
+                    // Line up the next one now, so the following lock does not
+                    // wait on a disk walk before it has anything to show.
+                    lockContext.prepareWallpaper();
                 }
             }
         }
@@ -132,6 +141,7 @@ Scope {
 
     function initIfReady() {
         if (!Config.ready || !Persistent.ready) return;
+        lockContext.prepareWallpaper();
         if (Config.options.lock.launchOnStartup && Persistent.isNewHyprlandInstance) {
             root.lock();
         } else {

@@ -16,17 +16,15 @@ AbstractBackgroundWidget {
     implicitHeight: contentColumn.implicitHeight
     implicitWidth: contentColumn.implicitWidth
 
-    readonly property string clockStyle: GlobalStates.screenLocked ? Config.options.background.widgets.clock.styleLocked : Config.options.background.widgets.clock.style
-    readonly property bool forceCenter: (GlobalStates.screenLocked && Config.options.lock.centerClock)
-    readonly property bool shouldShow: (!Config.options.background.widgets.clock.showOnlyWhenLocked || GlobalStates.screenLocked)
+    // The lock screen draws its own clock on its own surface. This one is only
+    // ever the desktop clock, so it has no locked variant to switch to.
+    readonly property string clockStyle: Config.options.background.widgets.clock.style
+    readonly property bool shouldShow: !Config.options.background.widgets.clock.showOnlyWhenLocked
     property bool wallpaperSafetyTriggered: false
     needsColText: clockStyle === "digital"
-    x: forceCenter ? ((root.screenWidth - root.width) / 2) : targetX
-    y: forceCenter ? ((root.screenHeight - root.height) / 2) : targetY
-    visibleWhenLocked: true
 
     property var textHorizontalAlignment: {
-        if (!Config.options.background.widgets.clock.digital.adaptiveAlignment || root.forceCenter || Config.options.background.widgets.clock.digital.vertical) 
+        if (!Config.options.background.widgets.clock.digital.adaptiveAlignment || Config.options.background.widgets.clock.digital.vertical)
             return Text.AlignHCenter;
         if (root.x < root.scaledScreenWidth / 3)
             return Text.AlignLeft;
@@ -86,7 +84,7 @@ AbstractBackgroundWidget {
             id: statusTextBg
             anchors.centerIn: parent
             clip: true
-            opacity: (safetyStatusText.shown || lockStatusText.shown) ? 1 : 0
+            opacity: safetyStatusText.shown ? 1 : 0
             visible: opacity > 0
             implicitHeight: statusTextRow.implicitHeight + 5 * 2
             implicitWidth: statusTextRow.implicitWidth + 5 * 2
@@ -116,12 +114,6 @@ AbstractBackgroundWidget {
                     shown: root.wallpaperSafetyTriggered
                     statusIcon: "hide_image"
                     statusText: Translation.tr("Wallpaper safety enforced")
-                }
-                ClockStatusText {
-                    id: lockStatusText
-                    shown: GlobalStates.screenLocked && Config.options.lock.showLockedText
-                    statusIcon: "lock"
-                    statusText: Translation.tr("Locked")
                 }
                 Item {
                     Layout.fillWidth: root.textHorizontalAlignment !== Text.AlignRight
