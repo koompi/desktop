@@ -534,6 +534,11 @@ Singleton {
                 property int historyLength: 60
             }
 
+            property JsonObject power: JsonObject {
+                // Halve the shell's background polling rate while on battery.
+                property bool saveOnBattery: true
+            }
+
             property JsonObject tray: JsonObject {
                 property bool monochromeIcons: true
                 property bool showItemId: false

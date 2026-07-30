@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 import qs
 import qs.modules.common
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -26,8 +27,12 @@ Singleton {
     property string uptime: "0h, 0m"
 
     Timer {
-        interval: 10
-        running: true
+        // Uptime is rendered at minute resolution, so reading /proc/uptime every
+        // three seconds threw away 19 of every 20 wakeups. Both consumers (the
+        // right sidebar and the clock popup) are hidden most of the time anyway.
+        interval: 60000
+        running: PowerSaving.awake
+        triggeredOnStart: true
         repeat: true
         onTriggered: {
             fileUptime.reload();
@@ -48,7 +53,6 @@ Singleton {
             if (minutes > 0 || !formatted)
                 formatted += `${formatted ? ", " : ""}${minutes}m`;
             uptime = formatted;
-            interval = Config.options?.resources?.updateInterval ?? 3000;
         }
     }
 

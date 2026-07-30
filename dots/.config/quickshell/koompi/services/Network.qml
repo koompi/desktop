@@ -164,7 +164,14 @@ Singleton {
     Process {
         id: subscriber
         running: true
-        command: ["nmcli", "monitor"]
+        // Quickshell does not kill a Process when the shell reloads, so every
+        // reload leaked an `nmcli monitor` that stays subscribed to
+        // NetworkManager for the rest of the uptime. Fifty-two were alive on the
+        // development machine, 50 of them orphaned to init. Same guard the idle
+        // inhibitor uses. `-x -f` requires the whole command line to match, so
+        // this wrapper cannot kill itself and the shell's short-lived one-shot
+        // `nmcli` queries are never matched.
+        command: ["bash", "-c", "pkill -x -f '(/usr/bin/)?nmcli monitor'; exec nmcli monitor"]
         stdout: SplitParser {
             onRead: root.update()
         }
