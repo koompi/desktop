@@ -49,7 +49,7 @@ ShellRoot {
     
     PanelFamilyLoader {
         identifier: "ii"
-        component: IllogicalImpulseFamily {}
+        component: KoompiFamily {}
     }
 
     PanelFamilyLoader {
