@@ -670,6 +670,7 @@ Singleton {
             property JsonObject windows: JsonObject {
                 property bool showTitlebar: true // Client-side decoration for shell apps
                 property bool centerTitle: true
+                property bool actionsMenu: true // Click the bar's app identity for the window's own actions
             }
 
             property JsonObject hacks: JsonObject {

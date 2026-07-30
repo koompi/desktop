@@ -11,7 +11,7 @@ import qs.modules.common.functions
 Item { // Bar content region
     id: root
 
-    property alias globalMenuOpen: activeWindow.globalMenuOpen
+    readonly property bool menuOpen: activeWindow.menuOpen
     property var screen: root.QsWindow.window?.screen
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
     property real useShortenedForm: (Appearance.sizes.barHellaShortenScreenWidthThreshold >= screen?.width) ? 2 : (Appearance.sizes.barShortenScreenWidthThreshold >= screen?.width) ? 1 : 0

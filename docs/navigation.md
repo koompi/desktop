@@ -44,12 +44,21 @@ The horizontal bar and the vertical bar are alternative bars, so a given session
 | Search | `Super` | none | none | none | yes |
 | Launchpad | none, by decision | none | none | 4-finger spread and close | yes |
 | Cheatsheet | `Super+/` | none | none | none | yes |
+| Window actions | none, by decision | left-click the app identity in the left section | none | none | no |
 
 Getting to one bar button per sidebar took a change on 2026-07-30.
 Three bar sections were left-click toggles for a sidebar on top of the dedicated button inside that same section: the right section of the horizontal bar, and both the top and bottom sections of the vertical bar.
 The consequence was that clicking the clock, the Pomodoro timer, or a gap between tray icons opened a sidebar.
 The horizontal bar's left section already did it correctly, with `acceptedButtons: Qt.NoButton` and a comment saying clicks belong to the dedicated button, so the fix was to make the other three match it.
 Those sections still exist for hover and for scroll-to-change-volume or brightness, which are wheel and hover behaviours and survive `NoButton`.
+
+The window actions menu takes the one pointer path the app identity had spare, so a window's own actions are reachable without knowing a bind.
+Left-clicking the icon, app name, and title opens close, float, fullscreen, pin, and move to workspace for the focused window, and clicking again closes it.
+That is a click on a dedicated item, which is what the left section's `acceptedButtons: Qt.NoButton` reserves clicks for, so the section itself still opens nothing.
+Right-click on the identity stays free, and the menu takes no keyboard binding and no gesture.
+Each entry shows the bind that does the same thing, which is the only place the window binds appear outside `Super+/`.
+It exists on the horizontal bar only, because the vertical bar shows no window identity to hang it off.
+`windows.actionsMenu` turns it off, default true.
 
 This matters more for the right sidebar than the count suggests.
 Opening it runs `GlobalStates.onSidebarRightOpenChanged`, which times out and marks read every notification, so an accidental open destroys state.
@@ -251,6 +260,7 @@ Conformance as of 2026-07-30:
 | Cheatsheet | dismissable | gated on `cheatsheetOpen` |
 | On-screen keyboard | persistent, correctly | commented out |
 | Global menu | own `HyprlandFocusGrab` over the bar and every open popup | bar takes focus only while a menu is open |
+| Window actions menu | own `HyprlandFocusGrab` over the bar and every open popup | bar takes focus only while a menu is open |
 | Launchpad | none needed, see below | gated on `launchpadOpen`, `Exclusive` |
 | Widget overlay | own grab, left `active: false` | conditional, pinned widgets stay up by design |
 | Region selector | none, modal capture surface | unconditional `OnDemand` |

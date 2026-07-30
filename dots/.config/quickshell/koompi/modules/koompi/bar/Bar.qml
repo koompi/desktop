@@ -56,7 +56,7 @@ Scope {
                 exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
                     Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
                 WlrLayershell.namespace: "quickshell:bar"
-                WlrLayershell.keyboardFocus: barContent.globalMenuOpen
+                WlrLayershell.keyboardFocus: barContent.menuOpen
                     ? WlrKeyboardFocus.OnDemand
                     : WlrKeyboardFocus.None
                 implicitHeight: Appearance.sizes.barHeight + Appearance.rounding.screenRounding
