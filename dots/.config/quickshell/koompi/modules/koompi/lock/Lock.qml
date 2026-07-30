@@ -57,6 +57,25 @@ LockScreen {
     }
 
     property var pendingScreens: []
+
+    // Moving every monitor to another workspace is an animated workspace switch
+    // as far as the compositor is concerned. Held back until the lock surface is
+    // up so that switch plays behind it, instead of being the last thing on
+    // screen before the lock covers it.
+    Timer {
+        id: pushDelayTimer
+        interval: 250
+        onTriggered: {
+            if (!GlobalStates.screenLocked)
+                return;
+            root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
+            if (root.pendingScreens.length > 0) {
+                pushRetryTimer.attemptsLeft = 5;
+                pushRetryTimer.restart();
+            }
+        }
+    }
+
     Timer {
         id: pushRetryTimer
         interval: 200
@@ -73,6 +92,9 @@ LockScreen {
     // Clearing savedWorkspaces makes this idempotent, so calling it twice costs
     // nothing and the second caller is a safety net rather than a second move.
     function restoreMonitors() {
+        // An unlock faster than the delay must cancel the push outright, or the
+        // monitors get moved away after they were put back.
+        pushDelayTimer.stop();
         pushRetryTimer.stop();
         root.pendingScreens = [];
         var batch = "";
@@ -105,11 +127,7 @@ LockScreen {
                 // run in between and read the pushed-away workspace instead.
                 root.context.clearCapturedWallpapers();
                 root.context.captureWallpapers(Quickshell.screens);
-                root.pendingScreens = root.pushMonitorsAway(Quickshell.screens);
-                if (root.pendingScreens.length > 0) {
-                    pushRetryTimer.attemptsLeft = 5;
-                    pushRetryTimer.restart();
-                }
+                pushDelayTimer.restart();
             } else {
                 // Anything that clears the flag without going through the
                 // unlock path still gets its workspaces back.

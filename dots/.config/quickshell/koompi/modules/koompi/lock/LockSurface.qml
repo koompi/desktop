@@ -30,6 +30,13 @@ MouseArea {
     // Set by the Loader in LockScreen. Empty only if this is ever instantiated
     // outside one, in which case the context falls back to a live lookup.
     readonly property string screenName: parent?.lockScreenName ?? ""
+    // The password has been accepted and this surface is on its way out. Set by
+    // the Loader in LockScreen, which keeps the surface alive until the exit has
+    // played. Everything that is lock furniture leaves; the wallpaper does not,
+    // and loses its blur, veil and zoom so the last frame here is as close as it
+    // can get to the first frame of the desktop.
+    readonly property bool unlocking: parent?.lockUnlocking ?? false
+    readonly property int exitDuration: parent?.lockExitDuration ?? 350
     readonly property string wallpaperPath: root.context.wallpaperForScreen(root.screenName)
 
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
@@ -100,28 +107,30 @@ MouseArea {
         root.forceFieldFocus();
     }
 
-    // Entrance animation
-    property real toolbarScale: 0.9
-    property real toolbarOpacity: 0
+    // Entrance and exit of everything that is not the wallpaper. One duration
+    // and one curve for every part of it, in both directions: a fade that ends
+    // before the thing it was fading has finished moving is most of what reads
+    // as rough here, and the only way to be sure that never happens is to have
+    // a single answer for how long a change takes.
+    readonly property bool furnitureShown: root.contentReady && !root.unlocking
+    component LockAnimation: NumberAnimation {
+        duration: root.unlocking ? root.exitDuration : Appearance.animation.elementMoveEnter.duration
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Appearance.animationCurves.emphasized
+    }
+
+    property real toolbarScale: root.furnitureShown ? 1 : 0.94
+    property real toolbarOpacity: root.furnitureShown ? 1 : 0
     Behavior on toolbarScale {
-        NumberAnimation {
-            duration: Appearance.animation.elementMove.duration
-            easing.type: Appearance.animation.elementMove.type
-            easing.bezierCurve: Appearance.animationCurves.expressiveFastSpatial
-        }
+        LockAnimation {}
     }
     Behavior on toolbarOpacity {
-        animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+        LockAnimation {}
     }
 
     Component.onCompleted: {
         forceFieldFocus();
         wallpaperGraceTimer.restart();
-    }
-    onContentReadyChanged: {
-        if (!root.contentReady) return;
-        toolbarScale = 1;
-        toolbarOpacity = 1;
     }
 
     // ---------------------------------------------------------------------
@@ -183,24 +192,30 @@ MouseArea {
         sourceSize.height: Config.options.lock.blur.enable ? Math.min(1080, root.height) : 0
         source: root.wallpaperPath.length > 0 ? `file://${root.wallpaperPath}` : ""
 
-        visible: !blurLoader.active && status === Image.Ready
-        opacity: status === Image.Ready ? 1 : 0
-        Behavior on opacity {
-            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-        }
+        // No fade in. This is the same photo the desktop was already showing, so
+        // fading it up from the base colour is a flash of theme background over
+        // a wallpaper that never actually went away.
+        // While unlocking it is uncovered from under the blurred copy fading out
+        // above it. Two copies of one photo for a third of a second is cheaper
+        // than animating the blur radius, which re-runs every blur pass on every
+        // frame and stutters on an integrated GPU at exactly the moment this is
+        // trying to look smooth.
+        visible: status === Image.Ready && (!blurLoader.active || root.unlocking)
 
         scale: root.wallpaperScale
         z: -3
     }
 
-    // A slight settle on entry, from the configured zoom and a touch more.
-    property real wallpaperScale: Config.options.lock.blur.extraZoom * 1.04
-    NumberAnimation on wallpaperScale {
-        running: true
-        to: Config.options.lock.blur.extraZoom
-        duration: Appearance.animation.elementMove.duration
-        easing.type: Appearance.animation.elementMove.type
-        easing.bezierCurve: Appearance.animationCurves.expressiveDefaultSpatial
+    // A slight settle on entry, from the configured zoom and a touch more, and
+    // all the way back on exit: the desktop underneath draws this same photo
+    // with no zoom of its own.
+    property real wallpaperScale: {
+        if (root.unlocking)
+            return 1;
+        return Config.options.lock.blur.extraZoom * (root.contentReady ? 1 : 1.04);
+    }
+    Behavior on wallpaperScale {
+        LockAnimation {}
     }
 
     Loader {
@@ -214,6 +229,7 @@ MouseArea {
         sourceComponent: MultiEffect {
             source: lockWallpaper
             blurEnabled: true
+            // Never animated, only faded. See the note on lockWallpaper.visible.
             blur: 1.0
             // A separable multi-pass blur, unlike the single-pass GaussianBlur
             // this replaced, which needed samples: radius * 2 + 1 (201 samples
@@ -223,9 +239,9 @@ MouseArea {
             blurMax: Math.round(Math.max(8, Math.min(64, Config.options.lock.blur.radius)))
             autoPaddingEnabled: false
             scale: root.wallpaperScale
-            opacity: root.contentReady ? 1 : 0
+            opacity: root.furnitureShown ? 1 : 0
             Behavior on opacity {
-                animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+                LockAnimation {}
             }
         }
     }
@@ -233,9 +249,11 @@ MouseArea {
     Rectangle {
         anchors.fill: parent
         color: "#000000"
-        opacity: lockWallpaper.status === Image.Ready ? root.scrimOpacity : 0
+        // The veil exists to make lock text readable. Once the text is leaving
+        // there is nothing to make readable, and the desktop is not veiled.
+        opacity: (lockWallpaper.status === Image.Ready && !root.unlocking) ? root.scrimOpacity : 0
         Behavior on opacity {
-            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+            LockAnimation {}
         }
         z: -2
     }
@@ -252,10 +270,16 @@ MouseArea {
             bottom: bottomStack.top
             bottomMargin: root.edgeMargin
         }
-        opacity: root.contentReady ? 1 : 0
+        opacity: root.furnitureShown ? 1 : 0
         visible: opacity > 0
+        // The clock is the largest thing on screen, so it is the one whose
+        // timing is most obvious if it disagrees with anything else.
         Behavior on opacity {
-            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+            LockAnimation {}
+        }
+        scale: root.furnitureShown ? 1 : 0.98
+        Behavior on scale {
+            LockAnimation {}
         }
 
         LockClock {

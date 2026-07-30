@@ -20,35 +20,55 @@ Scope {
     // sight.
     signal aboutToUnlock()
 
+    // True from the moment the password is accepted until the surface is
+    // dropped. The surface stays opaque for all of it: the lock takes its own
+    // furniture away and settles onto the wallpaper it is already showing, so
+    // the frame it disappears on is the frame the desktop appears with.
+    // Nothing is ever revealed THROUGH this surface - a compositor that
+    // animates the desktop back into place, or does not draw it at all, must
+    // not be able to show either of those things.
+    property bool unlocking: false
+    // How long the surface has to take itself apart, and how long it then holds
+    // the finished frame. The hold is what makes this read as smooth: without
+    // it the surface is dropped while its own animation is still moving, and a
+    // cut out of motion looks like a jump however short it is.
+    readonly property int exitDuration: 350
+    readonly property int exitHoldDuration: 120
+
     Timer {
         id: unlockDelayTimer
-        // One hyprctl round trip, spawned as a detached process. Shorter than
-        // this and the restore is still in flight when the surface drops.
-        interval: 200
+        // Also comfortably longer than the one hyprctl round trip the desktop
+        // restore needs; shorter than that and the restore is still in flight
+        // when the surface drops.
+        interval: root.exitDuration + root.exitHoldDuration
         onTriggered: {
             // Unlock the screen before exiting, or the compositor will display
             // a fallback lock you can't interact with.
             GlobalStates.screenLocked = false;
+            root.unlocking = false;
             lockContext.reset();
         }
     }
     property Component sessionLockSurface: WlSessionLockSurface {
         id: sessionLockSurface
-        // Opaque from the very first frame. A transparent lock surface lets the
-        // compositor show the desktop underneath for the length of the fade-in,
-        // which is exactly the frame this screen exists to prevent.
+        // Opaque for every frame it exists, including the first and the last. A
+        // transparent lock surface lets the compositor show whatever is behind
+        // it, which is exactly what this screen exists to prevent, and on the
+        // way out it is also where the blink came from.
         color: Appearance.m3colors.m3background
         Loader {
+            // Stays loaded for the whole unlock animation: `screenLocked` is
+            // only cleared once the surface has finished settling.
             active: GlobalStates.screenLocked
             anchors.fill: parent
-            opacity: active ? 1 : 0
-            // Read by the loaded surface as `parent.lockScreenName`: workspaces
-            // carry their own wallpapers, so a surface has to know which screen
-            // it is on to show the right one.
+            // Read by the loaded surface as `parent.lockScreenName` and
+            // `parent.lockUnlocking`: workspaces carry their own wallpapers, so
+            // a surface has to know which screen it is on to show the right
+            // one, and it animates its own exit because only it knows which of
+            // its parts are furniture and which is the wallpaper that stays.
             readonly property string lockScreenName: sessionLockSurface.screen?.name ?? ""
-            Behavior on opacity {
-                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-            }
+            readonly property bool lockUnlocking: root.unlocking
+            readonly property int lockExitDuration: root.exitDuration
             sourceComponent: root.lockSurface
         }
     }
@@ -77,6 +97,9 @@ Scope {
             target: GlobalStates
             function onScreenLockedChanged() {
                 if (GlobalStates.screenLocked) {
+                    // A lock that arrives while a previous unlock is still
+                    // fading must start from a fully drawn surface.
+                    root.unlocking = false;
                     lockContext.reset();
                     lockContext.refreshCapsLock();
                     lockContext.tryFingerUnlock();
@@ -110,6 +133,7 @@ Scope {
             // Armed BEFORE the signal, never after: a handler that throws must
             // not be able to cost someone the only way out of the lock.
             unlockDelayTimer.restart();
+            root.unlocking = true;
             root.aboutToUnlock();
         }
     }
