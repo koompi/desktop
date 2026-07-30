@@ -48,6 +48,9 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Top section | scroll to change brightness
         id: barTopSectionMouseArea
+        // Clicks belong to the dedicated sidebar button below, as in the
+        // horizontal bar. This parent exists only for hover and wheel input.
+        acceptedButtons: Qt.NoButton
         anchors.top: parent.top
         implicitHeight: topSectionColumnLayout.implicitHeight
         implicitWidth: Appearance.sizes.baseVerticalBarWidth
@@ -57,10 +60,6 @@ Item { // Bar content region
         onScrollDown: Brightness.decreaseBrightness()
         onScrollUp: Brightness.increaseBrightness()
         onMovedAway: GlobalStates.osdBrightnessOpen = false
-        onPressed: event => {
-            if (event.button === Qt.LeftButton)
-                GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
-        }
 
         ColumnLayout { // Content
             id: topSectionColumnLayout
@@ -155,6 +154,10 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Bottom section | scroll to change volume
         id: barBottomSectionMouseArea
+        // Clicks belong to the dedicated sidebar button below. The tray sits in
+        // this section too, so a click that missed a tray icon used to open the
+        // right sidebar. This parent exists only for hover and wheel input.
+        acceptedButtons: Qt.NoButton
 
         anchors {
             left: parent.left
@@ -163,15 +166,10 @@ Item { // Bar content region
         }
         implicitWidth: Appearance.sizes.baseVerticalBarWidth
         implicitHeight: bottomSectionColumnLayout.implicitHeight
-        
+
         onScrollDown: Audio.decrementVolume();
         onScrollUp: Audio.incrementVolume();
         onMovedAway: GlobalStates.osdVolumeOpen = false;
-        onPressed: event => {
-            if (event.button === Qt.LeftButton) {
-                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-            }
-        }
 
         ColumnLayout {
             id: bottomSectionColumnLayout

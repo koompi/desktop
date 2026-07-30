@@ -133,6 +133,12 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Right side | scroll to change volume
         id: barRightSideMouseArea
+        // Clicks belong to the dedicated sidebar button below, as on the left.
+        // The whole strip used to toggle the right sidebar on top of that button,
+        // so clicking the clock or the Pomodoro timer opened it, and opening it
+        // times out and marks read every notification. This parent exists only
+        // for hover and wheel input.
+        acceptedButtons: Qt.NoButton
 
         anchors {
             top: parent.top
@@ -146,11 +152,6 @@ Item { // Bar content region
         onScrollDown: Audio.decrementVolume();
         onScrollUp: Audio.incrementVolume();
         onMovedAway: GlobalStates.osdVolumeOpen = false;
-        onPressed: event => {
-            if (event.button === Qt.LeftButton) {
-                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-            }
-        }
 
         // Visual content
         ScrollHint {
