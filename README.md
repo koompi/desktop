@@ -86,7 +86,6 @@ On KOOMPI OS, where the desktop comes from packages, that is a `pacman -Syu`.
 On an install from a checkout it is a `git pull` followed by `./setup update`,
 which re-applies the config, leaves your `~/.config/hypr/custom/` overrides
 alone, and reloads the running session so you do not have to log out.
-See [Updating](docs/install.md#updating).
 
 ## KOOMPI command line
 
@@ -156,16 +155,14 @@ Those files are written once and never overwritten again, so an update cannot lo
 | Debian / Ubuntu | Supported. Some components are built from source. |
 
 Anything else can still run `./setup install --no-deps` and install the
-packages in [`docs/dependencies.md`](docs/dependencies.md) by hand.
+packages by hand. The authoritative list is the Arch recipe,
+`sdata/dist-arch/install-deps.sh`, with per-package notes in
+[`sdata/deps-info.md`](sdata/deps-info.md).
 
 ## KOOMPI OS
 
 KOOMPI OS itself does not use `./setup`.
 The desktop is packaged into `/etc/skel` (`sdata/dist-arch/koompi-hyprland-config/`) so a freshly installed user inherits it on first login.
-For the OS build chain - signed `[koompi]` repo, archiso profile, installer - see [`docs/os-build.md`](docs/os-build.md).
-
-## Documentation
-
-- [`docs/install.md`](docs/install.md) - installing, updating, per-distro notes
-- [`docs/dependencies.md`](docs/dependencies.md) - what the desktop needs and why
-- [`docs/os-build.md`](docs/os-build.md) - the KOOMPI OS build architecture
+The OS build chain - signed `[koompi]` repo, archiso profile, installer - lives
+under [`sdata/dist-arch/`](sdata/dist-arch/): the `koompi-*` PKGBUILDs, `repo/`
+for the signed repository, and `iso/koompi/` for the archiso profile.
