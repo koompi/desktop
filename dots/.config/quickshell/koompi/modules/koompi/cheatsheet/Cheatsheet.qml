@@ -97,7 +97,10 @@ Scope { // Scope
             anchors.centerIn: parent
             color: Appearance.colors.colLayer0
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            // The outline carries the keyboard. `Window.active` is the surface's
+            // own focus, not `cheatsheetOpen`: another panel opening on top takes
+            // the keys while this one stays on screen.
+            border.color: Window.active ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
             radius: Appearance.rounding.windowRounding
             property real padding: 20
             implicitWidth: cheatsheetColumnLayout.implicitWidth + padding * 2
