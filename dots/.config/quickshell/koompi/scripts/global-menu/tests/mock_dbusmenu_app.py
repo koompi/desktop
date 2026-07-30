@@ -8,11 +8,14 @@ com.canonical.AppMenu.Registrar and answers GetLayout / Event / AboutToShow.
 The "Tools" submenu is deliberately empty until AboutToShow arrives, which is
 how Qt menus behave, so the test can check that opening a menu populates it.
 
-argv[1] is the activation log, argv[2] the window id to register, and argv[3] an
-optional bus name, so a test can have two of these registered at once.
+argv[1] is the activation log, argv[2] the window id to register, argv[3] an
+optional bus name, so a test can have two of these registered at once, and
+argv[4] seconds to sit on AboutToShow before answering, which holds the daemon
+inside an open request for long enough to queue other work behind it.
 """
 
 import sys
+import time
 
 import gi
 
@@ -70,8 +73,9 @@ def label(text):
 
 
 class App:
-    def __init__(self, log):
+    def __init__(self, log, show_delay=0.0):
         self.log = log
+        self.show_delay = show_delay
         self.tools_populated = False
         self.root = Node(
             0,
@@ -116,6 +120,8 @@ class App:
             invocation.return_value(layout)
         elif method == "AboutToShow":
             node_id = params[0]
+            if self.show_delay:
+                time.sleep(self.show_delay)
             updated = False
             if node_id == 5 and not self.tools_populated:
                 self.tools_populated = True
@@ -139,8 +145,9 @@ def main():
     log = open(sys.argv[1], "a", buffering=1)
     window_id = int(sys.argv[2])
     bus_name = sys.argv[3] if len(sys.argv) > 3 else BUS_NAME
+    show_delay = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
 
-    app = App(log)
+    app = App(log, show_delay)
     conn = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     node_info = Gio.DBusNodeInfo.new_for_xml(INTROSPECTION)
     conn.register_object(MENU_PATH, node_info.interfaces[0], app.handle, None, None)

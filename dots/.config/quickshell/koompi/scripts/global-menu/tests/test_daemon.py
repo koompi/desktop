@@ -274,6 +274,58 @@ def test_stale_generation(daemon, log, items):
     )
 
 
+def test_patch_names_the_generation_it_was_asked_for(daemon, log):
+    """A patch splices children into the payload the shell is holding, keyed by
+    an id from that payload. If it ever came back stamped with a generation its
+    children do not belong to, the shell's own `payload.gen !== generation`
+    check would wave it through and hang one application's submenu off another
+    application's item id.
+
+    The application sits on AboutToShow for a second and a half, so the whole
+    open request is in flight while a replacement payload is already queued
+    behind it. That is the window the guard has to survive."""
+    print("a patch issued while a replacement payload is queued")
+    app = start_mock("mock_dbusmenu_app.py", log, 4248, "org.koompi.test.SlowApp", 1.5)
+    try:
+        daemon.send("dbusmenu org.koompi.test.SlowApp /MenuBar")
+        payload = daemon.read()
+        asked_gen = payload["gen"]
+        tools = find(payload["items"], "Tools")
+
+        daemon.send_item("open", tools["id"], generation=asked_gen)
+        time.sleep(0.3)  # the daemon is inside AboutToShow by now
+        daemon.send("dbusmenu org.koompi.test.SlowApp /MenuBar")
+
+        patch = daemon.read()
+        check(patch.get("patch") == tools["id"], "the patch answers the open: %r" % patch)
+        check(
+            patch.get("gen") == asked_gen,
+            "the patch names the generation the open was issued under, not the "
+            "one current when it was answered (%r, asked under %r)"
+            % (patch.get("gen"), asked_gen),
+        )
+
+        replacement = daemon.read()
+        check(
+            replacement.get("patch") is None and replacement.get("gen") != asked_gen,
+            "the queued replacement is only published afterwards, in a new id "
+            "space: %r" % {k: v for k, v in replacement.items() if k != "items"},
+        )
+
+        # And an open against the payload that has just been replaced answers
+        # nothing at all, so no children can arrive for a dead id space.
+        daemon.send_item("open", tools["id"], generation=asked_gen)
+        daemon.send("dbusmenu org.koompi.test.SlowApp /MenuBar")
+        after = daemon.read()
+        check(
+            after.get("patch") is None,
+            "an open naming the replaced generation produces no patch: %r" % after,
+        )
+    finally:
+        app.terminate()
+        app.wait(timeout=5)
+
+
 def test_no_menu(daemon):
     print("applications with no exported menu")
     daemon.send("dbusmenu org.koompi.test.Nothing /MenuBar")
@@ -548,6 +600,7 @@ def main():
         try:
             test_gtk(daemon, log)
             test_dbusmenu(daemon, log)
+            test_patch_names_the_generation_it_was_asked_for(daemon, log)
             test_no_menu(daemon)
             # Kills `daemon` and runs its own replacement, so nothing may use the
             # shared one after this.

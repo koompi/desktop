@@ -79,13 +79,21 @@ const Daemon = struct {
         writeStdout(out.written());
     }
 
-    fn emitPatch(self: *Daemon, id: u32, items: []const menu.Item) void {
+    /// A patch appends to the table an existing payload owns, so it names that
+    /// payload's generation rather than starting a new one.
+    ///
+    /// That generation is the one the request came in on, not whatever is
+    /// current when the reply is written. The two are the same today: every
+    /// D-Bus call on the open path blocks the main loop, so no payload can
+    /// replace the menu while one is in flight. But that is a property of
+    /// gio.callSync, not of anything said here, and a patch stamped with a
+    /// generation its children do not belong to is exactly what the shell's own
+    /// staleness check cannot see.
+    fn emitPatch(self: *Daemon, id: u32, generation: u32, items: []const menu.Item) void {
         var out = std.Io.Writer.Allocating.init(self.gpa);
         defer out.deinit();
         const w = &out.writer;
-        // A patch appends to the table the current payload owns, so it carries
-        // that generation rather than starting a new one.
-        w.print("{{\"patch\":{d},\"gen\":{d},\"items\":", .{ id, self.generation }) catch return;
+        w.print("{{\"patch\":{d},\"gen\":{d},\"items\":", .{ id, generation }) catch return;
         menu.writeArrayJson(w, items) catch return;
         w.writeAll("}\n") catch return;
         writeStdout(out.written());
@@ -308,7 +316,7 @@ const Daemon = struct {
         if (std.mem.eql(u8, verb, "open") or std.mem.eql(u8, verb, "close")) {
             const cmd = parseTargeted(it.rest()) orelse return;
             if (cmd.generation != self.generation) return;
-            self.setOpen(cmd.id, std.mem.eql(u8, verb, "open"));
+            self.setOpen(cmd.id, cmd.generation, std.mem.eql(u8, verb, "open"));
             return;
         }
         if (std.mem.eql(u8, verb, "refresh")) {
@@ -356,7 +364,7 @@ const Daemon = struct {
     /// Applications with lazily built menus only fill a submenu in when they
     /// are told it is about to show, so opening one re-reads that subtree and
     /// patches it into the shell's copy.
-    fn setOpen(self: *Daemon, id: u32, opening: bool) void {
+    fn setOpen(self: *Daemon, id: u32, generation: u32, opening: bool) void {
         const target = self.table.get(id) orelse return;
         const d = switch (target.*) {
             .dbusmenu => |d| d,
@@ -377,7 +385,7 @@ const Daemon = struct {
         const src = dbusmenu.Source{ .bus = bus, .path = path };
         const items = dbusmenu.fetchFrom(self.gpa, self.conn, src, &self.table, item_id) catch return;
         defer menu.freeItems(self.gpa, items);
-        if (items.len > 0) self.emitPatch(id, items);
+        if (items.len > 0) self.emitPatch(id, generation, items);
     }
 
     // ── Input plumbing ────────────────────────────────────────────────────
