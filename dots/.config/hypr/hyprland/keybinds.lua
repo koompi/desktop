@@ -23,7 +23,12 @@ hl.bind = function(keys, dispatcher, opts)
     local keybind = bindWithoutInterrupt(keys, dispatcher, opts)
     local chord = keys:upper()
     -- Super's own key press is what arms the toggle; it must not cancel it.
-    if chord:match("SUPER") and not chord:match("SUPER_[LR]") and not chord:match("MOUSE:") then
+    -- Everything else does, mouse buttons included. Super+drag is a chord like
+    -- any other, and skipping it left the toggle armed for the whole drag, so
+    -- letting go of Super opened Search over the window just moved. Scroll
+    -- chords (mouse_up/mouse_down) were never skipped, which is how the
+    -- inconsistency showed.
+    if chord:match("SUPER") and not chord:match("SUPER_[LR]") then
         bindWithoutInterrupt(keys, searchToggleReleaseInterrupt, { transparent = true })
     end
     return keybind
