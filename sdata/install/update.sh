@@ -62,8 +62,12 @@ run_update() {
     fi
 
     # Dependencies, because an update can introduce a new one, and the recipe
-    # already skips everything that is satisfied.
-    $DO_DEPS && install_deps
+    # already skips everything that is satisfied. Stopping here on failure is
+    # the point: the rest of an update copies config that expects the packages
+    # this step was meant to provide.
+    if $DO_DEPS; then
+        install_deps || die "dependency installation failed; not continuing"
+    fi
 
     # The application set is NOT re-offered. Someone updating has already
     # answered that question, and an updater that keeps proposing to install

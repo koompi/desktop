@@ -30,7 +30,7 @@ arch_install_yay() {
     build="$(mktemp -d)"
     run sudo pacman -S --needed --noconfirm base-devel git
     run git clone --depth 1 https://aur.archlinux.org/yay-bin.git "$build"
-    ( cd "$build" && run makepkg -si --noconfirm )
+    run_in_dir "$build" makepkg -si --noconfirm
     rm -rf "$build"
 }
 
@@ -118,14 +118,46 @@ arch_install_pkgbuild() {
     local missing
     missing="$(arch_pkgbuild_missing_deps "$dir")"
     if [[ -n "$missing" ]]; then
-        local -a want
-        mapfile -t want <<< "$missing"
-        run yay -S --needed --noconfirm --asdeps "${want[@]}"
+        local -a wanted
+        mapfile -t wanted <<< "$missing"
+        # yay calls sudo on its own account, part-way through a resolve it does
+        # not report progress for. Take the prompt here, at a boundary.
+        sudo_refresh
+        run yay -S --needed --noconfirm --asdeps "${wanted[@]}"
     fi
 
-    # -A ignore the arch field, -f rebuild, -s pull build deps, -i install.
-    # -f stays: without it makepkg errors out on a leftover tarball from an
-    # earlier attempt. The cost it used to carry is gone now that this line is
-    # only reached when the meta genuinely needs building.
-    ( cd "$dir" && run makepkg -Afsi --noconfirm --needed )
+    # What this build will produce, asked before it runs. With `debug` in
+    # /etc/makepkg.conf - the Arch default - every one of these metas also
+    # yields a `-debug` split package, and that sibling is a package like any
+    # other: it can conflict with a predecessor's -debug and it has to be
+    # installed alongside its parent.
+    local -a produced=()
+    mapfile -t produced < <(cd -- "$dir" && makepkg --packagelist 2>/dev/null)
+    (( ${#produced[@]} )) || { err "cannot read the package list for $1"; return 1; }
+
+    # -A ignore the arch field, -f rebuild, -s pull build deps. -i is gone on
+    # purpose. makepkg -i sudoes from inside the build, so the password prompt
+    # lands in the middle of a job that --noconfirm has already taken the
+    # terminal for, and a failed install there is only a `WARNING: Failed to
+    # install built package(s)` on an exit status of 0. Installing from here
+    # instead means sudo is refreshed at a step boundary and a file conflict is
+    # a failure the caller can see.
+    run_in_dir "$dir" makepkg -Afs --noconfirm || return 1
+
+    if [[ "$DRY_RUN" == true ]]; then
+        info "would install ${produced[*]##*/}"
+        return 0
+    fi
+
+    # --packagelist names the debug package whether or not the build had
+    # symbols to split out, so install what is on disk rather than what was
+    # predicted.
+    local -a built=() artefact
+    for artefact in "${produced[@]}"; do
+        [[ -f "$artefact" ]] && built+=("$artefact")
+    done
+    (( ${#built[@]} )) || { err "$1 built no package to install"; return 1; }
+
+    sudo_refresh
+    run sudo pacman -U --needed --noconfirm "${built[@]}"
 }

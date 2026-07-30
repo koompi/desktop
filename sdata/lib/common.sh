@@ -60,6 +60,54 @@ run() {
     return 0
 }
 
+# run() from inside a directory, without the subshell that would swallow the
+# abort. `( cd d && run cmd )` looks equivalent and is not: run's abort path
+# calls die, die calls exit, and in a subshell that exit only ends the subshell.
+# The caller then reads a non-zero return it never checks and carries on
+# mutating the machine, which is exactly what "aborted" is supposed to prevent.
+run_in_dir() {
+    local dir="$1"; shift
+    local prev="$PWD" rc=0
+    cd -- "$dir" || die "cannot enter $dir"
+    run "$@" || rc=$?
+    cd -- "$prev" || die "cannot return to $prev"
+    return "$rc"
+}
+
+# Stop processes by exact name, tolerating the ones that are not running.
+# `killall a b c` exits non-zero when *any* name matched nothing, even after it
+# killed the others, so putting it through run() turns "the daemon was already
+# stopped" into a retry/skip/abort prompt and then an abort. The familiar
+# `|| true` after run() does not save it either: run() calls die on abort, and
+# die exits before the || can be reached. One name at a time, asked about
+# first, so "not running" stays distinguishable from "could not kill".
+stop_processes() {
+    local name
+    for name in "$@"; do
+        printf '%s     $ killall -w -q %s%s\n' "${C_DIM}" "$name" "${C_RST}"
+        [[ "$DRY_RUN" == true ]] && continue
+        pgrep -x -- "$name" >/dev/null 2>&1 || continue
+        killall -w -q -- "$name" 2>/dev/null || warn "could not stop $name"
+    done
+    return 0
+}
+
+# How many KOOMPI shells are running. The obvious `pgrep -fc 'qs -c koompi'` is
+# the wrong tool: -f matches any process whose whole command line contains the
+# pattern, which includes the terminal, editor or agent that happens to have
+# the string on its own command line, and a -f based pkill will then kill them.
+# Match the binary exactly and read each candidate's own cmdline instead.
+count_shells() {
+    local pid n=0
+    while read -r pid; do
+        [[ -n "$pid" ]] || continue
+        if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -qF -- '-c koompi'; then
+            n=$((n + 1))
+        fi
+    done < <(pgrep -x qs 2>/dev/null)
+    printf '%s\n' "$n"
+}
+
 confirm() {
     [[ "$ASSUME_YES" == true ]] && return 0
     local reply
@@ -80,16 +128,52 @@ require_not_root() {
 # a password prompt at every one of the thirty-odd sudo calls that follow, which
 # is exactly the behaviour this function exists to prevent. So keep looping, and
 # refresh well inside the shortest timestamp_timeout worth supporting.
+#
+# A recorded PID is not evidence of a running keepalive, and the loop swallowing
+# its own errors is not evidence that the ticket is warm. A build that takes
+# forty minutes will happily run to the point where it needs root and only then
+# discover neither is true, which puts a password prompt in the middle of a
+# `makepkg` install phase. So the liveness of the process and the validity of
+# the ticket are both checked, at boundaries we choose, by sudo_refresh.
 SUDO_KEEPALIVE_PID=''
+SUDO_KEEPALIVE_INTERVAL="${SUDO_KEEPALIVE_INTERVAL:-30}"
+
+sudo_alive() {
+    [[ -n "$SUDO_KEEPALIVE_PID" ]] || return 1
+    kill -0 "$SUDO_KEEPALIVE_PID" 2>/dev/null
+}
+
 sudo_start() {
     have sudo || die "sudo not found; install it or run the per-distro dependency steps manually"
     [[ "$DRY_RUN" == true ]] && return 0
-    [[ -n "$SUDO_KEEPALIVE_PID" ]] && return 0
+    sudo_alive && return 0
     info "requesting sudo once; it stays valid for the whole install"
     sudo -v || die "could not obtain sudo"
-    ( while true; do sudo -n -v 2>/dev/null || true; sleep 30; done ) &
+    ( while true; do sudo -n -v 2>/dev/null || true; sleep "$SUDO_KEEPALIVE_INTERVAL"; done ) &
     SUDO_KEEPALIVE_PID=$!
+    sudo_alive || die "the sudo keepalive did not start"
 }
+
+# Call before anything long or anything that shells out to a tool which will
+# sudo on its own. Re-prompting here is not a failure: it is the difference
+# between one prompt at a step boundary the user is watching and one buried in
+# a build, where pacman's --noconfirm has already taken the terminal.
+sudo_refresh() {
+    [[ "$DRY_RUN" == true ]] && return 0
+    [[ -n "$SUDO_KEEPALIVE_PID" ]] || return 0
+
+    if ! sudo_alive; then
+        warn "the sudo keepalive stopped; restarting it"
+        SUDO_KEEPALIVE_PID=''
+        sudo_start
+        return 0
+    fi
+
+    sudo -n -v 2>/dev/null && return 0
+    warn "the sudo ticket went cold; re-authenticating here rather than mid-build"
+    sudo -v || die "could not refresh sudo"
+}
+
 sudo_stop() {
     [[ -n "$SUDO_KEEPALIVE_PID" ]] || return 0
     kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
@@ -145,10 +229,31 @@ reload_session() {
     }
     step "Reloading the running session"
     run hyprctl reload
-    if have qs; then
-        run killall -w -q global-menu-daemon qs quickshell || true
-        [[ "$DRY_RUN" == true ]] || \
-            ( setsid env QT_QPA_PLATFORM=wayland qs -c koompi >/dev/null 2>&1 & )
-        ok "shell restarted"
+    have qs || return 0
+
+    # global-menu-daemon is started by the shell itself
+    # (services/GlobalMenuService.qml), so relaunching qs is what brings it back.
+    stop_processes global-menu-daemon qs quickshell
+    if [[ "$DRY_RUN" == true ]]; then
+        info "would restart the shell"
+        return 0
     fi
+    ( setsid env QT_QPA_PLATFORM=wayland qs -c koompi >/dev/null 2>&1 & )
+
+    # Reporting "shell restarted" unconditionally is worse than saying nothing:
+    # the one run where the message matters is the run where the shell did not
+    # come back, and that is precisely the run where it lies. Ask the system.
+    local waited=0 count=0
+    while :; do
+        count="$(count_shells)"
+        (( count > 0 )) && break
+        (( waited >= 10 )) && break
+        sleep 1
+        waited=$((waited + 1))
+    done
+    case "$count" in
+        0) warn "the shell did not come back within ${waited}s; run 'qs -c koompi' to see why" ;;
+        1) ok "shell restarted" ;;
+        *) warn "$count koompi shells are running where there should be one" ;;
+    esac
 }

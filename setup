@@ -219,7 +219,9 @@ main() {
         trap 'sudo_stop' EXIT INT TERM
     fi
 
-    $DO_DEPS   && install_deps
+    if $DO_DEPS; then
+        install_deps || die "dependency installation failed; not continuing"
+    fi
     $DO_APPS   && install_apps
     $DO_SETUPS && run_setups
     $DO_FILES  && install_files
