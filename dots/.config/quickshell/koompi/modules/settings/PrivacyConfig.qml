@@ -92,24 +92,6 @@ ContentPage {
                 text: Translation.tr("Allows AI assistant features in the shell")
             }
         }
-        ColumnLayout {
-            spacing: 0
-            ConfigSwitch {
-                buttonIcon: "sentiment_very_satisfied"
-                text: Translation.tr("Weeb content")
-                checked: (Config.options?.policies?.weeb ?? 0) !== 0
-                onCheckedChanged: {
-                    Config.options.policies.weeb = checked ? 1 : 0;
-                }
-            }
-            StyledText {
-                Layout.fillWidth: true
-                Layout.leftMargin: 40
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
-                text: Translation.tr("Toggles anime content sources in the shell")
-            }
-        }
     }
 
     ContentSection {
