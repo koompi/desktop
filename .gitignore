@@ -23,3 +23,7 @@ __pycache__/
 # global-menu zig build artifacts
 /dots/.config/quickshell/koompi/scripts/global-menu/.zig-cache/
 /dots/.config/quickshell/koompi/scripts/global-menu/zig-out/
+
+# Agent coordination: local process notes, not part of the product
+/.agents/
+/AGENTS.md
