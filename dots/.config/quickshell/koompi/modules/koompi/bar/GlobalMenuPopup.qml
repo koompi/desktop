@@ -30,11 +30,13 @@ PopupWindow {
     color: "transparent"
     visible: true
 
-    // Top-level menus clear the roughly 40px panel before the command surface
-    // begins. Nested menus stay tight to their parent row.
-    // The top-level popup needs this positioning offset to clear the 40px
-    // panel. Its resulting visible gap is about 3px.
-    readonly property real panelOffset: 18
+    // A top-level menu clears the bar by exactly what a tiled window and every
+    // other bar popup clear it by - Hyprland's gaps_out plus its 1px border,
+    // the same number StyledPopup calls barEdgeGap - so the bar and the menu
+    // read as one system instead of two floating surfaces. The anchor is a
+    // full-bar-height item, so its bottom edge IS the bar's edge and this is
+    // the whole offset. Nested menus stay tight to their parent row.
+    readonly property real panelOffset: Appearance.sizes.hyprlandGapsOut + 1
     readonly property real visibleGap: 5
     // The top-level surface starts where the title glyph starts (the bar title
     // has 10px of leading hit padding).
