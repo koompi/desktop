@@ -244,11 +244,94 @@ Singleton {
         }));
     }
 
+    function appResult(entry, type): var {
+        return resultComp.createObject(null, {
+            type: type,
+            id: entry.id,
+            name: entry.name,
+            iconName: entry.icon,
+            iconType: LauncherSearchResult.IconType.System,
+            verb: Translation.tr("Open"),
+            execute: () => {
+                // Shared with the Launchpad, so what is reached for here also
+                // orders that grid, and comes back as a recent result below.
+                LaunchpadUsage.record(entry.id);
+                if (!entry.runInTerminal)
+                    entry.execute();
+                else {
+                    // Probably needs more proper escaping, but this will do for now
+                    Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(entry.command.join(' '))}'`]);
+                }
+            },
+            comment: entry.comment,
+            runInTerminal: entry.runInTerminal,
+            genericName: entry.genericName,
+            keywords: entry.keywords,
+            actions: entry.actions.map(action => {
+                return resultComp.createObject(null, {
+                    name: action.name,
+                    iconName: action.icon,
+                    iconType: LauncherSearchResult.IconType.System,
+                    execute: () => {
+                        if (!action.runInTerminal)
+                            action.execute();
+                        else {
+                            Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(action.command.join(' '))}'`]);
+                        }
+                    }
+                });
+            })
+        });
+    }
+
+    readonly property int recentLimit: 6
+
+    // The scopes worth teaching, in the order they earn their place. Math,
+    // commands and web search are left out because they already answer without
+    // a prefix. Labels read off the config, so a rebound prefix relabels itself.
+    readonly property var scopeHints: [
+        ({
+                prefix: Config.options.search.prefix.window,
+                label: Translation.tr("Windows")
+            }),
+        ({
+                prefix: Config.options.search.prefix.settings,
+                label: Translation.tr("Settings")
+            }),
+        ({
+                prefix: Config.options.search.prefix.file,
+                label: Translation.tr("Files")
+            }),
+        ({
+                prefix: Config.options.search.prefix.clipboard,
+                label: Translation.tr("Clipboard")
+            }),
+        ({
+                prefix: Config.options.search.prefix.emojis,
+                label: Translation.tr("Emoji")
+            })
+    ]
+
+    // The label for whatever scope the query is currently in, empty when the
+    // query has no prefix and every provider is answering.
+    readonly property string activeScopeLabel: {
+        const hit = root.scopeHints.find(scope => root.query.startsWith(scope.prefix));
+        return hit ? hit.label : "";
+    }
+
+    // What the panel shows before anything is typed: the apps actually reached
+    // for lately, scored by the same frecency the Launchpad orders by. An
+    // account that has launched nothing yet gets an empty list, and the panel
+    // stays the resting pill it has always been.
+    function recentResults(): var {
+        return AppSearch.list.filter(entry => LaunchpadUsage.score(entry.id) > 0).sort((a, b) => LaunchpadUsage.score(b.id) - LaunchpadUsage.score(a.id)).slice(0, root.recentLimit).map(entry => root.appResult(entry, Translation.tr("Recent")));
+    }
+
     property list<var> results: {
         // Search results are handled here
         ////////////////// Skip? //////////////////
         if (root.query == "")
-            return [];
+            return root.recentResults();
 
         ///////////// Special cases ///////////////
         if (root.query.startsWith(Config.options.search.prefix.clipboard)) {
@@ -333,42 +416,7 @@ Singleton {
                 Quickshell.clipboardText = root.mathResult;
             }
         });
-        const appResultObjects = AppSearch.fuzzyQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => {
-            return resultComp.createObject(null, {
-                type: Translation.tr("App"),
-                id: entry.id,
-                name: entry.name,
-                iconName: entry.icon,
-                iconType: LauncherSearchResult.IconType.System,
-                verb: Translation.tr("Open"),
-                execute: () => {
-                    if (!entry.runInTerminal)
-                        entry.execute();
-                    else {
-                        // Probably needs more proper escaping, but this will do for now
-                        Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(entry.command.join(' '))}'`]);
-                    }
-                },
-                comment: entry.comment,
-                runInTerminal: entry.runInTerminal,
-                genericName: entry.genericName,
-                keywords: entry.keywords,
-                actions: entry.actions.map(action => {
-                    return resultComp.createObject(null, {
-                        name: action.name,
-                        iconName: action.icon,
-                        iconType: LauncherSearchResult.IconType.System,
-                        execute: () => {
-                            if (!action.runInTerminal)
-                                action.execute();
-                            else {
-                                Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(action.command.join(' '))}'`]);
-                            }
-                        }
-                    });
-                })
-            });
-        });
+        const appResultObjects = AppSearch.fuzzyQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => root.appResult(entry, Translation.tr("App")));
         const commandResultObject = resultComp.createObject(null, {
             name: StringUtils.cleanPrefix(root.query, Config.options.search.prefix.shellCommand).replace("file://", ""),
             verb: Translation.tr("Run"),

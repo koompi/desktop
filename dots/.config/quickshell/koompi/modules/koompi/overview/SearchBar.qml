@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -14,6 +15,9 @@ RowLayout {
     property bool animateWidth: false
     property alias searchInput: searchInput
     property string searchingText
+    // The resting pill is only right while there is nothing under it. Recents
+    // and the scope legend need the full width even with an empty query.
+    property bool expanded: false
 
     function forceFocus() {
         searchInput.forceActiveFocus();
@@ -67,6 +71,16 @@ RowLayout {
             default: return "search";
         }
     }
+    // The icon alone says which scope a prefix selected only to someone who
+    // already knows the icons. The name says it to everyone else.
+    StyledText {
+        Layout.alignment: Qt.AlignVCenter
+        visible: LauncherSearch.activeScopeLabel !== ""
+        text: LauncherSearch.activeScopeLabel
+        font.pixelSize: Appearance.font.pixelSize.smaller
+        color: Appearance.colors.colSubtext
+    }
+
     ToolbarTextField { // Search box
         id: searchInput
         Layout.topMargin: 4
@@ -75,7 +89,7 @@ RowLayout {
         focus: GlobalStates.searchOpen
         font.pixelSize: Appearance.font.pixelSize.small
         placeholderText: Translation.tr("Search, calculate or run")
-        implicitWidth: root.searchingText == "" ? Appearance.sizes.searchWidthCollapsed : Appearance.sizes.searchWidth
+        implicitWidth: (root.searchingText == "" && !root.expanded) ? Appearance.sizes.searchWidthCollapsed : Appearance.sizes.searchWidth
 
         Behavior on implicitWidth {
             id: searchWidthBehavior
@@ -115,7 +129,7 @@ RowLayout {
         Layout.bottomMargin: 4
         onClicked: {
             GlobalStates.searchOpen = false;
-            Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "search"]);
+            Hyprland.dispatch(`hl.dsp.global("quickshell:regionSearch")`);
         }
         text: "image_search"
         StyledToolTip {

@@ -21,6 +21,30 @@ Item { // Wrapper
 
     property string searchingText: LauncherSearch.query
     property bool showResults: searchingText != ""
+    // An empty query is no longer an empty panel: it answers with recents. The
+    // list, the separator and the footer follow what is actually there.
+    readonly property bool hasResults: appResults.count > 0
+
+    // Shown once results are being navigated, where the query is already typed
+    // and the keys are what is left to learn.
+    readonly property var keyHints: [
+        ({
+                key: "↵",
+                label: Translation.tr("Open")
+            }),
+        ({
+                key: "↑↓",
+                label: Translation.tr("Move")
+            }),
+        ({
+                key: "⇥",
+                label: Translation.tr("Complete")
+            }),
+        ({
+                key: "Esc",
+                label: Translation.tr("Close")
+            })
+    ]
     implicitWidth: searchWidgetContent.implicitWidth + Appearance.sizes.elevationMargin * 2
     implicitHeight: searchWidgetContent.implicitHeight + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2
 
@@ -140,6 +164,7 @@ Item { // Wrapper
             SearchBar {
                 id: searchBar
                 property real verticalPadding: 4
+                expanded: root.hasResults
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 4
@@ -152,7 +177,7 @@ Item { // Wrapper
 
             Rectangle {
                 // Separator
-                visible: root.showResults
+                visible: root.hasResults
                 Layout.fillWidth: true
                 height: 1
                 color: Appearance.colors.colOutlineVariant
@@ -160,7 +185,7 @@ Item { // Wrapper
 
             ListView { // App results
                 id: appResults
-                visible: root.showResults
+                visible: root.hasResults
                 Layout.fillWidth: true
                 implicitHeight: Math.min(600, appResults.contentHeight + topMargin + bottomMargin)
                 clip: true
@@ -223,6 +248,47 @@ Item { // Wrapper
                             searchBar.searchInput.text = tabbedText;
                             event.accepted = true;
                             root.focusSearchInput();
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                // Footer separator
+                visible: root.hasResults
+                Layout.fillWidth: true
+                height: 1
+                color: Appearance.colors.colOutlineVariant
+            }
+
+            // Two things to say and only one row to say them in, so they take
+            // turns: what else can be typed while the query is empty, and what
+            // the keys do once there is a query to navigate.
+            Flow {
+                id: footer
+                visible: root.hasResults
+                Layout.fillWidth: true
+                Layout.leftMargin: 16
+                Layout.rightMargin: 16
+                Layout.topMargin: 6
+                Layout.bottomMargin: 6
+                spacing: 10
+
+                Repeater {
+                    model: root.searchingText === "" ? LauncherSearch.scopeHints : root.keyHints
+                    delegate: Row {
+                        required property var modelData
+                        spacing: 4
+                        StyledText {
+                            text: modelData.prefix ?? modelData.key
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.family: Appearance.font.family.monospace
+                            color: Appearance.colors.colPrimary
+                        }
+                        StyledText {
+                            text: modelData.label
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: Appearance.colors.colSubtext
                         }
                     }
                 }
