@@ -26,7 +26,7 @@ Launchpad is deliberately gesture-only and takes no keyboard binding, so the two
 Two roles are named for where they are going, not for what they are today.
 **Today** is the right sidebar, which is to become header, quick controls, grouped notifications, and a secondary personal-tools tab.
 **Now** is the left sidebar, which is to become Quickwork's drawer: active tasks, approvals, recent artifacts, and task continuity.
-Until Quickwork exists, the left sidebar still holds the inherited AI, translator, and anime tabs, and those are the thing being replaced rather than the thing being specified.
+Until Quickwork exists, the left sidebar still holds the inherited AI and translator tabs, and those are the thing being replaced rather than the thing being specified.
 
 ## Entry points
 
@@ -38,7 +38,7 @@ The horizontal bar and the vertical bar are alternative bars, so a given session
 
 | Surface | Keyboard | Bar | Corner | Gesture | IPC |
 | --- | --- | --- | --- | --- | --- |
-| Left sidebar | `Super+A` | one button, hidden unless AI, translator, or anime is enabled | top-left | none | yes |
+| Left sidebar | `Super+A` | one button, hidden unless AI or translator is enabled | top-left | none | yes |
 | Right sidebar | `Super+N` | one button | top-right | none | yes |
 | Overview | `Super+Tab` | right-click on the workspaces widget | none | 4-finger up or down | yes |
 | Search | `Super` | none | none | none | yes |

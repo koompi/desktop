@@ -227,38 +227,6 @@ ContentPage {
                     ]
                 }
             }
-
-            // Weeb policy
-            ColumnLayout {
-
-                ContentSubsectionLabel {
-                    text: Translation.tr("Weeb")
-                }
-
-                ConfigSelectionArray {
-                    currentValue: Config.options.policies.weeb
-                    onSelected: newValue => {
-                        Config.options.policies.weeb = newValue;
-                    }
-                    options: [
-                        {
-                            displayName: Translation.tr("No"),
-                            icon: "close",
-                            value: 0
-                        },
-                        {
-                            displayName: Translation.tr("Yes"),
-                            icon: "check",
-                            value: 1
-                        },
-                        {
-                            displayName: Translation.tr("Closet"),
-                            icon: "ev_shadow",
-                            value: 2
-                        }
-                    ]
-                }
-            }
         }
     }
 
@@ -341,7 +309,7 @@ ContentPage {
 
         ConfigSwitch {
             buttonIcon: "assignment"
-            text: Translation.tr("Hide clipboard images copied from sussy sources")
+            text: Translation.tr("Hide clipboard images copied from flagged sources")
             checked: Config.options.workSafety.enable.clipboard
             onCheckedChanged: {
                 Config.options.workSafety.enable.clipboard = checked;
@@ -349,7 +317,7 @@ ContentPage {
         }
         ConfigSwitch {
             buttonIcon: "wallpaper"
-            text: Translation.tr("Hide sussy/anime wallpapers")
+            text: Translation.tr("Hide wallpapers from flagged sources")
             checked: Config.options.workSafety.enable.wallpaper
             onCheckedChanged: {
                 Config.options.workSafety.enable.wallpaper = checked;

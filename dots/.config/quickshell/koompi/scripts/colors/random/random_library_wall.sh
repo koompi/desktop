@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-# Random wallpaper from the KOOMPI library. This is the default random source:
-# it ships with the OS, works offline, and needs no content filtering. The
-# online sources (konachan, osu) stay available as explicit choices.
+# Random wallpaper from the KOOMPI library. This is the only random source that
+# ships: it comes with the OS, works offline, and needs no content filtering.
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

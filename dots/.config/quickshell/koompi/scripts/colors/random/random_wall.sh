@@ -3,8 +3,8 @@
 # Combined random source, bound to Ctrl+Super+Alt+T. Picks one of the enabled
 # sources at random so the keybind draws from every source at once instead of
 # just one. Override the set in config.json:
-#   .background.randomWallpaper.sources   e.g. ["library", "konachan"]
-# Online sources fall back to the offline library when the network is down.
+#   .background.randomWallpaper.sources   e.g. ["library"]
+# Only the offline library ships; any extra source is a user-added script here.
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,15 +17,8 @@ while IFS= read -r s; do
     [ -x "$SCRIPT_DIR/random_${s}_wall.sh" ] && sources+=("$s")
 done < <(jq -r '.background.randomWallpaper.sources[]?' "$CONFIG_FILE" 2>/dev/null)
 
-# Konachan is the same source the weeb policy hides in Settings, so the keybind
-# must not sneak it in when that policy is off. osu! seasonal is out of the
-# default set: its API sits behind a Cloudflare challenge (dead upstream); the
-# script stays for explicit config.json opt-in should it recover.
 if [ "${#sources[@]}" -eq 0 ]; then
     sources=(library)
-    if [ "$(jq -r '.policies.weeb // 0' "$CONFIG_FILE" 2>/dev/null)" = "1" ]; then
-        sources+=(konachan)
-    fi
 fi
 
 # Pin the target workspace, so a source that spends seconds downloading still
