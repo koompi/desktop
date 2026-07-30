@@ -23,10 +23,13 @@ Six roles, and nothing else may claim a primary gesture or a bare `Super` chord.
 Search is the primary app launcher.
 Launchpad is deliberately gesture-only and takes no keyboard binding, so the two never compete for the same reflex.
 
-Two roles are named for where they are going, not for what they are today.
-**Today** is the right sidebar, which is to become header, quick controls, grouped notifications, and a secondary personal-tools tab.
+One role is named for where it is going, not for what it is today.
 **Now** is the left sidebar, which is to become Quickwork's drawer: active tasks, approvals, recent artifacts, and task continuity.
 Until Quickwork exists, the left sidebar still holds the inherited AI and translator tabs, and those are the thing being replaced rather than the thing being specified.
+
+**Today** is the right sidebar, and it is built: a header carrying identity, settings and power, then two tabs.
+Today holds quick controls and grouped notifications; Personal holds the calendar, the to-do list and the timer.
+Only the selected tab exists, so the panel costs one tab's worth of widgets to open rather than all of them.
 
 ## Entry points
 
@@ -75,7 +78,8 @@ It is dismissed by its own button and by nothing else, so no existing click, dra
 `windows.workspaceHelp` turns it off, default true.
 
 This matters more for the right sidebar than the count suggests.
-Opening it runs `GlobalStates.onSidebarRightOpenChanged`, which times out and marks read every notification, so an accidental open destroys state.
+Opening it runs `GlobalStates.onSidebarRightOpenChanged`, which times out every popup and zeroes the unread count, so an accidental open silently clears the unread badge.
+No notification is discarded by it: `Notifications.markAllRead()` only sets `unread` to zero, and `timeoutAll()` only takes notifications off the popup layer.
 
 ## Edges
 

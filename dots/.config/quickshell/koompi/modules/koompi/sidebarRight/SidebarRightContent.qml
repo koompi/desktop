@@ -14,6 +14,7 @@ import qs.modules.koompi.sidebarRight.quickToggles.classicStyle
 
 import qs.modules.koompi.sidebarRight.bluetoothDevices
 import qs.modules.koompi.sidebarRight.nightLight
+import qs.modules.koompi.sidebarRight.notifications
 import qs.modules.koompi.sidebarRight.volumeMixer
 import qs.modules.koompi.sidebarRight.wifiNetworks
 
@@ -74,8 +75,55 @@ Item {
                 Layout.bottomMargin: 0
             }
 
+            SecondaryTabBar {
+                id: tabBar
+                Repeater {
+                    model: [
+                        {
+                            "name": Translation.tr("Today"),
+                            "icon": "notifications"
+                        },
+                        {
+                            "name": Translation.tr("Personal"),
+                            "icon": "checklist"
+                        },
+                    ]
+                    delegate: SecondaryTabButton {
+                        required property var modelData
+                        buttonText: modelData.name
+                        buttonIcon: modelData.icon
+                    }
+                }
+            }
+
+            // One Loader per tab, gated on `active`, so the hidden tab's tools do
+            // not exist at all: switching builds the incoming one and destroys the
+            // outgoing one.
             Loader {
-                id: slidersLoader
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                active: tabBar.currentIndex === 0
+                visible: active
+                sourceComponent: todayTab
+            }
+
+            Loader {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                active: tabBar.currentIndex === 1
+                visible: active
+                sourceComponent: personalTab
+            }
+        }
+    }
+
+    // Today: quick controls, then grouped notifications.
+    Component {
+        id: todayTab
+        ColumnLayout {
+            spacing: root.sidebarPadding
+
+            Loader {
                 Layout.fillWidth: true
                 visible: active
                 active: {
@@ -99,19 +147,23 @@ Item {
                 }
             }
 
-            CenterWidgetGroup {
-                Layout.alignment: Qt.AlignHCenter
+            Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-            }
+                radius: Appearance.rounding.normal
+                color: Appearance.colors.colLayer1
 
-            BottomWidgetGroup {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.fillHeight: false
-                Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
+                NotificationList {
+                    anchors.fill: parent
+                    anchors.margins: 5
+                }
             }
         }
+    }
+
+    Component {
+        id: personalTab
+        PersonalTools {}
     }
 
     ToggleDialog {
