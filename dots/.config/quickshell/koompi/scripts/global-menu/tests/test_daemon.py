@@ -79,7 +79,10 @@ class Daemon:
         raise AssertionError("daemon produced no payload")
 
     def stop(self):
-        self.proc.stdin.close()
+        try:
+            self.proc.stdin.close()
+        except OSError:
+            pass  # test_restart_recovery kills the daemon on purpose
         try:
             self.proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
@@ -331,11 +334,15 @@ def test_restart_recovery(daemon):
 def test_stale_registration_dropped():
     """The mirrored table must not resurrect an application that has exited."""
     print("registrations of applications that exited")
-    app = start_mock("mock_dbusmenu_app.py", os.devnull, 4244)
+    # The daemon first: the application registers as soon as it starts, so with
+    # nobody owning the registrar name there is nothing for it to register with.
     daemon = Daemon()
+    app = start_mock("mock_dbusmenu_app.py", os.devnull, 4244)
     try:
         check("4244" in get_menus(), "registered while the app was alive")
     finally:
+        # In this order: with the daemon still up it would see the application
+        # go and clean the mirror itself, which is not what is under test here.
         daemon.stop()
     app.terminate()
     app.wait(timeout=5)
@@ -361,8 +368,17 @@ def main():
     # live KOOMPI session that is the running daemon. Re-run ourselves on a
     # private bus so the tests never depend on, or disturb, the real session.
     if not os.environ.get("KOOMPI_GLOBAL_MENU_TEST_BUS"):
-        env = dict(os.environ, KOOMPI_GLOBAL_MENU_TEST_BUS="1")
-        sys.exit(subprocess.call(["dbus-run-session", "--", sys.executable, __file__], env=env))
+        # A private bus AND a private XDG_RUNTIME_DIR. The registrar mirrors its
+        # table to $XDG_RUNTIME_DIR/koompi-global-menu.registry, so without this
+        # the tests read the live daemon's mirror, find none of its unique names
+        # on our bus, and write the emptied table back over it.
+        with tempfile.TemporaryDirectory() as runtime:
+            env = dict(
+                os.environ,
+                KOOMPI_GLOBAL_MENU_TEST_BUS="1",
+                XDG_RUNTIME_DIR=runtime,
+            )
+            sys.exit(subprocess.call(["dbus-run-session", "--", sys.executable, __file__], env=env))
 
     with tempfile.TemporaryDirectory() as tmp:
         log = os.path.join(tmp, "activations.log")
@@ -372,8 +388,12 @@ def main():
             test_gtk(daemon, log)
             test_dbusmenu(daemon, log)
             test_no_menu(daemon)
+            # Kills `daemon` and runs its own replacement, so nothing may use the
+            # shared one after this.
+            test_restart_recovery(daemon)
         finally:
             daemon.stop()
+        test_stale_registration_dropped()
 
     if failures:
         print("\n%d check(s) failed" % len(failures))
