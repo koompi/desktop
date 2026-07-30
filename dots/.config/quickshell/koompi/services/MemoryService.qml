@@ -39,6 +39,9 @@ Singleton {
 
     property int nextId: 1
     property var pending: ({}) // id -> { callback, deadline }
+    // `pending` is a plain object, so mutating it emits no change signal. This
+    // counter is what the timeout sweeper below can actually bind to.
+    property int pendingCount: 0
     readonly property int timeoutMs: 4000
 
     // Episodic event log wiring (#7)
@@ -80,6 +83,7 @@ Singleton {
             "callback": callback,
             "deadline": Date.now() + root.timeoutMs
         };
+        root.pendingCount++;
         daemon.write(JSON.stringify(obj) + "\n");
     }
 
@@ -139,6 +143,7 @@ Singleton {
         const entry = root.pending[msg.id];
         if (!entry) return;
         delete root.pending[msg.id];
+        root.pendingCount--;
         if (entry.callback) entry.callback(msg.ok ? msg : null);
     }
 
@@ -166,6 +171,7 @@ Singleton {
                 if (entry.callback) entry.callback(null);
             }
             root.pending = ({});
+            root.pendingCount = 0;
             if (root.enabled && root.restartAttempts < root.maxRestarts) {
                 console.error(`[MemoryService] daemon exited (code ${code}); restarting (attempt ${root.restartAttempts + 1}/${root.maxRestarts}).`);
                 restartTimer.start();
@@ -185,16 +191,19 @@ Singleton {
     }
 
     // Times out requests whose response never arrives, so callers always settle.
+    // Only runs while something is in flight: sweeping an empty map once a
+    // second was the shell's single busiest unconditional timer.
     Timer {
         interval: 1000
         repeat: true
-        running: root.enabled
+        running: root.enabled && root.pendingCount > 0
         onTriggered: {
             const now = Date.now();
             for (const id in root.pending) {
                 const entry = root.pending[id];
                 if (now > entry.deadline) {
                     delete root.pending[id];
+                    root.pendingCount--;
                     if (entry.callback) entry.callback(null);
                 }
             }

@@ -1,6 +1,7 @@
 pragma Singleton
 
 import QtQuick
+import qs.services
 import Quickshell
 import Quickshell.Io
 
@@ -25,9 +26,12 @@ Singleton {
     }
 
     Timer {
-        running: true
+        // The light is on the bar, so there is nothing to keep right while the
+        // session is locked -- and that is where the fork mattered, because this
+        // is the only unconditional poller in the shell that spawns a process.
+        running: PowerSaving.awake
         repeat: true
-        interval: 2000
+        interval: PowerSaving.interval(2000)
         triggeredOnStart: true
         onTriggered: if (!check.running)
             check.running = true

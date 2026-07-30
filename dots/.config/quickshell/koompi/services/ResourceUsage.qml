@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -60,9 +61,16 @@ Singleton {
     }
 
 	Timer {
-		interval: 1
-        running: true 
+        // Feeds the bar's memory/CPU readout, so it runs whenever the bar
+        // can be seen -- and stops when the session is locked, because it
+        // cannot be.
+        interval: PowerSaving.interval(Config.options?.resources?.updateInterval ?? 3000)
+        running: PowerSaving.awake
+        triggeredOnStart: true
         repeat: true
+        // A CPU delta measured across a lock is an average over the
+        // whole lock, not a reading. Drop the baseline instead.
+        onRunningChanged: if (!running) root.previousCpuStats = undefined
 		onTriggered: {
             // Reload files
             fileMeminfo.reload()
@@ -93,7 +101,6 @@ Singleton {
             }
 
             root.updateHistories()
-            interval = Config.options?.resources?.updateInterval ?? 3000
         }
 	}
 
