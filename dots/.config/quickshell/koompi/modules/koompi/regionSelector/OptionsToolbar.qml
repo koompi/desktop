@@ -35,17 +35,23 @@ Toolbar {
         }
     }
 
+    // The tab writes the mode and the mode writes the tab, so neither side can
+    // be a binding: a binding on currentIndex closes a loop on itself, Qt drops
+    // it, and the tabs stay stuck on whatever mode the selector opened in.
+    function syncTab() {
+        tabBar.setCurrentIndex(root.selectionMode === RegionSelection.SelectionMode.Circle ? 1 : 0);
+    }
+    onSelectionModeChanged: root.syncTab()
+    Component.onCompleted: root.syncTab()
+
     ToolbarTabBar {
         id: tabBar
         tabButtonList: [
             {"icon": "activity_zone", "name": Translation.tr("Rect")},
             {"icon": "gesture", "name": Translation.tr("Circle")}
         ]
-        currentIndex: root.selectionMode === RegionSelection.SelectionMode.RectCorners ? 0 : 1
         onCurrentIndexChanged: {
-            const newMode = currentIndex === 0 ? RegionSelection.SelectionMode.RectCorners : RegionSelection.SelectionMode.Circle;
-            if (root.selectionMode !== newMode)
-                root.selectionMode = newMode;
+            root.selectionMode = currentIndex === 0 ? RegionSelection.SelectionMode.RectCorners : RegionSelection.SelectionMode.Circle;
         }
     }
 }
