@@ -126,6 +126,10 @@ Item { // Bar content region
                         }
                     }
                 }
+
+                WorkspaceHelp {
+                    target: workspacesWidget
+                }
             }
         }
 

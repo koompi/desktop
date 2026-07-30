@@ -45,6 +45,8 @@ The horizontal bar and the vertical bar are alternative bars, so a given session
 | Launchpad | none, by decision | none | none | 4-finger spread and close | yes |
 | Cheatsheet | `Super+/` | none | none | none | yes |
 | Window actions | none, by decision | left-click the app identity in the left section | none | none | no |
+| Snap preview | none of its own, rides `Super+drag` | none | none | none | no |
+| Workspace hint | none | shown under the workspaces widget on a first run | none | none | no |
 
 Getting to one bar button per sidebar took a change on 2026-07-30.
 Three bar sections were left-click toggles for a sidebar on top of the dedicated button inside that same section: the right section of the horizontal bar, and both the top and bottom sections of the vertical bar.
@@ -59,6 +61,18 @@ Right-click on the identity stays free, and the menu takes no keyboard binding a
 Each entry shows the bind that does the same thing, which is the only place the window binds appear outside `Super+/`.
 It exists on the horizontal bar only, because the vertical bar shows no window identity to hang it off.
 `windows.actionsMenu` turns it off, default true.
+
+The snap preview takes no input path at all.
+`Super+drag` already moves a window, and `keybinds.lua` gives that same chord a second, `transparent` bind carrying `quickshell:snapPreviewDrag`, so the shell learns when a drag starts and ends without the drag itself changing.
+While one is running, pushing the pointer into a screen edge draws the rectangle the window will take, and releasing puts it there: a side gives a half, a corner a quarter, the top edge the whole usable area.
+The bottom edge alone does nothing, because that is where the dock is.
+The threshold is 24px, small enough that dragging a tiled window to the far edge to swap it with the window there still reads as a swap rather than a snap.
+Nothing new is added to the pointer, the wheel, or any gesture, and the preview window carries an empty input mask so it cannot take a click even while it is up.
+`windows.snapPreview` turns it off, default true; with it off the global shortcut is never registered and the bind above dispatches into nothing.
+
+The first-run workspace hint deliberately does not take the workspaces widget's right-click, which belongs to Overview, or its wheel, which steps workspaces.
+It is dismissed by its own button and by nothing else, so no existing click, drag, or key changes meaning while it is up.
+`windows.workspaceHelp` turns it off, default true.
 
 This matters more for the right sidebar than the count suggests.
 Opening it runs `GlobalStates.onSidebarRightOpenChanged`, which times out and marks read every notification, so an accidental open destroys state.
@@ -126,7 +140,7 @@ They set their own flags rather than aliasing `searchOpen`, which is what makes 
 
 | Keys | Action |
 | --- | --- |
-| `Super+drag` | move |
+| `Super+drag` | move, and drop into a screen edge to take that half |
 | `Super+right-drag` | resize |
 | `Super+arrows` | focus in direction |
 | `Super+Shift+arrows` | move in direction |
@@ -261,6 +275,8 @@ Conformance as of 2026-07-30:
 | On-screen keyboard | persistent, correctly | commented out |
 | Global menu | own `HyprlandFocusGrab` over the bar and every open popup | bar takes focus only while a menu is open |
 | Window actions menu | own `HyprlandFocusGrab` over the bar and every open popup | bar takes focus only while a menu is open |
+| Snap preview | none needed, empty input mask | `None` |
+| Workspace hint | none, dismissed by its own button only | `None` |
 | Launchpad | none needed, see below | gated on `launchpadOpen`, `Exclusive` |
 | Widget overlay | own grab, left `active: false` | conditional, pinned widgets stay up by design |
 | Region selector | none, modal capture surface | unconditional `OnDemand` |
@@ -273,6 +289,7 @@ An unconditional `OnDemand` is not by itself a bug: a layer surface whose `visib
 `GlobalFocusGrab` is only meaningful for a surface a click can land beside.
 Launchpad and the modal capture surfaces cover the whole screen and dismiss themselves from their own input, so their absence from the grab is correct rather than missing.
 Launchpad closes on a click anywhere on its background and on `Escape`, and the region selector and screen translator close on `Escape`.
+The snap preview and the first-run workspace hint are absent for the same reason read the other way: the preview accepts no input at all, and the hint is masked to its own rectangle, so a click beside either lands on whatever is underneath and neither has anything to dismiss.
 
 A surface that is fullscreen but masked to a smaller item, like the cheatsheet, is the case that does need the grab: outside the mask the click reaches the window beneath, and the grab is the only thing that notices.
 

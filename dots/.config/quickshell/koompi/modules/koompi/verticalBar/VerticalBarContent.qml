@@ -123,6 +123,10 @@ Item { // Bar content region
                         }
                     }
                 }
+
+                Bar.WorkspaceHelp {
+                    target: workspacesWidget
+                }
             }
         }
 

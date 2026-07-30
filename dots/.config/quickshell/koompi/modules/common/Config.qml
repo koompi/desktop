@@ -669,6 +669,8 @@ Singleton {
                 property bool showTitlebar: true // Client-side decoration for shell apps
                 property bool centerTitle: true
                 property bool actionsMenu: true // Click the bar's app identity for the window's own actions
+                property bool snapPreview: true // Super+drag to a screen edge previews and takes that half
+                property bool workspaceHelp: true // The workspace strip explains itself once, on a first run
             }
 
             property JsonObject hacks: JsonObject {
