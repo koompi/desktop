@@ -11,6 +11,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.services
 import qs.modules.common
@@ -431,7 +432,10 @@ ApplicationWindow {
                         RippleButtonWithIcon {
                             materialIcon: "keyboard_alt"
                             onClicked: {
-                                Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "cheatsheet", "toggle"]);
+                                // Through Hyprland: this is its own process, so it can
+                                // neither flip the shell's state nor find the shell's
+                                // IPC socket by path.
+                                Hyprland.dispatch(`hl.dsp.global("quickshell:cheatsheetToggle")`);
                             }
                             mainContentComponent: Component {
                                 RowLayout {

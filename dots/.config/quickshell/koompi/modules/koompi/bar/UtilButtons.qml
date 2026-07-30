@@ -27,7 +27,10 @@ Item {
             sourceComponent: CircleUtilButton {
                 Layout.alignment: Qt.AlignVCenter
                 tooltipText: Translation.tr("Screenshot region")
-                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"]);
+                // Through Hyprland, not `qs ipc`: spawning the CLI to call back
+                // into this very process depends on the instance being findable
+                // by path, and it is not - every one of those buttons was dead.
+                onClicked: Hyprland.dispatch(`hl.dsp.global("quickshell:regionScreenshot")`);
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1
