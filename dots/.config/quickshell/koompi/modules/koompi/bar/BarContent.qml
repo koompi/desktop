@@ -223,6 +223,29 @@ Item { // Bar content region
                     property real realSpacing: 15
                     spacing: 0
 
+                    // A recording is invisible once its start notification is
+                    // gone, and the region it captures may be off-screen, so the
+                    // bar carries the light for as long as it runs.
+                    Revealer {
+                        reveal: ScreenRecording.active
+                        Layout.fillHeight: true
+                        Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
+                        Behavior on Layout.rightMargin {
+                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+                        }
+                        MaterialSymbol {
+                            text: "screen_record"
+                            iconSize: Appearance.font.pixelSize.larger
+                            color: Appearance.m3colors.m3error
+                            // A light that does not move reads as an icon.
+                            SequentialAnimation on opacity {
+                                running: ScreenRecording.active
+                                loops: Animation.Infinite
+                                NumberAnimation { to: 0.35; duration: 700; easing.type: Easing.InOutQuad }
+                                NumberAnimation { to: 1.0; duration: 700; easing.type: Easing.InOutQuad }
+                            }
+                        }
+                    }
                     Revealer {
                         reveal: Audio.sink?.audio?.muted ?? false
                         Layout.fillHeight: true
