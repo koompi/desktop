@@ -85,8 +85,16 @@ pub const Registrar = struct {
     }
 
     fn persist(self: *Registrar) void {
+        // The mirror belongs to whoever holds the name. A displaced daemon still
+        // receives NameOwnerChanged, and still has a table it built while it was
+        // the owner, so without this it would write that stale table over the new
+        // owner's mirror and cost it every registration it had recovered.
+        if (!self.owns_name) return;
+
         const path = self.cachePath() orelse return;
         defer self.gpa.free(path);
+        const tmp = std.fmt.allocPrintSentinel(self.gpa, "{s}.new", .{path}, 0) catch return;
+        defer self.gpa.free(tmp);
 
         var out = std.Io.Writer.Allocating.init(self.gpa);
         defer out.deinit();
@@ -95,17 +103,27 @@ pub const Registrar = struct {
         }
         const bytes = out.written();
 
-        const rc = linux.create(path.ptr, 0o600);
+        const rc = linux.create(tmp.ptr, 0o600);
         if (linux.errno(rc) != .SUCCESS) return;
         const fd: linux.fd_t = @intCast(rc);
-        defer _ = linux.close(fd);
 
+        var complete = true;
         var off: usize = 0;
         while (off < bytes.len) {
             const n: isize = @bitCast(linux.write(fd, bytes.ptr + off, bytes.len - off));
-            if (n <= 0) return;
+            if (n <= 0) {
+                complete = false;
+                break;
+            }
             off += @intCast(n);
         }
+        _ = linux.close(fd);
+
+        // Only a whole file is moved into place. Writing over the mirror directly
+        // means a daemon killed mid-write leaves a truncated one behind, and the
+        // next daemon recovers whatever survived the truncation.
+        if (complete and linux.errno(linux.rename(tmp.ptr, path.ptr)) == .SUCCESS) return;
+        _ = linux.unlink(tmp.ptr);
     }
 
     /// True when `service` still has a connection on the bus. An entry whose
@@ -167,6 +185,12 @@ pub const Registrar = struct {
                 self.gpa.free(svc);
                 continue;
             };
+            // We may already know this window. ALLOW_REPLACEMENT means the name
+            // can be taken from us and handed back when the daemon that took it
+            // exits, and each acquisition restores, so appending blindly would
+            // duplicate every entry we still hold. The mirror wins: it was
+            // written by the owner that displaced us, so it is the newer view.
+            _ = self.dropWindow(window_id);
             self.serial += 1;
             self.entries.append(self.gpa, .{
                 .window_id = window_id,
@@ -205,7 +229,8 @@ pub const Registrar = struct {
     }
 
     fn register(self: *Registrar, window_id: u32, service: []const u8, path: []const u8) !void {
-        self.removeWindow(window_id);
+        _ = self.dropWindow(window_id); // one mirror write for the whole change
+
         const svc = try self.gpa.dupeZ(u8, service);
         errdefer self.gpa.free(svc);
         const p = try self.gpa.dupeZ(u8, path);
@@ -222,7 +247,9 @@ pub const Registrar = struct {
         self.notify();
     }
 
-    fn removeWindow(self: *Registrar, window_id: u32) void {
+    /// Forgets every entry for `window_id`, without mirroring the result: callers
+    /// that are mid-rebuild persist once at the end instead.
+    fn dropWindow(self: *Registrar, window_id: u32) bool {
         var i: usize = 0;
         var removed = false;
         while (i < self.entries.items.len) {
@@ -233,7 +260,11 @@ pub const Registrar = struct {
                 removed = true;
             } else i += 1;
         }
-        if (removed) self.persist();
+        return removed;
+    }
+
+    fn removeWindow(self: *Registrar, window_id: u32) void {
+        if (self.dropWindow(window_id)) self.persist();
     }
 
     fn removeService(self: *Registrar, service: []const u8) void {

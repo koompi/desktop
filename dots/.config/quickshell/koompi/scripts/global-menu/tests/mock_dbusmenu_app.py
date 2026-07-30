@@ -8,7 +8,8 @@ com.canonical.AppMenu.Registrar and answers GetLayout / Event / AboutToShow.
 The "Tools" submenu is deliberately empty until AboutToShow arrives, which is
 how Qt menus behave, so the test can check that opening a menu populates it.
 
-argv[1] is the activation log, argv[2] the window id to register.
+argv[1] is the activation log, argv[2] the window id to register, and argv[3] an
+optional bus name, so a test can have two of these registered at once.
 """
 
 import sys
@@ -137,6 +138,7 @@ class App:
 def main():
     log = open(sys.argv[1], "a", buffering=1)
     window_id = int(sys.argv[2])
+    bus_name = sys.argv[3] if len(sys.argv) > 3 else BUS_NAME
 
     app = App(log)
     conn = Gio.bus_get_sync(Gio.BusType.SESSION, None)
@@ -158,7 +160,7 @@ def main():
         print("READY", flush=True)
 
     Gio.bus_own_name_on_connection(
-        conn, BUS_NAME, Gio.BusNameOwnerFlags.NONE, owned, lambda *a: sys.exit("name lost")
+        conn, bus_name, Gio.BusNameOwnerFlags.NONE, owned, lambda *a: sys.exit("name lost")
     )
     GLib.MainLoop().run()
 

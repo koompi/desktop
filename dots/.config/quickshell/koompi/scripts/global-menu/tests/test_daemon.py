@@ -15,6 +15,7 @@ Run: python3 tests/test_daemon.py   (after `zig build`)
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -280,17 +281,80 @@ def test_no_menu(daemon):
     check(payload["items"] == [], "an app that does not answer yields an empty menu, not a stall: %r" % payload)
 
 
-def get_menus():
+def gdbus(dest, method, *args):
     return subprocess.run(
         [
             "gdbus", "call", "--session",
-            "--dest", "com.canonical.AppMenu.Registrar",
+            "--dest", dest,
             "--object-path", "/com/canonical/AppMenu/Registrar",
-            "--method", "com.canonical.AppMenu.Registrar.GetMenus",
-        ],
+            "--method", "com.canonical.AppMenu.Registrar." + method,
+        ] + [str(a) for a in args],
         capture_output=True,
         text=True,
     ).stdout.strip()
+
+
+def bus_call(method, *args):
+    return subprocess.run(
+        [
+            "gdbus", "call", "--session",
+            "--dest", "org.freedesktop.DBus",
+            "--object-path", "/org/freedesktop/DBus",
+            "--method", "org.freedesktop.DBus." + method,
+        ] + [str(a) for a in args],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def get_menus(dest="com.canonical.AppMenu.Registrar"):
+    return gdbus(dest, "GetMenus")
+
+
+def menu_windows(dest="com.canonical.AppMenu.Registrar"):
+    """The window ids the registrar is serving, one per registration, so a
+    duplicated entry shows up as a repeated id rather than being collapsed.
+
+    gdbus prints the `uint32` annotation on the first row of the array only, so
+    matching on it finds one entry however many there are - which is exactly the
+    duplicate this is here to catch."""
+    return re.findall(r"\((?:uint32 )?(\d+), '", get_menus(dest))
+
+
+def registrar_owner():
+    """Unique name of whoever currently owns the well-known name."""
+    return bus_call("GetNameOwner", "com.canonical.AppMenu.Registrar")
+
+
+def unique_name_of(pid):
+    """The bus name of a daemon we started, so a test can address one daemon
+    directly instead of whichever one happens to own the registrar name."""
+    for name in re.findall(r"'(:[0-9.]+)'", bus_call("ListNames")):
+        if re.search(r"\b%d\b" % pid, bus_call("GetConnectionUnixProcessID", name)):
+            return name
+    raise AssertionError("no bus name for pid %d" % pid)
+
+
+def mirror_path():
+    return os.path.join(os.environ["XDG_RUNTIME_DIR"], "koompi-global-menu.registry")
+
+
+def mirror_windows():
+    """Window ids in the on-disk mirror, which is what the next daemon recovers."""
+    try:
+        with open(mirror_path()) as fh:
+            return [line.split("\t")[0] for line in fh.read().splitlines() if line]
+    except FileNotFoundError:
+        return []
+
+
+def wait_until(predicate, timeout=5.0):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.05)
+    return False
 
 
 def test_restart_recovery(daemon):
@@ -360,6 +424,103 @@ def test_stale_registration_dropped():
         revived.stop()
 
 
+def test_reacquired_name_does_not_duplicate():
+    """The name is asked for with ALLOW_REPLACEMENT, so a second daemon can take
+    it and the bus hands it back when that one exits. Every acquisition restores
+    the mirror, so restoring twice must not leave two entries for one window: the
+    bar would show that application's menu twice, and forWindow would answer from
+    whichever copy happened to come first."""
+    print("the registrar name being taken away and handed back")
+    first = Daemon()
+    app = None
+    try:
+        app = start_mock("mock_dbusmenu_app.py", os.devnull, 4245)
+        held = registrar_owner()
+        check(menu_windows() == ["4245"], "one entry to begin with: %s" % menu_windows())
+
+        # A restarted daemon takes the name with REPLACE. The first one stays
+        # queued behind it rather than giving up, which is what makes the
+        # hand-back happen at all.
+        replacement = Daemon()
+        check(
+            wait_until(lambda: registrar_owner() not in ("", held)),
+            "the replacement takes the name from the first daemon",
+        )
+        replacement.stop()
+        check(
+            wait_until(lambda: registrar_owner() == held),
+            "the name comes back to the first daemon when the replacement exits",
+        )
+
+        wait_until(lambda: menu_windows() == ["4245"])
+        check(
+            menu_windows() == ["4245"],
+            "the recovered registration is not duplicated: %s" % menu_windows(),
+        )
+        check(mirror_windows() == ["4245"], "nor duplicated in the mirror: %s" % mirror_windows())
+    finally:
+        if app is not None:
+            app.terminate()
+            app.wait(timeout=5)
+        first.stop()
+
+
+def test_displaced_daemon_does_not_write_the_mirror():
+    """A daemon that lost the name still holds a table, and still sees the bus
+    signals that change it. If it keeps mirroring that table it overwrites the
+    real owner's, and the next restart recovers the wrong set of menus."""
+    print("a daemon that has lost the name writing the mirror")
+    displaced = Daemon()
+    apps = []
+    owner = None
+    try:
+        apps.append(start_mock("mock_dbusmenu_app.py", os.devnull, 4246))
+        held = registrar_owner()
+        check(mirror_windows() == ["4246"], "the first daemon mirrored its table")
+
+        owner = Daemon()
+        check(
+            wait_until(lambda: registrar_owner() not in ("", held)),
+            "the second daemon takes the name",
+        )
+        # Registered while the second daemon owns the name, so only it knows.
+        apps.append(start_mock("mock_dbusmenu_app.py", os.devnull, 4247, "org.koompi.test.QtApp2"))
+        check(
+            wait_until(lambda: sorted(mirror_windows()) == ["4246", "4247"]),
+            "the owner mirrors both registrations: %s" % mirror_windows(),
+        )
+
+        # Make the displaced daemon change its own table, addressing it by unique
+        # name so the request cannot reach the owner instead.
+        stale = unique_name_of(displaced.proc.pid)
+        gdbus(stale, "UnregisterWindow", 4246)
+        check(
+            wait_until(lambda: menu_windows(stale) == []),
+            "the displaced daemon did drop it from its own table: %s" % menu_windows(stale),
+        )
+
+        check(
+            sorted(mirror_windows()) == ["4246", "4247"],
+            "the mirror still describes the owner's table, not the displaced one: %s"
+            % mirror_windows(),
+        )
+        check(
+            sorted(menu_windows()) == ["4246", "4247"],
+            "and the owner still serves both: %s" % menu_windows(),
+        )
+        check(
+            not os.path.exists(mirror_path() + ".new"),
+            "the mirror is written through a temporary that gets renamed, not left behind",
+        )
+    finally:
+        if owner is not None:
+            owner.stop()
+        displaced.stop()
+        for app in apps:
+            app.terminate()
+            app.wait(timeout=5)
+
+
 def main():
     if not os.path.exists(DAEMON):
         sys.exit("build the daemon first: zig build")
@@ -394,6 +555,8 @@ def main():
         finally:
             daemon.stop()
         test_stale_registration_dropped()
+        test_reacquired_name_does_not_duplicate()
+        test_displaced_daemon_does_not_write_the_mirror()
 
     if failures:
         print("\n%d check(s) failed" % len(failures))
