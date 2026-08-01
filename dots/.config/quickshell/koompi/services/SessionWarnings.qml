@@ -12,6 +12,9 @@ Singleton {
     property bool packageManagerRunning: false
     property bool downloadRunning: false
 
+    // logind says "na" with no resume device. Probed once; needs a reboot to change.
+    property bool canHibernate: false
+
     function refresh() {
         packageManagerRunning = false;
         downloadRunning = false;
@@ -34,6 +37,16 @@ Singleton {
         command: ["bash", "-c", "pidof curl wget aria2c yt-dlp || ls ~/Downloads | grep -E '\.crdownload$|\.part$'"]
         onExited: (exitCode, exitStatus) => {
             root.downloadRunning = (exitCode === 0);
+        }
+    }
+
+    Process {
+        id: detectHibernateProc
+        running: true
+        // "challenge" = possible, just needs auth.
+        command: ["bash", "-c", "busctl call org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CanHibernate | grep -qE '\"(yes|challenge)\"'"]
+        onExited: (exitCode, exitStatus) => {
+            root.canHibernate = (exitCode === 0);
         }
     }
 }

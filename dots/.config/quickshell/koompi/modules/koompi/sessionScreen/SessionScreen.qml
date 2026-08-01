@@ -118,7 +118,8 @@ Scope {
                                 sessionRoot.subtitle = buttonText;
                         }
                         KeyNavigation.right: sessionSleep
-                        KeyNavigation.down: sessionHibernate
+                        // Shutdown moves under Lock when Hibernate is hidden.
+                        KeyNavigation.down: SessionWarnings.canHibernate ? sessionHibernate : sessionShutdown
                     }
                     SessionActionButton {
                         id: sessionSleep
@@ -170,6 +171,8 @@ Scope {
 
                     SessionActionButton {
                         id: sessionHibernate
+                        // Without a resume device the button does nothing.
+                        visible: SessionWarnings.canHibernate
                         buttonIcon: "downloading"
                         buttonText: Translation.tr("Hibernate")
                         onClicked: {
