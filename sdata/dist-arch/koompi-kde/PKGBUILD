@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-kde
 pkgver=1.0
-pkgrel=4
+pkgrel=5
 pkgdesc='KOOMPI core desktop services and KDE application compatibility'
 arch=(any)
 license=(None)
@@ -13,5 +13,8 @@ depends=(
   dolphin
   kdialog
   gnome-keyring
+  # secret-tool, how the shell's keyring scripts actually reach the Secret
+  # Service gnome-keyring provides.
+  libsecret
   networkmanager
 )

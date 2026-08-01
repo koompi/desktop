@@ -15,7 +15,7 @@
 groups=(koompi)
 pkgname=koompi-branding
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='KOOMPI OS branding: wallpapers, logo, plymouth/grub/sddm themes, login enablement'
 arch=(any)
 url='https://github.com/rithythul/koompi-desktop'
@@ -24,7 +24,9 @@ license=('custom')
 # Qt.labs.folderlistmodel (the random wallpaper pick), qt6-5compat for
 # Qt5Compat.GraphicalEffects (the card's drop shadow). Without them SDDM shows a
 # blank screen rather than an error, so these are hard depends, not optional.
-depends=(sddm qt6-declarative qt6-5compat)
+# plymouth: this package installs a Plymouth theme, so the thing that renders
+# it is a hard dependency, not an assumption about the base system.
+depends=(sddm qt6-declarative qt6-5compat plymouth)
 optdepends=('breeze: stock SDDM theme, the fallback if the koompi greeter ever fails to render')
 
 package() {

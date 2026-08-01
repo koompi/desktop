@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-basic
 pkgver=1.0
-pkgrel=5
+pkgrel=6
 pkgdesc='KOOMPI Basic Dependencies'
 arch=(any)
 license=(None)
@@ -17,6 +17,15 @@ depends=(
   fd
   jq
   xdg-user-dirs
+  # Every "open this" in the shell and the keybinds ends at xdg-open.
+  xdg-utils
+  # notify-send: the scripts' only way to say anything to the user.
+  libnotify
+  # killall, used by killDialog.qml and the keyring unlock script. procps-ng
+  # (pidof, pkill) comes with base; psmisc does not.
+  psmisc
+  # checkupdates, which is the whole of services/Updates.qml on Arch.
+  pacman-contrib
   # Used in install script
   rsync
   go-yq # https://github.com/mikefarah/yq

@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-widgets
 pkgver=1.0
-pkgrel=7
+pkgrel=8
 pkgdesc='KOOMPI Widget Dependencies'
 arch=(any)
 license=(None)
@@ -9,6 +9,9 @@ depends=(
   fuzzel
   glib2
   imagemagick
+  # switchwall.sh probes wallpapers with it, Audio.qml plays the volume feedback
+  # sound through ffplay, and koompi-quicklook renders video thumbnails.
+  ffmpeg
   hypridle
   hyprlock
   hyprpicker

@@ -15,6 +15,8 @@ ripgrep
 fd-find
 jq
 xdg-user-dirs
+xdg-utils                       # every "open this" in the shell ends at xdg-open
+psmisc                          # killall, used by killDialog.qml and the keyring scripts
 rsync
 git
 yq                              # Fedora's yq IS mikefarah/yq, unlike Debian's
@@ -55,11 +57,16 @@ google-rubik-vf-fonts                   # copr: ririko66z/dots-hyprland
 google-sans-flex-vf-fonts               # copr: ririko66z/dots-hyprland
 twitter-twemoji-fonts
 bibata-cursor-theme             # copr: ririko66z/dots-hyprland
+# fontconfig/fonts.conf names Noto Sans/Serif Khmer as the Khmer fallback by
+# name; without them Khmer clips out of any container sized for Latin.
+google-noto-sans-khmer-fonts
+google-noto-serif-khmer-fonts
 
 # --- KDE apps and integration ------------------------------------------------
 dolphin
 kdialog
 gnome-keyring
+libsecret                       # secret-tool, how the keyring scripts reach the Secret Service
 NetworkManager
 plasma-nm
 bluedevil
@@ -84,16 +91,27 @@ python3-opencv
 
 # --- screen capture ----------------------------------------------------------
 hyprshot                        # copr: sdegler/hyprland
+grim                            # hyprshot pulls it in, but keybinds.lua calls grim itself
 slurp
 swappy
 tesseract
 tesseract-langpack-eng
 wf-recorder
+libnotify                       # notify-send, the scripts' only way to reach the user
 
 # --- input toolkit -----------------------------------------------------------
 upower
+power-profiles-daemon           # what the power profile quick toggle switches
 wtype
 ydotool
+# Khmer input. KOOMPI is a Cambodian desktop; the shell's own UI stays English.
+# fcitx5 ships its own XDG autostart and exports XMODIFIERS itself.
+fcitx5
+fcitx5-configtool
+fcitx5-gtk
+fcitx5-qt
+fcitx5-m17n                     # the Khmer keymaps themselves live in m17n
+m17n-db
 
 # --- widgets and helpers -----------------------------------------------------
 fuzzel
@@ -107,6 +125,8 @@ translate-shell
 qalculate
 libqalculate
 wlogout
+ffmpeg-free                     # switchwall.sh, Audio.qml's ffplay, koompi-quicklook
+easyeffects                     # the sidebar toggle, started in service mode at login
 
 # --- compositor and shell ----------------------------------------------------
 hyprland                        # copr: sdegler/hyprland - 0.56, vs 0.49 in solopasha

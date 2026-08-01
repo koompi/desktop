@@ -1,12 +1,15 @@
 groups=(koompi)
 pkgname=koompi-screencapture
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='KOOMPI Screenshot and Recording Dependencies'
 arch=(any)
 license=(None)
 depends=(
   hyprshot
+  # hyprshot pulls grim in, but keybinds.lua and the snip scripts call grim
+  # themselves, so it is a dependency of ours and not only of hyprshot's.
+  grim
   slurp
   swappy
   tesseract

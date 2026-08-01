@@ -17,6 +17,8 @@ ripgrep
 fd-find
 jq
 xdg-user-dirs
+xdg-utils                       # every "open this" in the shell ends at xdg-open
+psmisc                          # killall, used by killDialog.qml and the keyring scripts
 rsync
 unzip
 git
@@ -46,11 +48,15 @@ fontconfig
 kitty
 fonts-noto-color-emoji          # stands in for twemoji, which is not packaged
 fonts-jetbrains-mono            # unpatched; the Nerd build is fetched separately
+# fontconfig/fonts.conf names Noto Sans/Serif Khmer as the Khmer fallback by
+# name; without it Khmer clips out of any container sized for Latin.
+fonts-noto-core
 
 # --- KDE apps and integration ------------------------------------------------
 dolphin
 kdialog
 gnome-keyring
+libsecret-tools                 # secret-tool, how the keyring scripts reach the Secret Service
 network-manager
 
 # --- portals -----------------------------------------------------------------
@@ -80,8 +86,19 @@ wf-recorder
 
 # --- input toolkit -----------------------------------------------------------
 upower
+power-profiles-daemon           # what the power profile quick toggle switches
 wtype
 ydotool
+# Khmer input. KOOMPI is a Cambodian desktop; the shell's own UI stays English.
+# fcitx5 ships its own XDG autostart and exports XMODIFIERS itself.
+fcitx5
+fcitx5-config-qt
+fcitx5-frontend-gtk3
+fcitx5-frontend-gtk4
+fcitx5-frontend-qt5
+fcitx5-frontend-qt6
+fcitx5-m17n                     # the Khmer keymaps themselves live in m17n
+m17n-db
 
 # --- widgets and helpers -----------------------------------------------------
 fuzzel
@@ -95,6 +112,8 @@ qalc
 libqalculate-dev
 wlogout
 libnotify-bin                   # hyprshot notifies through notify-send
+ffmpeg                          # switchwall.sh, Audio.qml's ffplay, koompi-quicklook
+easyeffects                     # the sidebar toggle, started in service mode at login
 
 # --- compositor and shell ----------------------------------------------------
 zig                             # builds the global-menu daemon; skipped if absent

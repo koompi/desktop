@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-fonts-themes
 pkgver=1.0
-pkgrel=7
+pkgrel=8
 pkgdesc='KOOMPI Fonts and Theming Dependencies'
 arch=(any)
 license=(None)
@@ -15,6 +15,12 @@ depends=(
   fontconfig
   kitty
   matugen
+  # None of the UI faces covers Khmer, and dots/.config/fontconfig/fonts.conf
+  # names Noto Sans/Serif Khmer as the fallback by name. Without this the rule
+  # resolves to nothing and Khmer lands back on the tall ttf-khmer faces, which
+  # clip out of any container sized for Latin. ttf-khmer is deliberately NOT a
+  # dependency for that reason.
+  noto-fonts
   otf-space-grotesk
   # env.lua sets QT_QPA_PLATFORMTHEME=qt6ct and switchwall.sh renders it a
   # palette, but nothing ever pulled the package in, so Qt apps silently kept

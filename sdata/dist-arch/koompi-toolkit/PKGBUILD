@@ -1,12 +1,28 @@
 groups=(koompi)
 pkgname=koompi-toolkit
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc='KOOMPI Toolkit Dependencies'
 arch=(any)
 license=(None)
 depends=(
   upower
+  # The power profile quick toggle drives Quickshell.Services.UPower, which is
+  # a client of net.hadess.PowerProfiles. No daemon, no profiles to switch.
+  power-profiles-daemon
   wtype
   ydotool
+
+  # Khmer input. KOOMPI is a Cambodian desktop and could not type Khmer out of
+  # the box; the shell's own UI stays English (LEDGER, 2026-07-30). fcitx5
+  # ships its own XDG autostart and exports XMODIFIERS itself, and the session
+  # already starts xdg-desktop-autostart.target, so packages are the whole fix.
+  fcitx5
+  fcitx5-configtool
+  fcitx5-gtk
+  fcitx5-qt
+  # The Khmer keymaps themselves live in m17n, reached through fcitx5-m17n.
+  fcitx5-m17n
+  m17n-db
+  m17n-lib
 )
