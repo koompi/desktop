@@ -328,13 +328,23 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    StyledImage {
+                    // Plain Image, not StyledImage: that one ties sourceSize
+                    // to the layout size and fades opacity. The zoom scale
+                    // arrives from `magick` a few frames into a switch, so a
+                    // sourceSize following it reloaded the picture mid-slide and
+                    // faded the cell towards transparent over black - the dark
+                    // blink. Decoding at the picture's own size instead also
+                    // keeps it in Qt's cache between visits, so a workspace
+                    // switched back to is ready on the first frame.
+                    Image {
                         id: cellAImage
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
                         height: bgRoot.scaledWallpaperHeight
                         fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        retainWhileLoading: true
                         visible: opacity > 0
                         opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
@@ -347,13 +357,23 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    StyledImage {
+                    // Plain Image, not StyledImage: that one ties sourceSize
+                    // to the layout size and fades opacity. The zoom scale
+                    // arrives from `magick` a few frames into a switch, so a
+                    // sourceSize following it reloaded the picture mid-slide and
+                    // faded the cell towards transparent over black - the dark
+                    // blink. Decoding at the picture's own size instead also
+                    // keeps it in Qt's cache between visits, so a workspace
+                    // switched back to is ready on the first frame.
+                    Image {
                         id: cellBImage
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
                         height: bgRoot.scaledWallpaperHeight
                         fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        retainWhileLoading: true
                         visible: opacity > 0
                         opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
