@@ -135,7 +135,7 @@ Item {
                 topRightRadius: root.vertical ? radiusPrev : radiusNext
                 bottomRightRadius: radiusNext
                 
-                color: ColorUtils.transparentize(Appearance.m3colors.m3secondaryContainer, 0.4)
+                color: Appearance.colors.colBarElementBackground
                 opacity: (workspaceOccupied[index] && !(!activeWindow?.activated && root.effectiveActiveWorkspaceId === index+1)) ? 1 : 0
 
                 Behavior on opacity {
@@ -162,7 +162,7 @@ Item {
         radius: Appearance.rounding.full
         // Dimmed on a monitor that does not hold focus, so the focused one's
         // active workspace is the one that reads as active.
-        color: root.focusingThisMonitor ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1Inactive
+        color: root.focusingThisMonitor ? Appearance.colors.colBarElementBackgroundActive : Appearance.colors.colBarElementBackground
 
         anchors {
             verticalCenter: vertical ? undefined : parent.verticalCenter
@@ -235,8 +235,8 @@ Item {
                         text: Config.options?.bar.workspaces.numberMap[button.workspaceValue - 1] || button.workspaceValue
                         elide: Text.ElideRight
                         color: (root.effectiveActiveWorkspaceId == button.workspaceValue) ? 
-                            Appearance.m3colors.m3onPrimary : 
-                            (workspaceOccupied[index] ? Appearance.m3colors.m3onSecondaryContainer : 
+                            Appearance.colors.colOnLayer0 : 
+                            (workspaceOccupied[index] ? Appearance.colors.colOnLayer0 : 
                                 Appearance.colors.colOnLayer1Inactive)
 
                         Behavior on opacity {
@@ -252,8 +252,8 @@ Item {
                         height: width
                         radius: width / 2
                         color: (root.effectiveActiveWorkspaceId == button.workspaceValue) ? 
-                            Appearance.m3colors.m3onPrimary : 
-                            (workspaceOccupied[index] ? Appearance.m3colors.m3onSecondaryContainer : 
+                            Appearance.colors.colOnLayer0 : 
+                            (workspaceOccupied[index] ? Appearance.colors.colOnLayer0 : 
                                 Appearance.colors.colOnLayer1Inactive)
 
                         Behavior on opacity {

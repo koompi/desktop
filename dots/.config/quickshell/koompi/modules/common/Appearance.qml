@@ -125,6 +125,13 @@ Singleton {
         property color colBarBackground: m3colors.darkmode
             ? Qt.rgba(8 / 255, 20 / 255, 14 / 255, 0.75)
             : Qt.rgba(246 / 255, 248 / 255, 251 / 255, 0.85)
+        // Things resting on the bar are a faint veil of the bar's own foreground,
+        // not a colour of their own: a lift in dark mode, a shade in light, and
+        // subtle in both. Mixing colBarBackground instead would add opacity, and
+        // over a translucent bar that reads as a dark blob on the wallpaper.
+        property color colBarElementBackground: ColorUtils.transparentize(colOnLayer0, 0.93)
+        // Active is the same veil, just denser - no second hue to stay legible on.
+        property color colBarElementBackgroundActive: ColorUtils.transparentize(colOnLayer0, 0.84)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
         property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency);
