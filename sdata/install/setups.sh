@@ -89,6 +89,36 @@ setup_groups_and_modules() {
     run sudo udevadm control --reload-rules
 }
 
+# A wedged btintel_pcie returns -EBUSY from suspend forever, so the kernel aborts
+# every suspend and logind retries every 30s until the battery is flat. Drop the
+# module before sleep, reload after.
+setup_suspend_hook() {
+    step "Suspend reliability"
+    have systemctl || { info "no systemd; skipping"; return 0; }
+
+    local hook=/usr/lib/systemd/system-sleep/koompi-btintel-pcie
+    sudo_write "$hook" '#!/bin/sh
+# Installed by KOOMPI. See setup_suspend_hook in sdata/install/setups.sh.
+STAMP=/run/koompi-btintel-pcie-off
+case "$1" in
+pre)
+    [ -d /sys/module/btintel_pcie ] || exit 0
+    if modprobe -r btintel_pcie 2>/dev/null; then
+        : > "$STAMP"
+    else
+        echo "koompi: btintel_pcie is busy and would not unload; suspend may fail" >&2
+    fi
+    ;;
+post)
+    [ -e "$STAMP" ] || exit 0
+    rm -f "$STAMP"
+    modprobe btintel_pcie
+    ;;
+esac
+exit 0'
+    run sudo chmod 755 "$hook"
+}
+
 # ydotool ships a system unit on most distros but the shell drives it as a user
 # service; link it into the user manager where the distro has not.
 setup_services() {
@@ -221,6 +251,7 @@ run_setups() {
     setup_python_venv
     setup_global_menu
     setup_groups_and_modules
+    setup_suspend_hook
     setup_services
     setup_toolkit_defaults
     setup_system_session
