@@ -104,7 +104,7 @@ Item {
                         id: todoContentText
                         Layout.fillWidth: true
                         Layout.leftMargin: todoItem.modelData.done ? 10 : 2
-                        Layout.rightMargin: 4
+                        Layout.rightMargin: Appearance.spacing.small
                         Layout.topMargin: root.todoListItemPadding
                         Layout.bottomMargin: root.todoListItemPadding
                         Layout.alignment: Qt.AlignVCenter
@@ -133,7 +133,7 @@ Item {
                     TodoItemActionButton {
                         Layout.fillWidth: false
                         Layout.alignment: Qt.AlignVCenter
-                        Layout.rightMargin: 4
+                        Layout.rightMargin: Appearance.spacing.small
                         onClicked: Todo.deleteItem(todoItem.modelData.originalIndex)
                         contentItem: MaterialSymbol {
                             anchors.centerIn: parent
@@ -175,7 +175,7 @@ Item {
 
         ColumnLayout {
             anchors.centerIn: parent
-            spacing: 5
+            spacing: Appearance.spacing.small
 
             MaterialSymbol {
                 Layout.alignment: Qt.AlignHCenter

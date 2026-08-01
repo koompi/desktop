@@ -73,7 +73,7 @@ Item {
         // The Start/Stop and Reset buttons
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 10
+            spacing: Appearance.spacing.normal
 
             RippleButton {
                 contentItem: StyledText {

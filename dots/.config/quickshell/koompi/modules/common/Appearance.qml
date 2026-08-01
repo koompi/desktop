@@ -12,6 +12,7 @@ Singleton {
     property QtObject animationDuration
     property QtObject colors
     property QtObject rounding
+    property QtObject spacing
     property QtObject font
     property QtObject sizes
     property string syntaxHighlightingTheme
@@ -203,6 +204,16 @@ Singleton {
         property color colErrorContainerHover: ColorUtils.mix(m3colors.m3errorContainer, m3colors.m3onErrorContainer, 0.90)
         property color colErrorContainerActive: ColorUtils.mix(m3colors.m3errorContainer, m3colors.m3onErrorContainer, 0.70)
         property color colOnErrorContainer: m3colors.m3onErrorContainer
+    }
+
+    // Gaps, on the same footing as radii and durations. Four steps, every one a
+    // value the shell already used, deduplicated into bands the eye can tell
+    // apart - 4, 5 and 6 px gaps all read as "tight", so they are one step now.
+    spacing: QtObject {
+        property int hairline: 2 // between two lines of the same label
+        property int small: 5    // dense rows, grid gutters, control padding
+        property int normal: 10  // panel padding, gaps between cards
+        property int large: 16   // section padding inside a card
     }
 
     rounding: QtObject {

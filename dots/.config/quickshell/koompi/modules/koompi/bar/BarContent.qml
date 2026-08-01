@@ -89,7 +89,7 @@ Item { // Bar content region
 
             ActiveWindow {
                 id: activeWindow
-                Layout.leftMargin: 10 + (leftSidebarButton.visible ? 0 : Appearance.rounding.screenRounding)
+                Layout.leftMargin: Appearance.spacing.normal + (leftSidebarButton.visible ? 0 : Appearance.rounding.screenRounding)
                 Layout.rightMargin: Appearance.rounding.screenRounding
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -105,7 +105,7 @@ Item { // Bar content region
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
         }
-        spacing: 4
+        spacing: Appearance.spacing.small
 
         BarGroup {
             id: middleCenterGroup
@@ -170,7 +170,7 @@ Item { // Bar content region
         RowLayout {
             id: rightSectionRowLayout
             anchors.fill: parent
-            spacing: 5
+            spacing: Appearance.spacing.normal
             layoutDirection: Qt.RightToLeft
 
             ClockWidget { // Time, far-right corner; date removed by default
@@ -200,8 +200,8 @@ Item { // Bar content region
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.fillWidth: false
 
-                implicitWidth: indicatorsRowLayout.implicitWidth + 6 * 2
-                implicitHeight: indicatorsRowLayout.implicitHeight + 5 * 2
+                implicitWidth: indicatorsRowLayout.implicitWidth + Appearance.spacing.small * 2
+                implicitHeight: indicatorsRowLayout.implicitHeight + Appearance.spacing.small * 2
 
                 buttonRadius: Appearance.rounding.full
                 colBackground: barRightSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
@@ -224,7 +224,7 @@ Item { // Bar content region
                 RowLayout {
                     id: indicatorsRowLayout
                     anchors.centerIn: parent
-                    property real realSpacing: 15
+                    property real realSpacing: Appearance.spacing.large
                     spacing: 0
 
                     // A recording is invisible once its start notification is

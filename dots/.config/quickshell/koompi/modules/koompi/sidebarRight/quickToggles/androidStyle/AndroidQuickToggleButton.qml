@@ -75,7 +75,7 @@ GroupButton {
 
     contentItem: RowLayout {
         id: contentItem
-        spacing: 4
+        spacing: Appearance.spacing.small
         anchors {
             centerIn: root.expandedSize ? undefined : parent
             fill: root.expandedSize ? parent : undefined
