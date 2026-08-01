@@ -79,6 +79,13 @@ Singleton {
                 }
             }
 
+            property JsonObject calendar: JsonObject {
+                // ponytail: Google Calendar's private iCal URL, not OAuth. Read-only,
+                // no client secret to ship, revocable from Google. It is a bearer
+                // secret in states.json - move to KeyringStorage if that matters.
+                property string icsUrl: ""
+            }
+
             property JsonObject idle: JsonObject {
                 property bool inhibit: false
             }

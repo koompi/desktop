@@ -6,13 +6,10 @@ import QtQuick
 import QtQuick.Layouts
 
 Item {
-    // Layout.topMargin: 10
-    anchors.topMargin: 10
+    id: root
     property int monthShift: 0
     property var viewingDate: CalendarLayout.getDateInXMonthsTime(monthShift)
     property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
-    width: calendarColumn.width
-    implicitHeight: calendarColumn.height + 10 * 2
 
     Keys.onPressed: (event) => {
         if ((event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp)
@@ -25,8 +22,9 @@ Item {
             event.accepted = true;
         }
     }
+    // Wheel changes month over the grid only, so the event list can scroll.
     MouseArea {
-        anchors.fill: parent
+        anchors.fill: calendarColumn
         onWheel: (event) => {
             if (event.angleDelta.y > 0) {
                 monthShift--;
@@ -38,13 +36,15 @@ Item {
 
     ColumnLayout {
         id: calendarColumn
-        anchors.centerIn: parent
-        spacing: 5
+        anchors.top: parent.top
+        anchors.topMargin: Appearance.spacing.normal
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: Appearance.spacing.small
 
         // Calendar header
         RowLayout {
             Layout.fillWidth: true
-            spacing: 5
+            spacing: Appearance.spacing.small
             CalendarHeaderButton {
                 clip: true
                 buttonText: `${monthShift != 0 ? "• " : ""}${viewingDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")}`
@@ -88,7 +88,7 @@ Item {
             id: weekDaysRow
             Layout.alignment: Qt.AlignHCenter
             Layout.fillHeight: false
-            spacing: 5
+            spacing: Appearance.spacing.small
             Repeater {
                 model: CalendarLayout.weekDays
                 delegate: CalendarDayButton {
@@ -103,12 +103,11 @@ Item {
         // Real week rows
         Repeater {
             id: calendarRows
-            // model: calendarLayout
             model: 6
             delegate: RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: false
-                spacing: 5
+                spacing: Appearance.spacing.small
                 Repeater {
                     model: Array(7).fill(modelData)
                     delegate: CalendarDayButton {
@@ -118,5 +117,28 @@ Item {
                 }
             }
         }
+    }
+
+    Rectangle {
+        id: calendarDivider
+        anchors.top: calendarColumn.bottom
+        anchors.topMargin: Appearance.spacing.normal
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Appearance.spacing.normal
+        anchors.rightMargin: Appearance.spacing.normal
+        height: 1
+        color: Appearance.colors.colOutlineVariant
+    }
+
+    GoogleCalendarPanel {
+        anchors.top: calendarDivider.bottom
+        anchors.topMargin: Appearance.spacing.normal
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: Appearance.spacing.normal
+        anchors.rightMargin: Appearance.spacing.normal
+        anchors.bottomMargin: Appearance.spacing.normal
     }
 }
