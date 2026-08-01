@@ -77,6 +77,9 @@ Singleton {
                 property JsonObject bottomGroup: JsonObject {
                     property int tab: 0
                 }
+                // Pinned: stays open on focus loss and reserves its width, so
+                // windows tile beside it instead of under it.
+                property bool pinned: false
             }
 
             property JsonObject calendar: JsonObject {

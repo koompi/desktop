@@ -11,15 +11,21 @@ Scope {
     id: root
     property int sidebarWidth: Appearance.sizes.sidebarWidthRight
 
+    readonly property bool pinned: Persistent.states.sidebar.pinned
+
     PanelWindow {
         id: panelWindow
-        visible: GlobalStates.sidebarRightOpen
+        visible: GlobalStates.sidebarRightOpen || root.pinned
 
         function hide() {
+            if (root.pinned)
+                return;
             GlobalStates.sidebarRightOpen = false;
         }
 
-        exclusiveZone: 0
+        // Reserve up to the panel's visible edge, not the whole window: the left
+        // elevationMargin is shadow room, and reserving it too doubles the gap.
+        exclusiveZone: root.pinned ? sidebarWidth - Appearance.sizes.elevationMargin : 0
         implicitWidth: sidebarWidth
         WlrLayershell.namespace: "quickshell:sidebarRight"
         WlrLayershell.keyboardFocus: GlobalStates.sidebarRightOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -31,11 +37,21 @@ Scope {
             bottom: true
         }
 
-        onVisibleChanged: {
-            if (visible) {
+        // A pinned panel is not dismissable, so clicking away leaves it alone.
+        function updateDismissable() {
+            if (panelWindow.visible && !root.pinned) {
                 GlobalFocusGrab.addDismissable(panelWindow);
             } else {
                 GlobalFocusGrab.removeDismissable(panelWindow);
+            }
+        }
+        onVisibleChanged: updateDismissable()
+        Connections {
+            target: root
+            function onPinnedChanged() {
+                panelWindow.updateDismissable();
+                if (root.pinned)
+                    GlobalStates.sidebarRightOpen = true;
             }
         }
         Connections {
@@ -47,7 +63,7 @@ Scope {
 
         Loader {
             id: sidebarContentLoader
-            active: GlobalStates.sidebarRightOpen || Config?.options.sidebar.keepRightSidebarLoaded
+            active: GlobalStates.sidebarRightOpen || root.pinned || Config?.options.sidebar.keepRightSidebarLoaded
             anchors {
                 fill: parent
                 margins: Appearance.sizes.hyprlandGapsOut

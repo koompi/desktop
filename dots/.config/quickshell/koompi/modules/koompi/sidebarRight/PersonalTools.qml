@@ -8,12 +8,9 @@ import qs.modules.koompi.sidebarRight.pomodoro
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+ColumnLayout {
     id: root
-    radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
-    clip: true
-    property int selectedTab: Persistent.states.sidebar.bottomGroup.tab
+    spacing: Appearance.spacing.normal
     property int previousIndex: -1
     property var tabs: [
         {
@@ -39,79 +36,59 @@ Rectangle {
     Keys.onPressed: event => {
         if ((event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp) && event.modifiers === Qt.ControlModifier) {
             if (event.key === Qt.Key_PageDown) {
-                root.selectedTab = Math.min(root.selectedTab + 1, root.tabs.length - 1);
+                tabBar.currentIndex = Math.min(tabBar.currentIndex + 1, root.tabs.length - 1);
             } else if (event.key === Qt.Key_PageUp) {
-                root.selectedTab = Math.max(root.selectedTab - 1, 0);
+                tabBar.currentIndex = Math.max(tabBar.currentIndex - 1, 0);
             }
             event.accepted = true;
         }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        spacing: 20
-
-        // Navigation rail
-        Item {
-            Layout.fillHeight: true
-            Layout.fillWidth: false
-            Layout.leftMargin: 10
-            Layout.topMargin: 10
-            implicitWidth: tabBar.implicitWidth
-
-            NavigationRailTabArray {
-                id: tabBar
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 5
-                currentIndex: root.selectedTab
-                expanded: false
-                Repeater {
-                    model: root.tabs
-                    NavigationRailButton {
-                        required property int index
-                        required property var modelData
-                        showToggledHighlight: false
-                        toggled: root.selectedTab == index
-                        buttonText: modelData.name
-                        buttonIcon: modelData.icon
-                        onPressed: {
-                            root.selectedTab = index;
-                            Persistent.states.sidebar.bottomGroup.tab = index;
-                        }
-                    }
-                }
+    // Second tab row, under Today/Personal. Leaves the body full width.
+    SecondaryTabBar {
+        id: tabBar
+        Component.onCompleted: currentIndex = Persistent.states.sidebar.bottomGroup.tab
+        onCurrentIndexChanged: Persistent.states.sidebar.bottomGroup.tab = currentIndex
+        Repeater {
+            model: root.tabs
+            delegate: SecondaryTabButton {
+                required property var modelData
+                buttonText: modelData.name
+                buttonIcon: modelData.icon
             }
         }
+    }
 
-        // Content area. One Loader, so only the selected tool exists.
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        radius: Appearance.rounding.normal
+        color: Appearance.colors.colLayer1
+        clip: true
 
-            Loader {
-                id: tabStack
-                anchors.fill: parent
-                anchors.bottomMargin: -anchors.topMargin
+        // One Loader, so only the selected tool exists.
+        Loader {
+            id: tabStack
+            anchors.fill: parent
+            anchors.bottomMargin: -anchors.topMargin
 
-                Component.onCompleted: {
-                    tabStack.source = root.tabs[root.selectedTab].widget;
+            Component.onCompleted: {
+                tabStack.source = root.tabs[tabBar.currentIndex].widget;
+            }
+
+            Connections {
+                target: tabBar
+                function onCurrentIndexChanged() {
+                    tabSwitchBehavior.animation.down = tabBar.currentIndex > root.previousIndex;
+                    tabStack.source = root.tabs[tabBar.currentIndex].widget;
                 }
+            }
 
-                Connections {
-                    target: root
-                    function onSelectedTabChanged() {
-                        tabSwitchBehavior.animation.down = root.selectedTab > root.previousIndex;
-                        tabStack.source = root.tabs[root.selectedTab].widget;
-                    }
-                }
-
-                Behavior on source {
-                    id: tabSwitchBehavior
-                    animation: TabSwitchAnim {
-                        id: upAnim
-                        down: true
-                    }
+            Behavior on source {
+                id: tabSwitchBehavior
+                animation: TabSwitchAnim {
+                    id: upAnim
+                    down: true
                 }
             }
         }
@@ -141,7 +118,7 @@ Rectangle {
         PropertyAction {
             target: tabStack
             property: "source"
-            value: root.tabs[root.selectedTab].widget
+            value: root.tabs[tabBar.currentIndex].widget
         } // The source change happens here
         ParallelAnimation {
             PropertyAnimation {
@@ -164,7 +141,7 @@ Rectangle {
         }
         ScriptAction {
             script: {
-                root.previousIndex = root.selectedTab;
+                root.previousIndex = tabBar.currentIndex;
             }
         }
     }
