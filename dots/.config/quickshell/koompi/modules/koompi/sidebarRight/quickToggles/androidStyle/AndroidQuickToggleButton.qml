@@ -55,7 +55,10 @@ GroupButton {
     }
 
     enabled: available || editMode
-    padding: 6
+    // A toggle for software that is not installed can never do anything, so it
+    // is hidden rather than greyed out. Edit mode still shows it, to add back.
+    visible: available || editMode
+    padding: Appearance.spacing.small
     horizontalPadding: padding
     verticalPadding: padding
 

@@ -602,13 +602,43 @@ Singleton {
                     property string style: "android" // Options: classic, android
                     property JsonObject android: JsonObject {
                         property int columns: 6
+                        // All size 2: an icon alone does not say what it does or
+                        // whether it is on. Size 1 stays available per toggle
+                        // through edit mode.
+                        //
+                        // Ordered in pairs, because size 2 lands two per row in a
+                        // sidebar-width panel: each row is one subject. The last
+                        // row holds what may not be installed, so hiding an
+                        // unavailable toggle trims the end instead of punching a
+                        // gap through the middle.
                         property list<var> toggles: [
+                            // Connectivity
                             { "size": 2, "type": "network" },
                             { "size": 2, "type": "bluetooth"  },
-                            { "size": 1, "type": "idleInhibitor" },
-                            { "size": 2, "type": "mic" },
+                            // Audio
                             { "size": 2, "type": "audio" },
-                            { "size": 2, "type": "nightLight" }
+                            { "size": 2, "type": "mic" },
+                            // Display
+                            { "size": 2, "type": "nightLight" },
+                            { "size": 2, "type": "darkMode" },
+                            // Capture
+                            { "size": 2, "type": "screenSnip" },
+                            { "size": 2, "type": "screenRecord" },
+                            // Input tools
+                            { "size": 2, "type": "colorPicker" },
+                            { "size": 2, "type": "onScreenKeyboard" },
+                            // Session
+                            { "size": 2, "type": "notifications" },
+                            { "size": 2, "type": "idleInhibitor" },
+                            // Performance
+                            { "size": 2, "type": "powerProfile" },
+                            { "size": 2, "type": "gameMode" },
+                            // Extras
+                            { "size": 2, "type": "musicRecognition" },
+                            { "size": 2, "type": "antiFlashbang" },
+                            // May not be installed
+                            { "size": 2, "type": "cloudflareWarp" },
+                            { "size": 2, "type": "easyEffects" }
                         ]
                     }
                 }
