@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = hyprland
+Target = koompi-swipe-progress
+
+[Action]
+Description = Rebuilding the KOOMPI swipe progress plugin for this Hyprland...
+When = PostTransaction
+Exec = /usr/lib/koompi/hyprland/rebuild

@@ -7,6 +7,10 @@ hl.on("hyprland.start", function ()
     -- it opts out of the session-wide xcb default that the global menu needs.
     hl.exec_cmd("env QT_QPA_PLATFORM=wayland qs -c $qsConfig")
     hl.exec_cmd("$HOME/.config/hypr/custom/scripts/__restore_video_wallpaper.sh")
+    -- Swipe progress for the shell's wallpaper. Hyprland version-locks plugins,
+    -- so after a Hyprland update this simply does not load until it is rebuilt
+    -- and the wallpaper goes back to sliding only once the swipe commits.
+    hl.exec_cmd("sh -c 'test -f /usr/lib/koompi/hyprland/koompi-swipe-progress.so && hyprctl plugin load /usr/lib/koompi/hyprland/koompi-swipe-progress.so'")
 
     -- Core components (authentication, lock screen, notification daemon)
     -- gnome-keyring is started by PAM at login and by its systemd user socket,

@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.widgets.widgetCanvas
 import qs.modules.common.functions as CF
+import qs.modules.common.models.hyprland
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -97,27 +98,111 @@ Variants {
         onWallpaperPathChanged: {
             bgRoot.updateZoomScale();
             // Clock position gets updated after zoom scale is updated
+
+            // Same workspace, different picture: there is nowhere to travel
+            // from, so just swap it. Guarded because this also fires as part of
+            // a workspace change, where the pan is already handling it.
+            if (!panAnimation.running && wallpaperPan.armedWorkspaceId === 0 && bgRoot.shownWorkspaceId === bgRoot.activeWorkspaceId)
+                wallpaperPan.settle(bgRoot.wallpaperPath);
         }
 
-        // What the front cell currently shows. Hyprland slides the windows of
-        // both workspaces across, so the wallpaper has to travel with them;
-        // swapping the source in place is the blink.
-        property string shownWallpaperPath: ""
+        // Which workspace the wallpaper on screen belongs to. Hyprland slides
+        // the windows of both workspaces across, so the wallpaper has to travel
+        // with them; swapping the source in place is the blink.
         property int shownWorkspaceId: 1
         Component.onCompleted: {
-            bgRoot.shownWallpaperPath = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
             bgRoot.shownWorkspaceId = bgRoot.activeWorkspaceId;
+            wallpaperPan.currentCell.path = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
         }
         onActiveWorkspaceIdChanged: {
-            // Read the path rather than the bound property: this handler and
-            // the wallpaperPath binding both wake on the same change, in no
-            // guaranteed order.
-            const next = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
-            const canSlide = !bgRoot.wallpaperSafetyTriggered && bgRoot.shownWallpaperPath.length > 0 && next !== bgRoot.shownWallpaperPath && !Wallpapers.isVideoPath(bgRoot.shownWallpaperPath);
-            if (canSlide)
-                wallpaperPan.slide(bgRoot.shownWallpaperPath, bgRoot.activeWorkspaceId > bgRoot.shownWorkspaceId ? 1 : -1);
-            bgRoot.shownWallpaperPath = next;
-            bgRoot.shownWorkspaceId = bgRoot.activeWorkspaceId;
+            // Ask the service rather than reading wallpaperPath: that binding
+            // and this handler wake on the same change, in no guaranteed order.
+            const id = bgRoot.activeWorkspaceId;
+            const direction = id > bgRoot.shownWorkspaceId ? 1 : -1;
+            bgRoot.shownWorkspaceId = id;
+
+            // A swipe has already loaded this workspace into the far cell and
+            // dragged it most of the way here. Let it finish its travel instead
+            // of restarting it from the screen edge.
+            if (wallpaperPan.armedWorkspaceId === id)
+                wallpaperPan.commit();
+            else
+                wallpaperPan.switchTo(Wallpapers.forWorkspace(id), direction);
+        }
+
+        // Hyprland moves a workspace by the monitor width plus the gap between
+        // workspaces; the wallpaper only has a monitor to move across, so swipe
+        // offsets are scaled down by the difference.
+        HyprlandConfigOption {
+            id: workspaceGapOption
+            key: "general:gaps_workspaces"
+        }
+        readonly property real swipeScale: bgRoot.screen.width / (bgRoot.screen.width + (workspaceGapOption.value ?? 0))
+
+        Connections {
+            target: Hyprland
+
+            function onRawEvent(event): void {
+                if (!event.name.startsWith("koompiswipe"))
+                    return;
+
+                if (event.name === "koompiswipeend") {
+                    // A cancelled swipe never changes workspace, so nothing has
+                    // called commit; put the wallpaper back where it started.
+                    if (wallpaperPan.armedWorkspaceId !== 0)
+                        wallpaperPan.cancel();
+                    return;
+                }
+                if (event.name !== "koompiswipe")
+                    return;
+
+                const args = event.data.split(",");
+                if (args[0] !== bgRoot.monitor?.name)
+                    return;
+
+                const targetId = parseInt(args[1]);
+                const offset = parseFloat(args[2]) * bgRoot.swipeScale;
+                wallpaperPan.arm(targetId, Wallpapers.forWorkspace(targetId), offset > 0 ? -1 : 1);
+                wallpaperPan.track(offset);
+            }
+        }
+
+        // Parallax, shared by both cells so the two wallpapers in a switch agree
+        // on framing and the handover at the end of one is invisible.
+        property real wallpaperFraction: {
+            // 0 - start of the picture, 1 - end of the picture
+            if (bgRoot.totalWorkspaces <= 1)
+                return 0.5;
+            return Math.max(0, Math.min(1, (bgRoot.activeWorkspaceId - 1) / (bgRoot.totalWorkspaces - 1)));
+        }
+        property real wallpaperFractionX: {
+            let usedFraction = 0.5;
+            if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax)
+                usedFraction = bgRoot.wallpaperFraction;
+            if (Config.options.background.parallax.enableSidebar) {
+                let sidebarFraction = bgRoot.parallaxRation / bgRoot.workspaceChunkSize / 2;
+                usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction * GlobalStates.sidebarLeftOpen);
+            }
+            return Math.max(0, Math.min(1, usedFraction));
+        }
+        property real wallpaperFractionY: {
+            if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax)
+                return bgRoot.wallpaperFraction;
+            return 0.5;
+        }
+        property real wallpaperImageX: bgRoot.screen.width > bgRoot.scaledWallpaperWidth ? (bgRoot.screen.width - bgRoot.scaledWallpaperWidth) / 2 : -bgRoot.parallaxTotalPixelsX * bgRoot.wallpaperFractionX
+        property real wallpaperImageY: bgRoot.screen.height > bgRoot.scaledWallpaperHeight ? (bgRoot.screen.height - bgRoot.scaledWallpaperHeight) / 2 : -bgRoot.parallaxTotalPixelsY * bgRoot.wallpaperFractionY
+        Behavior on wallpaperImageX {
+            NumberAnimation {
+                duration: Appearance.animationDuration.slowest
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on wallpaperImageY {
+            NumberAnimation {
+                duration: Appearance.animationDuration.slowest
+                easing.type: Easing.OutCubic
+            }
         }
 
         // Wallpaper zoom scale
@@ -150,118 +235,128 @@ Variants {
         Item {
             anchors.fill: parent
 
-            // Wallpaper. Travels one screen width per workspace change, in the
-            // direction of the change, so the desktop reads as moving aside
-            // instead of being replaced. Distance deliberately excludes
-            // gaps_workspaces: matching it exactly would open a seam of empty
-            // layer between the two wallpapers.
+            // Wallpaper. Two cells, the workspace being left and the one
+            // arriving, panned as a pair so the desktop reads as moving aside
+            // instead of being replaced. Travel is one screen width, not width
+            // + gaps_workspaces: matching the windows exactly would open a seam
+            // of bare layer between the two wallpapers.
             Item {
                 id: wallpaperPan
                 width: parent.width
                 height: parent.height
 
-                function slide(fromPath: string, direction: int): void {
-                    slideAnimation.stop();
-                    outgoingWallpaper.source = fromPath;
-                    outgoingWallpaper.x = -direction * wallpaperPan.width;
-                    wallpaperPan.x = direction * wallpaperPan.width;
-                    slideAnimation.start();
+                // The cells swap roles rather than swapping sources, so a swipe
+                // that commits carries on from where the finger left it instead
+                // of restarting from the screen edge.
+                property Item currentCell: cellA
+                readonly property Item otherCell: currentCell === cellA ? cellB : cellA
+                // Workspace the far cell is loaded with, 0 when nothing is armed.
+                property int armedWorkspaceId: 0
+
+                function arm(workspaceId: int, path: string, direction: int): void {
+                    if (wallpaperPan.armedWorkspaceId === workspaceId)
+                        return;
+                    wallpaperPan.armedWorkspaceId = workspaceId;
+                    wallpaperPan.otherCell.path = path;
+                    wallpaperPan.otherCell.x = wallpaperPan.currentCell.x + direction * wallpaperPan.width;
+                }
+
+                function track(offset: real): void {
+                    panAnimation.stop();
+                    wallpaperPan.x = -wallpaperPan.currentCell.x + offset;
+                }
+
+                function commit(): void {
+                    wallpaperPan.armedWorkspaceId = 0;
+                    wallpaperPan.currentCell = wallpaperPan.otherCell;
+                    panAnimation.restart();
+                }
+
+                function cancel(): void {
+                    wallpaperPan.armedWorkspaceId = 0;
+                    panAnimation.restart();
+                }
+
+                function switchTo(path: string, direction: int): void {
+                    wallpaperPan.otherCell.path = path;
+                    wallpaperPan.otherCell.x = wallpaperPan.currentCell.x + direction * wallpaperPan.width;
+                    wallpaperPan.commit();
+                }
+
+                // Blanked or handed over to a video: no travel to animate.
+                function settle(path: string): void {
+                    panAnimation.stop();
+                    wallpaperPan.armedWorkspaceId = 0;
+                    wallpaperPan.currentCell.path = path;
+                    wallpaperPan.normalise();
+                }
+
+                // Bring the pan back to zero without moving anything on screen.
+                // Both cells shift by the same amount: leaving the far one where
+                // it was drops it straight back on top of the near one, which is
+                // the blink this whole thing exists to avoid.
+                function normalise(): void {
+                    const shift = wallpaperPan.currentCell.x;
+                    wallpaperPan.currentCell.x = 0;
+                    wallpaperPan.otherCell.x -= shift;
+                    wallpaperPan.x = 0;
                 }
 
                 NumberAnimation {
-                    id: slideAnimation
+                    id: panAnimation
                     target: wallpaperPan
                     property: "x"
-                    to: 0
+                    to: -wallpaperPan.currentCell.x
+                    // Mirrors the workspaces animation in hyprland/general.lua.
+                    // Hyprland animates whatever is left of the distance over
+                    // this same fixed duration, so a half finished swipe lands
+                    // with the windows rather than after them.
                     duration: Appearance.animationDuration.slow
                     easing.type: Easing.Bezier
                     easing.bezierCurve: Appearance.animationCurves.workspaceSlide
-                    onFinished: outgoingWallpaper.source = ""
+                    // Re-zero once still, or cell offsets walk off after a few
+                    // hundred switches. The far cell keeps its picture: it is
+                    // off screen, and the workspace switched away from is the
+                    // one most likely to be switched back to.
+                    onFinished: wallpaperPan.normalise()
                 }
 
-                Image {
-                    id: outgoingWallpaper
-                    // The frame being left behind. No parallax, no zoom, no
-                    // async: it is already decoded and it is on its way out.
+                Item {
+                    id: cellA
+                    property alias path: cellAImage.source
                     width: wallpaperPan.width
                     height: wallpaperPan.height
-                    fillMode: Image.PreserveAspectCrop
+                    clip: true
+
+                    StyledImage {
+                        id: cellAImage
+                        x: bgRoot.wallpaperImageX
+                        y: bgRoot.wallpaperImageY
+                        width: bgRoot.scaledWallpaperWidth
+                        height: bgRoot.scaledWallpaperHeight
+                        fillMode: Image.PreserveAspectCrop
+                        visible: opacity > 0
+                        opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
+                    }
                 }
 
-                StyledImage {
-                    id: wallpaper
-                    visible: opacity > 0
-                    // Workspace switches swap source mid-slide. retainWhileLoading
-                    // keeps the old frame while the next decodes, so stay visible
-                    // during Loading instead of fading through black; hide only
-                    // when nothing was ever shown (first load, safety blank).
-                    // Image cache and smooth sampling (both Qt defaults) keep
-                    // repeat flips decode-free and the parallax pan artifact-free.
-                    opacity: ((status === Image.Ready || (status === Image.Loading && everReady)) && !bgRoot.wallpaperIsVideo) ? 1 : 0
-                    property bool everReady: false
-                    onStatusChanged: if (status === Image.Ready) everReady = true
+                Item {
+                    id: cellB
+                    property alias path: cellBImage.source
+                    width: wallpaperPan.width
+                    height: wallpaperPan.height
+                    clip: true
 
-                    property int workspaceIndex: (bgRoot.monitor.activeWorkspace?.id ?? 1) - 1
-                    property real middleFraction: 0.5
-                    property real fraction: {
-                        // 0 - start of the picture
-                        // 1 - end of the picture
-                        if (bgRoot.totalWorkspaces <= 1) {
-                            return middleFraction;
-                        }
-                        return Math.max(0, Math.min(1, workspaceIndex / (bgRoot.totalWorkspaces - 1)));
+                    StyledImage {
+                        id: cellBImage
+                        x: bgRoot.wallpaperImageX
+                        y: bgRoot.wallpaperImageY
+                        width: bgRoot.scaledWallpaperWidth
+                        height: bgRoot.scaledWallpaperHeight
+                        fillMode: Image.PreserveAspectCrop
+                        visible: opacity > 0
+                        opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
-
-                    property real usedFractionX: {
-                        let usedFraction = middleFraction;
-                        if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
-                            usedFraction = fraction;
-                        }
-                        if (Config.options.background.parallax.enableSidebar) {
-                            let sidebarFraction = bgRoot.parallaxRation / bgRoot.workspaceChunkSize / 2;
-                            usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction * GlobalStates.sidebarLeftOpen);
-                        }
-                        return Math.max(0, Math.min(1, usedFraction));
-                    }
-                    property real usedFractionY: {
-                        let usedFraction = middleFraction;
-                        if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax) {
-                            usedFraction = fraction;
-                        }
-                        return Math.max(0, Math.min(1, usedFraction));
-                    }
-
-                    x: {
-                        if (bgRoot.screen.width > width) {
-                            // Center the picture
-                            return (bgRoot.screen.width - width) / 2;
-                        }
-                        return - bgRoot.parallaxTotalPixelsX * usedFractionX;
-                    }
-                    y: {
-                        if (bgRoot.screen.height > height) {
-                            // Center the picture
-                            return (bgRoot.screen.height - height) / 2;
-                        }
-                        return - bgRoot.parallaxTotalPixelsY * usedFractionY;
-                    }
-
-                    source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
-                    fillMode: Image.PreserveAspectCrop
-                    Behavior on x {
-                        NumberAnimation {
-                            duration: Appearance.animationDuration.slowest
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                    Behavior on y {
-                        NumberAnimation {
-                            duration: Appearance.animationDuration.slowest
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                    width: bgRoot.scaledWallpaperWidth
-                    height: bgRoot.scaledWallpaperHeight
                 }
             }
 
@@ -273,10 +368,10 @@ Variants {
                     var f = Config.options.background.parallax.widgetsFactor;
                     return f / bgRoot.parallaxRation;
                 }
-                readonly property real baseWallpaperOffsetX: (bgRoot.screen.width - wallpaper.width) / 2
-                readonly property real baseWallpaperOffsetY: (bgRoot.screen.height - wallpaper.height) / 2
-                readonly property real wallpaperTotalOffsetX: wallpaper.x - baseWallpaperOffsetX
-                readonly property real wallpaperTotalOffsetY: wallpaper.y - baseWallpaperOffsetY
+                readonly property real baseWallpaperOffsetX: (bgRoot.screen.width - bgRoot.scaledWallpaperWidth) / 2
+                readonly property real baseWallpaperOffsetY: (bgRoot.screen.height - bgRoot.scaledWallpaperHeight) / 2
+                readonly property real wallpaperTotalOffsetX: bgRoot.wallpaperImageX - baseWallpaperOffsetX
+                readonly property real wallpaperTotalOffsetY: bgRoot.wallpaperImageY - baseWallpaperOffsetY
                 x: wallpaperTotalOffsetX * parallaxFactor
                 y: wallpaperTotalOffsetY * parallaxFactor
 

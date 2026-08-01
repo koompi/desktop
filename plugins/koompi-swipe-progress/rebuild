@@ -1,0 +1,36 @@
+#!/bin/sh
+# Hyprland refuses any plugin whose build hash differs from its own, so this one
+# has to be rebuilt against every new Hyprland. A pacman hook runs this after
+# hyprland is installed or upgraded.
+#
+# Never fails the transaction. A machine with no compiler keeps the old .so,
+# Hyprland declines to load it, and the wallpaper falls back to sliding when the
+# workspace commits instead of following the finger.
+
+# Overridable so the test can run this unprivileged.
+src=${KOOMPI_SWIPE_SRC:-/usr/lib/koompi/hyprland/src}
+out=${KOOMPI_SWIPE_OUT:-/usr/lib/koompi/hyprland/koompi-swipe-progress.so}
+
+if ! command -v g++ >/dev/null 2>&1; then
+    echo "koompi-swipe-progress: no C++ compiler, keeping the existing plugin" >&2
+    exit 0
+fi
+
+if ! pkg-config --exists hyprland 2>/dev/null; then
+    echo "koompi-swipe-progress: no Hyprland headers, keeping the existing plugin" >&2
+    exit 0
+fi
+
+tmp=$(mktemp -d) || exit 0
+trap 'rm -rf "$tmp"' EXIT
+
+cp "$src/main.cpp" "$src/Makefile" "$tmp/" 2>/dev/null || exit 0
+
+if ! make -C "$tmp" >/dev/null 2>&1; then
+    echo "koompi-swipe-progress: rebuild failed, the plugin will not load until it does" >&2
+    exit 0
+fi
+
+install -Dm755 "$tmp/koompi-swipe-progress.so" "$out" 2>/dev/null || exit 0
+echo "koompi-swipe-progress: rebuilt for $(pkg-config --modversion hyprland)"
+exit 0

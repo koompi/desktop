@@ -1,0 +1,50 @@
+# koompi-swipe-progress — a Hyprland plugin that publishes workspace swipe
+# progress on the event socket, so the shell can pan the wallpaper with the
+# windows instead of catching up after the gesture commits.
+#
+# Hyprland version-locks plugins by build hash. Deliberately NOT pinned with
+# `hyprland=<ver>`: that would refuse the Hyprland upgrade rather than survive
+# it. Instead the source ships with the package and a pacman hook rebuilds the
+# plugin after every Hyprland install or upgrade. If that rebuild cannot run,
+# Hyprland just declines to load the stale plugin and the wallpaper falls back
+# to sliding on commit - the desktop is never held back and never breaks.
+#
+# BUILD NOTE: same as koompi-shell, this reads the repo through $startdir under
+# the sdata/dist-arch flow. For clean-chroot builds, pin `source` to a git tag.
+groups=(koompi)
+pkgname=koompi-swipe-progress
+pkgver=1.0
+pkgrel=1
+pkgdesc='Hyprland plugin: workspace swipe progress on the event socket'
+arch=(x86_64 aarch64)
+license=(GPL-3.0-only)
+depends=(hyprland)
+makedepends=(gcc pkgconf hyprland)
+# Without these the hook cannot rebuild after a Hyprland upgrade, and the
+# feature stays off until they are installed.
+optdepends=('gcc: rebuild the plugin after a Hyprland upgrade'
+            'pkgconf: rebuild the plugin after a Hyprland upgrade')
+
+build() {
+  local _repo_root
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  make -C "$_repo_root/plugins/koompi-swipe-progress" clean all
+}
+
+package() {
+  local _repo_root _src
+  _repo_root="$(cd "$startdir/../../.." && pwd)"
+  _src="$_repo_root/plugins/koompi-swipe-progress"
+
+  install -Dm755 "$_src/koompi-swipe-progress.so" \
+    "$pkgdir/usr/lib/koompi/hyprland/koompi-swipe-progress.so"
+
+  # The source travels with the package so the hook can rebuild on a machine
+  # that never sees this repo.
+  install -Dm644 "$_src/main.cpp" "$pkgdir/usr/lib/koompi/hyprland/src/main.cpp"
+  install -Dm644 "$_src/Makefile" "$pkgdir/usr/lib/koompi/hyprland/src/Makefile"
+  install -Dm755 "$_src/rebuild" "$pkgdir/usr/lib/koompi/hyprland/rebuild"
+
+  install -Dm644 "$startdir/koompi-swipe-progress.hook" \
+    "$pkgdir/usr/share/libalpm/hooks/koompi-swipe-progress.hook"
+}

@@ -16,6 +16,9 @@ depends=(
   koompi-base
   # Hyprland compositor + Quickshell shell + widgets + MicroTeX.
   koompi-hyprland
+  # Swipe progress on the event socket, so the wallpaper follows the finger.
+  # Rebuilds itself after a Hyprland upgrade; harmless when it cannot.
+  koompi-swipe-progress
   koompi-quickshell-git
   koompi-widgets
   koompi-microtex-git

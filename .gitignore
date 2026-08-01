@@ -27,3 +27,6 @@ __pycache__/
 # Agent coordination: local process notes, not part of the product
 /.agents/
 /AGENTS.md
+
+# built by plugins/koompi-swipe-progress/Makefile
+plugins/koompi-swipe-progress/*.so
