@@ -10,6 +10,10 @@ QuickToggleModel {
     id: root
     name: Translation.tr("Cloudflare WARP")
 
+    // Nothing installs cloudflare-warp-bin, so assume absent until the probe
+    // below says otherwise: the model default is true, which showed a toggle
+    // that could only ever fail on every machine without warp-cli.
+    available: false
     toggled: false
     icon: "cloud_lock"
     
@@ -54,6 +58,17 @@ QuickToggleModel {
         }
     }
 
+    // Availability is the binary, not the status: warp-cli answers non-zero
+    // until the terms of service have been accepted, and a machine that has
+    // WARP but has not registered it still wants the toggle.
+    Process {
+        running: true
+        command: ["bash", "-c", "command -v warp-cli"]
+        onExited: (exitCode, exitStatus) => {
+            root.available = (exitCode === 0)
+        }
+    }
+
     Process {
         id: fetchActiveState
         running: true
@@ -61,9 +76,6 @@ QuickToggleModel {
         stdout: StdioCollector {
             id: warpStatusCollector
             onStreamFinished: {
-                if (warpStatusCollector.text.length > 0) {
-                    root.available = true
-                }
                 if (warpStatusCollector.text.includes("Unable")) {
                     registrationProc.running = true
                 } else if (warpStatusCollector.text.includes("Connected")) {
