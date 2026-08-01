@@ -70,15 +70,26 @@ MouseArea {
 
     IconImage {
         id: trayIcon
-        visible: !Config.options.tray.monochromeIcons
+        visible: !Config.options.tray.monochromeIcons && trayIcon.status !== Image.Error
         source: root.item.icon
         anchors.centerIn: parent
         width: parent.width
         height: parent.height
     }
 
+    // Qt caches a failed icon lookup for the life of the process, so an app
+    // installed mid-session keeps missing until the shell restarts. Without
+    // this it draws Qt's magenta checkerboard, which reads as a broken bar.
+    MaterialSymbol {
+        visible: trayIcon.status === Image.Error
+        anchors.centerIn: parent
+        text: "extension"
+        iconSize: parent.height
+        color: Appearance.colors.colOnLayer0
+    }
+
     Loader {
-        active: Config.options.tray.monochromeIcons
+        active: Config.options.tray.monochromeIcons && trayIcon.status !== Image.Error
         anchors.fill: trayIcon
         sourceComponent: Item {
             Desaturate {
@@ -91,7 +102,9 @@ MouseArea {
             ColorOverlay {
                 anchors.fill: desaturatedIcon
                 source: desaturatedIcon
-                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
+                // Opaque: transparentize(c, 0.9) is alpha 0.1, which drew every
+                // monochrome tray icon at a tenth opacity, near-invisible.
+                color: Appearance.colors.colOnLayer0
             }
         }
     }
