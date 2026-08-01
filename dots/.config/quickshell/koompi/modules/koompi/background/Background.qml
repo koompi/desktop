@@ -99,6 +99,27 @@ Variants {
             // Clock position gets updated after zoom scale is updated
         }
 
+        // What the front cell currently shows. Hyprland slides the windows of
+        // both workspaces across, so the wallpaper has to travel with them;
+        // swapping the source in place is the blink.
+        property string shownWallpaperPath: ""
+        property int shownWorkspaceId: 1
+        Component.onCompleted: {
+            bgRoot.shownWallpaperPath = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
+            bgRoot.shownWorkspaceId = bgRoot.activeWorkspaceId;
+        }
+        onActiveWorkspaceIdChanged: {
+            // Read the path rather than the bound property: this handler and
+            // the wallpaperPath binding both wake on the same change, in no
+            // guaranteed order.
+            const next = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
+            const canSlide = !bgRoot.wallpaperSafetyTriggered && bgRoot.shownWallpaperPath.length > 0 && next !== bgRoot.shownWallpaperPath && !Wallpapers.isVideoPath(bgRoot.shownWallpaperPath);
+            if (canSlide)
+                wallpaperPan.slide(bgRoot.shownWallpaperPath, bgRoot.activeWorkspaceId > bgRoot.shownWorkspaceId ? 1 : -1);
+            bgRoot.shownWallpaperPath = next;
+            bgRoot.shownWorkspaceId = bgRoot.activeWorkspaceId;
+        }
+
         // Wallpaper zoom scale
         function updateZoomScale() {
             getWallpaperSizeProc.path = bgRoot.wallpaperPath;
@@ -129,81 +150,119 @@ Variants {
         Item {
             anchors.fill: parent
 
-            // Wallpaper
-            StyledImage {
-                id: wallpaper
-                visible: opacity > 0
-                // Workspace switches swap source mid-slide. retainWhileLoading
-                // keeps the old frame while the next decodes, so stay visible
-                // during Loading instead of fading through black; hide only
-                // when nothing was ever shown (first load, safety blank).
-                // Image cache and smooth sampling (both Qt defaults) keep
-                // repeat flips decode-free and the parallax pan artifact-free.
-                opacity: ((status === Image.Ready || (status === Image.Loading && everReady)) && !bgRoot.wallpaperIsVideo) ? 1 : 0
-                property bool everReady: false
-                onStatusChanged: if (status === Image.Ready) everReady = true
+            // Wallpaper. Travels one screen width per workspace change, in the
+            // direction of the change, so the desktop reads as moving aside
+            // instead of being replaced. Distance deliberately excludes
+            // gaps_workspaces: matching it exactly would open a seam of empty
+            // layer between the two wallpapers.
+            Item {
+                id: wallpaperPan
+                width: parent.width
+                height: parent.height
 
-                property int workspaceIndex: (bgRoot.monitor.activeWorkspace?.id ?? 1) - 1
-                property real middleFraction: 0.5
-                property real fraction: {
-                    // 0 - start of the picture
-                    // 1 - end of the picture
-                    if (bgRoot.totalWorkspaces <= 1) {
-                        return middleFraction;
-                    }
-                    return Math.max(0, Math.min(1, workspaceIndex / (bgRoot.totalWorkspaces - 1)));
+                function slide(fromPath: string, direction: int): void {
+                    slideAnimation.stop();
+                    outgoingWallpaper.source = fromPath;
+                    outgoingWallpaper.x = -direction * wallpaperPan.width;
+                    wallpaperPan.x = direction * wallpaperPan.width;
+                    slideAnimation.start();
                 }
 
-                property real usedFractionX: {
-                    let usedFraction = middleFraction;
-                    if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
-                        usedFraction = fraction;
-                    }
-                    if (Config.options.background.parallax.enableSidebar) {
-                        let sidebarFraction = bgRoot.parallaxRation / bgRoot.workspaceChunkSize / 2;
-                        usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction * GlobalStates.sidebarLeftOpen);
-                    }
-                    return Math.max(0, Math.min(1, usedFraction));
-                }
-                property real usedFractionY: {
-                    let usedFraction = middleFraction;
-                    if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax) {
-                        usedFraction = fraction;
-                    }
-                    return Math.max(0, Math.min(1, usedFraction));
+                NumberAnimation {
+                    id: slideAnimation
+                    target: wallpaperPan
+                    property: "x"
+                    to: 0
+                    duration: Appearance.animationDuration.slow
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: Appearance.animationCurves.workspaceSlide
+                    onFinished: outgoingWallpaper.source = ""
                 }
 
-                x: {
-                    if (bgRoot.screen.width > width) {
-                        // Center the picture
-                        return (bgRoot.screen.width - width) / 2;
-                    }
-                    return - bgRoot.parallaxTotalPixelsX * usedFractionX;
-                }
-                y: {
-                    if (bgRoot.screen.height > height) {
-                        // Center the picture
-                        return (bgRoot.screen.height - height) / 2;
-                    }
-                    return - bgRoot.parallaxTotalPixelsY * usedFractionY;
+                Image {
+                    id: outgoingWallpaper
+                    // The frame being left behind. No parallax, no zoom, no
+                    // async: it is already decoded and it is on its way out.
+                    width: wallpaperPan.width
+                    height: wallpaperPan.height
+                    fillMode: Image.PreserveAspectCrop
                 }
 
-                source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
-                fillMode: Image.PreserveAspectCrop
-                Behavior on x {
-                    NumberAnimation {
-                        duration: Appearance.animationDuration.slowest
-                        easing.type: Easing.OutCubic
+                StyledImage {
+                    id: wallpaper
+                    visible: opacity > 0
+                    // Workspace switches swap source mid-slide. retainWhileLoading
+                    // keeps the old frame while the next decodes, so stay visible
+                    // during Loading instead of fading through black; hide only
+                    // when nothing was ever shown (first load, safety blank).
+                    // Image cache and smooth sampling (both Qt defaults) keep
+                    // repeat flips decode-free and the parallax pan artifact-free.
+                    opacity: ((status === Image.Ready || (status === Image.Loading && everReady)) && !bgRoot.wallpaperIsVideo) ? 1 : 0
+                    property bool everReady: false
+                    onStatusChanged: if (status === Image.Ready) everReady = true
+
+                    property int workspaceIndex: (bgRoot.monitor.activeWorkspace?.id ?? 1) - 1
+                    property real middleFraction: 0.5
+                    property real fraction: {
+                        // 0 - start of the picture
+                        // 1 - end of the picture
+                        if (bgRoot.totalWorkspaces <= 1) {
+                            return middleFraction;
+                        }
+                        return Math.max(0, Math.min(1, workspaceIndex / (bgRoot.totalWorkspaces - 1)));
                     }
-                }
-                Behavior on y {
-                    NumberAnimation {
-                        duration: Appearance.animationDuration.slowest
-                        easing.type: Easing.OutCubic
+
+                    property real usedFractionX: {
+                        let usedFraction = middleFraction;
+                        if (Config.options.background.parallax.enableWorkspace && !bgRoot.verticalParallax) {
+                            usedFraction = fraction;
+                        }
+                        if (Config.options.background.parallax.enableSidebar) {
+                            let sidebarFraction = bgRoot.parallaxRation / bgRoot.workspaceChunkSize / 2;
+                            usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction * GlobalStates.sidebarLeftOpen);
+                        }
+                        return Math.max(0, Math.min(1, usedFraction));
                     }
+                    property real usedFractionY: {
+                        let usedFraction = middleFraction;
+                        if (Config.options.background.parallax.enableWorkspace && bgRoot.verticalParallax) {
+                            usedFraction = fraction;
+                        }
+                        return Math.max(0, Math.min(1, usedFraction));
+                    }
+
+                    x: {
+                        if (bgRoot.screen.width > width) {
+                            // Center the picture
+                            return (bgRoot.screen.width - width) / 2;
+                        }
+                        return - bgRoot.parallaxTotalPixelsX * usedFractionX;
+                    }
+                    y: {
+                        if (bgRoot.screen.height > height) {
+                            // Center the picture
+                            return (bgRoot.screen.height - height) / 2;
+                        }
+                        return - bgRoot.parallaxTotalPixelsY * usedFractionY;
+                    }
+
+                    source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
+                    fillMode: Image.PreserveAspectCrop
+                    Behavior on x {
+                        NumberAnimation {
+                            duration: Appearance.animationDuration.slowest
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: Appearance.animationDuration.slowest
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                    width: bgRoot.scaledWallpaperWidth
+                    height: bgRoot.scaledWallpaperHeight
                 }
-                width: bgRoot.scaledWallpaperWidth
-                height: bgRoot.scaledWallpaperHeight
             }
 
             WidgetCanvas {

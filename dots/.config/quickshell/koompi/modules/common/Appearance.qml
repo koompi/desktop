@@ -301,6 +301,7 @@ Singleton {
         readonly property list<real> standard: [0.2, 0, 0, 1, 1, 1]
         readonly property list<real> standardAccel: [0.3, 0, 1, 1, 1, 1]
         readonly property list<real> standardDecel: [0, 0, 0, 1, 1, 1]
+        readonly property list<real> workspaceSlide: [0.25, 0.1, 0.05, 1, 1, 1] // mirror of hyprland/general.lua, 400ms
         readonly property real expressiveFastSpatialDuration: root.animationDuration.deliberate
         readonly property real expressiveDefaultSpatialDuration: root.animationDuration.slower
         readonly property real expressiveSlowSpatialDuration: root.animationDuration.slowest
