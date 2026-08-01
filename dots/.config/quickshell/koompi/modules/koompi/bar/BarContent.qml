@@ -317,7 +317,6 @@ Item { // Bar content region
             BatteryIndicator {
                 visible: (root.useShortenedForm < 2 && Battery.available)
                 Layout.alignment: Qt.AlignVCenter
-                Layout.rightMargin: 4
             }
 
             SysTray {
@@ -327,13 +326,9 @@ Item { // Bar content region
                 invertSide: Config?.options.bar.bottom
             }
 
-            BarGroup { // One overflow control in place of the utility, weather and media slots
-                visible: root.useShortenedForm === 0
-                Layout.alignment: Qt.AlignVCenter
-                BarOverflow {
-                    Layout.alignment: Qt.AlignVCenter
-                }
-            }
+            // The overflow "..." control lived here. Everything behind it -
+            // utility actions, weather, media, the pomodoro - is in the right
+            // sidebar now, so the bar no longer carries a second copy.
 
             Item { // Leftmost in RTL: absorbs slack so the cluster pins to the right edge
                 Layout.fillWidth: true
