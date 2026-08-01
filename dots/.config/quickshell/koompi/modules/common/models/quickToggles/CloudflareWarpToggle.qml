@@ -17,19 +17,22 @@ QuickToggleModel {
     toggled: false
     icon: "cloud_lock"
     
+    // --accept-tos on every call: warp-cli refuses outside a TTY without it, and
+    // a Process has none. Not on `registration new` below - that one accepts the
+    // terms for real, and the desktop does not do that on someone's behalf.
     mainAction: () => {
         if (toggled) {
             root.toggled = false
-            Quickshell.execDetached(["warp-cli", "disconnect"])
+            Quickshell.execDetached(["warp-cli", "--accept-tos", "disconnect"])
         } else {
             root.toggled = true
-            Quickshell.execDetached(["warp-cli", "connect"])
+            Quickshell.execDetached(["warp-cli", "--accept-tos", "connect"])
         }
     }
 
     Process {
         id: connectProc
-        command: ["warp-cli", "connect"]
+        command: ["warp-cli", "--accept-tos", "connect"]
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) {
                 Quickshell.execDetached(["notify-send", 
@@ -72,7 +75,7 @@ QuickToggleModel {
     Process {
         id: fetchActiveState
         running: true
-        command: ["bash", "-c", "warp-cli status"]
+        command: ["bash", "-c", "warp-cli --accept-tos status"]
         stdout: StdioCollector {
             id: warpStatusCollector
             onStreamFinished: {
