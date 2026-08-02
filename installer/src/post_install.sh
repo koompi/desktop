@@ -123,7 +123,39 @@ setup_grub_btrfs() {
   # we only refresh the config. TODO: confirm grub.cfg path for this target.
   if command -v grub-mkconfig &>/dev/null; then
     grub-mkconfig -o /boot/grub/grub.cfg
+    quiet_grub_entries
   fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4a. "Loading Linux ..." / "Loading initial ramdisk ..." on an otherwise silent
+#     boot. /etc/grub.d/10_linux emits those two `echo` lines into every
+#     menuentry unconditionally — Arch carries no quiet_boot knob (that is a
+#     Fedora patch), so there is no variable to set and no drop-in that stops
+#     them. Stripping the generated file is the only lever short of shipping our
+#     own 10_linux, which would collide with the grub package on every update.
+#
+#     Runs after EVERY grub-mkconfig, never standalone: a later regeneration
+#     puts the lines back, so this has to sit next to the call that creates them.
+#     Matches the English string, which is what grub-mkconfig emits under the C
+#     locale the installer runs in; a localised run leaves the lines and says so
+#     rather than deleting something it did not recognise.
+# ─────────────────────────────────────────────────────────────────────────────
+quiet_grub_entries() {
+  local cfg="${KOOMPI_GRUB_CFG:-/boot/grub/grub.cfg}"
+  [ -f "$cfg" ] || return 0
+  if ! grep -q "^[[:space:]]*echo[[:space:]]*'Loading " "$cfg"; then
+    log "no 'Loading ...' lines in $cfg (localised grub-mkconfig?) — leaving it alone"
+    return 0
+  fi
+  sed -i "/^[[:space:]]*echo[[:space:]]*'Loading /d" "$cfg"
+  # A malformed grub.cfg is an unbootable machine, so prove it still parses.
+  if command -v grub-script-check &>/dev/null && ! grub-script-check "$cfg"; then
+    log "ERROR: $cfg failed grub-script-check after the strip; regenerating"
+    grub-mkconfig -o "$cfg"
+    return 1
+  fi
+  log "silenced the GRUB 'Loading ...' lines"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -195,4 +227,7 @@ main() {
   log "post-install hook done"
 }
 
-main "$@"
+# Sourced by tests/test_grub_quiet.sh, which needs the functions without the run.
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
