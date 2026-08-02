@@ -528,6 +528,8 @@ Singleton {
             property JsonObject power: JsonObject {
                 // Halve the shell's background polling rate while on battery.
                 property bool saveOnBattery: true
+                // Opt-in: swap to power saver on battery, restore the AC profile on plug-in.
+                property bool autoProfileOnBattery: false
             }
 
             property JsonObject tray: JsonObject {

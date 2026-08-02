@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import Quickshell.Services.UPower
 import qs.services
 import qs.modules.common
@@ -52,8 +53,34 @@ ContentPage {
         }
         StyledText {
             visible: Battery.available && (Battery.health ?? 0) > 0
-            text: Translation.tr("Health: %1%").arg((Battery.health ?? 0).toFixed(1))
+            text: Translation.tr("Health: %1%").arg(Math.round(Battery.health ?? 0))
             color: Appearance.colors.colSubtext
+        }
+    }
+
+    ContentSection {
+        icon: "battery_saver"
+        title: Translation.tr("Charge limit")
+        visible: ChargeLimit.supported
+
+        ConfigSwitch {
+            buttonIcon: "battery_saver"
+            text: Translation.tr("Limit charging to %1%").arg(ChargeLimit.endThreshold)
+            checked: ChargeLimit.enabled
+            onCheckedChanged: {
+                ChargeLimit.setEnabled(checked);
+                // ConfigSwitch assigns checked on click, killing the binding.
+                // UPower owns this value, so it has to come back.
+                checked = Qt.binding(() => ChargeLimit.enabled);
+            }
+        }
+        StyledText {
+            Layout.fillWidth: true
+            Layout.leftMargin: 10
+            wrapMode: Text.Wrap
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.smallie
+            text: Translation.tr("Charging stops at %1% and resumes below %2%. Less range today, more capacity in a few years.").arg(ChargeLimit.endThreshold).arg(ChargeLimit.startThreshold)
         }
     }
 
@@ -88,6 +115,25 @@ ContentPage {
                 }
                 return opts;
             }
+        }
+
+        ConfigSwitch {
+            visible: Battery.available
+            buttonIcon: "energy_savings_leaf"
+            text: Translation.tr("Switch to power saver on battery")
+            checked: Config.options.power.autoProfileOnBattery
+            onCheckedChanged: {
+                Config.options.power.autoProfileOnBattery = checked;
+            }
+        }
+        StyledText {
+            visible: Battery.available
+            Layout.fillWidth: true
+            Layout.leftMargin: 10
+            wrapMode: Text.Wrap
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.smallie
+            text: Translation.tr("Unplugging drops to power saver. Plugging back in returns to the profile you were using on AC.")
         }
     }
 
