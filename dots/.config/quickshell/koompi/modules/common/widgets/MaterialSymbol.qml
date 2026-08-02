@@ -5,18 +5,19 @@ StyledText {
     id: root
     property real iconSize: Appearance?.font.pixelSize.small ?? 16
     property real fill: 0
-    property real truncatedFill: fill.toFixed(1) // Reduce memory consumption spikes from constant font remapping
+    // Every distinct variableAxes tuple is a separate font instance, ~8.5MB of
+    // the 34MB variable font each, held for the process lifetime. Keep the
+    // tuple count small: FILL alone is 11 values, adding opsz multiplied it by
+    // the ~22 icon sizes in the shell (measured 1.23GB against 340MB).
+    property real truncatedFill: fill.toFixed(1)
     renderType: Text.NativeRendering
     font {
         hintingPreference: Font.PreferNoHinting
         family: Appearance?.font.family.iconMaterial ?? "Material Symbols Rounded"
         pixelSize: iconSize
         weight: Font.Normal + (Font.DemiBold - Font.Normal) * truncatedFill
-        variableAxes: { 
+        variableAxes: {
             "FILL": truncatedFill,
-            // "wght": font.weight,
-            // "GRAD": 0,
-            "opsz": iconSize,
         }
     }
 
