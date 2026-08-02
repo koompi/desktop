@@ -15,7 +15,7 @@
 groups=(koompi)
 pkgname=koompi-branding
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc='KOOMPI OS branding: wallpapers, logo, plymouth/grub/sddm themes, login enablement'
 arch=(any)
 url='https://github.com/rithythul/koompi-desktop'
@@ -61,6 +61,11 @@ package() {
   # GRUB theme (skeleton; placeholder art, see header)
   install -dm755 "$pkgdir/usr/share/grub/themes/koompi"
   install -m644 "$_src/grub/theme.txt" "$pkgdir/usr/share/grub/themes/koompi/"
+
+  # Boot straight to the splash. A drop-in, not an edit: /etc/default/grub
+  # belongs to the grub package. Takes effect at the next grub-mkconfig, which
+  # the installer runs.
+  install -Dm644 "$_src/grub/10-koompi.cfg" "$pkgdir/etc/default/grub.d/10-koompi.cfg"
 
   # SDDM greeter + the selector that makes it the active theme. theme.conf
   # points backgroundDir at the wallpapers installed above, so the greeter shows
