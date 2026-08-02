@@ -1,0 +1,7 @@
+# Seed only. EasyEffects owns this file from its first run and drops comments.
+# Stock plugin defaults: rnnoise denoises the mic, the limiter catches peaks.
+[StreamInputs]
+plugins=rnnoise#0
+
+[StreamOutputs]
+plugins=limiter#0

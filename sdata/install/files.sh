@@ -15,8 +15,11 @@
 # on the next update would throw away their config. The terminal config is the
 # same kind of slot: KOOMPI has opinions worth shipping to someone who has none,
 # but a user who already configured their terminal would not thank us for
-# replacing it on every update.
+# replacing it on every update. The EasyEffects db is state the app rewrites on
+# every quit, so we only ever seed it - writing it again would revert whatever
+# chain the user built and reset their device selection.
 readonly KEEP_PATHS=(
+    ".config/easyeffects/db/easyeffectsrc"
     ".config/hypr/custom/env.lua"
     ".config/hypr/custom/execs.lua"
     ".config/hypr/custom/general.lua"
