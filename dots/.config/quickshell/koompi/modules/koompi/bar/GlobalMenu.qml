@@ -344,8 +344,19 @@ Item {
         // A menu title is a small target. The hit region is a full bar-height
         // square at minimum; the highlight below stays text-sized so the bar
         // still reads as a menubar rather than a toolbar.
-        implicitWidth: Math.max(Appearance.sizes.baseBarHeight, buttonLabel.implicitWidth + 20)
+        // Sized off the bold open state at all times: measuring the live label
+        // instead would widen the title the moment its menu opens and shove
+        // every title after it sideways, under the pointer that just clicked.
+        implicitWidth: Math.max(Appearance.sizes.baseBarHeight, boldLabel.implicitWidth + 20)
         implicitHeight: Math.max(Appearance.sizes.baseBarHeight, root.height)
+
+        StyledText {
+            id: boldLabel
+            visible: false
+            text: button.label
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.weight: Font.Bold
+        }
 
         Rectangle {
             anchors.centerIn: parent
@@ -353,7 +364,11 @@ Item {
             width: parent.width
             height: Math.min(parent.height, 26)
             radius: Appearance.rounding.small
-            color: button.opened || hoverHandler.hovered ? Appearance.colors.colLayer1Hover : "transparent"
+            // Open is a denser veil than hover, so a title with its menu down is
+            // tellable from one the pointer is merely crossing.
+            color: button.opened ? Appearance.colors.colBarElementBackgroundActive
+                : hoverHandler.hovered ? Appearance.colors.colBarElementBackground
+                : "transparent"
 
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -366,6 +381,9 @@ Item {
             anchors.verticalCenterOffset: root.labelYOffset
             text: button.label
             font.pixelSize: Appearance.font.pixelSize.smaller
+            // Hover and open share a highlight, so weight is what says which
+            // title the open menu belongs to.
+            font.weight: button.opened ? Font.Bold : Font.Normal
             color: Appearance.colors.colOnLayer0
         }
 
