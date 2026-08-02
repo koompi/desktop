@@ -7,7 +7,9 @@ Singleton {
     id: root
 
     function closeAllWindows() {
-        HyprlandData.windowList.map(w => w.pid).forEach(pid => {
+        // Hyprland reports pid -1 for a window whose client it cannot resolve,
+        // and `kill 0` signals the whole process group.
+        HyprlandData.windowList.map(w => w.pid).filter(pid => pid > 0).forEach(pid => {
             Quickshell.execDetached(["kill", pid]);
         });
     }
@@ -25,8 +27,14 @@ Singleton {
     }
 
     function logout() {
-        closeAllWindows();
-        Quickshell.execDetached(["pkill", "-i", "Hyprland"]);
+        // `pkill -i Hyprland` is unscoped: it matches every compositor this user
+        // owns, so a shell left over from an earlier session takes down the live
+        // one. It also only killed the compositor, leaving the rest of the
+        // session's processes in a scope logind then waits on indefinitely
+        // (KillUserProcesses=no) - two sessions leaked that way for hours.
+        // logind ends exactly the calling session, and SIGTERMs its scope.
+        Quickshell.execDetached(["bash", "-c",
+            'loginctl terminate-session "$XDG_SESSION_ID" || hyprctl dispatch exit']);
     }
 
     function launchTaskManager() {

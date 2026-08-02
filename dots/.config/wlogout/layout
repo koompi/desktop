@@ -12,13 +12,13 @@
 }
 {
     "label" : "logout",
-    "action" : "hyprctl clients -j | jq -r '.[].pid' | xargs kill; pkill Hyprland || pkill sway || pkill niri || loginctl terminate-user $USER",
+    "action" : "loginctl terminate-session \"$XDG_SESSION_ID\" || hyprctl dispatch exit",
     "text" : "logout",
     "keybind" : "e"
 }
 {
     "label" : "shutdown",
-    "action" : "hyprctl clients -j | jq -r '.[].pid' | xargs kill; systemctl poweroff || loginctl poweroff",
+    "action" : "hyprctl clients -j | jq -r '.[] | select(.pid > 0) | .pid' | xargs -r kill; systemctl poweroff || loginctl poweroff",
     "text" : "power_settings_new",
     "keybind" : "s"
 }
@@ -30,7 +30,7 @@
 }
 {
     "label" : "reboot",
-    "action" : "hyprctl clients -j | jq -r '.[].pid' | xargs kill; systemctl reboot || loginctl reboot",
+    "action" : "hyprctl clients -j | jq -r '.[] | select(.pid > 0) | .pid' | xargs -r kill; systemctl reboot || loginctl reboot",
     "text" : "restart_alt",
     "keybind" : "r"
 }
