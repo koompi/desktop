@@ -52,6 +52,17 @@ Scope {
                 }
                 property bool superShow: false
                 property bool mustShow: hoverRegion.containsMouse || superShow
+
+                // The bar arrives rather than appears. One frame off screen, then
+                // the autohide slide brings it down - reusing that Behavior rather
+                // than adding a second animation for the same movement. Latched, so
+                // a hover reveal later in the session is not a fresh entrance.
+                property bool entered: false
+                Timer {
+                    interval: 80
+                    running: true
+                    onTriggered: barRoot.entered = true
+                }
                 exclusionMode: ExclusionMode.Ignore
                 exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
                     Appearance.sizes.baseBarHeight + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
@@ -113,7 +124,7 @@ Scope {
                             left: parent.left
                             top: parent.top
                             bottom: undefined
-                            topMargin: (Config?.options.bar.autoHide.enable && !mustShow) ? -Appearance.sizes.barHeight : 0
+                            topMargin: (!barRoot.entered || (Config?.options.bar.autoHide.enable && !mustShow)) ? -Appearance.sizes.barHeight : 0
                             bottomMargin: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.bottom) * -1
                             rightMargin: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.right) * -1
                         }
@@ -139,7 +150,7 @@ Scope {
                             PropertyChanges {
                                 target: barContent
                                 anchors.topMargin: 0
-                                anchors.bottomMargin: (Config?.options.bar.autoHide.enable && !mustShow) ? -Appearance.sizes.barHeight : 0
+                                anchors.bottomMargin: (!barRoot.entered || (Config?.options.bar.autoHide.enable && !mustShow)) ? -Appearance.sizes.barHeight : 0
                             }
                         }
                     }
