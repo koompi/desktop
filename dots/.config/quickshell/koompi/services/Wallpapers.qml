@@ -179,11 +179,13 @@ Singleton {
     }
 
     // The wallpaper a workspace is showing, resolved once here so the desktop
-    // background and anything that has to match it cannot drift apart. Only
-    // workspaces 1..10 can carry their own; everything else inherits.
+    // background and anything that has to match it cannot drift apart. Config
+    // only declares ws1..ws10, so higher ids wrap by decade the way the bar
+    // already pages: 11 is page two slot one and shows ws1. Ids below 1 are
+    // special workspaces, which have no slot and inherit the global wallpaper.
     function rawForWorkspace(workspaceId: int): string {
         const perWorkspace = Config.options.background.workspaceWallpapers;
-        const key = (workspaceId >= 1 && workspaceId <= 10) ? `ws${workspaceId}` : "";
+        const key = workspaceId >= 1 ? `ws${((workspaceId - 1) % 10) + 1}` : "";
         const fallback = Config.options.background.wallpaperPath ?? "";
 
         if (!perWorkspace?.enabled || key.length === 0)

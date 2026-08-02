@@ -19,13 +19,13 @@ Commands:
       Print workspace wallpaper status from ~/.config/koompi/config.json.
 
   mode <1-10> inherit|static
-      Set one workspace mode. Does not enable the feature globally.
+      Set one slot's mode. Does not enable the feature globally.
 
   set <1-10> /path/to/image
-      Set one workspace static path and mode=static. Does not enable the feature globally.
+      Set one slot's static path and mode=static. Does not enable the feature globally.
 
   seed
-      Give every workspace (1-10) its own distinct random wallpaper.
+      Give every slot (1-10) its own distinct random wallpaper.
 
   set-active /path/to/image
       Same as set, but targets whichever workspace is active right now. This is
@@ -33,6 +33,8 @@ Commands:
       workspace you are looking at.
 
 Notes:
+  - There are ten slots, and workspaces wrap onto them by decade: 11, 21 and 31
+    all show slot 1. Setting a slot changes every workspace that wraps onto it.
   - Source images are read from ~/.config/koompi/wallpapers/library.
   - Workspaces point straight at their source image; nothing is copied or generated.
   - This helper does not call switchwall.sh, matugen, KDE, GNOME, GTK, or Qt theming.
@@ -146,7 +148,8 @@ cmd_mode() {
     ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
     commit_config "$CONFIG_FILE.tmp"
     log "mode $key -> $mode"
-    printf 'Set %s mode to %s.\n' "$key" "$mode"
+    printf 'Set %s mode to %s (workspaces %s, %s, %s, ...).\n' \
+        "$key" "$mode" "$workspace" "$((workspace + 10))" "$((workspace + 20))"
 }
 
 cmd_set() {
@@ -174,11 +177,12 @@ cmd_set() {
     ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
     commit_config "$CONFIG_FILE.tmp"
     log "set $key static path -> $path"
-    printf 'Set %s static wallpaper to %s.\n' "$key" "$path"
+    printf 'Set %s static wallpaper to %s (workspaces %s, %s, %s, ...).\n' \
+        "$key" "$path" "$workspace" "$((workspace + 10))" "$((workspace + 20))"
 }
 
-# Deal a distinct wallpaper to every workspace. With a pool smaller than ten
-# the deal cycles, repeating as little as possible.
+# Deal a distinct wallpaper to every slot. With a pool smaller than ten the
+# deal cycles, repeating as little as possible.
 cmd_seed() {
     ensure_config_file
     ensure_workspace_config
@@ -212,8 +216,7 @@ cmd_seed() {
         commit_config "$CONFIG_FILE.tmp"
         log "seed ws$i -> $path"
     done
-    printf 'Seeded 10 workspaces from %s image(s).
-' "${#shuffled[@]}"
+    printf 'Seeded 10 slots from %s image(s). Workspaces past 10 reuse them.\n' "${#shuffled[@]}"
 }
 
 cmd_set_active() {
@@ -221,8 +224,9 @@ cmd_set_active() {
     local workspace
     need_cmd hyprctl
     workspace="$(hyprctl activeworkspace -j | jq -r '.id')"
-    valid_workspace_number "$workspace" || fail "Active workspace $workspace is outside 1-10"
-    cmd_set "$workspace" "$path"
+    # Wrap like the shell does. Special workspaces are negative and have no slot.
+    (( workspace >= 1 )) || fail "Active workspace $workspace has no wallpaper slot"
+    cmd_set "$(( (workspace - 1) % 10 + 1 ))" "$path"
 }
 
 main() {
