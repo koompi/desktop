@@ -4,11 +4,10 @@ import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Widgets
 import Quickshell.Wayland
 import Quickshell.Hyprland
 
-Item { // Faux global menu: app icon + bold app name + window title
+Item { // Faux global menu: bold app name + window title
     id: root
     /// Whether either menu over this window is up. The bar takes keyboard focus
     /// on this, so both menus have to be in it or one of them gets no keys.
@@ -124,15 +123,6 @@ Item { // Faux global menu: app icon + bold app name + window title
                 anchors.fill: parent
                 spacing: 6
 
-                IconImage {
-                    id: appIcon
-                    implicitSize: 22
-                    Layout.alignment: Qt.AlignVCenter
-                    visible: root.appClass.length > 0 && status === Image.Ready
-                    opacity: root.focusingThisMonitor ? 1 : 0.5
-                    source: Quickshell.iconPath(AppSearch.guessIcon(root.appClass), "")
-                }
-
                 ColumnLayout { // App name stacked over window title, as one bounded block
                     id: identityColumn
                     // A nested layout stretches by default, so this block took the whole
@@ -183,10 +173,10 @@ Item { // Faux global menu: app icon + bold app name + window title
             // labels move: the item still spans the bar, so each title keeps the
             // bar-height pointer target it is clicked by.
             labelYOffset: identityBlock.y + identityColumn.y + appName.y + appName.height / 2 - (globalMenu.y + globalMenu.height / 2)
-            // On a narrow bar the menu yields to the app name and icon;
-            // whatever is left over goes into its overflow button. Measured from
-            // the column's implicit width, which does not depend on the layout.
-            maxWidth: root.width - appIcon.width - Math.min(identityColumn.implicitWidth, root.identityMaxWidth) - 24
+            // On a narrow bar the menu yields to the app name; whatever is left
+            // over goes into its overflow button. Measured from the column's
+            // implicit width, which does not depend on the layout.
+            maxWidth: root.width - Math.min(identityColumn.implicitWidth, root.identityMaxWidth) - 24
         }
 
         Item { // Absorbs the leftover width, which a row of stretch-free items
