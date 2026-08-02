@@ -25,7 +25,11 @@ Scope { // Scope
     Connections {
         target: GlobalStates
         function onSidebarLeftOpenChanged() {
-            if (GlobalStates.sidebarLeftOpen) MemoryService.load();
+            if (!GlobalStates.sidebarLeftOpen) return;
+            MemoryService.load();
+            // Releases Ai's memoryPromptBlock, which cannot read MemoryService
+            // until something has decided the daemon should exist.
+            Ai.memoryWarmed = true;
         }
     }
 

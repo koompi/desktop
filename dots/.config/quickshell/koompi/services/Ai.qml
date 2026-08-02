@@ -245,12 +245,20 @@ Singleton {
         return `\n## What you remember\n${lines}\n`;
     }
 
+    // Set by whoever warms the memory daemon, and read before MemoryService is,
+    // because reading any property of a lazy QML singleton is what constructs it.
+    // This is a binding, so it evaluates the moment this service is constructed -
+    // which is at login, since SidebarLeft is built eagerly. Touching
+    // MemoryService.ready here started the daemon from the guard meant to avoid
+    // it. Keep the short circuit first.
+    property bool memoryWarmed: false
+
     // The whole memory section of the prompt. Empty (so no claim of memory at all)
     // unless the daemon is actually enabled and ready; otherwise the model would
     // promise to remember and silently fail.
     readonly property string memoryPromptBlock: {
         const memCfg = Config.options?.ai?.memory;
-        if (!memCfg?.enable || !MemoryService.ready) return "";
+        if (!memCfg?.enable || !root.memoryWarmed || !MemoryService.ready) return "";
         return "- You have long-term memory. When the user shares something durable and worth recalling later "
             + "(preferences, important facts, ongoing projects), call the `remember` function. "
             + "Don't remember trivial or one-off chatter."
