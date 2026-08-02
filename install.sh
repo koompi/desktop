@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-line installer for the KOOMPI desktop.
 #
-#   curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash
 #
 # All this does is get the repository onto the machine and hand over to
 # ./setup, which is the real installer. Keeping the bootstrap this thin means
@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-REPO_URL="${KOOMPI_REPO:-https://github.com/rithythul/koompi-desktop.git}"
+REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/desktop.git}"
 REPO_REF="${KOOMPI_REF:-main}"
 DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-desktop}"
 

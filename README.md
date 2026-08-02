@@ -6,7 +6,7 @@ Based on [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (illogica
 Install it on Arch, Fedora, Debian or Ubuntu:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash
 ```
 
 That clones the repository to `~/.local/share/koompi-desktop` and hands over to `./setup install`.
@@ -14,7 +14,7 @@ It asks before each stage, and refuses to run as root.
 Prefer to read it first? Clone and run the same thing by hand:
 
 ```sh
-git clone --recursive https://github.com/rithythul/koompi-desktop.git
+git clone --recursive https://github.com/koompi/desktop.git
 cd koompi-desktop
 ./setup install
 ```
@@ -64,7 +64,7 @@ Every file it writes is recorded in `~/.local/state/koompi/installed-files`, so
 The one-liner passes its arguments straight through, so this works too:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash -s -- --no-apps
+curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash -s -- --no-apps
 ```
 
 ## Updating
@@ -82,7 +82,7 @@ installs new dependencies, reapplies the desktop files, and keeps the existing
 application choices:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash -s -- --no-apps --yes
+curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash -s -- --no-apps --yes
 ```
 
 It works out how this machine got its desktop.

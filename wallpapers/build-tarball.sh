@@ -9,7 +9,7 @@
 #   wallpapers/build-tarball.sh ~/.config/koompi/wallpapers/library 1
 #
 # Then attach the tarball to a release tagged wallpapers-v<version> on
-# github.com/rithythul/koompi-desktop and put the printed sha256 into
+# github.com/koompi/desktop and put the printed sha256 into
 # sdata/dist-arch/koompi-branding/PKGBUILD.
 #
 # Expected layout inside <source-dir> (see STYLE_GUIDE.md):

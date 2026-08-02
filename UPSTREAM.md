@@ -31,7 +31,7 @@ commits are present here:
   before the restart, so inherited files now sit at `modules/koompi/...`.
 - The full pre-restart history — end-4's ~6300 commits plus KOOMPI's, with the
   renames recorded as `R100` — is preserved read-only at
-  <https://github.com/rithythul/koompi-desktop-history>. That archive is the
+  <https://github.com/koompi/koompi-desktop-history>. That archive is the
   authoritative record of what came from where.
 - The only submodule is `modules/common/widgets/shapes`
   (end-4/rounded-polygon-qmljs).

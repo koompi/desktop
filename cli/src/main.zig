@@ -285,7 +285,7 @@ fn execute(init: std.process.Init, args: []const []const u8) !u8 {
             try writeErr(init.io,
                 \\koompi: update helper not found
                 \\Reinstall KOOMPI Desktop or run the legacy bootstrap:
-                \\  curl -fsSL https://raw.githubusercontent.com/rithythul/koompi-desktop/main/install.sh | bash -s -- --no-apps --yes
+                \\  curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash -s -- --no-apps --yes
                 \\
             );
             return 127;
