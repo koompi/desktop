@@ -56,7 +56,7 @@ run_uninstall() {
         local system_path
         while IFS= read -r system_path; do
             case "$system_path" in
-                /usr/local/bin/koompi-session|/usr/share/wayland-sessions/koompi.desktop)
+                /usr/local/bin/koompi-session|/usr/share/wayland-sessions/koompi.desktop|/usr/share/koompi/wayland-sessions/koompi.desktop|/etc/sddm.conf.d/20-koompi-session.conf)
                     run sudo rm -f "$system_path"
                     ;;
                 *) warn "refusing unexpected system path: $system_path" ;;

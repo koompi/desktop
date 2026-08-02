@@ -235,13 +235,32 @@ setup_system_session() {
     run sudo install -Dm644 "$staged_entry" "$entry"
     rm -f "$staged_entry"
 
+    # SDDM is pointed at /usr/share/koompi/wayland-sessions so that plasma's and
+    # hyprland's own entries never reach the greeter. Link ours into it, or the
+    # greeter has nothing to offer. Harmless where SDDM is not the display
+    # manager - every other DM still reads $entry.
+    local dm_entry=/usr/share/koompi/wayland-sessions/koompi.desktop
+    run sudo install -dm755 "$(dirname "$dm_entry")"
+    run sudo ln -sfn "$entry" "$dm_entry"
+    if [[ -d /etc/sddm.conf.d ]]; then
+        run sudo install -Dm644 \
+            "$REPO_ROOT/sdata/dist-arch/koompi-session/sddm-sessiondir.conf" \
+            /etc/sddm.conf.d/20-koompi-session.conf
+    fi
+
     if [[ "$DRY_RUN" != true && -x "$launcher" && -f "$entry" ]]; then
         mkdir -p "$(dirname "$SYSTEM_MANIFEST")"
+        # The drop-in and the link go in the manifest too. Uninstalling the
+        # entry while SDDM still reads only the koompi directory would leave a
+        # greeter with no session to offer at all.
         if $install_launcher; then
             printf '%s\n%s\n' "$launcher" "$entry" > "$SYSTEM_MANIFEST"
         else
             printf '%s\n' "$entry" > "$SYSTEM_MANIFEST"
         fi
+        printf '%s\n' "$dm_entry" >> "$SYSTEM_MANIFEST"
+        [[ -f /etc/sddm.conf.d/20-koompi-session.conf ]] \
+            && printf '%s\n' /etc/sddm.conf.d/20-koompi-session.conf >> "$SYSTEM_MANIFEST"
         ok "KOOMPI is registered alongside the host desktop"
     fi
 }

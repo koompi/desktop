@@ -27,6 +27,13 @@ package() {
   install -Dm755 "$_repo_root/dots/.local/bin/koompi-session" "$pkgdir/usr/bin/koompi-session"
   install -Dm644 "$_repo_root/dots/.local/share/wayland-sessions/koompi.desktop" \
     "$pkgdir/usr/share/wayland-sessions/koompi.desktop"
+  # The greeter reads only the koompi directory (see sddm-sessiondir.conf); the
+  # entry above stays where GDM and the rest look. One file, linked, not two.
+  install -dm755 "$pkgdir/usr/share/koompi/wayland-sessions"
+  ln -sf ../../wayland-sessions/koompi.desktop \
+    "$pkgdir/usr/share/koompi/wayland-sessions/koompi.desktop"
+  install -Dm644 "$startdir/sddm-sessiondir.conf" \
+    "$pkgdir/etc/sddm.conf.d/20-koompi-session.conf"
   install -Dm644 "$_repo_root/dots/.config/xdg-desktop-portal/koompi-portals.conf" \
     "$pkgdir/usr/share/xdg-desktop-portal/koompi-portals.conf"
 }
