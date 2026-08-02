@@ -2,7 +2,6 @@
 hl.on("hyprland.start", function ()
 
     -- Bar, wallpaper
-    hl.exec_cmd("$HOME/.config/hypr/hyprland/scripts/start_geoclue_agent.sh")
     -- The shell draws through layer-shell, which XWayland has no notion of, so
     -- it opts out of the session-wide xcb default that the global menu needs.
     hl.exec_cmd("env QT_QPA_PLATFORM=wayland qs -c $qsConfig")

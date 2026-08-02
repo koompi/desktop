@@ -107,6 +107,11 @@ Singleton {
     Component.onCompleted: {
         if (!root.gpsActive) return;
         console.info("[WeatherService] Starting the GPS service.");
+        // The agent is what authorizes a location request, so geoclue answers
+        // nothing without it. Started here rather than at login: this service
+        // is the only thing that ever wanted a location, and it is itself only
+        // constructed when the weather widget is enabled.
+        Quickshell.execDetached([Quickshell.shellPath("scripts/start_geoclue_agent.sh")]);
         positionSource.start();
     }
 
