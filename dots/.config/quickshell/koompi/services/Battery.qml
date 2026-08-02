@@ -49,6 +49,23 @@ Singleton {
         return 0;
     })()
 
+    // UPower exposes no cycle count, sysfs is the only source.
+    property int cycleCount: parseInt(cycleCountFile.text()) || 0
+
+    FileView {
+        id: cycleCountFile
+        path: {
+            const devList = UPower.devices.values;
+            for (let i = 0; i < devList.length; ++i) {
+                const dev = devList[i];
+                if (dev.isLaptopBattery && dev.nativePath !== "") {
+                    return `/sys/class/power_supply/${dev.nativePath}/cycle_count`;
+                }
+            }
+            return "";
+        }
+        printErrors: false // some batteries have no cycle_count
+    }
 
     onIsLowAndNotChargingChanged: {
         if (!root.available || !isLowAndNotCharging) return;

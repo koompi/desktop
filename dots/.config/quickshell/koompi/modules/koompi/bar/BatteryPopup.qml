@@ -63,10 +63,19 @@ StyledPopup {
             }
         }
 
+        // Whole percent only: energy_full is a learned estimate that wanders,
+        // a decimal place reads as daily decline on a healthy cell.
         StyledPopupValueRow {
             icon: "heart_check"
             label: Translation.tr("Health:")
-            value: `${(Battery.health).toFixed(1)}%`
+            value: `${Math.round(Battery.health)}%`
+        }
+
+        StyledPopupValueRow {
+            visible: Battery.cycleCount > 0
+            icon: "autorenew"
+            label: Translation.tr("Charge cycles:")
+            value: `${Battery.cycleCount}`
         }
     }
 }
