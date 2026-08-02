@@ -71,6 +71,11 @@ Item { // Faux global menu: bold app name + window title
     /// the layout that sizes it.
     readonly property real identityMaxWidth: Math.max(160, Math.round((root.QsWindow.window?.screen?.width ?? 1920) * 0.18))
 
+    /// The block is as wide as the app name and no wider: the window title is
+    /// the volatile line, and sizing on it walked the menubar across the bar
+    /// every time the title got longer. It elides to the name's width instead.
+    readonly property real identityWidth: Math.min(appName.implicitWidth, root.identityMaxWidth)
+
     implicitWidth: rowLayout.implicitWidth
 
     RowLayout {
@@ -137,7 +142,7 @@ Item { // Faux global menu: bold app name + window title
                     // on instead of eliding.
                     Layout.minimumWidth: 0
                     Layout.maximumWidth: root.identityMaxWidth
-                    Layout.preferredWidth: Math.min(identityColumn.implicitWidth, root.identityMaxWidth)
+                    Layout.preferredWidth: root.identityWidth
                     spacing: -4
 
                     StyledText { // App name, menubar-style
@@ -176,7 +181,7 @@ Item { // Faux global menu: bold app name + window title
             // On a narrow bar the menu yields to the app name; whatever is left
             // over goes into its overflow button. Measured from the column's
             // implicit width, which does not depend on the layout.
-            maxWidth: root.width - Math.min(identityColumn.implicitWidth, root.identityMaxWidth) - 24
+            maxWidth: root.width - root.identityWidth - 24
         }
 
         Item { // Absorbs the leftover width, which a row of stretch-free items
