@@ -195,6 +195,10 @@ hl.layer_rule({ match = { namespace = "sideright.*" }, animation = "slide right"
 hl.layer_rule({ match = { namespace = "session[0-9]*" }, blur = true})
 hl.layer_rule({ match = { namespace = "bar[0-9]*" }, blur = true})
 hl.layer_rule({ match = { namespace = "bar[0-9]*" }, ignore_alpha = 0.6})
+-- The global menu dropdown is an xdg popup of the bar, not a layer of its own,
+-- so without this it is the only bar surface composited over the raw window
+-- below and reads far darker than the bar it hangs off.
+hl.layer_rule({ match = { namespace = "bar[0-9]*" }, blur_popups = true})
 hl.layer_rule({ match = { namespace = "barcorner.*" }, blur = true})
 hl.layer_rule({ match = { namespace = "barcorner.*" }, ignore_alpha = 0.6})
 hl.layer_rule({ match = { namespace = "dock[0-9]*" }, blur = true})
