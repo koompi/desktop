@@ -106,6 +106,18 @@ Variants {
                 wallpaperPan.settle(bgRoot.wallpaperPath);
         }
 
+        // Latches the moment there is something to look at, which lifts the
+        // handoff curtain at the bottom of this file. A video wallpaper or a
+        // work-safety blank never produces a Ready image, and a bad path never
+        // produces one at all, so the timer is the floor: the curtain is
+        // opaque and full screen, and must not be able to outlive the load.
+        property bool wallpaperArrived: false
+        Timer {
+            interval: 3000
+            running: true
+            onTriggered: bgRoot.wallpaperArrived = true
+        }
+
         // Which workspace the wallpaper on screen belongs to. Hyprland slides
         // the windows of both workspaces across, so the wallpaper has to travel
         // with them; swapping the source in place is the blink.
@@ -113,6 +125,9 @@ Variants {
         Component.onCompleted: {
             bgRoot.shownWorkspaceId = bgRoot.activeWorkspaceId;
             wallpaperPan.currentCell.path = Wallpapers.forWorkspace(bgRoot.activeWorkspaceId);
+            // Neither of these ever produces a Ready image.
+            if (bgRoot.wallpaperIsVideo || bgRoot.wallpaperSafetyTriggered)
+                bgRoot.wallpaperArrived = true;
         }
         onActiveWorkspaceIdChanged: {
             // Ask the service rather than reading wallpaperPath: that binding
@@ -338,6 +353,7 @@ Variants {
                     // switched back to is ready on the first frame.
                     Image {
                         id: cellAImage
+                        onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
@@ -367,6 +383,7 @@ Variants {
                     // switched back to is ready on the first frame.
                     Image {
                         id: cellBImage
+                        onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
@@ -430,6 +447,26 @@ Variants {
                         wallpaperScale: 1
                         wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
                     }
+                }
+            }
+        }
+
+        // The first frame of the desktop, and the last frame of the login.
+        // Hyprland clears to this exact colour for the seconds it takes the
+        // shell to load, and the greeter fades to it on a correct password, so
+        // the only thing that ever moves is the picture rising out of it - no
+        // black gap, no pop. Keep in step with misc:background_color in
+        // hypr/hyprland/colors.lua and transitionColor in the SDDM theme.conf;
+        // tests/test_login_handoff.sh holds the three together.
+        Rectangle {
+            anchors.fill: parent
+            color: "#121318"
+            visible: opacity > 0
+            opacity: bgRoot.wallpaperArrived ? 0 : 1
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Appearance.animationDuration.slow
+                    easing.type: Easing.OutCubic
                 }
             }
         }

@@ -413,10 +413,27 @@ Item {
         }
     }
 
-    // ── Fade out on success ───────────────────────────────────────────────
+    // ── Hand off on success ──────────────────────────────────────────────
+    // Fading the greeter's own opacity fades it to whatever the greeter
+    // compositor clears to, which is black, and that black then had to last
+    // the whole of Hyprland's DRM bring-up and the shell's load. Fade to the
+    // colour Hyprland itself clears to instead: the greeter's last scanned-out
+    // frame, the compositor's first frame and the shell's first frame are then
+    // all the same colour, and the only thing that moves is the wallpaper
+    // rising out of it. Keep in step with misc:background_color in
+    // hypr/hyprland/colors.lua and the curtain in the shell's Background.qml;
+    // tests/test_login_handoff.sh holds the three together.
+    Rectangle {
+        id: handoff
+        anchors.fill: parent
+        color: config.transitionColor || "#121318"
+        opacity: 0
+        visible: opacity > 0
+    }
+
     PropertyAnimation {
         id: fadeAnim
-        target: root; property: "opacity"; to: 0
+        target: handoff; property: "opacity"; to: 1
         duration: 400; easing.type: Easing.InOutQuad
     }
 
