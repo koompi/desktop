@@ -83,7 +83,10 @@ Item { // Bar content region
             LeftSidebarButton { // Left sidebar button
                 id: leftSidebarButton
                 Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: Appearance.rounding.screenRounding
+                // Same visual gap as the clock has on the right. The clock is
+                // bare text, so screenRounding lands on its glyphs; the star is
+                // centred in a button, so its box has to start that much sooner.
+                Layout.leftMargin: Appearance.rounding.screenRounding - leftSidebarButton.iconInset
                 colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
             }
 

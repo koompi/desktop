@@ -17,6 +17,9 @@ RippleButton {
     // Padding alone leaves a 34px target on a 40px bar; floor it at bar height.
     implicitWidth: Math.max(Appearance.sizes.baseBarHeight, distroIcon.width + buttonPadding * 2)
     implicitHeight: Math.max(Appearance.sizes.baseBarHeight, distroIcon.height + buttonPadding * 2)
+    // How far the icon sits inside the button box. The bar subtracts it so the
+    // glyph, not the box, lines up with the clock at the other end.
+    readonly property real iconInset: (implicitWidth - distroIcon.width) / 2
     buttonRadius: Appearance.rounding.full
     colBackgroundHover: Appearance.colors.colLayer1Hover
     colRipple: Appearance.colors.colLayer1Active
