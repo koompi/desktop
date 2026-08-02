@@ -19,6 +19,16 @@ Scope { // Scope
         root.detach = !root.detach;
     }
 
+    // The AI panel lives in here and its memory daemon loads an embedding model,
+    // so it warms on the first Super+A rather than at login. Once only: the
+    // service restarts itself if the daemon dies.
+    Connections {
+        target: GlobalStates
+        function onSidebarLeftOpenChanged() {
+            if (GlobalStates.sidebarLeftOpen) MemoryService.load();
+        }
+    }
+
     Process { // Dodge cursor away, pin, move cursor back
         id: pinWithFunnyHyprlandWorkaroundProc
         property var hook: null

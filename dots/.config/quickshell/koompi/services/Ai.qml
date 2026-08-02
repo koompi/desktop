@@ -104,9 +104,10 @@ Singleton {
         return name.length > 0 ? name : "unknown";
     }
 
-    // Touching MemoryService here forces the singleton (and its daemon) to start
-    // warming as soon as the AI service loads, instead of lazily on first recall.
-    readonly property bool memoryReady: MemoryService.ready
+    // No MemoryService touch here on purpose. It used to warm the daemon as soon
+    // as this service loaded, which meant a Python venv and an embedding model
+    // loading at every login, before anyone opened the panel. SidebarLeft warms
+    // it when it first opens instead.
 
     // Early context compaction ─────────────────────────────────────────────
     property bool compacting: false

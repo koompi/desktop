@@ -21,6 +21,11 @@ Singleton {
     readonly property var memoryConfig: Config.options?.ai?.memory ?? ({})
     readonly property bool enabled: memoryConfig.enable ?? true
     property bool ready: false
+
+    // For forcing initialization. QML singletons are lazy, so the daemon below
+    // does not exist until something touches this service; SidebarLeft calls
+    // this on first open so the model warms with the panel, not with the login.
+    function load() {}
     property string provider: ""
     property int dim: 0
 

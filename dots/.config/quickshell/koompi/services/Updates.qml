@@ -20,6 +20,18 @@ Singleton {
     readonly property bool updateAdvised: available && count > Config.options.updates.adviseUpdateThreshold
     readonly property bool updateStronglyAdvised: available && count > Config.options.updates.stronglyAdviseUpdateThreshold
 
+    // checkupdates syncs a temporary pacman database, so at login it competed
+    // with the shell drawing its first frame. Nothing here is urgent - hold off
+    // until the desktop has been up long enough to be idle.
+    property bool settled: false
+
+    Timer {
+        interval: 10 * 60 * 1000
+        running: true
+        repeat: false
+        onTriggered: root.settled = true
+    }
+
     function load() {}
     function refresh() {
         if (!available) return;
@@ -30,7 +42,7 @@ Singleton {
     Timer {
         interval: PowerSaving.interval(Config.options.updates.checkInterval * 60 * 1000)
         repeat: true
-        running: Config.ready && Config.options.updates.enableCheck
+        running: root.settled && Config.ready && Config.options.updates.enableCheck
         onTriggered: {
             print("[Updates] Periodic update check due")
             root.refresh();
@@ -39,7 +51,7 @@ Singleton {
 
     Process {
         id: checkAvailabilityProc
-        running: Config.ready && Config.options.updates.enableCheck
+        running: root.settled && Config.ready && Config.options.updates.enableCheck
         command: ["which", "checkupdates"]
         onExited: (exitCode, exitStatus) => {
             root.available = (exitCode === 0);
