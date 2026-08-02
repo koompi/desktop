@@ -216,7 +216,13 @@ PopupWindow {
             bottom: parent.bottom
             leftMargin: popup.leadingPadding
             rightMargin: popup.trailingPadding
-            topMargin: popup.topPadding
+            // A pixel above the surface, so the top border row is outside the
+            // buffer and never drawn. A Rectangle outlines all four sides, and
+            // on the edge the menu shares with the bar that row is a hairline
+            // across a seam that is meant to be invisible. The other three
+            // sides stay: without them a near-white light-mode menu vanishes
+            // into a light window under it.
+            topMargin: popup.topPadding - (popup.attachedToBar ? 1 : 0)
             bottomMargin: popup.bottomPadding
         }
         // The bar's own material, not a surface of its own: same fixed colour,
@@ -231,10 +237,7 @@ PopupWindow {
         topRightRadius: popup.attachedToBar && !Config.options.bar.bottom ? 0 : radius
         bottomLeftRadius: popup.attachedToBar && Config.options.bar.bottom ? 0 : radius
         bottomRightRadius: popup.attachedToBar && Config.options.bar.bottom ? 0 : radius
-        // Borderless where it hangs off the bar: an outline on any side draws a
-        // line on the shared edge too, and one seam is one seam too many. A
-        // submenu floats over application content and still needs its edge.
-        border.width: popup.attachedToBar ? 0 : 1
+        border.width: 1
         border.color: Appearance.m3colors.darkmode
             ? Qt.rgba(1, 1, 1, 0.16)
             : Qt.rgba(0, 0, 0, 0.16)
