@@ -208,34 +208,6 @@ Item {
         }
     }
 
-    // I no longer need these but they were a fucking pain in the ass to figure out so they're staying
-    // GaussianBlur {
-    //     id: blurredImage
-    //     z: 3
-    //     width: root.windowWidth
-    //     height: root.windowHeight
-    //     transformOrigin: Item.TopLeft
-    //     scale: root.scaleFactor
-    //     source: screenshotImage
-    //     radius: 10
-    //     samples: radius * 2 + 1
-    //     visible: false
-    // }
-    // MultiEffect {
-    //     id: blurredImage
-    //     z: 3
-    //     source: screenshotImage
-    //     width: root.windowWidth
-    //     height: root.windowHeight
-    //     transformOrigin: Item.TopLeft
-    //     scale: root.scaleFactor
-
-    //     blurEnabled: true
-    //     blur: 1
-    //     blurMax: 64
-    //     visible: false
-    // }
-
     MaskMultiEffect {
         z: 4
         implicitWidth: parent.width
