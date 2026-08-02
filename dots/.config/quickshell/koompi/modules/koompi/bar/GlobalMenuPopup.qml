@@ -2,12 +2,10 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Effects
 import Quickshell
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.common.functions
 
 // One level of the global menu. A submenu loads this same file again through a
 // Loader, because QML refuses to instantiate a type inside itself.
@@ -30,26 +28,37 @@ PopupWindow {
     color: "transparent"
     visible: true
 
-    // A top-level menu clears the bar by exactly what a tiled window and every
-    // other bar popup clear it by - Hyprland's gaps_out plus its 1px border,
-    // the same number StyledPopup calls barEdgeGap - so the bar and the menu
-    // read as one system instead of two floating surfaces. The anchor is a
-    // full-bar-height item, so its bottom edge IS the bar's edge and this is
-    // the whole offset. Nested menus stay tight to their parent row.
-    readonly property real panelOffset: Appearance.sizes.hyprlandGapsOut + 1
     readonly property real visibleGap: 5
-    // The top-level surface starts where the title glyph starts (the bar title
-    // has 10px of leading hit padding).
-    readonly property real leadingPadding: popup.submenu ? popup.visibleGap : 10
+    /// A menubar dropdown hangs off its menubar the way a web nav one does:
+    /// no gap, and no rounding on the edge it shares with the bar. The other
+    /// bar popups float clear of the bar instead, and should keep doing so -
+    /// they are surfaces of their own, this one is part of the title it opened
+    /// from.
+    readonly property bool attachedToBar: !popup.submenu
+    // The top-level surface overhangs its title's glyph by 10px on the left,
+    // which is the title's own leading hit padding - so it lines up with the
+    // hit target rather than the text.
+    readonly property real leadingPadding: popup.submenu ? popup.visibleGap : 0
     readonly property real trailingPadding: popup.submenu ? 2 : 3
-    readonly property real topPadding: popup.submenu ? 0 : popup.panelOffset
+    readonly property real topPadding: 0
     readonly property real bottomPadding: 16
 
     anchor {
         window: popup.anchorItem.QsWindow.window
         item: popup.anchorItem
-        edges: popup.submenu ? (Edges.Right | Edges.Top) : (Config.options.bar.bottom ? Edges.Top : Edges.Bottom)
-        gravity: popup.submenu ? (Edges.Right | Edges.Bottom) : (Config.options.bar.bottom ? Edges.Top : Edges.Bottom)
+        // Measured: the compositor lands the surface a pixel past the title's
+        // bottom edge often enough that the window gap below the bar shows
+        // through as a bright hairline. Ending the anchor rect a pixel early
+        // spends that pixel on the bar's own edge instead, where the menu and
+        // the bar are the same colour and nothing shows.
+        rect: popup.attachedToBar
+            ? Qt.rect(0, Config.options.bar.bottom ? 1 : 0, popup.anchorItem.width, popup.anchorItem.height - 1)
+            : Qt.rect(0, 0, popup.anchorItem.width, popup.anchorItem.height)
+        // A lone vertical edge anchors to the middle of that edge, which centred
+        // the menu on its title; naming the left edge too pins it to the title's
+        // left and lets it grow right.
+        edges: popup.submenu ? (Edges.Right | Edges.Top) : (Edges.Left | (Config.options.bar.bottom ? Edges.Top : Edges.Bottom))
+        gravity: popup.submenu ? (Edges.Right | Edges.Bottom) : (Edges.Right | (Config.options.bar.bottom ? Edges.Top : Edges.Bottom))
     }
 
     implicitWidth: background.implicitWidth + popup.leadingPadding + popup.trailingPadding
@@ -196,28 +205,6 @@ PopupWindow {
         onLoaded: item.dismissed.connect(popup.dismissed)
     }
 
-    // A broad ambient shadow and a tighter contact shadow give the menu a
-    // precise desktop elevation instead of the generic shell-card treatment.
-    RectangularShadow {
-        anchors.fill: background
-        radius: background.radius
-        blur: 24
-        spread: -1
-        offset: Qt.vector2d(0, 8)
-        color: Qt.rgba(0, 0, 0, Appearance.m3colors.darkmode ? 0.42 : 0.24)
-        cached: true
-    }
-
-    RectangularShadow {
-        anchors.fill: background
-        radius: background.radius
-        blur: 8
-        spread: 0
-        offset: Qt.vector2d(0, 2)
-        color: Qt.rgba(0, 0, 0, Appearance.m3colors.darkmode ? 0.34 : 0.18)
-        cached: true
-    }
-
     Rectangle {
         id: background
         readonly property real innerPadding: 4
@@ -232,9 +219,22 @@ PopupWindow {
             topMargin: popup.topPadding
             bottomMargin: popup.bottomPadding
         }
-        color: ColorUtils.applyAlpha(Appearance.colors.colLayer0Base, Appearance.m3colors.darkmode ? 0.96 : 0.94)
+        // The bar's own material, not a surface of its own: same fixed colour,
+        // same translucency. Layer 0 tracks the wallpaper theme, so the menu
+        // used to sit at a different brightness than the bar it hangs off, and
+        // that brightness moved every time the wallpaper did.
+        color: Appearance.colors.colBarBackground
         radius: Appearance.rounding.small
-        border.width: 1
+        // Square off whichever edge meets the bar, so the two read as one
+        // surface rather than a card that happens to be parked there.
+        topLeftRadius: popup.attachedToBar && !Config.options.bar.bottom ? 0 : radius
+        topRightRadius: popup.attachedToBar && !Config.options.bar.bottom ? 0 : radius
+        bottomLeftRadius: popup.attachedToBar && Config.options.bar.bottom ? 0 : radius
+        bottomRightRadius: popup.attachedToBar && Config.options.bar.bottom ? 0 : radius
+        // Borderless where it hangs off the bar: an outline on any side draws a
+        // line on the shared edge too, and one seam is one seam too many. A
+        // submenu floats over application content and still needs its edge.
+        border.width: popup.attachedToBar ? 0 : 1
         border.color: Appearance.m3colors.darkmode
             ? Qt.rgba(1, 1, 1, 0.16)
             : Qt.rgba(0, 0, 0, 0.16)
@@ -263,7 +263,7 @@ PopupWindow {
             }
         }
 
-        Rectangle {
+        Rectangle { // top bevel, a free edge only
             anchors {
                 left: parent.left
                 right: parent.right
@@ -271,6 +271,7 @@ PopupWindow {
                 leftMargin: 10
                 rightMargin: 10
             }
+            visible: !popup.attachedToBar || Config.options.bar.bottom
             height: 1
             color: Appearance.m3colors.darkmode
                 ? Qt.rgba(1, 1, 1, 0.08)
