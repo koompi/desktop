@@ -99,11 +99,9 @@ const App = struct {
     }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Event model (placeholder).
 // In a real libvaxis app these come from `loop.nextEvent()`. We model only what
 // the state machine reacts to; mapping raw vaxis.Key/Event -> Action is TODO.
-// ─────────────────────────────────────────────────────────────────────────────
 const Action = enum { advance, back, quit, none };
 
 /// TODO: replace with real libvaxis event handling. Sketch:
@@ -125,11 +123,9 @@ fn nextAction(app: *App) Action {
     return .advance;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Per-screen logic. Each `handle*` is where that screen writes into app.cfg.
 // The drawing is stubbed in `draw()`. These are where the real TUI widgets
 // (text fields, the disk list, the edition radio) get wired up.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// TODO: real device enumeration. Options:
 ///   - parse `lsblk -J -d -o NAME,SIZE,MODEL,TYPE` (filter type=="disk")
@@ -168,11 +164,9 @@ fn handleEncrypt(app: *App) void {
     _ = app;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Draw (placeholder). A real build draws into `vx.window()` and calls
 // `vx.render(tty.anyWriter())`. Here we just print the screen so the flow is
 // inspectable without a terminal.
-// ─────────────────────────────────────────────────────────────────────────────
 fn draw(app: *App) void {
     const out = std.io.getStdOut().writer();
     out.print("\n── {s} ──\n", .{app.step.title()}) catch {};
@@ -243,9 +237,7 @@ fn drawReview(app: *App, out: anytype) void {
     }) catch {};
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // The state-machine driver. This is the readable core of the skeleton.
-// ─────────────────────────────────────────────────────────────────────────────
 fn step(app: *App) !void {
     // Each screen first runs its capture logic, then draws.
     switch (app.step) {

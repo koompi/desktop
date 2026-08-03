@@ -14,7 +14,6 @@ const config = @import("config.zig");
 const InstallConfig = config.InstallConfig;
 const Edition = config.Edition;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // SCHEMA PINNING (the documented risk).
 // archinstall's JSON schema drifts between releases. The ISO MUST pin exactly
 // this version. If you bump it, re-check the serializers below against the new
@@ -28,7 +27,6 @@ const Edition = config.Edition;
 // release and parameterize them — the literals below are SHAPE TEMPLATES that
 // document the verified schema, not a runnable config. (Upstream archinstall is
 // ~4.x as of 2026; pin the EXACT release you ship and regenerate from it.)
-// ─────────────────────────────────────────────────────────────────────────────
 pub const ARCHINSTALL_VERSION = "4.x"; // TODO: pin the exact release on the ISO
 
 /// The post-install chroot hook, kept as ONE source of truth via @embedFile so
@@ -49,9 +47,7 @@ const CONFIG_PATH = "/tmp/koompi/user_configuration.json";
 const CREDS_PATH = "/dev/shm/koompi_user_credentials.json"; // tmpfs/RAM — secret
 const HOOK_PATH = "/tmp/koompi/post_install.sh";
 
-// ─────────────────────────────────────────────────────────────────────────────
 // (a) SERIALIZE
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Emit user_configuration.json (disk layout + bootloader + the KOOMPI edition
 /// package). NON-SECRET — passwords are NOT in this file.
@@ -206,9 +202,7 @@ pub fn cleanupCredentials() void {
     std.fs.cwd().deleteFile(CREDS_PATH) catch {};
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // (b) EXEC archinstall
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Run `archinstall --config … --creds … --silent`. This is the call that does
 /// the destructive install. ⚠️ TODO/REVIEW: guarded behind the Review screen in
@@ -233,9 +227,7 @@ pub fn runArchinstall(alloc: std.mem.Allocator) !void {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // (c) POST-INSTALL CHROOT HOOK
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Drop the embedded post_install.sh onto the live ISO and run it inside the
 /// freshly installed target via `arch-chroot`. Pins @baseline, installs
@@ -284,9 +276,7 @@ pub fn runPostInstallHook(alloc: std.mem.Allocator) !void {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Top-level orchestration: the full sequence Review->Run calls.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// The whole destructive sequence, in order, with the credential file shredded
 /// no matter how we leave. ⚠️ Only call after an explicit Review confirmation.

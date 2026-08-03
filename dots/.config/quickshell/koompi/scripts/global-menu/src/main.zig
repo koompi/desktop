@@ -1,11 +1,3 @@
-// KOOMPI global-menu daemon.
-//
-// Owns com.canonical.AppMenu.Registrar, follows the Hyprland focus, resolves
-// the focused window's exported menu (dbusmenu or org.gtk.Menus), and streams
-// it to the shell as one JSON line per focus change. Clicks come back on
-// stdin as "activate <id>" and are turned into the D-Bus call the owning
-// application expects.
-//
 // Wire protocol, shell -> daemon (one command per line):
 //   activate <id> <gen>   invoke the item
 //   open <id> <gen>       tell the app a submenu is opening; may answer with a patch

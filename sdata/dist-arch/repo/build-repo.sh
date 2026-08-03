@@ -1,37 +1,11 @@
 #!/usr/bin/env bash
-# build-repo.sh — SKELETON: build, GPG-sign, and assemble the signed [koompi]
-# pacman repository from the PKGBUILDs under sdata/dist-arch/koompi-*.
+# Skeleton. Bodies touching real keys and publish targets are still TODO.
 #
-# This is the first link in the KOOMPI OS ISO chain:
-#   signed [koompi] repo  ->  archiso profile (pacman.conf injects [koompi])
-#   ->  mkarchiso  ->  the KOOMPI (Zig) installer on the live ISO.
+# SigLevel=Required verifies packages and database separately. repo-add --sign
+# signs only the DB, so packages need makepkg --sign too or pacman rejects the lot.
 #
-# It is intentionally a commented scaffold. The bodies that touch real keys and
-# real publish targets are left as TODOs so nothing is wired to production yet.
-#
-# ─────────────────────────────────────────────────────────────────────────────
-# TWO SIGNATURES, NOT ONE  (read before changing anything)
-# ─────────────────────────────────────────────────────────────────────────────
-# A repo configured with `SigLevel = Required` (what we want) verifies TWO
-# independent things:
-#   1. each *package*  (koompi-foo-1.0-1-any.pkg.tar.zst  +  .sig)   <- makepkg --sign
-#   2. the *database*  (koompi.db.tar.gz                  +  .sig)   <- repo-add --sign
-# `repo-add --sign` signs ONLY the database. It does NOT sign the packages.
-# If the packages are unsigned, pacman rejects the whole repo under Required.
-# That is why step (2) below signs every package and step (3) signs the DB —
-# they are deliberately separate operations.
-#
-# ─────────────────────────────────────────────────────────────────────────────
-# CLEAN-CHROOT / devtools is the PRODUCTION build path
-# ─────────────────────────────────────────────────────────────────────────────
-# In-tree `makepkg` (what this skeleton does by default) works for local repo
-# builds because the *-config packages reach ../../../dots via $startdir. But the
-# production path is a clean chroot (extra-x86_64-build / makechrootpkg), where
-# that relative tree is ABSENT. As noted in the headers of
-# koompi-hyprland-config/PKGBUILD and koompi-kde-config/PKGBUILD, a clean-chroot
-# build must switch their `source` to a pinned git tag of THIS repo and copy from
-# "$srcdir/koompi-desktop/dots". Do that source switch before running this under
-# devtools. (See those PKGBUILD "BUILD NOTE" headers for the exact change.)
+# Clean-chroot builds have no ../../../dots, so the *-config PKGBUILDs must switch
+# source to a pinned git tag first. See their BUILD NOTE headers.
 set -euo pipefail
 
 # ── Configuration ────────────────────────────────────────────────────────────

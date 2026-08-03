@@ -41,9 +41,7 @@ MouseArea {
 
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
 
-    // ---------------------------------------------------------------------
     // Responsive metrics
-    // ---------------------------------------------------------------------
     // Everything here is in logical pixels, so fractional scaling is already
     // applied by the compositor and needs no separate handling.
     readonly property bool compact: root.width < 1000
@@ -53,9 +51,7 @@ MouseArea {
     // cannot feed back into itself.
     readonly property bool stackIslands: root.width < (leftIsland.implicitWidth + mainIsland.implicitWidth + rightIsland.implicitWidth + islandGrid.spacing * 2 + root.edgeMargin * 2)
 
-    // ---------------------------------------------------------------------
     // Wallpaper treatment
-    // ---------------------------------------------------------------------
     // A bright photo needs a heavier veil than a dark one for the same text to
     // read, and two screens on two workspaces can need two different veils.
     readonly property real scrimOpacity: Math.max(0.22, Math.min(0.66, 0.22 + root.context.luminanceForScreen(root.screenName) * 0.45))
@@ -74,9 +70,7 @@ MouseArea {
         onTriggered: root.wallpaperSettled = true
     }
 
-    // ---------------------------------------------------------------------
     // Focus
-    // ---------------------------------------------------------------------
     function forceFieldFocus() {
         passwordBox.forceActiveFocus();
     }
@@ -133,9 +127,7 @@ MouseArea {
         wallpaperGraceTimer.restart();
     }
 
-    // ---------------------------------------------------------------------
     // Keys
-    // ---------------------------------------------------------------------
     property bool ctrlHeld: false
     Keys.onPressed: event => {
         root.context.resetClearTimer();
@@ -168,9 +160,7 @@ MouseArea {
         onTriggered: root.context.refreshCapsLock()
     }
 
-    // ---------------------------------------------------------------------
     // Background: base colour, wallpaper, blur, scrim. Drawn once, here.
-    // ---------------------------------------------------------------------
     Rectangle {
         anchors.fill: parent
         color: Appearance.m3colors.m3background
@@ -258,9 +248,7 @@ MouseArea {
         z: -2
     }
 
-    // ---------------------------------------------------------------------
     // Clock, date and lock indicator
-    // ---------------------------------------------------------------------
     Item {
         id: clockArea
         anchors {
@@ -306,9 +294,7 @@ MouseArea {
         }
     }
 
-    // ---------------------------------------------------------------------
     // Status messages and authentication islands
-    // ---------------------------------------------------------------------
     ColumnLayout {
         id: bottomStack
         anchors {
@@ -615,9 +601,7 @@ MouseArea {
         }
     }
 
-    // ---------------------------------------------------------------------
     // Session actions
-    // ---------------------------------------------------------------------
     // Nothing on the session row fires on a single press. Either the action is
     // behind the password (requirePasswordToPower), or it needs a second,
     // deliberate press within a few seconds.

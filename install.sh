@@ -1,20 +1,6 @@
 #!/usr/bin/env bash
-# One-line installer for the KOOMPI desktop.
-#
-#   curl -fsSL https://raw.githubusercontent.com/koompi/desktop/main/install.sh | bash
-#
-# All this does is get the repository onto the machine and hand over to
-# ./setup, which is the real installer. Keeping the bootstrap this thin means
-# the piped-from-the-internet part stays small enough to read in one screen,
-# and everything of consequence lives in a file you can review after cloning.
-#
-# Overridable, mostly for testing against a branch or a local mirror:
-#   KOOMPI_REPO   git URL to clone from
-#   KOOMPI_REF    branch or tag                  (default: main)
-#   KOOMPI_DEST   where to keep the checkout     (default: ~/.local/share/koompi-desktop)
-#
-# Arguments are passed straight through to ./setup install, so this works:
-#   curl -fsSL .../install.sh | bash -s -- --dry-run
+# Bootstrap only: clone, then hand to ./setup install. Args pass through.
+# Stays thin because it is piped from the internet and read unreviewed.
 
 set -euo pipefail
 

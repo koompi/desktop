@@ -1,4 +1,3 @@
-# ─────────────────────────────────────────────────────────────────────────────
 # SKELETON — build the signed [koompi] pacman repo packages in CI.
 #
 # This is a SCAFFOLD, not a wired pipeline. It builds the koompi-* packages in an
@@ -9,7 +8,6 @@
 # Pairs with: sdata/dist-arch/repo/build-repo.sh  (same build → sign → repo-add
 # flow, here under GitHub Actions). Once packages are published, build-iso.yml
 # consumes the resulting signed [koompi] repo.
-# ─────────────────────────────────────────────────────────────────────────────
 name: Build KOOMPI packages (SKELETON)
 
 on:

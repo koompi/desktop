@@ -1,37 +1,17 @@
 #!/usr/bin/env bash
-# post_install.sh — KOOMPI OS post-install chroot hook.
+# SCAFFOLD, UNTESTED. Runs inside the pacstrapped target via arch-chroot /mnt.
+# Do NOT run on a live system. Idempotent: every step checks before it acts.
 #
-# ⚠️ SCAFFOLD — UNTESTED. Runs INSIDE the freshly pacstrapped target via
-#    `arch-chroot /mnt`. Every btrfs / snapper / bootloader line is a REVIEW
-#    point. Do NOT run on a live system.
-#
-# Responsibilities (the ~last 5% archinstall doesn't do for us):
-#   1. snapper config for `/`, wired to archinstall's existing @ / @snapshots
-#   2. the un-prunable @baseline snapshot = "factory reset to original install"
-#   3. snap-pac  (auto pre/post snapshot per pacman transaction)
-#   4. grub-btrfs (bootable snapshot submenu in GRUB) + the grub-btrfs-overlayfs
-#      initramfs hook so a booted snapshot is a usable read-write system
-#   5. enable sddm.service (belt-and-suspenders: koompi-branding ships a preset
-#      that already enables it — harmless to enable again)
-#   6. write /etc/os-release (NOT shipped by any package — filesystem owns the
-#      stock one; we overwrite with KOOMPI identity)
-#
-# FACTORY RESET (user-facing): roll back to @baseline with
-#   `sudo snapper -c root rollback <N>` (N = the @baseline number from
-#   `snapper -c root list`) then reboot — or pick @baseline from the grub-btrfs
-#   boot menu. (The desktop-only reset is the /etc/skel reseed, handled elsewhere.)
-#
-# Idempotent: safe to re-run. Each step checks before it acts.
+# @baseline is the factory-reset point: snapper -c root rollback <N>, or pick it
+# from the grub-btrfs menu.
 
 set -euo pipefail
 
 log() { printf '[koompi-installer] %s\n' "$*"; }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 0. Packages the post-install needs. archinstall pacstrapped the edition
 #    metapackage already; these are the snapshot-tooling extras.
 #    REVIEW: pin versions on the ISO if reproducibility matters.
-# ─────────────────────────────────────────────────────────────────────────────
 ensure_pkgs() {
   local want=(snapper snap-pac grub-btrfs inotify-tools)
   local missing=()
@@ -47,14 +27,12 @@ ensure_pkgs() {
   fi
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 1. snapper config for root. archinstall's btrfs layout already created the @
 #    subvolume mounted at / and a .snapshots subvol — so we must NOT let
 #    `snapper create-config` make its own (it would try to create
 #    /.snapshots and fail / conflict). Create the config file, then point it at
 #    the existing layout.
 #    REVIEW: this is the fiddliest interaction with archinstall's layout.
-# ─────────────────────────────────────────────────────────────────────────────
 setup_snapper() {
   if snapper list-configs 2>/dev/null | grep -qw root; then
     log "snapper 'root' config already exists"
@@ -88,7 +66,6 @@ setup_snapper() {
   systemctl enable snapper-timeline.timer snapper-cleanup.timer || true
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 2. The @baseline snapshot — a pinned "this is exactly how the OS shipped"
 #    point. Factory reset = roll back to this. Created near-LAST so it captures
 #    the finished install (os-release + sddm enabled), but BEFORE the final
@@ -98,7 +75,6 @@ setup_snapper() {
 #    snapshot eligible for the number-pruner (snap-pac fills that budget fast),
 #    so we deliberately pass NO cleanup algorithm. (snapper creates snapshots
 #    read-only by default, so no explicit `btrfs property set ... ro` is needed.)
-# ─────────────────────────────────────────────────────────────────────────────
 pin_baseline() {
   if snapper -c root list 2>/dev/null | grep -q 'baseline'; then
     log "@baseline snapshot already pinned"
@@ -112,10 +88,8 @@ pin_baseline() {
     --description "KOOMPI @baseline (factory reset point)"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 3 + 4. snap-pac is config-free once installed (pacman hooks). grub-btrfs needs
 #         its daemon enabled and the GRUB menu regenerated.
-# ─────────────────────────────────────────────────────────────────────────────
 setup_grub_btrfs() {
   log "enabling grub-btrfs snapshot menu"
   systemctl enable grub-btrfsd.service || true
@@ -127,7 +101,6 @@ setup_grub_btrfs() {
   fi
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 4a. "Loading Linux ..." / "Loading initial ramdisk ..." on an otherwise silent
 #     boot. /etc/grub.d/10_linux emits those two `echo` lines into every
 #     menuentry unconditionally — Arch carries no quiet_boot knob (that is a
@@ -140,7 +113,6 @@ setup_grub_btrfs() {
 #     Matches the English string, which is what grub-mkconfig emits under the C
 #     locale the installer runs in; a localised run leaves the lines and says so
 #     rather than deleting something it did not recognise.
-# ─────────────────────────────────────────────────────────────────────────────
 quiet_grub_entries() {
   local cfg="${KOOMPI_GRUB_CFG:-/boot/grub/grub.cfg}"
   [ -f "$cfg" ] || return 0
@@ -158,13 +130,11 @@ quiet_grub_entries() {
   log "silenced the GRUB 'Loading ...' lines"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 4b. Bootable snapshots. grub-btrfs boots a snapshot READ-ONLY; to boot INTO a
 #     snapshot as a usable read-write system (the "boot straight into any
 #     snapshot" promise) the `grub-btrfs-overlayfs` mkinitcpio hook must be in
 #     HOOKS, then the initramfs regenerated. Without it, booting a snapshot drops
 #     to an emergency shell. NOTE: this hook needs the `udev` hook, NOT `systemd`.
-# ─────────────────────────────────────────────────────────────────────────────
 setup_snapshot_boot() {
   local conf=/etc/mkinitcpio.conf
   [ -f "$conf" ] || { log "no $conf — skipping snapshot-boot hook"; return; }
@@ -182,21 +152,17 @@ setup_snapshot_boot() {
   mkinitcpio -P || log "WARNING: mkinitcpio regen failed; snapshot boot may be read-only"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 5. Login manager. koompi-branding ships a systemd preset that enables
 #    sddm.service; we enable explicitly too (idempotent belt-and-suspenders).
-# ─────────────────────────────────────────────────────────────────────────────
 enable_login() {
   log "enabling sddm.service"
   systemctl enable sddm.service || true
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 6. /etc/os-release — KOOMPI identity. Deliberately NOT a package (the
 #    `filesystem` package owns the stock file); we overwrite in the target.
 #    MUST stay byte-for-byte identical to the live ISO's os-release at
 #    sdata/dist-arch/iso/koompi/airootfs/etc/os-release (era "Naga" = v1).
-# ─────────────────────────────────────────────────────────────────────────────
 write_os_release() {
   log "writing /etc/os-release"
   cat >/etc/os-release <<'EOF'

@@ -1,10 +1,8 @@
-// ══════════════════════════════════════════════════════════════
 // DESKTOP SIM — interactivity for the three desktop simulations
 // Functions are GLOBALS so inline onclick= attributes (injected via
 // innerHTML) can call them. innerHTML-injected <script> never runs,
 // so this file is loaded directly from index.html.
 // sim = 'hug' | 'taskbar' | 'dock'
-// ══════════════════════════════════════════════════════════════
 
 (function () {
   function root(sim) { return document.getElementById('sim-root-' + sim); }

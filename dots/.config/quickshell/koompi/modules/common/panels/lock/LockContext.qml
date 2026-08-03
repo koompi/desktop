@@ -106,9 +106,7 @@ Scope {
         }
     }
 
-    // ---------------------------------------------------------------------
     // Caps Lock
-    // ---------------------------------------------------------------------
     // Hyprland emits no event for the lock modifiers, so this is polled: once
     // when the screen locks, and again whenever a surface sees the key. That
     // covers every way the state can change while the lock is up.
@@ -137,9 +135,7 @@ Scope {
         }
     }
 
-    // ---------------------------------------------------------------------
     // Wallpaper
-    // ---------------------------------------------------------------------
     // The lock owns no wallpaper. Each surface shows whatever its workspace was
     // already showing, blurred, so locking reads as a frosted pane over the
     // desktop rather than as a different machine. Workspaces carry their own
