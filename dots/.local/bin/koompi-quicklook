@@ -44,7 +44,6 @@ usage() {
     exit "${1:-0}"
 }
 
-# ---------------------------------------------------------------- install
 
 # Space in Dolphin goes through a KIO service menu: Dolphin lists service-menu
 # entries in Configure Keyboard Shortcuts (as "Context Menu Actions") and
@@ -120,7 +119,6 @@ PY
     echo "Restart any running Dolphin for it to take effect."
 }
 
-# ---------------------------------------------------------------- dispatch
 
 # Mime -> kind. Every kind maps straight onto a view in shell.qml. Kept as one
 # pure function so `selftest` can assert on it without launching anything.
@@ -197,7 +195,6 @@ cache_key() {
     printf '%s:%s' "$1" "$(stat -Lc %Y -- "$1")" | cksum | cut -d' ' -f1
 }
 
-# ---------------------------------------------------------------- drive
 
 # Escape hatch for the formats nothing here can render: Drive can open a docx
 # or a deck properly, so hand it the file rather than showing a dead end.
@@ -236,7 +233,6 @@ notify_user() {
     notify-send -a "KOOMPI Quick Look" -i "folder-cloud" -t 4000 "$1" "$2" || true
 }
 
-# ---------------------------------------------------------------- documents
 
 pdf_pages() {
     pdfinfo -- "$1" 2>/dev/null | awk '/^Pages:/ { print $2 }'
@@ -315,7 +311,6 @@ focused_screen() {
         || true
 }
 
-# ---------------------------------------------------------------- lifecycle
 
 running_pid() {
     local pid
@@ -370,7 +365,6 @@ open_preview() {
     echo $! > "$PIDFILE"
 }
 
-# ---------------------------------------------------------------- entry
 
 case "${1:-}" in
     -h|--help|help|"") usage ;;

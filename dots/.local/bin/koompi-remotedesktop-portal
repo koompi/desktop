@@ -39,7 +39,6 @@ RESPONSE_SUCCESS = 0
 RESPONSE_CANCELLED = 1
 RESPONSE_failed = 2
 
-# ---------------------------------------------------------------- uinput
 
 EV_SYN, EV_KEY, EV_REL = 0x00, 0x01, 0x02
 SYN_REPORT = 0
@@ -103,7 +102,6 @@ class UinputDevice:
         os.close(self.fd)
 
 
-# ------------------------------------------------------- keysym mapping
 
 KEY_ESC, KEY_BACKSPACE, KEY_TAB, KEY_ENTER = 1, 14, 15, 28
 KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_RIGHTSHIFT = 29, 42, 54
@@ -171,7 +169,6 @@ def keysym_to_key(keysym):
     return (None, False)
 
 
-# ------------------------------------------------------------ the backend
 
 IMPL_XML = """
 <node>
