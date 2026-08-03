@@ -17,16 +17,11 @@ Singleton {
     property var keybinds: []
     property var keybindCategories: []
 
-    // Deliberately not `hyprctl binds -j`. Hyprland 0.56.0 emits an
-    // "auto_consuming" key in that object with no value behind it, so every
-    // field from there on carries its neighbour's value and the result is not
-    // even parseable JSON - `"keycode": SUPER_L` and an unquoted description.
-    // JSON.parse threw, keybinds stayed empty, and the cheatsheet rendered
-    // nothing. The plain-text form carries the same data and has been stable
-    // for years, so it is the safer thing to depend on.
-    //
-    // Values may themselves contain a colon ("mouse:273", "Shell: Toggle
-    // search"), so a line is split on its first colon only.
+    // Deliberately not `hyprctl binds -j`. Hyprland 0.56.0 emits a valueless
+    // "auto_consuming" key, so every field from there on carries its neighbour's value
+    // and the result is not parseable JSON. The plain-text form has been stable for
+    // years.
+    // Values may themselves contain a colon ("mouse:273"), so split on the first only.
     function parseBinds(text) {
         const binds = [];
         let current = null;

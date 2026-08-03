@@ -35,14 +35,8 @@ hl.gesture({
         hl.dispatch(hl.dsp.global("quickshell:overviewWorkspacesToggle"))
     end
 })
--- Launchpad: spread four fingers to bring the grid out, close them to put it
--- away. Bound as two gestures rather than one toggle so making the same motion
--- twice never flaps the grid shut.
---
--- Read the direction names backwards. Measured on 0.55.4 against a synthetic
--- touchpad: "pinchin" fires when the fingers move APART and "pinchout" when
--- they come together, the opposite of how they read. Swap these and the
--- gesture inverts, so check before believing the words.
+-- Direction names are inverted. Measured on 0.55.4: "pinchin" fires when the fingers
+-- move APART, "pinchout" when they come together.
 hl.gesture({
     fingers = 4,
     direction = "pinchin",
@@ -190,16 +184,9 @@ hl.curve("stall", {
     type = "bezier",
     points = {{1, -0.1}, {0.7, 0.85}}
 })
--- A 60Hz panel with no VRR gives a workspace slide ~20-24 frames to move the
--- full monitor width + gaps_workspaces. Front-loaded curves spend most of that
--- distance in the first handful of frames and the rest crawling: measured on
--- 1920px, easeOutExpo peaks at 554px of travel in a single frame and
--- emphasizedDecel at 882px. That per-frame jump is the strobing, not the
--- duration. This curve has a small ease-in and a long decel tail, which spreads
--- the same distance over every frame and caps the peak at 292px. The mild start
--- also matters for the swipe: on release Hyprland animates the remainder with
--- this curve, so a near-zero initial velocity would stall against a finger that
--- was already moving, while an expo start would visibly rocket away from it.
+-- Long decel tail caps per-frame travel at 292px on 1920; easeOutExpo peaks at 554px
+-- and that jump is the strobing. Mild start, not zero: on release Hyprland animates
+-- the swipe remainder with this curve and a flat start stalls against the finger.
 hl.curve("workspaceSlide", {
     type = "bezier",
     points = {{0.25, 0.1}, {0.05, 1.0}}
@@ -274,15 +261,9 @@ hl.animation({
     speed = 2.7,
     bezier = "stall"
 })
--- workspaces
--- menu_decel at 700ms moved almost everything in the first frames then crawled
--- the rest of the way, which read as clunky. easeOutExpo at 350ms had the same
--- shape, just compressed - the crawl became a 4-frame dead tail. See the
--- workspaceSlide curve for why the fix is the shape rather than the duration.
--- 400ms is deliberately longer than the old 350ms: at 60Hz the extra 3 frames
--- are 3 more motion samples, and this curve has no dead tail to pad out.
--- Leave workspacesIn/workspacesOut inherited. Overriding them separately
--- desyncs the two halves of a `slide`, which opens a gap mid-animation.
+-- 400ms, not 350: this curve has no dead tail to pad out, so the extra frames are
+-- motion samples. Leave workspacesIn/Out inherited - overriding them desyncs the
+-- two halves of a slide and opens a gap.
 hl.animation({
     leaf = "workspaces",
     enabled = true,

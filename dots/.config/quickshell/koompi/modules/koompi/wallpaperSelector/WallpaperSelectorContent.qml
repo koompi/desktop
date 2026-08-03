@@ -309,11 +309,8 @@ MouseArea {
 
                         model: Wallpapers.folderModel
                         onModelChanged: currentIndex = 0
-                        // Which entry is marked as the one in use. Has to be the
-                        // wallpaper of the workspace being looked at: a pick
-                        // lands there, not on the global path, so comparing
-                        // against the global path marked a wallpaper that is not
-                        // on any screen.
+                        // Per workspace, not the global path: a pick lands on the workspace being looked at,
+                        // so the global path names a wallpaper that is on no screen.
                         readonly property string appliedWallpaper: Wallpapers.forWorkspace(Hyprland.focusedMonitor?.activeWorkspace?.id ?? 1)
                         delegate: WallpaperDirectoryItem {
                             required property var modelData

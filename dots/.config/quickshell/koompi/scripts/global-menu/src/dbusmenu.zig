@@ -1,11 +1,6 @@
-// com.canonical.dbusmenu client.
-//
-// This is the protocol Unity introduced and KDE still speaks: the application
-// exports its real menubar as a tree of numbered nodes, the panel asks for the
-// layout, and a click travels back as Event(id, "clicked", ...). Qt/KDE apps
-// reach it through libdbusmenu-qt / plasma-integration; GTK apps reach it
-// through appmenu-gtk-module. Both find the panel through the AppMenu
-// registrar (see registrar.zig).
+// com.canonical.dbusmenu client. The application exports its menubar as a tree of
+// numbered nodes; a click travels back as Event(id, "clicked", ...). Apps find us
+// through the AppMenu registrar (registrar.zig).
 
 const std = @import("std");
 const gio = @import("gio.zig");

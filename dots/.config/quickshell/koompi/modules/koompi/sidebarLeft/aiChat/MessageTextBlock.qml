@@ -181,12 +181,6 @@ ColumnLayout {
                     (enableMouseSelection || editing) ? Qt.IBeamCursor : Qt.ArrowCursor
             }
 
-            // Rectangle {
-            //     anchors.fill: parent
-            //     color: "#22786378"
-            //     border.width: 1
-            //     border.color: "#7E7E7E"
-            // }
         }
     }
 }

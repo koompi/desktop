@@ -50,12 +50,8 @@ hl.window_rule({match = {class = "^(nm-connection-editor)$" },               flo
 hl.window_rule({match = {class = "^(nm-connection-editor)$" },               size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
 hl.window_rule({match = {class = "^(nm-connection-editor)$" },               center = true})
 hl.window_rule({match = {title = ".*Welcome" },                              float = true})
--- The cheatsheet box, shared by KOOMPI Settings and the chat widgets below:
--- every overlay the shell puts in front of you lands in one place at one size.
--- 1402x951 is the cheatsheet card measured on a 1920x1200 panel. The card is
--- content-sized, so it does not scale with the monitor and a fixed size tracks
--- it better than a monitor_w fraction; the min() clamps keep the box on screen
--- on a smaller panel.
+-- 1402x951 is the cheatsheet card measured on 1920x1200. Content-sized, so it does
+-- not scale with the monitor; the min() clamps keep it on a smaller panel.
 local overlayW = "(min(1402, monitor_w-64))"
 local overlayH = "(min(951, monitor_h-92))"
 hl.window_rule({match = {title = "^(KOOMPI Settings)$" },                    float = true})
@@ -64,26 +60,10 @@ hl.window_rule({match = {title = "^(KOOMPI Settings)$" },                    cen
 hl.window_rule({match = {title = ".*Shell conflicts.*" },                    float = true})
 hl.window_rule({match = {class = "^(Zotero)$" },                             float = true})
 hl.window_rule({match = {class = "^(Zotero)$" },                             size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
--- Chat-widget scratchpads (toggled via scripts/toggle_app_scratchpad.sh). Each
--- app is pinned to its own special workspace, floated and centered in the same
--- overlay box declared above. See keybinds App: *.
--- Telegram was previously TILED, on the theory that a floating half-width dock
--- cramped the call/video window. The overlay box is far larger than that old
--- dock, so calls open at a usable size while floating.
--- Telegram: BOTH classes on purpose. Telegram is Qt, and env.lua forces
--- QT_QPA_PLATFORM=xcb session wide so the global menu works, so it comes up on
--- XWayland and Hyprland reports its X11 WM_CLASS "TelegramDesktop" instead of
--- the Wayland app_id "org.telegram.desktop". Matching only the app_id silently
--- stopped matching anything, which is why it started opening tiled. Any rule
--- keyed on a Qt app's Wayland app_id has the same problem.
---
--- Its reaction/context menu is a separate XWayland transient with the SAME
--- TelegramDesktop class but initial title "TelegramDesktop". Class-only rules
--- therefore treated that popup as another main window: moved it to the special
--- workspace, expanded it to overlay size and centered it at the top-left.
--- Telegram's real window starts as "Telegram" or "Telegram (<unread count>)",
--- so initial_title keeps the scratchpad behavior on the main window while
--- leaving transient placement to Telegram.
+-- Both Telegram classes on purpose: env.lua forces QT_QPA_PLATFORM=xcb session wide,
+-- so Qt apps come up on XWayland and Hyprland reports the X11 WM_CLASS, not the
+-- Wayland app_id. Any rule keyed on a Qt app's app_id has the same problem.
+-- initial_title as well: the reaction popup is a transient sharing the class.
 local telegramClass = "^(org\\.telegram\\.desktop|TelegramDesktop)$"
 local telegramTitle = "^Telegram( \\([0-9]+\\))?$"
 hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, workspace = "special:telegram silent"})
@@ -100,22 +80,12 @@ hl.window_rule({match = {class = ".*web\\.whatsapp\\.com.*" },               wor
 hl.window_rule({match = {class = ".*web\\.whatsapp\\.com.*" },               float = true})
 hl.window_rule({match = {class = ".*web\\.whatsapp\\.com.*" },               size = {overlayW, overlayH} })
 hl.window_rule({match = {class = ".*web\\.whatsapp\\.com.*" },               center = true})
--- Quick-fire scratchpads sharing the chat-widget pattern. Same launch-or-toggle
--- script, same float/center/size convention; each uses a UNIQUE --class so it
--- never collides with the normal SUPER + Return terminal.
--- Terminal: SUPER + grave - RIGHT-docked panel (NOT centered like the chat
--- widgets), since SUPER + T already opens a terminal in the workspace. Tall +
--- narrow so it reads as a side panel coming from the right.
+-- Each uses a unique --class so it never collides with the SUPER + Return terminal.
 hl.window_rule({match = {class = "^(term-scratch)$" },                       workspace = "special:term silent"})
 hl.window_rule({match = {class = "^(term-scratch)$" },                       float = true})
--- FULL height - the panel fills exactly the band a maximized/tiled window gets, so
--- it lines up edge-for-edge with a normal window (just narrower). Measured on
--- eDP-1: reserved = [L,T,R,B] = [0,40,0,0] (the bar reserves 40px at the TOP, not
--- the bottom), gaps_out = 5, border = 1. A tiled window therefore sits at top
--- inset 46 (40 reserved + 5 gap + 1 border) and bottom inset 6 (5 gap + 1 border),
--- giving y = 46 and height = monitor_h-52 (40 + 6 + 6). x = monitor_w*0.58-16
--- right-docks the 0.42w panel (16px right gap). Fixed monitor_w/h math, NOT
--- window_w/window_h - those evaluate before the size rule and fall back to centered.
+-- monitor_h-52 = 40px bar reserve + 2*(5 gap + 1 border), so the panel lines up
+-- edge-for-edge with a tiled window. monitor_* not window_*: those evaluate before
+-- the size rule and fall back to centered.
 hl.window_rule({match = {class = "^(term-scratch)$" },                       size = {"(monitor_w*0.42)", "(monitor_h-52)"} })
 hl.window_rule({match = {class = "^(term-scratch)$" },                       move = {"(monitor_w*0.58-16)", "(46)"} })
 -- System monitor: SUPER + SHIFT + Escape (btop, falling back to htop/top)
@@ -124,14 +94,8 @@ hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     flo
 hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     size = {"(monitor_w*0.7)", "(min(monitor_w*0.45, monitor_h*0.8))"} })
 hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     center = true})
 
--- Browser home workspace. A link clicked inside a chat widget spawns a real
--- browser window; with a special workspace focused, that window would be born on
--- the special workspace - tiled, hidden behind the floating widget. Pinning the
--- browser to ws 9 (non-silent, so it switches there) sends those link windows -
--- and every browser window - to your real browser instead. Matches the NORMAL
--- browser classes only, never the chrome --app widget class
--- (chrome-web.whatsapp.com__-Default), so the WhatsApp/Telegram/Discord widgets
--- stay on their special workspaces. See keybinds "App: * widget".
+-- Normal browser classes only, never the chrome --app widget class, so the
+-- WhatsApp/Telegram/Discord widgets stay on their special workspaces.
 hl.window_rule({match = {class = "^(google-chrome|google-chrome-stable|chromium|brave-browser|firefox|zen|zen-browser|microsoft-edge|opera|librewolf)$" }, workspace = "9"})
 
 
@@ -242,11 +206,8 @@ hl.layer_rule({ match = { namespace = "quickshell:popup" }, xray = false}) -- No
 hl.layer_rule({ match = { namespace = "quickshell:popup" }, ignore_alpha = 1}) -- No weird color for bar tooltips (but somehow this is necessary)
 hl.layer_rule({ match = { namespace = "quickshell:mediaControls" }, ignore_alpha = 1}) -- Same as above
 hl.layer_rule({ match = { namespace = "quickshell:reloadPopup" }, animation = "slide"})
--- Quick Look (koompi-quicklook). No layer animation at all: the card animates
--- itself on open, and animating the full-screen layer OUT leaves its dim scrim
--- on screen for the length of the animation after the preview is gone. The
--- blur/ignore_alpha above still apply via quickshell:.*, which is why the card
--- is translucent but the scrim is not.
+-- No layer animation: animating the full-screen layer out leaves its dim scrim on
+-- screen after the preview is gone.
 hl.layer_rule({ match = { namespace = "quickshell:quicklook" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:regionSelector" }, no_anim = true})
 hl.layer_rule({ match = { namespace = "quickshell:screenshot" }, no_anim = true})

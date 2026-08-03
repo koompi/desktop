@@ -11,23 +11,15 @@ local qsIpcCall = "qs -c $qsConfig ipc --any-display call"
 local qsIsAlive = qsIpcCall .. " TEST_ALIVE"
 local volumeFeedback = "pw-play --volume=0.8 /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga >/dev/null 2>&1"
 
--- Search opens when Super is released, so pressing anything else while Super is
--- held has to cancel that pending toggle. The plain config format spells this
--- `binditn = SUPER, catchall`, but hl.bind rejects `catchall` as a keysym, so
--- every Super chord gets a companion bind carrying the interrupt instead. This
--- wrapper stays installed for the rest of the config, so custom binds get one
--- too.
+-- hl.bind rejects `catchall`, so every Super chord carries the release interrupt
+-- itself. Wrapper stays installed for the rest of the config.
 local searchToggleReleaseInterrupt = hl.dsp.global("quickshell:searchToggleReleaseInterrupt")
 local bindWithoutInterrupt = hl.bind
 hl.bind = function(keys, dispatcher, opts)
     local keybind = bindWithoutInterrupt(keys, dispatcher, opts)
     local chord = keys:upper()
-    -- Super's own key press is what arms the toggle; it must not cancel it.
-    -- Everything else does, mouse buttons included. Super+drag is a chord like
-    -- any other, and skipping it left the toggle armed for the whole drag, so
-    -- letting go of Super opened Search over the window just moved. Scroll
-    -- chords (mouse_up/mouse_down) were never skipped, which is how the
-    -- inconsistency showed.
+    -- SUPER_L/R arms the toggle and must not cancel it. Everything else cancels,
+    -- mouse buttons and drags included.
     if chord:match("SUPER") and not chord:match("SUPER_[LR]") then
         bindWithoutInterrupt(keys, searchToggleReleaseInterrupt, { transparent = true })
     end
@@ -95,11 +87,8 @@ hl.bind("CTRL + SUPER + ALT + T", hl.dsp.global("quickshell:wallpaperSelectorRan
 hl.bind("CTRL + SUPER + SHIFT + D", hl.dsp.global("quickshell:toggleLightDark"),
     { description = "Shell: Toggle light/dark mode" })
 hl.bind("CTRL + SUPER + T", hl.dsp.exec_cmd(qsIsAlive .. " || " .. qsScripts .. "/colors/switchwall.sh"))
--- Mirrors the launch in execs.lua: without the wayland override the respawned
--- shell inherits the session-wide xcb default from env.lua and maps no layer
--- surfaces at all, so the bar and sidebars come back invisible. killall -w so
--- the new instance does not race the old one for the layer surfaces and the IPC
--- socket.
+-- Wayland override needed: env.lua sets xcb session-wide and the respawned shell
+-- maps no layer surfaces at all. killall -w so it does not race the old instance.
 hl.bind("CTRL + SUPER + R", hl.dsp.exec_cmd(
         "killall -w global-menu-daemon qs quickshell; hyprctl reload; env QT_QPA_PLATFORM=wayland qs -c $qsConfig &"),
     { description = "Shell: Restart widgets" })
@@ -211,12 +200,8 @@ hl.bind("SUPER + ALT + M", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_SOURCE@ togg
 --##! Window
 --# Focusing
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" })
--- Snap preview rides along with the drag above rather than taking a chord of
--- its own: Quickshell gets the press and the release of this global shortcut,
--- which is the whole span of the drag. Deliberately not `transparent`, so the
--- click still does not reach the window under it, exactly as the drag bind
--- alone did. With the shell's `windows.snapPreview` off nothing is registered
--- under this name and the dispatch does nothing.
+-- Press and release of this global shortcut span the drag above. Not `transparent`:
+-- the click must not reach the window under it.
 hl.bind("SUPER + mouse:272", hl.dsp.global("quickshell:snapPreviewDrag"))
 hl.bind("SUPER + mouse:274", hl.dsp.window.drag(), { mouse = true })
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Window: Resize" })

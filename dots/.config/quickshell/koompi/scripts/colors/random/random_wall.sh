@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
-# Combined random source, bound to Ctrl+Super+Alt+T. Picks one of the enabled
-# sources at random so the keybind draws from every source at once instead of
-# just one. Override the set in config.json:
-#   .background.randomWallpaper.sources   e.g. ["library"]
+# Override the source set at .background.randomWallpaper.sources in config.json.
 # Only the offline library ships; any extra source is a user-added script here.
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"

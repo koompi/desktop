@@ -178,11 +178,8 @@ Singleton {
         return [".mp4", ".webm", ".mkv", ".avi", ".mov"].some(ext => path.endsWith(ext));
     }
 
-    // The wallpaper a workspace is showing, resolved once here so the desktop
-    // background and anything that has to match it cannot drift apart. Config
-    // only declares ws1..ws10, so higher ids wrap by decade the way the bar
-    // already pages: 11 is page two slot one and shows ws1. Ids below 1 are
-    // special workspaces, which have no slot and inherit the global wallpaper.
+    // Config only declares ws1..ws10, so higher ids wrap by decade the way the bar pages:
+    // 11 shows ws1. Ids below 1 are special workspaces and inherit the global wallpaper.
     function rawForWorkspace(workspaceId: int): string {
         const perWorkspace = Config.options.background.workspaceWallpapers;
         const key = workspaceId >= 1 ? `ws${((workspaceId - 1) % 10) + 1}` : "";

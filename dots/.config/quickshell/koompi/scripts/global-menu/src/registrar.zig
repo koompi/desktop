@@ -1,11 +1,6 @@
-// com.canonical.AppMenu.Registrar, served by us.
-//
-// This is the piece that was missing. Toolkits do not push their menus at a
-// panel; they wait for something to own this name and then call
-// RegisterWindow(windowId, menuObjectPath) on it. With nobody owning it,
-// libdbusmenu-qt, plasma-integration and appmenu-gtk-module all quietly keep
-// their menubars inside the window, which is why the bar looked empty for
-// every application that was not an XWayland GTK app.
+// com.canonical.AppMenu.Registrar, served by us. Toolkits do not push menus at a
+// panel; they wait for something to own this name and then call RegisterWindow on
+// it. With nobody owning it every menubar quietly stays inside its window.
 
 const std = @import("std");
 const linux = std.os.linux;
@@ -25,17 +20,10 @@ pub const Registrar = struct {
     conn: *gio.Connection,
     entries: std.ArrayListUnmanaged(Entry) = .empty,
     serial: u64 = 0,
-    /// Whether we actually hold the well-known name. Exporting the object
-    /// succeeds even when the name went to somebody else, so this is the only
-    /// thing that says whether our table is the one the session is using.
-    ///
-    /// It gates the mirror, and nothing else. RegisterWindow deliberately still
-    /// answers when it is false: an application registers exactly once, on the
-    /// first NameOwnerChanged that says somebody owns the name, and never
-    /// retries. Refusing it because our own name_acquired callback has not been
-    /// dispatched yet would cost that application its menu for its whole
-    /// lifetime. Accepting one costs nothing, because a daemon that does not own
-    /// the name receives no queries and no longer writes the mirror.
+    /// Exporting the object succeeds even when the name went to somebody else, so this is
+    /// the only thing that says our table is the one in use. It gates the mirror and
+    /// nothing else: RegisterWindow still answers when false, because an application
+    /// registers exactly once and never retries.
     owns_name: bool = false,
     /// Where the table is mirrored so it survives our own restart.
     runtime_dir: ?[]const u8 = null,
@@ -73,19 +61,10 @@ pub const Registrar = struct {
         if (self.on_change) |cb| cb(self.on_change_ctx);
     }
 
-    // ── Surviving our own restart ─────────────────────────────────────────
-    //
-    // Registrations live in this process's memory, but an application only
-    // registers once, when it first sees somebody own the name. Kill the daemon
-    // and every menu it knew about is gone until each application is restarted,
-    // which is not something a user should ever have to do.
-    //
-    // A D-Bus unique name outlives us: ':1.124' still addresses the same
-    // connection after we respawn. So the table is mirrored to the runtime
-    // directory and re-validated against the bus on startup, which recovers
-    // exactly the applications that are still running. The runtime directory is
-    // the right home for it: unique names are meaningless in the next session,
-    // and it is cleared for us.
+    // Surviving our own restart. Applications register once, so killing the daemon loses
+    // every menu until each is restarted. A D-Bus unique name outlives us, so the table
+    // is mirrored to the runtime directory and re-validated against the bus on startup -
+    // the right home, since unique names are meaningless in the next session.
 
     fn cachePath(self: *Registrar) ?[:0]u8 {
         const dir = self.runtime_dir orelse return null;
@@ -193,11 +172,9 @@ pub const Registrar = struct {
                 self.gpa.free(svc);
                 continue;
             };
-            // We may already know this window. ALLOW_REPLACEMENT means the name
-            // can be taken from us and handed back when the daemon that took it
-            // exits, and each acquisition restores, so appending blindly would
-            // duplicate every entry we still hold. The mirror wins: it was
-            // written by the owner that displaced us, so it is the newer view.
+            // ALLOW_REPLACEMENT hands the name back when the daemon that took it exits, and each
+            // acquisition restores, so appending blindly duplicates what we still hold. The
+            // mirror wins: it was written by the owner that displaced us.
             _ = self.dropWindow(window_id);
             self.serial += 1;
             self.entries.append(self.gpa, .{

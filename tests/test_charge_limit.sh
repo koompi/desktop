@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# The charge limit switch talks to UPower through busctl, because Quickshell's
-# UPower binding stops short of these properties. Nothing type-checks that
-# argv, so a renamed property or a reordered read would silently show the
-# limit as unsupported, or as off while it is on.
+# The charge limit talks to UPower through busctl, because Quickshell's UPower
+# binding stops short of these properties. Nothing type-checks that argv, so a
+# renamed property would silently show the limit as unsupported, or off while on.
 #
-# Read-only. Introspects UPower and never calls EnableChargeThreshold, so this
-# cannot change how the machine charges.
+# Read-only: introspects UPower, never calls EnableChargeThreshold.
 set -uo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

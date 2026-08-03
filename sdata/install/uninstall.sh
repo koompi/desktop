@@ -1,8 +1,8 @@
 # shellcheck shell=bash
-# Sourced by ./setup. Removes exactly the files the manifest says were
-# installed, then the empty directories left behind. Packages are left alone:
-# the installer cannot know which of them the user wanted anyway, and removing
-# a shared library on a rolling distro is how you lose a login session.
+# Sourced by ./setup. Removes exactly what the manifest says was installed, then the
+# empty directories left behind. Packages are left alone: the installer cannot know
+# which the user wanted, and removing a shared library on a rolling distro is how
+# you lose a login session.
 
 # Remove the directory skeleton the install left behind, deepest first, walking
 # up towards $HOME and stopping the moment a directory still holds something.

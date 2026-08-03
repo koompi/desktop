@@ -7,19 +7,9 @@ const byName = {
         name_short: "US",
         description: "QWERTY - Full",
         comment: "Like physical keyboard",
-        // A key looks like this: { k: "a", ks: "A", t: "normal" } (key, key-shift, type)
-        // key types are: normal, tab, caps, shift, control, fn (normal w/ half height), space, expand
-        // keys: [
-        //     [{ k: "Esc", t: "fn" }, { k: "F1", t: "fn" }, { k: "F2", t: "fn" }, { k: "F3", t: "fn" }, { k: "F4", t: "fn" }, { k: "F5", t: "fn" }, { k: "F6", t: "fn" }, { k: "F7", t: "fn" }, { k: "F8", t: "fn" }, { k: "F9", t: "fn" }, { k: "F10", t: "fn" }, { k: "F11", t: "fn" }, { k: "F12", t: "fn" }, { k: "PrtSc", t: "fn" }, { k: "Del", t: "fn" }],
-        //     [{ k: "`", ks: "~", t: "normal" }, { k: "1", ks: "!", t: "normal" }, { k: "2", ks: "@", t: "normal" }, { k: "3", ks: "#", t: "normal" }, { k: "4", ks: "$", t: "normal" }, { k: "5", ks: "%", t: "normal" }, { k: "6", ks: "^", t: "normal" }, { k: "7", ks: "&", t: "normal" }, { k: "8", ks: "*", t: "normal" }, { k: "9", ks: "(", t: "normal" }, { k: "0", ks: ")", t: "normal" }, { k: "-", ks: "_", t: "normal" }, { k: "=", ks: "+", t: "normal" }, { k: "Backspace", t: "shift" }],
-        //     [{ k: "Tab", t: "tab" }, { k: "q", ks: "Q", t: "normal" }, { k: "w", ks: "W", t: "normal" }, { k: "e", ks: "E", t: "normal" }, { k: "r", ks: "R", t: "normal" }, { k: "t", ks: "T", t: "normal" }, { k: "y", ks: "Y", t: "normal" }, { k: "u", ks: "U", t: "normal" }, { k: "i", ks: "I", t: "normal" }, { k: "o", ks: "O", t: "normal" }, { k: "p", ks: "P", t: "normal" }, { k: "[", ks: "{", t: "normal" }, { k: "]", ks: "}", t: "normal" }, { k: "\\", ks: "|", t: "expand" }],
-        //     [{ k: "Caps", t: "caps" }, { k: "a", ks: "A", t: "normal" }, { k: "s", ks: "S", t: "normal" }, { k: "d", ks: "D", t: "normal" }, { k: "f", ks: "F", t: "normal" }, { k: "g", ks: "G", t: "normal" }, { k: "h", ks: "H", t: "normal" }, { k: "j", ks: "J", t: "normal" }, { k: "k", ks: "K", t: "normal" }, { k: "l", ks: "L", t: "normal" }, { k: ";", ks: ":", t: "normal" }, { k: "'", ks: '"', t: "normal" }, { k: "Enter", t: "expand" }],
-        //     [{ k: "Shift", t: "shift" }, { k: "z", ks: "Z", t: "normal" }, { k: "x", ks: "X", t: "normal" }, { k: "c", ks: "C", t: "normal" }, { k: "v", ks: "V", t: "normal" }, { k: "b", ks: "B", t: "normal" }, { k: "n", ks: "N", t: "normal" }, { k: "m", ks: "M", t: "normal" }, { k: ",", ks: "<", t: "normal" }, { k: ".", ks: ">", t: "normal" }, { k: "/", ks: "?", t: "normal" }, { k: "Shift", t: "expand" }],
-        //     [{ k: "Ctrl", t: "control" }, { k: "Fn", t: "normal" }, { k: "Win", t: "normal" }, { k: "Alt", t: "normal" }, { k: "Space", t: "space" }, { k: "Alt", t: "normal" }, { k: "Menu", t: "normal" }, { k: "Ctrl", t: "control" }]
-        // ]
-        // A normal key looks like this: {label: "a", labelShift: "A", shape: "normal", keycode: 30, type: "normal"}
-        // A modkey looks like this: {label: "Ctrl", shape: "control", keycode: 29, type: "modkey"}
-        // key types are: normal, tab, caps, shift, control, fn (normal w/ half height), space, expand
+        // Input key: { k: "a", ks: "A", t: "normal" } (key, key-shift, type).
+        // Emitted key: { label, labelShift, shape, keycode, type }; modkeys carry no ks.
+        // Types: normal, tab, caps, shift, control, fn (normal w/ half height), space, expand.
         keys: [
             [
                 { keytype: "normal", label: "Esc", shape: "fn", keycode: 1 },

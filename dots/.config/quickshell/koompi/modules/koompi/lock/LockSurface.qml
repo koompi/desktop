@@ -30,11 +30,8 @@ MouseArea {
     // Set by the Loader in LockScreen. Empty only if this is ever instantiated
     // outside one, in which case the context falls back to a live lookup.
     readonly property string screenName: parent?.lockScreenName ?? ""
-    // The password has been accepted and this surface is on its way out. Set by
-    // the Loader in LockScreen, which keeps the surface alive until the exit has
-    // played. Everything that is lock furniture leaves; the wallpaper does not,
-    // and loses its blur, veil and zoom so the last frame here is as close as it
-    // can get to the first frame of the desktop.
+    // Everything that is lock furniture leaves; the wallpaper stays and drops its blur,
+    // veil and zoom, so the last frame here matches the first frame of the desktop.
     readonly property bool unlocking: parent?.lockUnlocking ?? false
     readonly property int exitDuration: parent?.lockExitDuration ?? 350
     readonly property string wallpaperPath: root.context.wallpaperForScreen(root.screenName)
@@ -101,11 +98,8 @@ MouseArea {
         root.forceFieldFocus();
     }
 
-    // Entrance and exit of everything that is not the wallpaper. One duration
-    // and one curve for every part of it, in both directions: a fade that ends
-    // before the thing it was fading has finished moving is most of what reads
-    // as rough here, and the only way to be sure that never happens is to have
-    // a single answer for how long a change takes.
+    // One duration and one curve for every part, both directions: a fade that ends
+    // before its motion does is most of what reads as rough.
     readonly property bool furnitureShown: root.contentReady && !root.unlocking
     component LockAnimation: NumberAnimation {
         duration: root.unlocking ? root.exitDuration : Appearance.animation.elementMoveEnter.duration
@@ -182,14 +176,9 @@ MouseArea {
         sourceSize.height: Config.options.lock.blur.enable ? Math.min(1080, root.height) : 0
         source: root.wallpaperPath.length > 0 ? `file://${root.wallpaperPath}` : ""
 
-        // No fade in. This is the same photo the desktop was already showing, so
-        // fading it up from the base colour is a flash of theme background over
-        // a wallpaper that never actually went away.
-        // While unlocking it is uncovered from under the blurred copy fading out
-        // above it. Two copies of one photo for a third of a second is cheaper
-        // than animating the blur radius, which re-runs every blur pass on every
-        // frame and stutters on an integrated GPU at exactly the moment this is
-        // trying to look smooth.
+        // No fade in: this is the photo the desktop was already showing. While unlocking it
+        // is uncovered from under the blurred copy. Two copies for a third of a second beat
+        // animating the blur radius, which re-runs every pass on every frame.
         visible: status === Image.Ready && (!blurLoader.active || root.unlocking)
 
         scale: root.wallpaperScale
@@ -221,11 +210,8 @@ MouseArea {
             blurEnabled: true
             // Never animated, only faded. See the note on lockWallpaper.visible.
             blur: 1.0
-            // A separable multi-pass blur, unlike the single-pass GaussianBlur
-            // this replaced, which needed samples: radius * 2 + 1 (201 samples
-            // at the default radius) for the same look. Past a 64 px kernel the
-            // result is indistinguishable, so the configured radius is clamped
-            // rather than obeyed literally.
+            // Separable multi-pass. Past a 64px kernel the result is indistinguishable, so the
+            // configured radius is clamped rather than obeyed.
             blurMax: Math.round(Math.max(8, Math.min(64, Config.options.lock.blur.radius)))
             autoPaddingEnabled: false
             scale: root.wallpaperScale

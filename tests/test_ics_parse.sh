@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# The calendar panel is only as good as this parser: a dropped RRULE silently
-# hides every recurring meeting, which looks identical to an empty week.
-#
-# Runs services/ics.js under bun against a Google-shaped .ics. No network.
+# A dropped RRULE silently hides every recurring meeting, which looks identical to an
+# empty week. Runs services/ics.js under bun against a Google-shaped .ics. No network.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

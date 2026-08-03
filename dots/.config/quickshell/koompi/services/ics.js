@@ -1,6 +1,5 @@
-// Minimal iCalendar reader for Google Calendar's private .ics export.
-// Covers what a personal calendar actually contains: timed and all-day events,
-// and repeats via FREQ/INTERVAL/COUNT/UNTIL/BYDAY with EXDATE holes.
+// Minimal iCalendar reader for Google Calendar's private .ics export: timed and
+// all-day events, repeats via FREQ/INTERVAL/COUNT/UNTIL/BYDAY with EXDATE holes.
 // ponytail: no VTIMEZONE, no BYMONTHDAY/BYSETPOS, no per-instance RECURRENCE-ID
 // overrides. A TZID event is read as local time, which is right while your
 // calendar and your laptop agree on a zone. Reach for a real ical library if

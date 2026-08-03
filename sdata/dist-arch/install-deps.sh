@@ -1,12 +1,10 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/deps.sh. Arch Linux and derivatives.
 #
-# Only the *dependency* metapackages are installed here. The packages that ship
-# the desktop itself - koompi-hyprland-config, koompi-shell, koompi-session and
-# the koompi-desktop-* editions - are deliberately left out: ./setup installs
-# that content into $HOME, and having both would give you two copies of the
-# shell fighting over the same paths. Building the full OS image is a separate
-# path; see sdata/dist-arch/iso/koompi/.
+# Dependency metapackages only. koompi-hyprland-config, koompi-shell,
+# koompi-session and the koompi-desktop-* editions are deliberately left out:
+# ./setup installs that content into $HOME, and having both gives two copies of the
+# shell fighting over the same paths. Full OS image: sdata/dist-arch/iso/koompi/.
 
 have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 
@@ -45,14 +43,10 @@ arch_drop_deprecated() {
         {hyprland-qtutils,hyprlock,xdg-desktop-portal-hyprland,hyprcursor}-git
         {hyprwayland-scanner,hyprland}-git
     )
-    # Each of those was built by makepkg on a machine whose /etc/makepkg.conf
-    # carries the `debug` option, so each left a `-debug` split package behind
-    # that owns files under /usr/lib/debug. Naming them here is the only way
-    # they go: makepkg's create_debug_package() rewrites the split package's
-    # metadata and empties conflicts, provides and replaces outright, so no
-    # amount of conflicts= in the successor's PKGBUILD can displace one. Names
-    # that are not installed cost nothing, because arch_exact_installed_packages
-    # prints literal installed names only.
+    # Naming the -debug siblings is the only way they go. makepkg's
+    # create_debug_package() empties the split package's conflicts, provides and
+    # replaces, so no conflicts= in a successor can displace one. Names that are not
+    # installed cost nothing - arch_exact_installed_packages prints installed names only.
     local stale=("${superseded[@]}" "${superseded[@]/%/-debug}")
     local exact
     exact="$(arch_exact_installed_packages "${stale[@]}")" ||

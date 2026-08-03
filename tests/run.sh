@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-# Run every test in this directory.
+# Run every test in this directory:  ./tests/run.sh
 #
-# These are shell-level regression tests: each one shadows the commands that
-# would touch the machine (pacman, makepkg, sudo, killall, hyprctl) and asserts
-# on what the code under test tried to do. Nothing here installs, removes or
-# stops anything, and nothing reads a password, so it is safe to run on the
-# machine you are sitting at.
-#
-#   ./tests/run.sh
+# Shell-level regression tests. Each shadows the commands that would touch the
+# machine (pacman, makepkg, sudo, killall, hyprctl) and asserts on what the code
+# tried to do, so nothing installs, removes, stops or reads a password.
 set -uo pipefail
 
 TESTS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"

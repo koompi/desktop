@@ -106,11 +106,8 @@ Variants {
                 wallpaperPan.settle(bgRoot.wallpaperPath);
         }
 
-        // Latches the moment there is something to look at, which lifts the
-        // handoff curtain at the bottom of this file. A video wallpaper or a
-        // work-safety blank never produces a Ready image, and a bad path never
-        // produces one at all, so the timer is the floor: the curtain is
-        // opaque and full screen, and must not be able to outlive the load.
+        // Video wallpaper, work-safety blank and a bad path never produce a Ready image, so
+        // the timer is the floor under the handoff curtain at the bottom of this file.
         property bool wallpaperArrived: false
         Timer {
             interval: 3000
@@ -250,11 +247,8 @@ Variants {
         Item {
             anchors.fill: parent
 
-            // Wallpaper. Two cells, the workspace being left and the one
-            // arriving, panned as a pair so the desktop reads as moving aside
-            // instead of being replaced. Travel is one screen width, not width
-            // + gaps_workspaces: matching the windows exactly would open a seam
-            // of bare layer between the two wallpapers.
+            // Travel is one screen width, not width + gaps_workspaces: matching the windows
+            // exactly opens a seam of bare layer between the two wallpapers.
             Item {
                 id: wallpaperPan
                 width: parent.width
@@ -343,14 +337,9 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    // Plain Image, not StyledImage: that one ties sourceSize
-                    // to the layout size and fades opacity. The zoom scale
-                    // arrives from `magick` a few frames into a switch, so a
-                    // sourceSize following it reloaded the picture mid-slide and
-                    // faded the cell towards transparent over black - the dark
-                    // blink. Decoding at the picture's own size instead also
-                    // keeps it in Qt's cache between visits, so a workspace
-                    // switched back to is ready on the first frame.
+                    // Not StyledImage: its sourceSize follows the layout size, and the magick zoom scale
+                    // arrives a few frames into a switch, so the picture reloaded mid-slide and faded
+                    // towards transparent - the dark blink. Own-size decode also stays in Qt's cache.
                     Image {
                         id: cellAImage
                         onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
@@ -373,14 +362,7 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    // Plain Image, not StyledImage: that one ties sourceSize
-                    // to the layout size and fades opacity. The zoom scale
-                    // arrives from `magick` a few frames into a switch, so a
-                    // sourceSize following it reloaded the picture mid-slide and
-                    // faded the cell towards transparent over black - the dark
-                    // blink. Decoding at the picture's own size instead also
-                    // keeps it in Qt's cache between visits, so a workspace
-                    // switched back to is ready on the first frame.
+                    // Not StyledImage, same reason as the outgoing cell above.
                     Image {
                         id: cellBImage
                         onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
@@ -451,13 +433,9 @@ Variants {
             }
         }
 
-        // The first frame of the desktop, and the last frame of the login.
-        // Hyprland clears to this exact colour for the seconds it takes the
-        // shell to load, and the greeter fades to it on a correct password, so
-        // the only thing that ever moves is the picture rising out of it - no
-        // black gap, no pop. Keep in step with misc:background_color in
-        // hypr/hyprland/colors.lua and transitionColor in the SDDM theme.conf;
-        // tests/test_login_handoff.sh holds the three together.
+        // Keep in step with misc:background_color in hypr/hyprland/colors.lua and
+        // transitionColor in the SDDM theme.conf; tests/test_login_handoff.sh holds the
+        // three together.
         Rectangle {
             anchors.fill: parent
             color: "#121318"

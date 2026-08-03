@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 # Packs the curated wallpaper library into the release tarball koompi-branding
-# consumes. The images deliberately live outside git (M0 decision 2026-07-23):
-# a tarball attached to a GitHub release keeps the repo small and the artifact
-# checksummed.
+# consumes. The images live outside git on purpose: a tarball on a GitHub release
+# keeps the repo small and the artifact checksummed.
 #
 # Usage:
 #   wallpapers/build-tarball.sh <source-dir> <version>
 #   wallpapers/build-tarball.sh ~/.config/koompi/wallpapers/library 1
 #
-# Then attach the tarball to a release tagged wallpapers-v<version> on
-# github.com/koompi/desktop and put the printed sha256 into
-# sdata/dist-arch/koompi-branding/PKGBUILD.
+# Then attach it to a release tagged wallpapers-v<version> on github.com/koompi/
+# desktop and put the printed sha256 into sdata/dist-arch/koompi-branding/PKGBUILD.
 #
-# Expected layout inside <source-dir> (see STYLE_GUIDE.md):
-#   desktop-abstract/*.jpg   universe/*.jpg   static/*.jpg
-# Every image should have a sidecar <name>.source.txt with origin + license.
+# Layout inside <source-dir> (see STYLE_GUIDE.md): desktop-abstract/*.jpg,
+# universe/*.jpg, static/*.jpg, each image with a <name>.source.txt sidecar.
 set -euo pipefail
 
 src="${1:?source dir required}"

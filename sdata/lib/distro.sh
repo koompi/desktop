@@ -1,10 +1,8 @@
 # shellcheck shell=bash
-# Sourced by ./setup. Maps /etc/os-release onto one of the OS groups that has a
-# sdata/dist-<group>/install-deps.sh.
-#
-# Supported groups: arch, fedora, debian (Ubuntu and its derivatives arrive here
-# through ID_LIKE). Anything else stops the dependency step rather than guessing
-# a package manager, because a wrong guess leaves a half-installed system.
+# Sourced by ./setup. Maps /etc/os-release onto one of the OS groups that has an
+# sdata/dist-<group>/install-deps.sh: arch, fedora, debian (Ubuntu and derivatives
+# arrive through ID_LIKE). Anything else stops the dependency step rather than
+# guessing a package manager.
 
 detect_distro() {
     local os_release=/etc/os-release

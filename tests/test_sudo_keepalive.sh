@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-# The reported failure: a password prompt appeared 78 seconds into a run, in the
-# middle of a makepkg install phase that --noconfirm had already taken the
-# terminal for, and the build died on "auth could not identify password".
-#
-# The keepalive is supposed to make that impossible. It could not be shown to be
-# working, because its only signal was thrown away:
-#   sudo -n -v 2>/dev/null || true
-# A recorded PID is not a running process, and a loop that swallows its own
-# errors is not a warm ticket. This asserts both, against a stubbed sudo.
+# Guards the keepalive's only failure mode: a password prompt mid-run, inside a
+# makepkg install phase --noconfirm has already taken the terminal for. It could not
+# be shown to be working, because `sudo -n -v 2>/dev/null || true` threw its signal
+# away - a recorded PID is not a running process and a loop that swallows its errors
+# is not a warm ticket. Asserts both against a stubbed sudo.
 #
 # No real sudo is invoked and no password is read: the stub is first on PATH.
 set -uo pipefail

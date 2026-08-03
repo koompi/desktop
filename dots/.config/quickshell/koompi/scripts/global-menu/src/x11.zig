@@ -1,9 +1,6 @@
-// XWayland window properties, read through xprop.
-//
-// Only XWayland windows need this, and only when the application publishes its
-// menu the GTK way (window properties) rather than through the registrar. The
-// parsing is kept separate from the process spawning so it can be tested
-// against captured xprop output.
+// XWayland window properties, read through xprop. Only needed when an application
+// publishes its menu the GTK way rather than through the registrar. Parsing is kept
+// out of the spawn so it can be tested against captured output.
 
 const std = @import("std");
 

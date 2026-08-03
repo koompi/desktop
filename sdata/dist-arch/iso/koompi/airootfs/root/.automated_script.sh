@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
-# KOOMPI OS — live-session autostart stub.  *** SKELETON ***
+# KOOMPI OS live-session autostart stub. SKELETON.
 #
-# Intent: on the live ISO this should launch the KOOMPI (Zig) installer so the
-# user boots straight into the guided install/live menu.
+# Does not run on its own: in archiso it executes only because root's ~/.zlogin
+# sources it on the first VT login, and that trigger is not shipped here (see
+# README.md). A no-op until the wiring and the koompi-installer binary exist.
 #
-# IMPORTANT: this file does NOT run on its own.  In archiso it executes only
-# because root's ~/.zlogin sources it on the first VT login.  That trigger is NOT
-# shipped in this skeleton (see README.md "What is stubbed").  Until the wiring
-# and the koompi-installer binary exist, this stays a no-op that just prints a
-# note.
-#
-# When complete, replace the body with something like:
-#   exec /usr/local/bin/koompi-installer
+# When complete the body becomes: exec /usr/local/bin/koompi-installer
 
 set -euo pipefail
 

@@ -1,23 +1,19 @@
 # shellcheck shell=bash
 # Sourced by ./setup. Copies dots/ into $HOME.
 #
-# Three classes of destination, deliberately handled differently:
-#   sync      - tree owned by this repo; rsync --delete so a file we removed
-#               upstream also leaves the user's copy (hypr/hyprland, quickshell)
-#   merge     - tree the user shares with us; copy in, never delete
-#   keep      - user override slots; written only when absent, never clobbered
+# Three classes of destination:
+#   sync   - tree owned by this repo; rsync --delete, so a file removed upstream
+#            also leaves the user's copy (hypr/hyprland, quickshell)
+#   merge  - tree shared with the user; copy in, never delete
+#   keep   - user override slots; written only when absent, never clobbered
 #
-# Everything written is appended to the manifest so `setup uninstall` removes
-# exactly what was added and nothing else.
+# Everything written is appended to the manifest, so `setup uninstall` removes
+# exactly what was added.
 
-# Files under dots/.config/hypr/custom are the documented place for personal
-# overrides. Shipping them is how the user learns they exist; overwriting them
-# on the next update would throw away their config. The terminal config is the
-# same kind of slot: KOOMPI has opinions worth shipping to someone who has none,
-# but a user who already configured their terminal would not thank us for
-# replacing it on every update. The EasyEffects db is state the app rewrites on
-# every quit, so we only ever seed it - writing it again would revert whatever
-# chain the user built and reset their device selection.
+# Override slots. Shipping them is how the user learns they exist; rewriting them on
+# the next update throws away their config. The EasyEffects db is state the app
+# rewrites on every quit, so it is seeded once - writing it again reverts whatever
+# chain the user built and resets their device selection.
 readonly KEEP_PATHS=(
     ".config/easyeffects/db/easyeffectsrc"
     ".config/hypr/custom/env.lua"
@@ -37,11 +33,9 @@ readonly SYNC_DIRS=(
     ".config/quickshell/koompi-quicklook"
 )
 
-# Older KOOMPI/II configs could persist both workspace flags as true. The bar's
-# number branch intentionally wins that conflict, so app icons disappear even
-# after an installer update ships the corrected default. Fix that legacy state
-# once, then leave the setting entirely user-owned: after the marker exists, a
-# user who deliberately enables numbers will never be second-guessed.
+# Older configs could persist both workspace flags as true, and the bar's number
+# branch wins that conflict, so app icons disappear even after a corrected default
+# ships. Fix the legacy state once, then leave the setting user-owned.
 migrate_workspace_app_icons() {
     local config="${XDG_CONFIG_HOME}/koompi/config.json"
     local marker="${KOOMPI_STATE_DIR}/migrations/workspace-app-icons-v1"
@@ -98,15 +92,12 @@ migrate_workspace_app_icons() {
     fi
 }
 
-# Copy aside every path in $HOME that this install is about to *change*.
-# Driven off the contents of dots/, so it can never miss a file we install and
-# never hoards files we do not touch.
+# Copy aside every path in $HOME this install is about to change. Driven off dots/,
+# so it can neither miss a file we install nor hoard files we do not touch.
 #
-# The comparison is what keeps re-running this cheap. Without it an update that
-# changes three files still copies the whole thousand-file tree into a fresh
-# timestamped directory, and a user who runs the installer a few times ends up
-# with several gigabytes of identical backups. A file that already matches what
-# we are about to write cannot be lost by writing it, so it needs no copy.
+# The comparison is what keeps re-running cheap: without it an update that changes
+# three files copies the whole tree into a fresh timestamped directory. A file that
+# already matches what we are about to write cannot be lost by writing it.
 backup_existing() {
     local backup_dir count=0 skipped=0 rel target source keep
     backup_dir="${BACKUP_ROOT}/$(date +%Y%m%d-%H%M%S)"
@@ -222,11 +213,9 @@ install_files() {
     ok "config files installed"
 }
 
-# The shipped session entries point at /usr/bin/koompi-session and
-# /usr/bin/koompi-otto-session, which is where the Arch package puts them. A
-# user-level install has no such file, so the Exec is rewritten to the copy
-# that actually exists. Display managers need an absolute path here; $HOME is
-# not expanded in a desktop entry's Exec.
+# The shipped entries point at /usr/bin/koompi-session, where the Arch package puts
+# it. A user-level install has no such file, so the Exec is rewritten to the copy
+# that exists. Absolute path required: $HOME is not expanded in a desktop entry.
 install_session_entry() {
     local launcher
     for launcher in koompi-session koompi-otto-session; do

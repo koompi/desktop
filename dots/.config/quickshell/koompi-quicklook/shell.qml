@@ -1,11 +1,3 @@
-// KOOMPI Quick Look - the preview surface behind `koompi-quicklook`.
-//
-// One layer-shell overlay that renders every previewable kind (image, video,
-// audio, text, fallback) in the same card, so a preview always looks and
-// behaves the same no matter what was selected. The launcher decides WHAT to
-// show (mime -> kind) and passes it in through the environment; this file only
-// decides how it looks.
-//
 // Env in: KOOMPI_QUICKLOOK_FILE, _KIND, _MIME, _NAME, _META, _WAVE, _SCREEN,
 //         _PAGEDIR, _PAGECOUNT
 
@@ -79,12 +71,6 @@ ShellRoot {
         WlrLayershell.namespace: "quickshell:quicklook"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-        // Card geometry. The preview occupies the same box a chat widget gets
-        // (see the Telegram/Discord scratchpad rules): full monitor minus the
-        // bar reserve, the 30px workspace gap and a 1px border. Media keeps its
-        // own aspect inside that box so a portrait clip is not letterboxed into
-        // a 16:9 slab; audio deliberately stays small - a waveform gains
-        // nothing from being a metre wide.
         readonly property real barInset: 40
         readonly property real gap: 31
         readonly property real maxW: width - gap * 2
@@ -112,11 +98,8 @@ ShellRoot {
         property bool armed: false
         Timer { interval: 250; running: true; onTriggered: win.armed = true }
 
-        // Driving the animation off a bound state rather than
-        // Component.onCompleted matters: onCompleted runs before the surface is
-        // mapped, so the open animation used to play against a window nobody
-        // could see yet and the preview appeared already settled. One frame of
-        // delay lets the first paint land, then the card animates for real.
+        // Not Component.onCompleted: that runs before the surface is mapped, so the open
+        // animation played against a window nobody could see yet.
         property bool shown: false
         property bool closing: false
         Timer { interval: 16; running: true; onTriggered: win.shown = true }
@@ -263,7 +246,6 @@ ShellRoot {
                 }
             }
 
-            // ---- Header ----
             Item {
                 id: header
                 anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -335,7 +317,6 @@ ShellRoot {
                 }
             }
 
-            // ---- Body ----
             Loader {
                 anchors { top: header.bottom; left: parent.left; right: parent.right; bottom: parent.bottom }
                 sourceComponent: {
@@ -377,7 +358,6 @@ ShellRoot {
             }
         }
 
-        // ---- Kind components ----
 
         Component {
             id: imageView
@@ -428,12 +408,7 @@ ShellRoot {
                             readonly property string pagePath: `file://${shell.pageDir}/page-${pageItem.index + 1}.png`
                             anchors.horizontalCenter: parent.horizontalCenter
                             width: Math.min(pageList.width - 24, 1100)
-                            // Height comes from the page's own aspect rather
-                            // than from paintedHeight, which would depend on
-                            // the delegate height this feeds and loop.
-                            // Before the file lands there is no aspect to go
-                            // on, so a full-height placeholder holds the scroll
-                            // position steady while later pages stream in.
+                            // paintedHeight would depend on the delegate height this feeds, and loop.
                             height: implicitWidth > 0 && implicitHeight > 0
                                 ? width * (implicitHeight / implicitWidth)
                                 : pageList.height

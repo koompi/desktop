@@ -60,11 +60,10 @@ run() {
     return 0
 }
 
-# run() from inside a directory, without the subshell that would swallow the
-# abort. `( cd d && run cmd )` looks equivalent and is not: run's abort path
-# calls die, die calls exit, and in a subshell that exit only ends the subshell.
-# The caller then reads a non-zero return it never checks and carries on
-# mutating the machine, which is exactly what "aborted" is supposed to prevent.
+# run() from inside a directory without the subshell that would swallow the abort.
+# `( cd d && run cmd )` is not equivalent: run aborts via die, die is exit, and in a
+# subshell that ends only the subshell. The caller then reads a status it never
+# checks and carries on mutating the machine.
 run_in_dir() {
     local dir="$1"; shift
     local prev="$PWD" rc=0
@@ -74,13 +73,10 @@ run_in_dir() {
     return "$rc"
 }
 
-# Stop processes by exact name, tolerating the ones that are not running.
-# `killall a b c` exits non-zero when *any* name matched nothing, even after it
-# killed the others, so putting it through run() turns "the daemon was already
-# stopped" into a retry/skip/abort prompt and then an abort. The familiar
-# `|| true` after run() does not save it either: run() calls die on abort, and
-# die exits before the || can be reached. One name at a time, asked about
-# first, so "not running" stays distinguishable from "could not kill".
+# `killall a b c` exits non-zero when ANY name matched nothing, even after killing
+# the others, so through run() "already stopped" becomes a retry/skip/abort prompt.
+# A trailing `|| true` does not save it either: run() calls die, and die exits before
+# the || is reached. One name at a time, asked about first.
 stop_processes() {
     local name
     for name in "$@"; do
@@ -92,11 +88,10 @@ stop_processes() {
     return 0
 }
 
-# How many KOOMPI shells are running. The obvious `pgrep -fc 'qs -c koompi'` is
-# the wrong tool: -f matches any process whose whole command line contains the
-# pattern, which includes the terminal, editor or agent that happens to have
-# the string on its own command line, and a -f based pkill will then kill them.
-# Match the binary exactly and read each candidate's own cmdline instead.
+# Not `pgrep -fc 'qs -c koompi'`: -f matches any process whose whole command line
+# contains the pattern, which includes the terminal, editor or agent that happens to
+# have the string on it - and an -f based pkill then kills them. Match the binary
+# exactly and read each candidate's own cmdline.
 count_shells() {
     local pid n=0
     while read -r pid; do
@@ -119,22 +114,15 @@ require_not_root() {
     [[ "$(id -u)" -ne 0 ]] || die "do not run this as root or with sudo; it installs into \$HOME and calls sudo itself where needed"
 }
 
-# One sudo prompt up front, kept warm for the length of the install so package
-# managers do not stall waiting for a password mid-download.
+# One sudo prompt up front, kept warm so package managers do not stall mid-download.
 #
-# The refresh must not give up on a single failure. A miss here is usually
-# transient - `pacman -Syu` replacing the sudo binary, or /run/sudo/ts being
-# recreated - and a loop that exits on it hands the rest of the install back to
-# a password prompt at every one of the thirty-odd sudo calls that follow, which
-# is exactly the behaviour this function exists to prevent. So keep looping, and
-# refresh well inside the shortest timestamp_timeout worth supporting.
+# The refresh must not give up on a single failure: a miss is usually transient
+# (pacman replacing the sudo binary, /run/sudo/ts recreated) and a loop that exits
+# hands the rest of the install back to a prompt at every sudo call that follows.
+# Refresh well inside the shortest timestamp_timeout worth supporting.
 #
-# A recorded PID is not evidence of a running keepalive, and the loop swallowing
-# its own errors is not evidence that the ticket is warm. A build that takes
-# forty minutes will happily run to the point where it needs root and only then
-# discover neither is true, which puts a password prompt in the middle of a
-# `makepkg` install phase. So the liveness of the process and the validity of
-# the ticket are both checked, at boundaries we choose, by sudo_refresh.
+# A recorded PID is not a running keepalive and a loop swallowing its own errors is
+# not a warm ticket, so sudo_refresh checks both at boundaries we choose.
 SUDO_KEEPALIVE_PID=''
 SUDO_KEEPALIVE_INTERVAL="${SUDO_KEEPALIVE_INTERVAL:-30}"
 
@@ -212,15 +200,12 @@ record_repo_path() {
     printf '%s\n' "$REPO_ROOT" > "$REPO_PATH_FILE"
 }
 
-# Pick up new config in the running session. Reloading Hyprland is cheap and
-# safe; the shell has to be restarted outright because Quickshell does not
-# reliably hot-reload a changed tree.
+# Reloading Hyprland is cheap; the shell is restarted outright because Quickshell
+# does not reliably hot-reload a changed tree.
 #
-# The QT_QPA_PLATFORM override matters: hyprland/env.lua puts the session on xcb
-# so the global menu works, and a Quickshell that inherits that maps no layer
-# surfaces at all - the bar and sidebars come back invisible. Same reasoning as
-# the CTRL+SUPER+R bind in hyprland/keybinds.lua, which is why they are written
-# the same way.
+# The QT_QPA_PLATFORM override matters: hyprland/env.lua puts the session on xcb so
+# the global menu works, and a Quickshell that inherits it maps no layer surfaces at
+# all. Same reasoning as the CTRL+SUPER+R bind in hyprland/keybinds.lua.
 reload_session() {
     have hyprctl || return 0
     [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || {

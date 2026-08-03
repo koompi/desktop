@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-# The Otto bar came up light on a dark desktop twice, for two unrelated reasons,
-# and neither was visible in the portal config itself:
+# Two config-shaped ways the Otto bar came up light on a dark desktop, neither
+# visible in the portal config itself:
+#   1. every bare key in config.toml sat below [[exec_once]], so theme_scheme became
+#      a field of the last entry and the compositor never saw it.
+#   2. XDG_DESKTOP_PORTAL_DIR REPLACES the portal search path, so a whitelist made
+#      otto.portal invisible and xdg-desktop-portal answered from gtk, which reports
+#      light.
 #
-#   1. TOML scoping. Every bare key in config.toml sat below [[exec_once]], so
-#      theme_scheme became a field of the last exec_once entry and the
-#      compositor never saw it.
-#   2. XDG_DESKTOP_PORTAL_DIR *replaces* the portal search path rather than
-#      adding to it, so a five-file whitelist made otto.portal invisible and
-#      xdg-desktop-portal silently answered from gtk, which reports light.
-#
-# Both are config-shaped and both survive every build. This asserts on what the
-# repository ships; whether the running session agrees is a live check:
+# Asserts on what the repository ships. Whether the running session agrees is a live
+# check:
 #   busctl --user call org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop \
 #          org.freedesktop.portal.Settings ReadAll as 1 org.freedesktop.appearance
 # An answer carrying icon-theme came from otto; one carrying contrast came from gtk.

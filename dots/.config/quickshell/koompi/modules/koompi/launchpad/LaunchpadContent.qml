@@ -134,13 +134,8 @@ FocusScope {
         anchors.fill: parent
         color: Qt.rgba(Appearance.m3colors.m3background.r, Appearance.m3colors.m3background.g, Appearance.m3colors.m3background.b, 0.62)
 
-        // The backdrop carries the wheel rather than a WheelHandler, because a
-        // WheelHandler filters on a single `orientation` and throws away any
-        // event with no delta along it. The default is vertical, so a two-finger
-        // swipe straight across the pad - the whole point of the gesture - was
-        // dropped before it ever reached us, and only a swipe with enough
-        // up-and-down in it to register on the other axis got through. A
-        // MouseArea takes both axes, and the scroll phases along with them.
+        // MouseArea, not WheelHandler: that filters on a single `orientation` and drops any
+        // event with no delta along it, which is every straight-across two-finger swipe.
         MouseArea {
             anchors.fill: parent
             onClicked: root.close()
@@ -161,12 +156,9 @@ FocusScope {
         onTriggered: root.notchAccum = 0
     }
 
-    // A touchpad and a mouse wheel want opposite things from the same event, so
-    // they are told apart and handled separately. The scroll phase is what tells
-    // them apart: Wayland tags a touchpad's stream with one and a mouse wheel's
-    // with none. That beats looking for a pixel delta, because the event that
-    // reports the fingers lifting carries a phase and no delta at all - reading
-    // it as a wheel was why a swipe had to time out before it settled.
+    // Scroll phase tells a touchpad from a wheel: Wayland tags a pad's stream with one
+    // and a wheel's with none. Beats checking the delta - the finger-lift event carries
+    // a phase and no delta at all.
     function handleScroll(event) {
         if (event.phase === Qt.NoScrollPhase) {
             const notch = event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y;
@@ -312,12 +304,8 @@ FocusScope {
             }
         }
 
-        // A plain strip of pages rather than a ListView. A horizontal ListView
-        // drops vertical wheel events outright, and StrictlyEnforceRange - the
-        // only thing that makes it snap to whole pages - re-snaps the instant
-        // contentX is written by hand, so the view cannot be made to follow a
-        // gesture. Owning the offset directly is what allows the page to track
-        // the fingers and settle where they leave it.
+        // Not a ListView: a horizontal one drops vertical wheel events, and
+        // StrictlyEnforceRange re-snaps the instant contentX is written by hand.
         Item {
             id: pager
             anchors {
@@ -347,12 +335,9 @@ FocusScope {
             readonly property real maxX: 0
             readonly property real minX: -(root.pageCount - 1) * width
 
-            // The pad hands us about 7.5px of scroll for every millimetre of
-            // finger, measured, once its own scroll_factor has been applied. A
-            // page is most of a screen wide, so tracking that one-to-one would
-            // want a swipe several times longer than the pad. At this gain a
-            // full page is about 75mm of travel and a page turn about 17mm.
-            // This is the number to change if paging feels heavy or twitchy.
+            // The pad gives ~7.5px per mm of finger, measured, after its own scroll_factor. At
+            // this gain a page is ~75mm of travel and a page turn ~17mm. Change this if paging
+            // feels heavy or twitchy.
             readonly property real swipeGain: 3.2
             // How far past the ends a gesture can pull, and how hard it resists.
             readonly property real rubberBand: 0.32
@@ -442,12 +427,9 @@ FocusScope {
                 goTo(target, true);
             }
 
-            // Click-drag and touchscreen swipe, on the same machinery. Scoped to
-            // the grid rather than the whole overlay so it cannot swallow a
-            // drag-select in the search field. A tile's MouseArea grabs first,
-            // but a DragHandler is allowed to take a grab off an Item once it
-            // passes the threshold, which is how a swipe that starts on an icon
-            // still pages instead of launching it.
+            // Scoped to the grid so it cannot swallow a drag-select in the search field. A
+            // DragHandler may take a grab off a tile's MouseArea past the threshold, which is
+            // how a swipe starting on an icon pages instead of launching it.
             DragHandler {
                 id: swipeDrag
                 target: null

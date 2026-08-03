@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
-# Single apply step for every random wallpaper source.
-#
-# With workspace wallpapers on, a picked image lands on the ACTIVE workspace only
-# and the theme is left alone: matugen colors are global, so regenerating them
-# would leak one workspace's wallpaper into every other workspace's UI. With the
-# feature off, this is the old behavior, global wallpaper plus theme regen.
+# With workspace wallpapers on the theme is left alone: matugen colors are global,
+# so regenerating them leaks one workspace's wallpaper into every other's UI.
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -140,16 +140,12 @@ setup_services() {
     fi
 }
 
-# Two pieces of hand-made portal state on older KOOMPI boxes, both of which now
-# come from a package or from dots/, and both of which break a session if left.
-#
-# XDG_DESKTOP_PORTAL_DIR does not add a directory, it *replaces* every other
-# one, so the five-file whitelist it pointed at made every portal backend
-# outside that directory invisible - which is how the Otto session lost its
-# Settings backend, fell back to gtk, and rendered a light bar on a dark
-# desktop. xdg-desktop-portal has searched ~/.local/share/xdg-desktop-portal
-# /portals since 1.19, so koompi.portal now ships there through dots/ and the
-# override has nothing left to do.
+# XDG_DESKTOP_PORTAL_DIR does not add a directory, it REPLACES every other one, so
+# the old five-file whitelist made every backend outside it invisible - which is how
+# the Otto session lost its Settings backend, fell back to gtk and rendered a light
+# bar on a dark desktop. xdg-desktop-portal has searched
+# ~/.local/share/xdg-desktop-portal/portals since 1.19, so koompi.portal ships there
+# through dots/ and the override has nothing left to do.
 setup_portals() {
     step "Desktop portals"
     have systemctl || { warn "no systemd; skipping portal cleanup"; return 0; }
@@ -188,14 +184,11 @@ setup_portals() {
 readonly KOOMPI_CURSOR_THEME='Bibata-Modern-Classic'
 readonly KOOMPI_CURSOR_SIZE=24
 
-# The cursor of last resort. An X11 client that asks for no theme in particular,
-# and any toolkit that misses the gsettings key, follows the `default` icon
-# theme: ~/.icons/default first, then /usr/share/icons/default. The system copy
-# is owned by the `default-cursors` package and inherits Adwaita, so on a stock
-# Arch machine every explicit setting says Bibata while the fallback says
-# Adwaita, and the session ends up showing two different pointers depending on
-# which window is under the mouse. Writing the user-level copy fixes that
-# without fighting pacman over a packaged file.
+# The cursor of last resort. An X11 client that names no theme follows the `default`
+# icon theme: ~/.icons/default, then /usr/share/icons/default. The system copy is
+# owned by default-cursors and inherits Adwaita, so on stock Arch every explicit
+# setting says Bibata while the fallback says Adwaita and the session shows two
+# pointers. The user-level copy fixes it without fighting pacman over a packaged file.
 setup_cursor_default() {
     local theme_dir="$HOME/.icons/default"
     local index="$theme_dir/index.theme"

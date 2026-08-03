@@ -1,16 +1,11 @@
 # shellcheck shell=bash
-# Shared Arch helpers. Sourced by both sdata/dist-arch/install-deps.sh and
-# sdata/dist-arch/install-apps.sh, which is the whole reason this file exists:
-# the recipes have top-level statements and run their work on being sourced, so
-# one cannot source the other just to borrow a function.
-#
-# Nothing here has a side effect at source time.
+# Shared Arch helpers, sourced by both dist-arch recipes - which is why this file
+# exists: the recipes run their work on being sourced, so one cannot source the
+# other to borrow a function. Nothing here has a side effect at source time.
 
-# Print only candidate package names that are literally present in pacman's
-# installed-name list. A targeted `pacman -Qq <name>` is not an exact-name
-# check: it also resolves `provides=`, so asking for `quickshell-git` can succeed
-# and print `illogical-impulse-quickshell-git`. Passing the queried alias to
-# `pacman -R` then fails with "target not found".
+# A targeted `pacman -Qq <name>` is not an exact-name check: it resolves provides=,
+# so asking for `quickshell-git` can print `illogical-impulse-quickshell-git`, and
+# passing that alias to `pacman -R` fails with "target not found".
 arch_exact_installed_packages() {
     local installed candidate
     installed="$(pacman -Qq)" || return 1
@@ -34,11 +29,9 @@ arch_install_yay() {
     rm -rf "$build"
 }
 
-# Read pkgname and the full pkgver-pkgrel out of a PKGBUILD without leaking the
-# variables into the caller. None of the koompi-* metas has a pkgver() function
-# - the -git ones pin a _commit and bump pkgrel by hand - so what is written in
-# the file is exactly what a build would produce, and comparing against it is a
-# sound answer to "is this already installed?".
+# Read pkgname and pkgver-pkgrel out of a PKGBUILD without leaking the variables into
+# the caller. No koompi-* meta has a pkgver() - the -git ones pin a _commit and bump
+# pkgrel by hand - so the file says exactly what a build would produce.
 arch_pkgbuild_meta() {
     (
         # shellcheck source=/dev/null
@@ -126,22 +119,17 @@ arch_install_pkgbuild() {
         run yay -S --needed --noconfirm --asdeps "${wanted[@]}"
     fi
 
-    # What this build will produce, asked before it runs. With `debug` in
-    # /etc/makepkg.conf - the Arch default - every one of these metas also
-    # yields a `-debug` split package, and that sibling is a package like any
-    # other: it can conflict with a predecessor's -debug and it has to be
-    # installed alongside its parent.
+    # With `debug` in /etc/makepkg.conf, the Arch default, every meta also yields a
+    # -debug split package. That sibling is a package like any other: it can conflict
+    # with a predecessor's -debug and has to be installed alongside its parent.
     local -a produced=()
     mapfile -t produced < <(cd -- "$dir" && makepkg --packagelist 2>/dev/null)
     (( ${#produced[@]} )) || { err "cannot read the package list for $1"; return 1; }
 
-    # -A ignore the arch field, -f rebuild, -s pull build deps. -i is gone on
-    # purpose. makepkg -i sudoes from inside the build, so the password prompt
-    # lands in the middle of a job that --noconfirm has already taken the
-    # terminal for, and a failed install there is only a `WARNING: Failed to
-    # install built package(s)` on an exit status of 0. Installing from here
-    # instead means sudo is refreshed at a step boundary and a file conflict is
-    # a failure the caller can see.
+    # -A ignore arch, -f rebuild, -s pull build deps. No -i on purpose: makepkg -i sudoes
+    # from inside the build, so the prompt lands mid-job with --noconfirm holding the
+    # terminal, and a failed install there is only a WARNING on exit status 0. Installing
+    # from here refreshes sudo at a step boundary and makes a file conflict visible.
     run_in_dir "$dir" makepkg -Afs --noconfirm || return 1
 
     if [[ "$DRY_RUN" == true ]]; then

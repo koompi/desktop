@@ -1,16 +1,10 @@
 #!/usr/bin/env bash
-# The reported failure, at the very end of an otherwise clean update:
-#   $ killall -w -q global-menu-daemon qs quickshell
-#   xx command failed: killall -w -q global-menu-daemon qs quickshell
-#   [r]etry / [s]kip / [a]bort (default abort): xx aborted
+# Guards: a reload must not abort on a daemon that was not running. killall exits
+# non-zero when ANY name matched nothing, and the `|| true` after it was dead code -
+# run() calls die on abort and die exits before || is reached.
 #
-# killall exits non-zero when *any* name matched nothing, even after killing the
-# rest, and on a session where the global menu daemon is not running that is
-# every time. The `|| true` on the end was dead code: run() calls die on abort,
-# and die exits before || is reached.
-#
-# Nothing real is stopped or started here - killall, pgrep, hyprctl and setsid
-# are all shadowed, and the session's own shell is never in the stub's answers.
+# killall, pgrep, hyprctl and setsid are shadowed; the session's own shell is never
+# in the stub's answers.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

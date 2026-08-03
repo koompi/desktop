@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# The two pieces of the new Search providers that are logic rather than wiring:
-# the recently-used.xbel parser in FileSearch.qml, and the settings page
-# argument derived from a component filename in SettingsPages.qml.
+# The two pieces of Search that are logic rather than wiring: the recently-used.xbel
+# parser in FileSearch.qml and the settings page argument derived from a component
+# filename in SettingsPages.qml.
 #
-# Both are plain JavaScript inside QML, so the functions are lifted out of the
-# real source and run as-is. Nothing is duplicated here: if the QML changes, the
-# test runs the changed code. Nothing is launched, and the user's own
-# recently-used.xbel is never read - the parser is fed a fixture.
+# Both are plain JavaScript lifted out of the real source and run as-is, so a change
+# to the QML is a change to what this runs. The parser is fed a fixture, never the
+# user's own recently-used.xbel.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -135,16 +135,9 @@ Scope {
         }
     }
 
-    // Wallpaper
-    // The lock owns no wallpaper. Each surface shows whatever its workspace was
-    // already showing, blurred, so locking reads as a frosted pane over the
-    // desktop rather than as a different machine. Workspaces carry their own
-    // wallpapers, so this is per screen and cannot be one shared path.
-    //
-    // It has to be a snapshot rather than a live binding: the koompi lock moves
-    // every monitor to an out-of-range workspace while it is up, and asking
-    // after that returns the inherited wallpaper instead of the one that was on
-    // screen. captureWallpapers() runs before anything moves.
+    // Snapshot, not a live binding: the lock moves every monitor to an out-of-range
+    // workspace, after which the query returns the inherited wallpaper. Per screen,
+    // because workspaces carry their own.
     property var screenWallpapers: ({})
 
     function clearCapturedWallpapers() {
@@ -275,11 +268,7 @@ Scope {
         configDirectory: "pam"
         config: "fprintd.conf"
 
-        // fprintd narrates the scan through PAM messages. The text is only
-        // classified into a state, never displayed or logged, so nothing the
-        // reader says can leak through verbatim. "Place your finger on the
-        // fingerprint reader" is the idle prompt; anything else it says mid-run
-        // means it is working on a sample.
+        // fprintd text is classified into a state, never displayed or logged.
         onPamMessage: {
             const prompt = (this.message ?? "").toLowerCase();
             const isIdlePrompt = prompt.includes("place") || prompt.includes("swipe");

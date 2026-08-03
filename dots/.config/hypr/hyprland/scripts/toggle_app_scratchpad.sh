@@ -1,17 +1,9 @@
 #!/usr/bin/env bash
-# Toggle an app as a scratchpad "chat widget" on its own special workspace.
-#
-# Placement (which special workspace + float/size/center) is owned by the window
-# rules in hyprland/rules.lua, matched by window class. This script only owns
-# "launch it if it isn't running yet" and "show/hide the scratchpad". First press
-# launches the app (the rule drops it on the hidden special workspace) then reveals
-# it; every later press just shows/hides it.
-#
 # Usage: toggle_app_scratchpad.sh <special-name> <class-regex> <launch-cmd...>
+# Placement is owned by the window rules in hyprland/rules.lua.
 #
-# NOTE: this DE drives Hyprland through the Lua plugin, which evaluates
-# `hyprctl dispatch <arg>` as Lua (return hl.dispatch(<arg>)). Dispatches must
-# therefore be written in the plugin's hl.dsp.* form, not native dispatcher syntax.
+# This DE drives Hyprland through the Lua plugin, which evaluates `hyprctl dispatch
+# <arg>` as Lua. Dispatches must be written in hl.dsp.* form, not native syntax.
 special="$1"
 classre="$2"
 shift 2

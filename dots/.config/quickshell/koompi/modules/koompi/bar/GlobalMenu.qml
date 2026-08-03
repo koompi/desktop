@@ -158,7 +158,6 @@ Item {
         return root.menuItems.length;
     }
 
-    // ── Focus chain ───────────────────────────────────────────────────────────
 
     /// Every window in the open chain, the top-level popup and each nested
     /// submenu. The grab has to cover all of them, or clicking a submenu reads
@@ -341,12 +340,8 @@ Item {
         signal toggle
         signal hoverSwitch
 
-        // A menu title is a small target. The hit region is a full bar-height
-        // square at minimum; the highlight below stays text-sized so the bar
-        // still reads as a menubar rather than a toolbar.
-        // Sized off the bold open state at all times: measuring the live label
-        // instead would widen the title the moment its menu opens and shove
-        // every title after it sideways, under the pointer that just clicked.
+        // Sized off the bold open state at all times: measuring the live label widens the
+        // title the moment its menu opens and shoves the rest sideways under the pointer.
         implicitWidth: Math.max(Appearance.sizes.baseBarHeight, boldLabel.implicitWidth + 20)
         implicitHeight: Math.max(Appearance.sizes.baseBarHeight, root.height)
 

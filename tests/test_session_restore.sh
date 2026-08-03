@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# The one path in SessionRestore.qml that has to be right before anyone can log
-# in: deciding whether a saved session is safe to replay. It runs at login, so a
-# state file truncated by a crash or written by another version must be
-# discarded, never half-applied.
+# The one path in SessionRestore.qml that has to be right before anyone can log in:
+# whether a saved session is safe to replay. It runs at login, so a state file
+# truncated by a crash or written by another version must be discarded, never half
+# applied.
 #
-# The functions are lifted out of the real QML and run as-is, so this exercises
-# the source rather than a copy. Nothing is launched and no session file is
-# read: every input is a fixture.
+# Functions are lifted out of the real QML and run as-is. Every input is a fixture.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,7 +49,6 @@ function check(what, ok) {
     if (!ok) { console.error(`  xx ${what}`); failures++; }
 }
 
-// --- discarded ----------------------------------------------------------
 const good = JSON.stringify({
     version: 1,
     workspace: 3,
@@ -105,7 +102,6 @@ for (const [name, text] of Object.entries(rejected)) {
     check(`${name} was replayed instead of discarded`, result === null);
 }
 
-// --- replayed -----------------------------------------------------------
 const parsed = root.parseState(good);
 check("a well-formed session was discarded", parsed !== null);
 check("the focused workspace was lost", parsed?.workspace === 3);
@@ -121,7 +117,6 @@ const edges = root.parseState(JSON.stringify({
 }));
 check("workspaces 1 and 100 were rejected", edges !== null);
 
-// --- what the writer produces is what the reader accepts ----------------
 HyprlandData.windowList = [
     { class: "kitty", workspace: { id: 2 } },
     { class: "org.kde.dolphin", workspace: { id: 5 } },

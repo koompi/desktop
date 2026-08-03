@@ -37,13 +37,9 @@ Scope { // Scope
         GlobalStates.cheatsheetOpen = !GlobalStates.cheatsheetOpen;
     }
 
-    // One persistent window gated on the flag, rather than a Loader that builds a
-    // new one per open. Keyboard focus used to be commented out here because
-    // requesting it made the panel slow to appear, and the price was Escape and
-    // the Ctrl+Tab page keys below: their handler sat on an item that could never
-    // receive a key event, because the surface itself never took focus. A window
-    // that already exists is not mapped at open time, so the request is no longer
-    // on that path.
+    // Persistent window, not a Loader: requesting keyboard focus made a per-open panel
+    // slow to appear, and without it Escape and the page keys had no surface to reach.
+    // A window that already exists is not mapped at open time.
     PanelWindow { // Window
         id: cheatsheetRoot
         visible: GlobalStates.cheatsheetOpen

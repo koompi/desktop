@@ -73,18 +73,12 @@ ContentPage {
                     id: wallpaperPreview
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectCrop
-                    // The wallpaper of the workspace being looked at, not the
-                    // global one. With per-workspace wallpapers on, a pick lands
-                    // on the current workspace and the global path never moves,
-                    // so this showed an image nothing was displaying and never
-                    // changed however many wallpapers were applied.
+                    // Per workspace, not the global path: with per-workspace wallpapers on, a pick never
+                    // moves the global one.
                     readonly property string path: Wallpapers.forWorkspace(Hyprland.focusedMonitor?.activeWorkspace?.id ?? 1)
-                    // A re-roll writes each workspace's wallpaper to a fixed
-                    // filename, so the file changes while the path does not, and
-                    // an unchanged source is never re-read whatever `cache` says.
-                    // The counter rides in the URL fragment: Qt keys its pixmaps
-                    // on the whole URL and drops the fragment when it opens the
-                    // file. `retainWhileLoading` holds the old frame meanwhile.
+                    // A re-roll writes the same filename, so the file changes while the path does not
+                    // and an unchanged source is never re-read. The counter rides in the URL fragment:
+                    // Qt keys pixmaps on the whole URL and drops the fragment when it opens the file.
                     property int reloads: 0
                     source: path.length > 0 ? `${Qt.resolvedUrl(path)}#${reloads}` : ""
                     cache: false
@@ -286,12 +280,7 @@ ContentPage {
                             icon: "page_header",
                             value: 1
                         }
-                        // Rect (value 2) hidden: too easy to mis-click and flattens the bar
-                        // {
-                        //     displayName: Translation.tr("Rect"),
-                        //     icon: "toolbar",
-                        //     value: 2
-                        // }
+                        // Rect (value 2) hidden: too easy to mis-click, and it flattens the bar.
                     ]
                 }
             }

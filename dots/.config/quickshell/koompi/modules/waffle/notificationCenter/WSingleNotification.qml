@@ -122,15 +122,6 @@ MouseArea {
                     }
                     BodyText {
                         Layout.leftMargin: imageLoader.active ? imageLoader.width + actualContent.spacing : 0
-                        // onLineLaidOut: (line) => {
-                        //     if (!imageLoader.active) return;
-                        //     const dodgeDistance = imageLoader.width + actualContent.spacing;
-                        //     // print(line.y, dodgeDistance)
-                        //     if (summaryText.height + line.y > dodgeDistance) {
-                        //         line.x -= dodgeDistance;
-                        //         line.width += dodgeDistance;
-                        //     }
-                        // }
                     }
                 }
             }

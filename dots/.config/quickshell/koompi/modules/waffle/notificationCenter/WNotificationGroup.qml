@@ -125,12 +125,6 @@ MouseArea {
                 text: root.notificationGroup?.appName ?? ""
             }
 
-            // NotificationHeaderButton { // TODO: More notification functionality needed so we can have this button
-            //     visible: headerMouseArea.containsMouse
-            //     Layout.leftMargin: 25
-            //     Layout.rightMargin: 25
-            //     icon.name: "more-horizontal"
-            // }
 
             NotificationHeaderButton {
                 visible: headerMouseArea.containsMouse

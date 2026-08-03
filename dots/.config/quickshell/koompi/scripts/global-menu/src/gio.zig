@@ -1,11 +1,6 @@
-// Hand-written bindings for the slice of GLib/GDBus the daemon uses.
-//
-// @cImport cannot digest glib's headers: translate-c chokes on the _Pragma
-// inside G_DECLARE_*_TYPE and on the autoptr cleanup macros. The surface we
-// need is about thirty stable functions, so we declare them instead. Typed
-// GVariant constructors are used everywhere in preference to the varargs
-// g_variant_new(), which would put format-string parsing between us and the
-// ABI.
+// Hand-written bindings: @cImport chokes on the _Pragma inside G_DECLARE_*_TYPE and
+// on the autoptr cleanup macros. Typed GVariant constructors everywhere, never the
+// varargs g_variant_new().
 
 const std = @import("std");
 
@@ -180,7 +175,6 @@ pub extern fn g_unix_fd_add_full(
 ) c_uint;
 pub extern fn g_timeout_add(interval_ms: c_uint, function: *const fn (?*anyopaque) callconv(.c) c_int, data: ?*anyopaque) c_uint;
 
-// ── Thin Zig-side helpers ─────────────────────────────────────────────────────
 
 /// Type string of a variant, as a Zig slice.
 pub fn typeString(v: *Variant) []const u8 {

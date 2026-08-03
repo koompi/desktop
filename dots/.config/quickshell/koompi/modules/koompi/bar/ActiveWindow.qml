@@ -14,11 +14,9 @@ Item { // Faux global menu: bold app name + window title
     readonly property bool menuOpen: globalMenu.menuOpen || actionsMenu.menuOpen
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
     readonly property var activeWindow: HyprlandData.activeWindow
-    // Which output holds the keyboard, asked of Hyprland rather than inferred
-    // from where the focused window sits. The window's monitor arrives through
-    // polled hyprctl and lags, and it keeps naming the old output when focus
-    // moves to a monitor with no windows on it, which left both bars claiming
-    // the same one. Same source Workspaces.qml already reads.
+    // Asked of Hyprland, not inferred from the focused window: that monitor arrives
+    // through polled hyprctl, lags, and keeps naming the old output when focus moves
+    // to a monitor with no windows on it.
     readonly property bool focusingThisMonitor: Hyprland.focusedMonitor?.id === root.monitor?.id
     property var biggestWindow: HyprlandData.biggestWindowForWorkspace(HyprlandData.monitors[root.monitor?.id]?.activeWorkspace.id)
 
@@ -130,11 +128,8 @@ Item { // Faux global menu: bold app name + window title
 
                 ColumnLayout { // App name stacked over window title, as one bounded block
                     id: identityColumn
-                    // A nested layout stretches by default, so this block took the whole
-                    // cap however short the app name was and pushed the menu a third of
-                    // the screen to the right, up against the centered workspaces. Opting
-                    // out of the stretch is what makes the preferred width below the
-                    // width it actually gets.
+                    // A nested layout stretches by default and took the whole cap however short the app
+                    // name was. Opting out is what makes the preferred width below the width it gets.
                     Layout.fillWidth: false
                     // Wide enough for the text, never wider than the cap. Without an
                     // explicit floor the column inherits a minimum width from its text

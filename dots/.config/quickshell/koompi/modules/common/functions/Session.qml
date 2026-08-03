@@ -27,12 +27,8 @@ Singleton {
     }
 
     function logout() {
-        // `pkill -i Hyprland` is unscoped: it matches every compositor this user
-        // owns, so a shell left over from an earlier session takes down the live
-        // one. It also only killed the compositor, leaving the rest of the
-        // session's processes in a scope logind then waits on indefinitely
-        // (KillUserProcesses=no) - two sessions leaked that way for hours.
-        // logind ends exactly the calling session, and SIGTERMs its scope.
+        // Not `pkill -i Hyprland`: unscoped across this user's compositors, and it leaves
+        // the rest of the session in a scope logind then waits on indefinitely.
         Quickshell.execDetached(["bash", "-c",
             'loginctl terminate-session "$XDG_SESSION_ID" || hyprctl dispatch exit']);
     }

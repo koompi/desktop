@@ -26,10 +26,9 @@ handle_qt_app_colors() {
     local icon_theme="breeze-plus"
     [[ "$mode_flag" == "dark" ]] && icon_theme="breeze-plus-dark"
 
-    # matugen rendered both Qt palettes (config.toml templates.kde_scheme and
-    # templates.qt6ct_scheme). Plain Qt apps read the qt6ct palette via
-    # QT_QPA_PLATFORMTHEME=qt6ct; KDE apps (dolphin, kdialog) read kdeglobals
-    # directly, so merge the scheme there ourselves. No KDE tool in the path.
+    # KDE apps read kdeglobals directly and no KDE tool is in the path, so merge the
+    # matugen scheme there ourselves. Plain Qt apps get the qt6ct one via
+    # QT_QPA_PLATFORMTHEME.
     # ponytail: neither side hot-reloads running apps, colors land on next
     # launch. plasma-integration did live recolor; accepted trade of the unwind.
     python3 "$SCRIPT_DIR/apply_kdeglobals.py" \

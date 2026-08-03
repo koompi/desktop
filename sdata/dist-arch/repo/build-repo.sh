@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # Skeleton. Bodies touching real keys and publish targets are still TODO.
 #
-# SigLevel=Required verifies packages and database separately. repo-add --sign
-# signs only the DB, so packages need makepkg --sign too or pacman rejects the lot.
+# SigLevel=Required verifies packages and database separately. repo-add --sign signs
+# only the DB, so packages need makepkg --sign too or pacman rejects the lot.
 #
 # Clean-chroot builds have no ../../../dots, so the *-config PKGBUILDs must switch
 # source to a pinned git tag first. See their BUILD NOTE headers.
 set -euo pipefail
 
-# ── Configuration ────────────────────────────────────────────────────────────
 REPO_NAME="koompi"                                  # pacman repo / DB name
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_ARCH="$(cd "$HERE/.." && pwd)"                 # sdata/dist-arch
@@ -27,30 +26,21 @@ GPG_KEY_ID="${GPG_KEY_ID:-TODO_KOOMPI_SIGNING_KEY_ID}"
 #               or a mirror host (https://repo.koompi.org/$REPO_NAME/os/x86_64).
 PUBLISH_URL="${PUBLISH_URL:-TODO_PUBLISH_BASE_URL}"
 
-# ── 1. Build every koompi-*/PKGBUILD into $OUTDIR ────────────────────────────
 build_packages() {
   echo ">> Building every sdata/dist-arch/koompi-*/PKGBUILD into $OUTDIR"
   install -dm755 "$OUTDIR"
 
-  # NOTE: a naive `for d in koompi-*; do makepkg; done` ABORTS, because the meta
-  # packages (koompi-base, koompi-desktop-hyprland, koompi-desktop-kde, ...) have
-  # depends= on other koompi-* packages that are not in any repo yet, so
-  # makepkg's dependency check fails before it can build them.
-  #
-  # Two correct strategies:
-  #   (a) build-only with --nodeps (-d): we only need the .pkg.tar.zst artifact
-  #       here; resolution happens at install time on the client. Used below.
-  #   (b) PRODUCTION (clean-chroot): build in dependency order and `repo-add` each
-  #       result into a local [koompi] before building the metas that need it, so
-  #       the chroot can actually resolve and install them. Prefer this for CI.
-  #
-  # makepkg also REFUSES to run as root. Run this as a normal user (the CI
-  # workflow creates a dedicated build user for exactly this reason).
+  # A naive `for d in koompi-*; do makepkg; done` aborts: the metas depend on other
+  # koompi-* packages that are in no repo yet, so makepkg's dependency check fails
+  # first. Build-only with --nodeps (-d) below, since only the artifact is wanted here.
+  # For CI prefer a clean chroot: build in dependency order and repo-add each result
+  # into a local [koompi] before the metas that need it.
+  # makepkg also refuses to run as root - the CI workflow makes a build user.
   for pkgdir in "$DIST_ARCH"/koompi-*/; do
     [[ -f "$pkgdir/PKGBUILD" ]] || continue
     echo "   - $(basename "$pkgdir")"
     # --nodeps   : skeleton builds the artifact only (strategy a above)
-    # --nobuild? : no — we want the package; --syncdeps is intentionally omitted
+    # --nobuild? : no - we want the package; --syncdeps is intentionally omitted
     # PKGDEST    : collect all artifacts in one place for signing + repo-add
     (
       cd "$pkgdir"
@@ -62,7 +52,6 @@ build_packages() {
   done
 }
 
-# ── 2. GPG-sign EACH built package ───────────────────────────────────────────
 sign_packages() {
   echo ">> Detach-signing every package with key: $GPG_KEY_ID"
   # Each package needs its own detached .sig so SigLevel=Required accepts it.
@@ -76,17 +65,15 @@ sign_packages() {
   shopt -u nullglob
 }
 
-# ── 3. Build the signed repo database ────────────────────────────────────────
 build_db() {
   echo ">> repo-add: assembling signed $REPO_NAME database"
-  # --sign         : sign the DB itself (koompi.db.tar.gz.sig) — DB only, see top.
+  # --sign         : sign the DB itself (koompi.db.tar.gz.sig) - DB only, see top.
   # --key          : which key signs the DB.
   # --verify       : verify existing package signatures while adding.
   # repo-add follows the symlink koompi.db -> koompi.db.tar.gz automatically.
   repo-add --sign --verify --key "$GPG_KEY_ID" "$DBPATH" "$OUTDIR"/*.pkg.tar.zst
 }
 
-# ── 4. Print the pacman.conf snippet to publish ──────────────────────────────
 print_pacman_snippet() {
   cat <<EOF
 

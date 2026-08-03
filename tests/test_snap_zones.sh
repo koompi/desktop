@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# The one piece of arithmetic in the snap preview: turning a pointer position
-# into the rectangle a dropped window will occupy. It decides both what is drawn
-# and where the window ends up, so the two can only agree if this is right.
+# The one piece of arithmetic in the snap preview: pointer position to the rectangle
+# a dropped window will occupy. It decides both what is drawn and where the window
+# lands, so the two agree only if this is right.
 #
-# The function is lifted out of the real QML and run as-is, so this exercises the
-# source rather than a copy. Nothing is dispatched and no compositor is touched:
-# every input is a fixture.
+# Lifted out of the real QML and run as-is. Every input is a fixture.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -58,40 +56,33 @@ function same(what, got, want) {
     check(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`, ok);
 }
 
-// --- no zone ------------------------------------------------------------
 check("the middle of the screen snapped", at(960, 600) === null);
 check("just inside the left edge snapped", at(25, 600) === null);
 check("just inside the right edge snapped", at(W - 26, 600) === null);
 check("the bottom edge snapped, over the dock", at(960, H - 1) === null);
 check("the bottom-left corner without a side snapped", at(960, H - 1) === null);
 
-// --- halves -------------------------------------------------------------
 same("left edge", at(0, 600), { x: UX, y: UY, width: HALF_W, height: UH });
 same("left edge at the threshold", at(24, 600), { x: UX, y: UY, width: HALF_W, height: UH });
 same("right edge", at(W - 1, 600), { x: UX + UW - HALF_W, y: UY, width: HALF_W, height: UH });
 
-// --- the top edge on its own maximises ----------------------------------
 same("top edge", at(960, 0), { x: UX, y: UY, width: UW, height: UH });
 // Under the bar, not above it: the reserved strip is not part of the target.
 check("the maximised target overlapped the bar", at(960, 0).y >= RESERVED[1]);
 
-// --- corners ------------------------------------------------------------
 same("top-left corner", at(0, 0), { x: UX, y: UY, width: HALF_W, height: HALF_H });
 same("top-right corner", at(W - 1, 0), { x: UX + UW - HALF_W, y: UY, width: HALF_W, height: HALF_H });
 same("bottom-left corner", at(0, H - 1), { x: UX, y: UY + UH - HALF_H, width: HALF_W, height: HALF_H });
 same("bottom-right corner", at(W - 1, H - 1), { x: UX + UW - HALF_W, y: UY + UH - HALF_H, width: HALF_W, height: HALF_H });
 
-// --- the two halves tile the usable area --------------------------------
 const left = at(0, 600), right = at(W - 1, 600);
 check("the halves overlap", left.x + left.width <= right.x);
 check("the halves leave a gap wider than Hyprland's", right.x - (left.x + left.width) === root.gap);
 check("the halves do not fill the usable width", right.x + right.width === UX + UW);
 
-// --- a bar on the bottom edge -------------------------------------------
 const bottomBar = root.dropRectFor(W, H, [0, 0, 0, 40], 0, 600);
 check("a bottom bar was not kept clear", bottomBar.y + bottomBar.height <= H - 40);
 
-// --- the guard on acting at all -----------------------------------------
 // A drag that did not start inside the window must not move it, or `Super`+drag
 // on the desktop background flings whatever happened to be focused.
 const win = { at: [100, 200], size: [800, 600] };

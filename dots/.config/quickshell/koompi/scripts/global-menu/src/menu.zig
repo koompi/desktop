@@ -97,7 +97,6 @@ pub const Table = struct {
     }
 };
 
-// ── Label handling ────────────────────────────────────────────────────────────
 
 /// Strips GTK/Qt mnemonic markers: "_File" -> "File", "__" -> "_".
 /// Trailing "..." is kept; it is part of the label users expect to see.
@@ -180,14 +179,10 @@ pub fn tidy(gpa: std.mem.Allocator, items: []Item) []Item {
     return gpa.realloc(items, w) catch items[0..w];
 }
 
-// ── Wire format ───────────────────────────────────────────────────────────────
 
-/// The shell reads one JSON object per line. Keys are short because this runs
-/// on every focus change.
-///
-/// `gen` names the id space these ids belong to. Ids are handed out per payload
-/// and reused, so the shell echoes this back on every command and the daemon
-/// refuses anything stamped with a generation it has already replaced.
+/// One JSON object per line, short keys - this runs on every focus change. `gen`
+/// names the id space; ids are handed out per payload and reused, so the shell echoes
+/// it back and the daemon refuses anything from a replaced generation.
 pub fn writeJson(writer: *std.Io.Writer, items: []const Item, generation: u32) !void {
     try writer.writeAll("{\"items\":");
     try writeArrayJson(writer, items);
@@ -247,7 +242,6 @@ fn writeString(writer: *std.Io.Writer, s: []const u8) !void {
     try writer.writeByte('"');
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
 
 test "stripMnemonics keeps escaped markers" {
     const gpa = std.testing.allocator;

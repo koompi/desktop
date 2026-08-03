@@ -1,14 +1,9 @@
 # shellcheck shell=bash
 # Sourced by ./setup. `update` for a machine that already runs KOOMPI.
 #
-# This is deliberately not a synonym for `install`. Install answers "set this
-# machine up"; update answers "I already run KOOMPI, give me what changed", and
-# the difference shows up in three places: it pulls the checkout first, it does
-# not ask about the application set again, and it reloads the running session at
-# the end instead of telling you to log out.
-#
-# Everything it calls is idempotent, so the cost of an update with nothing
-# outstanding is a git fetch and a handful of rsyncs that write nothing.
+# Not a synonym for `install`: it pulls the checkout first, does not ask about the
+# application set again, and reloads the running session at the end instead of
+# telling you to log out. Everything it calls is idempotent.
 
 # A pull that would clobber local edits is the one thing an updater must never
 # do quietly: the hypr/custom slots exist precisely so people edit this tree.

@@ -122,14 +122,10 @@ Singleton {
 		&& (this.activePlayer.trackTitle ?? "").length > 0
 		&& !this.activePlayerStale;
 
-	// --- Stale plasma-browser-integration detection --------------------------
-	// plasma-browser-integration can stick reporting Playing with a *frozen*
-	// real position after a tab's media ends, leaving a phantom on the bar.
-	// Quickshell extrapolates MprisPlayer.position for anything it thinks is
-	// Playing, so the freeze is invisible in-process; we read the raw D-Bus
-	// position out-of-band (playerctl) and treat Playing-but-frozen as dead.
-	// Scoped to plasma only so native players (mpd/spotify) are never polled;
-	// if playerctl is absent the probe yields nothing and the phantom shows.
+	// plasma-browser-integration can stick reporting Playing with a frozen real position
+	// after a tab's media ends. Quickshell extrapolates position for anything Playing,
+	// so the freeze is invisible in-process; playerctl reads it out-of-band. Plasma only
+	// - native players are never polled, and without playerctl the phantom shows.
 	property bool activePlayerStale: false;
 	readonly property bool activeIsPlasma: (this.activePlayer?.dbusName ?? "")
 		.startsWith("org.mpris.MediaPlayer2.plasma-browser-integration");

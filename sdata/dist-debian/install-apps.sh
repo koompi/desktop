@@ -1,10 +1,9 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/apps.sh. Debian and Ubuntu.
 #
-# Two of the applications are proprietary browsers that neither archive ships,
-# so their vendor repositories are added here. Both are the official ones and
-# both are pinned to their own keyring with signed-by, so neither key can sign
-# for anything else in the system's sources.
+# Two proprietary browsers neither archive ships, so their official vendor
+# repositories are added here, each pinned to its own keyring with signed-by so no
+# key can sign for anything else in the system's sources.
 
 have apt-get || die "no apt-get; sdata/dist-debian is for Debian and Ubuntu"
 
@@ -43,11 +42,9 @@ if ! declare -F debian_install >/dev/null; then
     }
 fi
 
-# dearmor rather than trusting the .asc directly: apt only accepts a binary
-# keyring at signed-by, and a key dropped in /etc/apt/trusted.gpg.d would be
-# trusted for every repository in the system rather than just this one.
-# Brave already publishes its keyring dearmored; gpg --dearmor passes binary
-# input straight through, so the same path handles both vendors.
+# dearmor because apt only accepts a binary keyring at signed-by, and a key in
+# /etc/apt/trusted.gpg.d would be trusted for every repository. Brave already
+# publishes dearmored; gpg --dearmor passes binary through, so one path handles both.
 debian_add_vendor_repo() {
     local name="$1" key_url="$2" line="$3"
     local keyring="/usr/share/keyrings/${name}.gpg"

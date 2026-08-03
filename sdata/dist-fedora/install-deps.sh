@@ -1,13 +1,11 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/deps.sh. Fedora 43 and later.
 #
-# Everything the desktop needs is packaged: Fedora proper carries quickshell and
-# matugen, and four COPRs carry the Hyprland stack, the KOOMPI fonts, Darkly and
-# starship. Nothing is built from source here.
+# Everything is packaged - Fedora carries quickshell and matugen, four COPRs carry
+# the Hyprland stack, fonts, Darkly and starship. Nothing is built from source.
 #
-# This deliberately does NOT reproduce upstream's prebuilt-RPM mechanism, which
-# downloaded quickshell and matugen from a GitHub release into a local repo.
-# Both are in Fedora now, so that step only added an untrusted, unsigned repo.
+# Deliberately does NOT reproduce upstream's prebuilt-RPM mechanism: both packages
+# are in Fedora now, so that step only added an untrusted, unsigned repo.
 
 have dnf || die "no dnf; sdata/dist-fedora is for Fedora and its derivatives"
 

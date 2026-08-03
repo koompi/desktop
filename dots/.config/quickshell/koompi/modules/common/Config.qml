@@ -595,15 +595,9 @@ Singleton {
                     property string style: "android" // Options: classic, android
                     property JsonObject android: JsonObject {
                         property int columns: 6
-                        // All size 2: an icon alone does not say what it does or
-                        // whether it is on. Size 1 stays available per toggle
-                        // through edit mode.
-                        //
-                        // Ordered in pairs, because size 2 lands two per row in a
-                        // sidebar-width panel: each row is one subject. The last
-                        // row holds what may not be installed, so hiding an
-                        // unavailable toggle trims the end instead of punching a
-                        // gap through the middle.
+                        // Ordered in pairs: size 2 lands two per row, so each row is one subject. The last
+                        // row holds what may not be installed, so hiding an unavailable toggle trims the
+                        // end instead of punching a gap through the middle.
                         property list<var> toggles: [
                             // Connectivity
                             { "size": 2, "type": "network" },

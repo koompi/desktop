@@ -140,11 +140,8 @@ Item { // Bar content region
 
     FocusedScrollMouseArea { // Right side | scroll to change volume
         id: barRightSideMouseArea
-        // Clicks belong to the dedicated sidebar button below, as on the left.
-        // The whole strip used to toggle the right sidebar on top of that button,
-        // so clicking the clock or the Pomodoro timer opened it, and opening it
-        // times out and marks read every notification. This parent exists only
-        // for hover and wheel input.
+        // Hover and wheel only. A strip-wide toggle meant clicking the clock opened the
+        // right sidebar, which times out and marks read every notification.
         acceptedButtons: Qt.NoButton
 
         anchors {

@@ -20,13 +20,7 @@ Scope {
     // sight.
     signal aboutToUnlock()
 
-    // True from the moment the password is accepted until the surface is
-    // dropped. The surface stays opaque for all of it: the lock takes its own
-    // furniture away and settles onto the wallpaper it is already showing, so
-    // the frame it disappears on is the frame the desktop appears with.
-    // Nothing is ever revealed THROUGH this surface - a compositor that
-    // animates the desktop back into place, or does not draw it at all, must
-    // not be able to show either of those things.
+    // Surface stays opaque for all of it. Nothing is ever revealed through it.
     property bool unlocking: false
     // How long the surface has to take itself apart, and how long it then holds
     // the finished frame. The hold is what makes this read as smooth: without
@@ -61,11 +55,6 @@ Scope {
             // only cleared once the surface has finished settling.
             active: GlobalStates.screenLocked
             anchors.fill: parent
-            // Read by the loaded surface as `parent.lockScreenName` and
-            // `parent.lockUnlocking`: workspaces carry their own wallpapers, so
-            // a surface has to know which screen it is on to show the right
-            // one, and it animates its own exit because only it knows which of
-            // its parts are furniture and which is the wallpaper that stays.
             readonly property string lockScreenName: sessionLockSurface.screen?.name ?? ""
             readonly property bool lockUnlocking: root.unlocking
             readonly property int lockExitDuration: root.exitDuration
@@ -126,12 +115,8 @@ Scope {
                 Idle.toggleInhibit(true);
             }
 
-            // Let whatever moved the desktop out of the way put it back while
-            // this surface is still covering it, then unlock. Dropping the
-            // surface first shows the bare workspace underneath for as long as
-            // the restore takes.
-            // Armed BEFORE the signal, never after: a handler that throws must
-            // not be able to cost someone the only way out of the lock.
+            // Restore the desktop under cover, then unlock. Armed BEFORE the signal: a handler
+            // that throws must not cost someone the only way out of the lock.
             unlockDelayTimer.restart();
             root.unlocking = true;
             root.aboutToUnlock();

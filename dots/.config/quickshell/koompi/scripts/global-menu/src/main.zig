@@ -10,10 +10,8 @@
 //   {"items":[...],"gen":<n>}              the full menu for the focused window
 //   {"patch":<id>,"gen":<n>,"items":[...]} replacement children for one item
 //
-// Ids are handed out per payload and reused, so every id-bearing command names
-// the generation its id came from and is refused if that generation is no
-// longer the current one. Without it, a click queued against one application's
-// menu lands on whatever now holds that id in the next application's.
+// Ids are handed out per payload and reused, so every id-bearing command names its
+// generation and is refused once that generation is replaced.
 
 const std = @import("std");
 const linux = std.os.linux;
@@ -58,7 +56,6 @@ const Daemon = struct {
     /// Set by --test: no compositor, the shell drives the source directly.
     manual: bool = false,
 
-    // ── Output ────────────────────────────────────────────────────────────
 
     fn emit(self: *Daemon, items: []const menu.Item) void {
         // A full payload replaces the table, so every id the shell was holding
@@ -71,16 +68,10 @@ const Daemon = struct {
         writeStdout(out.written());
     }
 
-    /// A patch appends to the table an existing payload owns, so it names that
-    /// payload's generation rather than starting a new one.
-    ///
-    /// That generation is the one the request came in on, not whatever is
-    /// current when the reply is written. The two are the same today: every
-    /// D-Bus call on the open path blocks the main loop, so no payload can
-    /// replace the menu while one is in flight. But that is a property of
-    /// gio.callSync, not of anything said here, and a patch stamped with a
-    /// generation its children do not belong to is exactly what the shell's own
-    /// staleness check cannot see.
+    /// Takes the requesting generation, not self.generation. The two are the same today
+    /// only because every D-Bus call on the open path blocks the main loop - a property
+    /// of gio.callSync, not of anything here. A patch stamped with the wrong generation
+    /// passes the shell's staleness check and splices one app's submenu under another's.
     fn emitPatch(self: *Daemon, id: u32, generation: u32, items: []const menu.Item) void {
         var out = std.Io.Writer.Allocating.init(self.gpa);
         defer out.deinit();
@@ -95,7 +86,6 @@ const Daemon = struct {
         self.emit(&.{});
     }
 
-    // ── Resolution ────────────────────────────────────────────────────────
 
     /// Works out where the focused window's menu lives. Order matters: a
     /// registrar registration is the application telling us directly, and beats
@@ -239,11 +229,9 @@ const Daemon = struct {
         return gio.g_variant_n_children(list) > 0;
     }
 
-    /// GTK exports per-window action groups at <base>/window/<n>. Nothing tells
-    /// us which one belongs to the focused window, so take the first that
-    /// answers; single-window applications are the common case and multi-window
-    /// ones still get the right menu, only the win.* enabled states may come
-    /// from a sibling window.
+    /// Nothing says which per-window action group belongs to the focused window, so take
+    /// the first that answers. Multi-window apps still get the right menu; only the win.*
+    /// enabled states may come from a sibling.
     fn findWindowActionPath(self: *Daemon, bus: [:0]const u8, base: []const u8) ?[:0]const u8 {
         var n: u32 = 1;
         while (n <= 4) : (n += 1) {
@@ -258,7 +246,6 @@ const Daemon = struct {
         return null;
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────
 
     fn refresh(self: *Daemon) void {
         if (!self.manual) {
@@ -293,7 +280,6 @@ const Daemon = struct {
         _ = gio.g_timeout_add(60, onRefreshTimeout, self);
     }
 
-    // ── Commands ──────────────────────────────────────────────────────────
 
     fn command(self: *Daemon, line: []const u8) void {
         var it = std.mem.tokenizeScalar(u8, line, ' ');
@@ -380,7 +366,6 @@ const Daemon = struct {
         if (items.len > 0) self.emitPatch(id, generation, items);
     }
 
-    // ── Input plumbing ────────────────────────────────────────────────────
 
     fn drainLines(self: *Daemon, buf: *std.ArrayListUnmanaged(u8), comptime handler: fn (*Daemon, []const u8) void) void {
         while (std.mem.indexOfScalar(u8, buf.items, '\n')) |nl| {

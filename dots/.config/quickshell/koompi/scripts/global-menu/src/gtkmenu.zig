@@ -1,17 +1,13 @@
 // org.gtk.Menus + org.gtk.Actions client.
 //
-// GTK does not hand out a menu tree. It hands out *subscriptions*: Start(au)
-// returns a(uuaa{sv}) — a flat list of (group, menu, items) triples — and the
-// items reference other (group, menu) pairs through the ":section" and
-// ":submenu" attributes. Sections are spliced into their parent with a
-// separator between them; submenus become child menus. Resolving that properly
-// is the whole job, because a menubar's top-level entries are almost always
-// pure section links, and treating a section as a submenu (or ignoring it)
-// produces empty or duplicated menus.
+// GTK hands out subscriptions, not a tree: Start(au) returns flat (group, menu,
+// items) triples whose items link other (group, menu) pairs through ":section" and
+// ":submenu". Sections splice into the parent with a separator; submenus become
+// children. A menubar's top-level entries are almost always pure section links, so
+// treating a section as a submenu produces empty or duplicated menus.
 //
-// Item state — enabled, checkbox, radio — is not in the menu model at all. It
-// comes from org.gtk.Actions.DescribeAll on the action group named by the
-// action's prefix ("app." / "win." / "unity.").
+// Item state - enabled, checkbox, radio - is not in the menu model. It comes from
+// org.gtk.Actions.DescribeAll on the group named by the action prefix.
 
 const std = @import("std");
 const gio = @import("gio.zig");

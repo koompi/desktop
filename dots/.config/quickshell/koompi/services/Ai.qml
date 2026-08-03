@@ -76,7 +76,7 @@ Singleton {
     // Subtask context isolation slot (#15)
     property var _savedContext: null
 
-    // Stable 6-char session ID — used for episodic log and session fork (#7, #11)
+    // Stable 6-char session ID - used for episodic log and session fork (#7, #11)
     readonly property string sessionId: (function() {
         const c = "abcdefghijklmnopqrstuvwxyz0123456789";
         let id = "";
@@ -109,7 +109,6 @@ Singleton {
     // loading at every login, before anyone opened the panel. SidebarLeft warms
     // it when it first opens instead.
 
-    // Early context compaction ─────────────────────────────────────────────
     property bool compacting: false
     property var _compactionDone: null
     property string _queuedMessage: ""
@@ -245,12 +244,9 @@ Singleton {
         return `\n## What you remember\n${lines}\n`;
     }
 
-    // Set by whoever warms the memory daemon, and read before MemoryService is,
-    // because reading any property of a lazy QML singleton is what constructs it.
-    // This is a binding, so it evaluates the moment this service is constructed -
-    // which is at login, since SidebarLeft is built eagerly. Touching
-    // MemoryService.ready here started the daemon from the guard meant to avoid
-    // it. Keep the short circuit first.
+    // Keep the short circuit first. Reading any property of MemoryService constructs the
+    // lazy singleton and starts the daemon, which is what this guard exists to avoid,
+    // and this binding evaluates at login because SidebarLeft is built eagerly.
     property bool memoryWarmed: false
 
     // The whole memory section of the prompt. Empty (so no claim of memory at all)
@@ -884,7 +880,7 @@ Singleton {
         if (!modelId) modelId = ""
         modelId = modelId.toLowerCase()
 
-        // "local:<name>" — set local model name and switch to local slot
+        // "local:<name>" - set local model name and switch to local slot
         if (modelId.startsWith("local:")) {
             const localName = modelId.slice(6).trim();
             if (setPersistentState) {
@@ -898,7 +894,7 @@ Singleton {
             return;
         }
 
-        // "local" — switch to local slot
+        // "local" - switch to local slot
         if (modelId === "local") {
             if (setPersistentState) Persistent.states.ai.model = "local";
             if (feedback) root.addMessage(
@@ -925,7 +921,7 @@ Singleton {
             return;
         }
 
-        // "remote" or any unrecognised name — treat as remote model name
+        // "remote" or any unrecognised name - treat as remote model name
         if (Config.options.policies.ai === 2) {
             root.addMessage(
                 Translation.tr("Online models disallowed\n\nControlled by `policies.ai` config option"),
@@ -1221,7 +1217,7 @@ Singleton {
             }
 
             if (root._cancelled) {
-                // User stopped the response — not an error
+                // User stopped the response - not an error
                 root._cancelled = false;
                 if (root._retryAfterCancel) {
                     root._retryAfterCancel = false;

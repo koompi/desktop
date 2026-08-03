@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# Config can only ever declare ten workspace wallpaper slots, so the shell wraps
-# every higher workspace onto them by decade. Two things have to agree for that
-# to hold: the modulus in the QML, and the ten slots the helper script seeds and
-# validates. If they drift, workspaces silently share the wrong picture or fall
-# back to the global one, which is the bug this replaced.
+# Config declares ten workspace wallpaper slots, so the shell wraps higher workspaces
+# onto them by decade. Two things must agree: the modulus in the QML and the ten
+# slots the helper script seeds. If they drift, workspaces silently share the wrong
+# picture or fall back to the global one.
 #
-# The resolver is lifted out of the real QML and run as-is. Nothing is written
-# and no config is read: Config is a fixture.
+# The resolver is lifted out of the real QML and run as-is; Config is a fixture.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -62,10 +60,8 @@ function check(what, ok) {
     if (!ok) { console.error(`  xx ${what}`); failures++; }
 }
 
-// --- the first decade is unchanged --------------------------------------
 for (let i = 1; i <= 10; i++) same(`workspace ${i}`, rawForWorkspace(i), `/pics/${i}.jpg`);
 
-// --- higher decades wrap onto it ----------------------------------------
 same("workspace 11", rawForWorkspace(11), "/pics/1.jpg");
 same("workspace 20", rawForWorkspace(20), "/pics/10.jpg");
 same("workspace 21", rawForWorkspace(21), "/pics/1.jpg");
@@ -76,25 +72,21 @@ same("workspace 100", rawForWorkspace(100), "/pics/10.jpg");
 check("workspaces 11 and 12 still share a wallpaper",
     rawForWorkspace(11) !== rawForWorkspace(12));
 
-// --- no slot below 1 ----------------------------------------------------
 // Hyprland's special workspaces are negative, and % would hand back "ws0" or
 // "ws-3" and quietly miss.
 same("workspace 0", rawForWorkspace(0), FALLBACK);
 same("workspace -1", rawForWorkspace(-1), FALLBACK);
 same("workspace -99", rawForWorkspace(-99), FALLBACK);
 
-// --- the feature switch still wins --------------------------------------
 Config.options.background.workspaceWallpapers.enabled = false;
 same("workspace 13 with the feature off", rawForWorkspace(13), FALLBACK);
 Config.options.background.workspaceWallpapers.enabled = true;
 
-// --- an inheriting slot inherits, wrapped or not ------------------------
 slots.ws3.mode = "inherit";
 same("workspace 3 on inherit", rawForWorkspace(3), FALLBACK);
 same("workspace 23 on inherit", rawForWorkspace(23), FALLBACK);
 slots.ws3.mode = "static";
 
-// --- a slot with no path falls back -------------------------------------
 slots.ws4.path = "";
 same("workspace 24 with an empty path", rawForWorkspace(24), FALLBACK);
 

@@ -29,11 +29,8 @@ PopupWindow {
     visible: true
 
     readonly property real visibleGap: 5
-    /// A menubar dropdown hangs off its menubar the way a web nav one does:
-    /// no gap, and no rounding on the edge it shares with the bar. The other
-    /// bar popups float clear of the bar instead, and should keep doing so -
-    /// they are surfaces of their own, this one is part of the title it opened
-    /// from.
+    /// Attached: no gap, and no rounding on the edge shared with the bar. The other bar
+    /// popups float clear of it and should keep doing so.
     readonly property bool attachedToBar: !popup.submenu
     // The top-level surface overhangs its title's glyph by 10px on the left,
     // which is the title's own leading hit padding - so it lines up with the
@@ -46,11 +43,8 @@ PopupWindow {
     anchor {
         window: popup.anchorItem.QsWindow.window
         item: popup.anchorItem
-        // Measured: the compositor lands the surface a pixel past the title's
-        // bottom edge often enough that the window gap below the bar shows
-        // through as a bright hairline. Ending the anchor rect a pixel early
-        // spends that pixel on the bar's own edge instead, where the menu and
-        // the bar are the same colour and nothing shows.
+        // End the anchor a pixel early: the compositor lands the surface a pixel past the
+        // title often enough that the window gap below the bar shows as a hairline.
         rect: popup.attachedToBar
             ? Qt.rect(0, Config.options.bar.bottom ? 1 : 0, popup.anchorItem.width, popup.anchorItem.height - 1)
             : Qt.rect(0, 0, popup.anchorItem.width, popup.anchorItem.height)
@@ -216,12 +210,8 @@ PopupWindow {
             bottom: parent.bottom
             leftMargin: popup.leadingPadding
             rightMargin: popup.trailingPadding
-            // A pixel above the surface, so the top border row is outside the
-            // buffer and never drawn. A Rectangle outlines all four sides, and
-            // on the edge the menu shares with the bar that row is a hairline
-            // across a seam that is meant to be invisible. The other three
-            // sides stay: without them a near-white light-mode menu vanishes
-            // into a light window under it.
+            // Top border row outside the buffer, so it is never drawn across the seam with the
+            // bar. The other three sides stay: a light menu vanishes into a light window.
             topMargin: popup.topPadding - (popup.attachedToBar ? 1 : 0)
             bottomMargin: popup.bottomPadding
         }

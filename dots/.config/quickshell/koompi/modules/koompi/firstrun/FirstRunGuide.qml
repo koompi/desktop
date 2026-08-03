@@ -11,12 +11,8 @@ ContentSection {
 
     readonly property string superKey: Config.options.cheatsheet.superKey || "󰖳"
 
-    // Every word the guide says lives in this list. A translation is a new file
-    // under translations/, extracted from these Translation.tr() calls, so
-    // adding one never touches the layout below.
-    //
-    // Four steps is the ceiling, not a starting set. A fifth thing belongs
-    // somewhere the user goes looking for it, not in front of their first login.
+    // Translations are extracted from these Translation.tr() calls, so adding one never
+    // touches the layout below. Four steps is the ceiling, not a starting set.
     readonly property var steps: [
         {
             icon: "search",

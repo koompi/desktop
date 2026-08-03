@@ -1,18 +1,12 @@
-//! main.zig — KOOMPI installer TUI (the "face").
+//! main.zig - KOOMPI installer TUI.
 //!
-//! ⚠️ SCAFFOLD. The substance here is the STATE MACHINE and how answers
-//! accumulate into an InstallConfig. The libvaxis draw loop + event handling
-//! are intentionally STUBBED (clearly-marked TODOs) — getting the vaxis event
-//! loop subtly wrong would distract from the skeleton's real job. This may not
-//! fully compile against a specific libvaxis revision; that is acceptable per
-//! the scaffold's scope.
+//! SCAFFOLD. The substance is the state machine and how answers accumulate into an
+//! InstallConfig; the libvaxis draw loop and event handling are stubbed behind marked
+//! TODOs. May not compile against a given libvaxis revision, which is in scope for a
+//! skeleton.
 //!
-//! Flow:
-//!   Welcome → Locale/Timezone/Keyboard → Disk → User/Hostname → Edition
-//!           → Encrypt → Review → Run
-//!
-//! Render: a placeholder draw loop. Real device enumeration and real vaxis
-//! event handling are marked TODO where they go.
+//! Flow: Welcome -> Locale/Timezone/Keyboard -> Disk -> User/Hostname -> Edition
+//!       -> Encrypt -> Review -> Run
 
 const std = @import("std");
 const vaxis = @import("vaxis"); // libvaxis — see build.zig.zon (placeholder hash)
@@ -104,18 +98,8 @@ const App = struct {
 // the state machine reacts to; mapping raw vaxis.Key/Event -> Action is TODO.
 const Action = enum { advance, back, quit, none };
 
-/// TODO: replace with real libvaxis event handling. Sketch:
-///   const event = loop.nextEvent();
-///   switch (event) {
-///     .key_press => |key| {
-///        if (key.matches('c', .{ .ctrl = true })) return .quit;
-///        if (key.matches(vaxis.Key.enter, .{}))    return .advance;
-///        if (key.matches(vaxis.Key.escape, .{}))   return .back;
-///        // …per-screen text input, list selection, etc.
-///     },
-///     .winsize => |ws| try vx.resize(alloc, tty.anyWriter(), ws),
-///   }
-/// Each screen also needs to capture text/selection into App.cfg here.
+/// TODO: real libvaxis event handling. Each screen also has to capture its text or
+/// selection into App.cfg here.
 fn nextAction(app: *App) Action {
     _ = app;
     // STUB: a real loop blocks on input. The skeleton just signals "advance"
@@ -133,7 +117,7 @@ fn nextAction(app: *App) Action {
 /// Return a list the TUI renders as a selectable menu. Hardcoded for the skeleton.
 fn enumerateDisks(alloc: std.mem.Allocator) []const []const u8 {
     _ = alloc;
-    // PLACEHOLDER — no real probing. REVIEW before this ever drives a wipe.
+    // PLACEHOLDER - no real probing. REVIEW before this ever drives a wipe.
     return &.{ "/dev/nvme0n1", "/dev/sda" };
 }
 
@@ -146,7 +130,7 @@ fn handleDisk(app: *App) void {
 fn handleIdentity(app: *App) void {
     // TODO: text fields for hostname / username / password.
     // SECURITY: the password field must be masked, and the captured secret
-    // should go straight toward archinstall.writeUserCredentials — see the note
+    // should go straight toward archinstall.writeUserCredentials - see the note
     // in config.zig. Do NOT echo or log it.
     if (app.cfg.username.len == 0) app.cfg.username = "koompi"; // placeholder
     // app.cfg.password = <captured secret>;  // TODO
@@ -277,15 +261,8 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
-    // TODO: initialize libvaxis here in a real build:
-    //   var tty = try vaxis.Tty.init();
-    //   defer tty.deinit();
-    //   var vx = try vaxis.init(alloc, .{});
-    //   defer vx.deinit(alloc, tty.anyWriter());
-    //   var loop: vaxis.Loop(Event) = .{ .tty = &tty, .vaxis = &vx };
-    //   try loop.init(); try loop.start(); defer loop.stop();
-    //   try vx.enterAltScreen(tty.anyWriter());
-    // (Event handling then replaces the `nextAction` stub.)
+    // TODO: initialize libvaxis here in a real build; event handling then replaces the
+    // nextAction stub.
     _ = vaxis; // silence unused import in the skeleton
 
     var app = App{ .alloc = alloc };
@@ -295,7 +272,7 @@ pub fn main() !void {
     while (!app.should_quit) {
         try step(&app);
         // SAFETY for the stub: nextAction() always "advances", so without this
-        // the loop would run to .done and stop — which is the intended skeleton
+        // the loop would run to .done and stop - which is the intended skeleton
         // behavior. A real event loop blocks instead and this guard is removed.
         if (app.step == .run) {
             // In the stub, do not actually exec a destructive install.

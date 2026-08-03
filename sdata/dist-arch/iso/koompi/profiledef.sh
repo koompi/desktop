@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
-#
-# KOOMPI OS — archiso profile definition.
-# Mirrors Arch's official `releng` profile, trimmed to the minimum KOOMPI needs.
-# v1 is BUILDABLE: the bootloader config dirs (syslinux/, efiboot/loader/), the
-# archiso runtime initramfs, root autologin, and live networking are all wired.
-# Still deferred: the signed [koompi] repo and the packaged Zig installer (see
-# README.md). The v1 live ISO is DE-agnostic stock Arch + archinstall and boots
-# to a root shell.
-#
-# This file is sourced by mkarchiso; every variable below is consumed there.
+# KOOMPI OS archiso profile. Arch's `releng` trimmed to the minimum KOOMPI needs,
+# sourced by mkarchiso. v1 is buildable and boots to a root shell; still deferred
+# are the signed [koompi] repo and the packaged Zig installer (README.md).
 
 iso_name="koompi"                       # base name of the output .iso file
 # Release-era codename slot.  Era v1 == "Naga".  Bump per era.
@@ -22,11 +15,9 @@ iso_application="KOOMPI OS Live/Install (${codename^})"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="koompi"                    # in-ISO dir holding the squashfs + kernels
 buildmodes=('iso')                      # produce a bootable ISO (not netboot)
-# Boot methods to assemble.  BIOS via syslinux, UEFI via systemd-boot.
-# NOTE: systemd-boot for the *live* ISO is fine; the *installed* target uses GRUB
-# (grub-btrfs needs GRUB) — that is the installer's job, not this profile's.
-# Each mode has its matching config dir shipped in this profile (syslinux/ for
-# BIOS, efiboot/loader/ for UEFI systemd-boot).
+# BIOS via syslinux, UEFI via systemd-boot, each with its config dir shipped here.
+# systemd-boot is fine for the LIVE ISO; the installed target uses GRUB, because
+# grub-btrfs needs it. That is the installer's job, not this profile's.
 bootmodes=(
   'bios.syslinux.mbr'                   # legacy BIOS, isohybrid MBR
   'bios.syslinux.eltorito'              # legacy BIOS, El Torito

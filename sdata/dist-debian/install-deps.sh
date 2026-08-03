@@ -1,11 +1,10 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/deps.sh. Debian and Ubuntu.
 #
-# Both distros package the Hyprland stack and quickshell, but only in recent
-# releases and, on Debian 13, only in backports. Older releases are refused
-# rather than half-installed - see debian_check_release() for why each one is
-# out. What no archive carries (the fonts, adw-gtk3, uv, matugen on Debian,
-# hyprsunset on Ubuntu) comes from sdata/lib/from-source.sh.
+# The Hyprland stack and quickshell are packaged only in recent releases and, on
+# Debian 13, only in backports. Older releases are refused rather than half
+# installed - see debian_check_release(). What no archive carries comes from
+# sdata/lib/from-source.sh.
 
 have apt-get || die "no apt-get; sdata/dist-debian is for Debian and Ubuntu"
 
@@ -16,11 +15,9 @@ APT_PIN_SUITE=''   # set to trixie-backports on Debian 13
 IS_UBUNTU=false
 [[ "$OS_DISTRO_ID" == ubuntu || "$OS_DISTRO_LIKE" == *ubuntu* ]] && IS_UBUNTU=true
 
-# VERSION_ID only means what we think it means on Debian and Ubuntu themselves.
-# A derivative numbers its own releases - Linux Mint 22 is Ubuntu 24.04 - so
-# refusing on the number would give Mint the wrong answer in both directions.
-# This only handles the exact matches, and every distro is checked properly
-# against the real package version later, in debian_require_hyprland().
+# VERSION_ID only means what we think on Debian and Ubuntu themselves - Mint 22 is
+# Ubuntu 24.04 - so refusing on the number is wrong in both directions. Exact
+# matches only; the real check is the package version in debian_require_hyprland().
 debian_check_release() {
     local v="${OS_VERSION_ID:-0}"
     local major="${v%%.*}"

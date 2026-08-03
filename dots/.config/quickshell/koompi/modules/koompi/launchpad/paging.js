@@ -1,20 +1,9 @@
 .pragma library
 
-// Where a swipe should leave the grid.
-//
-// Split out of the pager so the feel of it can be reasoned about, and checked,
-// without a touchpad in hand. Everything is counted in pages: `start` is where
-// the gesture began, `position` where it let go, both fractional, and
-// `velocity` is how fast the strip was still moving in pixels per second,
-// positive towards later pages.
-//
-// Three ways to land somewhere new, in order of precedence:
-//
-//   a flick   still moving when released, so it carries a page in the direction
-//             of travel however short it was. This is the one that makes a
-//             quick, small gesture work.
-//   a drag    slow, but far enough into the next page to have meant it.
-//   neither   springs back to where it started.
+// Where a swipe leaves the grid. Everything is counted in pages: `start` and
+// `position` are fractional page offsets, `velocity` is px/s, positive towards
+// later pages. A flick carries a page whatever its length; a slow drag needs to be
+// far enough into the next one; otherwise it springs back.
 function settleTarget(start, position, velocity, pageCount, opts) {
     const settleFraction = opts.settleFraction;
     const flickVelocity = opts.flickVelocity;

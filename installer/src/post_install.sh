@@ -27,12 +27,10 @@ ensure_pkgs() {
   fi
 }
 
-# 1. snapper config for root. archinstall's btrfs layout already created the @
-#    subvolume mounted at / and a .snapshots subvol — so we must NOT let
-#    `snapper create-config` make its own (it would try to create
-#    /.snapshots and fail / conflict). Create the config file, then point it at
-#    the existing layout.
-#    REVIEW: this is the fiddliest interaction with archinstall's layout.
+# 1. snapper config for root. archinstall's btrfs layout already made @ and a
+#    .snapshots subvol, so `snapper create-config` must not make its own. Create the
+#    config file, then point it at the existing layout.
+#    REVIEW: the fiddliest interaction with archinstall's layout.
 setup_snapper() {
   if snapper list-configs 2>/dev/null | grep -qw root; then
     log "snapper 'root' config already exists"
@@ -47,12 +45,10 @@ setup_snapper() {
     rmdir /.snapshots 2>/dev/null || true
   fi
   snapper -c root create-config /
-  # archinstall+snapper coexistence — the full 5-step dance. `create-config`
-  # just made its OWN .snapshots subvolume nested inside @ (i.e. @/.snapshots).
-  # We must delete it and restore archinstall's REAL @snapshots subvol at
-  # /.snapshots. Otherwise every snapshot we create (including @baseline) lands
-  # in the nested subvol and is HIDDEN the moment fstab remounts @snapshots over
-  # it on the next boot — silently losing the factory-reset point.
+  # create-config just made its own .snapshots nested inside @. Delete it and restore
+  # archinstall's real @snapshots at /.snapshots, or every snapshot including
+  # @baseline lands in the nested subvol and is hidden the moment fstab remounts
+  # @snapshots over it - silently losing the factory-reset point.
   btrfs subvolume delete /.snapshots 2>/dev/null || true
   mkdir -p /.snapshots
   mount /.snapshots 2>/dev/null || mount -a || true
@@ -66,15 +62,11 @@ setup_snapper() {
   systemctl enable snapper-timeline.timer snapper-cleanup.timer || true
 }
 
-# 2. The @baseline snapshot — a pinned "this is exactly how the OS shipped"
-#    point. Factory reset = roll back to this. Created near-LAST so it captures
-#    the finished install (os-release + sddm enabled), but BEFORE the final
-#    grub-mkconfig so it appears in the very first boot menu.
-#    UN-PRUNABLE: a snapper snapshot with an EMPTY cleanup field is kept forever.
-#    Assigning `--cleanup-algorithm number` would do the OPPOSITE — it makes the
-#    snapshot eligible for the number-pruner (snap-pac fills that budget fast),
-#    so we deliberately pass NO cleanup algorithm. (snapper creates snapshots
-#    read-only by default, so no explicit `btrfs property set ... ro` is needed.)
+# 2. @baseline: the pinned "how the OS shipped" point. Created near-last so it
+#    captures the finished install, but before the final grub-mkconfig so it appears
+#    in the first boot menu.
+#    An EMPTY cleanup field is what keeps it forever. `--cleanup-algorithm number`
+#    would do the opposite and hand it to the pruner snap-pac fills fast.
 pin_baseline() {
   if snapper -c root list 2>/dev/null | grep -q 'baseline'; then
     log "@baseline snapshot already pinned"
@@ -101,18 +93,13 @@ setup_grub_btrfs() {
   fi
 }
 
-# 4a. "Loading Linux ..." / "Loading initial ramdisk ..." on an otherwise silent
-#     boot. /etc/grub.d/10_linux emits those two `echo` lines into every
-#     menuentry unconditionally — Arch carries no quiet_boot knob (that is a
-#     Fedora patch), so there is no variable to set and no drop-in that stops
-#     them. Stripping the generated file is the only lever short of shipping our
-#     own 10_linux, which would collide with the grub package on every update.
-#
-#     Runs after EVERY grub-mkconfig, never standalone: a later regeneration
-#     puts the lines back, so this has to sit next to the call that creates them.
-#     Matches the English string, which is what grub-mkconfig emits under the C
-#     locale the installer runs in; a localised run leaves the lines and says so
-#     rather than deleting something it did not recognise.
+# 4a. /etc/grub.d/10_linux emits "Loading Linux ..." into every menuentry
+#     unconditionally. Arch carries no quiet_boot knob (that is a Fedora patch), so
+#     stripping the generated file is the only lever short of shipping our own
+#     10_linux, which would collide with the grub package on every update.
+#     Runs after EVERY grub-mkconfig, never standalone: a later regeneration puts
+#     the lines back. Matches the English string grub-mkconfig emits under the C
+#     locale; a localised run leaves them and says so.
 quiet_grub_entries() {
   local cfg="${KOOMPI_GRUB_CFG:-/boot/grub/grub.cfg}"
   [ -f "$cfg" ] || return 0
@@ -130,11 +117,10 @@ quiet_grub_entries() {
   log "silenced the GRUB 'Loading ...' lines"
 }
 
-# 4b. Bootable snapshots. grub-btrfs boots a snapshot READ-ONLY; to boot INTO a
-#     snapshot as a usable read-write system (the "boot straight into any
-#     snapshot" promise) the `grub-btrfs-overlayfs` mkinitcpio hook must be in
-#     HOOKS, then the initramfs regenerated. Without it, booting a snapshot drops
-#     to an emergency shell. NOTE: this hook needs the `udev` hook, NOT `systemd`.
+# 4b. grub-btrfs boots a snapshot read-only. Booting INTO one as a usable
+#     read-write system needs the grub-btrfs-overlayfs mkinitcpio hook in HOOKS and
+#     a regenerated initramfs, or it drops to an emergency shell. That hook needs
+#     the `udev` hook, NOT `systemd`.
 setup_snapshot_boot() {
   local conf=/etc/mkinitcpio.conf
   [ -f "$conf" ] || { log "no $conf — skipping snapshot-boot hook"; return; }
@@ -159,7 +145,7 @@ enable_login() {
   systemctl enable sddm.service || true
 }
 
-# 6. /etc/os-release — KOOMPI identity. Deliberately NOT a package (the
+# 6. /etc/os-release - KOOMPI identity. Deliberately NOT a package (the
 #    `filesystem` package owns the stock file); we overwrite in the target.
 #    MUST stay byte-for-byte identical to the live ISO's os-release at
 #    sdata/dist-arch/iso/koompi/airootfs/etc/os-release (era "Naga" = v1).

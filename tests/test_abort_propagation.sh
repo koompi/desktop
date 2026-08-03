@@ -1,18 +1,10 @@
 #!/usr/bin/env bash
-# The reported failure: a build aborted, and the run kept going.
+# Guards: a step that aborts must stop the run. `( cd "$dir" && run makepkg )` hid
+# it - run aborts via die, die is exit, and inside `( )` that ends only the subshell,
+# after which install_deps, the recipe loop and `$DO_DEPS && install_deps` all
+# ignored the status and kept installing against packages never built.
 #
-#   xx command failed: makepkg -Afsi --noconfirm --needed
-#   xx aborted
-#   ok dependencies installed          <- three lines later
-#   ... and every remaining step ran against packages that were never built
-#
-# Cause: `( cd "$dir" && run makepkg ... )`. run() aborts by calling die, die is
-# exit, and inside `( )` that exit ends only the subshell. The non-zero status
-# it leaves behind was then ignored by install_deps, by the `for` loop in the
-# recipe, and by `$DO_DEPS && install_deps`.
-#
-# Everything the run would touch is shadowed, so this asserts on control flow
-# and mutates nothing.
+# Everything the run would touch is shadowed; asserts on control flow only.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

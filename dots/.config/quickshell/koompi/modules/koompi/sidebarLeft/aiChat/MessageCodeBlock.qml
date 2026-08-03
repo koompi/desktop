@@ -278,16 +278,6 @@ ColumnLayout {
                 }
             }
 
-            // MouseArea to block scrolling
-            // MouseArea {
-            //     id: codeBlockMouseArea
-            //     anchors.fill: parent
-            //     acceptedButtons: editing ? Qt.NoButton : Qt.LeftButton
-            //     cursorShape: (enableMouseSelection || editing) ? Qt.IBeamCursor : Qt.ArrowCursor
-            //     onWheel: (event) => {
-            //         event.accepted = false
-            //     }
-            // }
         }
     }
 }

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# energy_full is the embedded controller's learned guess, not a measurement. It
-# re-learns and wanders, so a decimal place on health reads as a healthy cell
-# losing capacity every day. Whole percent only, and show cycle count next to it
-# because that is the number that actually means something.
+# energy_full is the embedded controller's learned guess, not a measurement, and it
+# wanders - so a decimal place reads as a healthy cell losing capacity every day.
+# Whole percent only, with the cycle count beside it.
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

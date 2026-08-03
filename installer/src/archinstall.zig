@@ -1,32 +1,23 @@
-//! archinstall.zig — the orchestration layer (the "engine" adapter).
+//! archinstall.zig - the orchestration layer.
 //!
-//! ⚠️ SCAFFOLD — no real disk ops. This module's whole job:
-//!   (a) serialize InstallConfig -> user_configuration.json + user_credentials.json
-//!   (b) exec `archinstall --config … --creds … --silent`
-//!   (c) run the post-install chroot hook (src/post_install.sh)
-//!
-//! archinstall owns the dangerous 20% (partition/LUKS/pacstrap/GRUB/btrfs).
-//! We only hand it answers and run a finishing hook. Every step that touches a
-//! disk or a secret is marked TODO/REVIEW.
+//! SCAFFOLD, no real disk ops. Serializes InstallConfig into user_configuration.json
+//! and user_credentials.json, execs `archinstall --config .. --creds .. --silent`,
+//! then runs src/post_install.sh in the chroot. archinstall owns partition, LUKS,
+//! pacstrap, GRUB and btrfs; every step here that touches a disk or a secret is
+//! marked TODO/REVIEW.
 
 const std = @import("std");
 const config = @import("config.zig");
 const InstallConfig = config.InstallConfig;
 const Edition = config.Edition;
 
-// SCHEMA PINNING (the documented risk).
-// archinstall's JSON schema drifts between releases. The ISO MUST pin exactly
-// this version. If you bump it, re-check the serializers below against the new
-// schema and bump together — never one without the other.
+// archinstall's JSON schema drifts between releases. The ISO MUST pin this exact
+// version, and a bump means re-checking every serializer below in the same change.
 //
-// VERIFIED (2026, against archinstall source): hand-writing this JSON is the
-// WRONG strategy. disk_config requires per-partition `obj_id` UUIDs and
-// size/start objects that only archinstall can mint, and the credential keys are
-// unobvious ("!password" for users; root takes only a HASH). The correct design
-// is to PRODUCE both files from `archinstall --dry-run`/save-config of the pinned
-// release and parameterize them — the literals below are SHAPE TEMPLATES that
-// document the verified schema, not a runnable config. (Upstream archinstall is
-// ~4.x as of 2026; pin the EXACT release you ship and regenerate from it.)
+// Hand-writing the JSON is the wrong strategy and the literals below are shape
+// templates, not a runnable config: disk_config needs per-partition obj_id UUIDs and
+// size/start objects only archinstall can mint. Produce both files from the pinned
+// release's `--dry-run`/save-config and parameterize them.
 pub const ARCHINSTALL_VERSION = "4.x"; // TODO: pin the exact release on the ISO
 
 /// The post-install chroot hook, kept as ONE source of truth via @embedFile so
@@ -49,13 +40,11 @@ const HOOK_PATH = "/tmp/koompi/post_install.sh";
 
 // (a) SERIALIZE
 
-/// Emit user_configuration.json (disk layout + bootloader + the KOOMPI edition
-/// package). NON-SECRET — passwords are NOT in this file.
+/// Emit user_configuration.json. NON-SECRET - no passwords here.
 ///
-/// REVIEW: this hand-rolls the JSON shape against ARCHINSTALL_VERSION. The btrfs
-/// subvolume list, the `disk_config`/`disk_layouts` key, and the package field
-/// name are exactly the parts that drift. Treat the literal below as a template
-/// to diff against the pinned archinstall's own example config.
+/// REVIEW: hand-rolls the shape against ARCHINSTALL_VERSION. The btrfs subvolume
+/// list, the disk_config/disk_layouts key and the package field name are the parts
+/// that drift; diff the literal against the pinned archinstall's own example.
 pub fn writeUserConfiguration(alloc: std.mem.Allocator, cfg: InstallConfig) !void {
     try std.fs.cwd().makePath(std.fs.path.dirname(CONFIG_PATH).?);
     const file = try std.fs.cwd().createFile(CONFIG_PATH, .{ .truncate = true });
@@ -150,14 +139,12 @@ pub fn writeUserConfiguration(alloc: std.mem.Allocator, cfg: InstallConfig) !voi
     try bw.flush();
 }
 
-/// Emit user_credentials.json. **SECRET.** Root + user passwords.
-///   - written to tmpfs (RAM), never to the spinning disk we're installing onto
-///   - chmod 600
-///   - DELETED by `cleanupCredentials()` immediately after archinstall exits
-///   - NEVER logged (do not print cfg.password anywhere)
+/// Emit user_credentials.json. SECRET: root + user passwords. Written to tmpfs,
+/// chmod 600, shredded by cleanupCredentials() the moment archinstall exits, never
+/// logged.
 ///
-/// TODO(security): the password currently rides on InstallConfig as a plain
-/// slice. Replace with a locked/zeroed secret buffer and pass it directly here.
+/// TODO(security): the password rides on InstallConfig as a plain slice. Replace
+/// with a locked/zeroed buffer passed straight here.
 pub fn writeUserCredentials(alloc: std.mem.Allocator, cfg: InstallConfig) !void {
     _ = alloc;
     const file = try std.fs.cwd().createFile(CREDS_PATH, .{
@@ -168,15 +155,14 @@ pub fn writeUserCredentials(alloc: std.mem.Allocator, cfg: InstallConfig) !void 
     var bw = std.io.bufferedWriter(file.writer());
     const w = bw.writer();
 
-    // KEYS — verified against archinstall source (these are easy to get wrong):
-    //   * a user's plaintext key is "!password", NOT "password". A bare
-    //     "password" is read by NEITHER parser branch, so the user is SILENTLY
-    //     SKIPPED and never created (no login on a --silent install).
-    //   * root accepts ONLY "root_enc_password" (a HASH); there is no plaintext
-    //     root key. We therefore leave root LOCKED and rely on the sudo user.
-    //   DO NOT log this writer's input.
-    // TODO(security): generate creds via the pinned archinstall so the password
-    //   is hashed (enc_password) and never written as plaintext, even to tmpfs.
+    // Keys verified against archinstall source, both easy to get wrong:
+    //   a user's plaintext key is "!password", not "password". A bare "password" is read
+    //   by neither parser branch, so the user is silently skipped and never created.
+    //   root accepts only "root_enc_password" (a hash), so root stays LOCKED and the
+    //   sudo user is the way in.
+    // Do not log this writer's input.
+    // TODO(security): generate creds via the pinned archinstall so the password is
+    // hashed and never written as plaintext, even to tmpfs.
     try w.print(
         \\{{
         \\  "// root": "root is intentionally left LOCKED (no password); admin access is via the sudo user below. archinstall reads only root_enc_password (a HASH) and has no plaintext root key, so we omit it rather than ship an unhashable value. To set a root password, generate creds via the pinned archinstall (it hashes and emits root_enc_password).",
@@ -196,7 +182,7 @@ pub fn writeUserCredentials(alloc: std.mem.Allocator, cfg: InstallConfig) !void 
 }
 
 /// Shred the credentials file. Call in a `defer` right after the archinstall
-/// exec so a secret never survives the process — even on an error path.
+/// exec so a secret never survives the process - even on an error path.
 /// TODO: overwrite-then-unlink (or rely on tmpfs being RAM-only) before delete.
 pub fn cleanupCredentials() void {
     std.fs.cwd().deleteFile(CREDS_PATH) catch {};
@@ -229,12 +215,10 @@ pub fn runArchinstall(alloc: std.mem.Allocator) !void {
 
 // (c) POST-INSTALL CHROOT HOOK
 
-/// Drop the embedded post_install.sh onto the live ISO and run it inside the
-/// freshly installed target via `arch-chroot`. Pins @baseline, installs
-/// snap-pac + grub-btrfs, enables sddm, writes /etc/os-release.
+/// Drop post_install.sh onto the live ISO and run it in the target via arch-chroot.
 ///
-/// ⚠️ TODO/REVIEW: hard-codes the target mount at /mnt (archinstall's default).
-/// Confirm the actual mountpoint for the pinned archinstall before trusting it.
+/// TODO/REVIEW: hard-codes the target mount at /mnt, archinstall's default. Confirm
+/// it against the pinned release.
 pub fn runPostInstallHook(alloc: std.mem.Allocator) !void {
     try std.fs.cwd().makePath(std.fs.path.dirname(HOOK_PATH).?);
     {
@@ -283,18 +267,16 @@ pub fn runPostInstallHook(alloc: std.mem.Allocator) !void {
 pub fn run(alloc: std.mem.Allocator, cfg: InstallConfig) !void {
     try writeUserConfiguration(alloc, cfg);
 
-    // Register the shred BEFORE the creds write. A Zig `defer` only fires if
-    // control actually reached it — if writeUserCredentials throws AFTER
-    // createFile (e.g. a flush fails mid-write), a defer placed after it would
-    // never register and the plaintext file would persist on tmpfs. Placing it
-    // first makes "the credential file is shredded no matter how we leave" true.
+    // Register the shred BEFORE the creds write. A `defer` only fires if control reached
+    // it, so one placed after writeUserCredentials would never register if that throws
+    // mid-write, and the plaintext would persist on tmpfs.
     defer cleanupCredentials();
     try writeUserCredentials(alloc, cfg);
 
     try runArchinstall(alloc); // ⚠️ destructive — archinstall owns it
 
     // archinstall is the ONLY consumer of the creds file; shred it eagerly the
-    // moment it exits so the plaintext's RAM lifetime ends here — NOT minutes
+    // moment it exits so the plaintext's RAM lifetime ends here - NOT minutes
     // later after the chroot hook. cleanupCredentials() swallows ENOENT, so this
     // is idempotent and the defer above stays as a backstop for the error paths.
     cleanupCredentials();

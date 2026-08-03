@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Password to desktop is three programs handing one colour to each other: the
-# greeter fades to it, Hyprland clears to it, the shell dissolves the wallpaper
-# up out of it. They live in three different config languages with nothing
-# shared between them, so the only thing keeping them equal is this.
+# Password to desktop is three programs handing one colour to each other: the greeter
+# fades to it, Hyprland clears to it, the shell dissolves the wallpaper up out of it.
+# Three config languages with nothing shared, so this is the only thing keeping them
+# equal.
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

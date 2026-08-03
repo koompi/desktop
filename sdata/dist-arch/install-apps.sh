@@ -1,9 +1,7 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/apps.sh. Arch Linux and derivatives.
 #
-# One metapackage. Everything in it is either in the official repositories or
-# in the AUR, and arch_install_pkgbuild already knows how to get both, so this
-# recipe is little more than a call into the dependency step's machinery.
+# One metapackage; arch_install_pkgbuild already handles both repo and AUR.
 
 have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 

@@ -1,11 +1,7 @@
 # shellcheck shell=bash
-# Sourced by ./setup. The things no apt or dnf repository provides.
-#
-# Used by the Fedora and Debian recipes. Arch needs none of this - everything
-# here exists in the AUR and is covered by a PKGBUILD in sdata/dist-arch/.
-#
-# Every function is a no-op when the thing is already present, so a recipe can
-# call all of them unconditionally and re-running ./setup costs nothing.
+# Sourced by ./setup. The things no apt or dnf repository provides, used by the
+# Fedora and Debian recipes; Arch covers all of it through the AUR. Every function is
+# a no-op when the thing is present, so a recipe can call them unconditionally.
 
 FONT_DIR="${XDG_DATA_HOME}/fonts/koompi"
 LOCAL_BIN=/usr/local/bin

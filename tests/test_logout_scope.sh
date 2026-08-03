@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Logging out has to end the calling session and nothing else.
-#
-# `pkill -i Hyprland` matches every compositor the user owns, so a shell left
-# over from an earlier session takes down the live one, and killing only the
-# compositor leaves the rest of the session in a scope logind waits on forever
-# (KillUserProcesses=no). Both wlogout and the shell had that shape.
+# Logging out has to end the calling session and nothing else. `pkill -i Hyprland`
+# matches every compositor the user owns, and killing only the compositor leaves the
+# rest of the session in a scope logind waits on forever (KillUserProcesses=no).
+# Both wlogout and the shell had that shape.
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

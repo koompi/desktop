@@ -5,16 +5,12 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 
-// Overlay-layer dismiss surface for scratchpad windows.
+// Overlay-layer dismiss surface for scratchpad windows. WlrLayer.Overlay sits above
+// every window, and a Region with Intersection.Subtract punches a hole so the
+// scratchpad stays interactive.
 //
-// WlrLayer.Overlay sits above every app window and the bar, so ALL pointer
-// events outside the scratchpad reach us. A Region mask with Intersection.Subtract
-// punches a hole over the scratchpad window so it stays interactive. TapHandler
-// on the overlay closes the scratchpad on any click/tap outside the hole.
-//
-// Tradeoff: the first click on the bar or another window while a scratchpad is
-// open closes the scratchpad (that click is consumed). Click again to interact.
-// This matches Super+/ overlay UX.
+// Tradeoff: the first click on the bar or another window closes the scratchpad and
+// is consumed. Matches the Super+/ overlay.
 Scope {
     id: root
 
@@ -94,11 +90,8 @@ Scope {
                 color: "transparent"
                 anchors { top: true; bottom: true; left: true; right: true }
 
-                // Full-screen input mask with a hole punched over the scratchpad.
-                // Events inside the hole pass through to the scratchpad itself.
-                // Events outside reach TapHandler → dismiss.
-                // While scratchW/H = 9999 (before geometry loads), the subtract
-                // covers the whole screen so the overlay is fully passthrough.
+                // While scratchW/H = 9999, before geometry loads, the subtract covers the whole
+                // screen and the overlay is fully passthrough.
                 mask: Region {
                     width: dismissWin.width
                     height: dismissWin.height

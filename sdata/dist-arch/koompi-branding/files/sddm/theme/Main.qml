@@ -16,7 +16,6 @@ Item {
     width:  1920
     height: 1080
 
-    // ── Palette ──────────────────────────────────────────────────────────
     readonly property color accent:      "#5294e2"
     readonly property color textPrimary: "#ffffff"
     readonly property color textMuted:   Qt.rgba(1, 1, 1, 0.45)
@@ -25,25 +24,21 @@ Item {
     readonly property color cardBg:      Qt.rgba(0.06, 0.06, 0.06, 0.96)
     readonly property color cardBorder:  Qt.rgba(1, 1, 1, 0.07)
 
-    // ── State ────────────────────────────────────────────────────────────
     property var    now:                 new Date()
     property string notificationMessage: ""
     property bool   showUsernameField:   userModel.count > 1 || userModel.lastUser === ""
 
-    // ── Clock timer ──────────────────────────────────────────────────────
     Timer {
         interval: 1000; running: true; repeat: true
         onTriggered: root.now = new Date()
     }
 
-    // ── Login ─────────────────────────────────────────────────────────────
     function doLogin() {
         root.notificationMessage = ""
         const user = root.showUsernameField ? usernameField.text : userModel.lastUser
         sddm.login(user, passwordField.text, sessionCombo.currentIndex)
     }
 
-    // ── SDDM connections ─────────────────────────────────────────────────
     Connections {
         target: sddm
         function onLoginFailed() {
@@ -57,13 +52,10 @@ Item {
         }
     }
 
-    // ── Background ────────────────────────────────────────────────────────
-    // A random image out of backgroundDir on every greeter start, blurred and
-    // dimmed so the card stays readable over a bright one. The single
-    // `background` key is the fallback for when the folder is gone or empty,
-    // and the flat colour is the fallback for when that is gone too - the
-    // previous theme had only the flat colour left once its wallpaper path
-    // stopped existing, which is what made the login screen pure black.
+    // Two fallbacks deep on purpose: the single `background` key when backgroundDir is
+    // gone or empty, the flat colour when that is gone too. The previous theme had only
+    // the flat colour left once its wallpaper path stopped existing, which is what made
+    // the login screen pure black.
     readonly property real bgBlur: parseFloat(config.blur) || 0.62
     readonly property real bgDim:  parseFloat(config.dim)  || 0.34
 
@@ -122,7 +114,6 @@ Item {
         visible: wallpaper.status === Image.Ready
     }
 
-    // ── Clock (above card) ───────────────────────────────────────────────
     ColumnLayout {
         id: clockBlock
         anchors {
@@ -148,7 +139,6 @@ Item {
         }
     }
 
-    // ── Login card ───────────────────────────────────────────────────────
     Rectangle {
         id: loginCard
         anchors.centerIn: parent
@@ -169,7 +159,6 @@ Item {
             spread:         0
         }
 
-        // ── Shake animation on wrong password ────────────────────────────
         SequentialAnimation {
             id: shakeAnim
             NumberAnimation { target: loginCard; property: "anchors.horizontalCenterOffset"; to: -18; duration: 48; easing.type: Easing.OutQuad }
@@ -309,7 +298,6 @@ Item {
         }
     }
 
-    // ── Footer ────────────────────────────────────────────────────────────
     RowLayout {
         id: footer
         anchors {
@@ -413,16 +401,11 @@ Item {
         }
     }
 
-    // ── Hand off on success ──────────────────────────────────────────────
-    // Fading the greeter's own opacity fades it to whatever the greeter
-    // compositor clears to, which is black, and that black then had to last
-    // the whole of Hyprland's DRM bring-up and the shell's load. Fade to the
-    // colour Hyprland itself clears to instead: the greeter's last scanned-out
-    // frame, the compositor's first frame and the shell's first frame are then
-    // all the same colour, and the only thing that moves is the wallpaper
-    // rising out of it. Keep in step with misc:background_color in
-    // hypr/hyprland/colors.lua and the curtain in the shell's Background.qml;
-    // tests/test_login_handoff.sh holds the three together.
+    // Fade to the colour Hyprland clears to, not the greeter's own opacity - that fades
+    // to the greeter compositor's black, which then has to last all of Hyprland's DRM
+    // bring-up. Keep in step with misc:background_color in hypr/hyprland/colors.lua and
+    // the curtain in the shell's Background.qml; tests/test_login_handoff.sh holds the
+    // three together.
     Rectangle {
         id: handoff
         anchors.fill: parent
@@ -437,14 +420,12 @@ Item {
         duration: 400; easing.type: Easing.InOutQuad
     }
 
-    // ── Fade in on load ───────────────────────────────────────────────────
     NumberAnimation on opacity {
         from: 0; to: 1
         duration: 500; easing.type: Easing.OutCubic
         running: true
     }
 
-    // ── Initial focus ────────────────────────────────────────────────────
     Component.onCompleted: {
         if (root.showUsernameField)
             usernameField.forceActiveFocus()

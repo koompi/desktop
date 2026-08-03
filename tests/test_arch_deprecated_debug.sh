@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-# The reported failure: `koompi update` died on
-#   error: failed to commit transaction (conflicting files)
-#   illogical-impulse-microtex-git-debug: /usr/lib/debug/... exists in filesystem
-# because arch_drop_deprecated named the superseded packages but not the
-# `-debug` split siblings makepkg produces alongside every one of them.
+# Guards: arch_drop_deprecated has to name the `-debug` split siblings makepkg
+# produces, or an update dies on a conflicting-files transaction over /usr/lib/debug.
 #
-# The whole recipe is sourced with pacman shadowed, so this exercises the real
-# sdata/dist-arch/install-deps.sh and touches no package.
+# Sources the real install-deps.sh with pacman shadowed; touches no package.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

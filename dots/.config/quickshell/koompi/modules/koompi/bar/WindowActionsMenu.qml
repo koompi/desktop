@@ -7,14 +7,9 @@ import qs
 import qs.services
 import qs.modules.common
 
-// The focused window's own actions - close, float, fullscreen, pin, move to
-// workspace - so none of them needs a keybinding to be found.
-//
-// The entries are rendered by GlobalMenuPopup, the same popup the application
-// menu next door uses, because that file already solves placement against the
-// bar, the focus grab over a chain of popup windows, and the keyboard path.
-// Everything it asks of a menu is answered here: an entry tree, childrenOf,
-// hasChildrenFor, send, registerPopup, unregisterPopup and handleKey.
+// Rendered by GlobalMenuPopup, which already solves placement, the focus grab and
+// the keyboard path. It asks for: an entry tree, childrenOf, hasChildrenFor, send,
+// registerPopup, unregisterPopup, handleKey.
 Item {
     id: root
 
@@ -156,7 +151,6 @@ Item {
             Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${action.slice("workspace ".length)}, follow = false, ${selector} })`);
     }
 
-    // ── Focus chain ───────────────────────────────────────────────────────────
 
     /// Every window in the open chain. The grab has to cover all of them, or
     /// clicking the workspace submenu reads as a click outside and tears the

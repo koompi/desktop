@@ -1,11 +1,7 @@
 hl.bind("CTRL+SUPER+ALT+Slash", hl.dsp.exec_cmd("xdg-open ~/.config/hypr/custom/keybinds.lua"), {description = "Edit user keybinds"} )
 
--- Kiri voice dictation on the AI/Copilot key (Super+Shift+F23, code:201).
--- Plain AI key = English; add Alt for Khmer. Press once to start, again to
--- stop. The "Kiri: ..." descriptions group these in the cheatsheet.
--- Called by bare name, not through $HOME/.local/bin: koompi-session prepends
--- ~/.local/bin to PATH, so a hand-built copy there still wins and the
--- koompi-kiri package in /usr/bin is the fallback for everyone else.
+-- Bare name on purpose: koompi-session prepends ~/.local/bin, so a hand-built kiri
+-- wins over the koompi-kiri package in /usr/bin.
 hl.bind("SUPER + SHIFT + ALT + code:201", hl.dsp.exec_cmd("kiri voice --lang km"), { description = "Kiri: Khmer dictation (AI key + Alt)" })
 hl.bind("SUPER + SHIFT + code:201", hl.dsp.exec_cmd("kiri voice"), { description = "Kiri: Voice transcription (AI key)" })
 hl.bind("SUPER + SHIFT + K", hl.dsp.exec_cmd("kiri voice --lang km"), { description = "Kiri: Khmer dictation (Super+Shift+K)" })

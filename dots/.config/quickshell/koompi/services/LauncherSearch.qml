@@ -476,9 +476,8 @@ Singleton {
         //////////////// Apps //////////////////
         result = result.concat(appResultObjects);
 
-        ///////// Windows and settings /////////
-        // Both are small in-memory sets, so they can answer without a prefix.
-        // Files cannot: they need a disk search, so they stay behind their prefix.
+        // Windows and settings are small in-memory sets, so they answer without a prefix.
+        // Files need a disk search and stay behind theirs.
         // ponytail: capped so they cannot drown the app list. The prefixes give
         // the full set when someone actually wants it.
         if (!root.query.startsWith(Config.options.search.prefix.app)) {

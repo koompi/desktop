@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # Hyprland refuses a plugin built against a different Hyprland, so an OS upgrade
-# silently disarms the swipe-progress plugin unless something rebuilds it. A
-# pacman hook runs plugins/koompi-swipe-progress/rebuild for that.
+# silently disarms the swipe-progress plugin unless a pacman hook rebuilds it.
 #
-# The two things that matter: it produces a plugin when it can, and it never
-# fails the pacman transaction when it cannot. g++, pkg-config and make are all
-# stubbed, so nothing is compiled and nothing outside the temp dir is touched.
+# Two things matter: it produces a plugin when it can, and it never fails the pacman
+# transaction when it cannot. g++, pkg-config and make are stubbed.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"

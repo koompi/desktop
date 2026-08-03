@@ -1,10 +1,8 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/apps.sh. Fedora 43 and later.
 #
-# Two of the applications are proprietary browsers that Fedora will not ship,
-# so their vendor repositories are added here. Both are the official ones, both
-# are signed, and each is added as its own file under /etc/yum.repos.d so
-# removing it later is one `rm`.
+# Two proprietary browsers Fedora will not ship. Both official, both signed, each
+# its own file under /etc/yum.repos.d so removing it later is one `rm`.
 
 have dnf || die "no dnf; sdata/dist-fedora is for Fedora and its derivatives"
 

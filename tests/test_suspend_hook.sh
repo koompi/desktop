@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Lid closed at 30%, flat by morning: a wedged btintel_pcie failed suspend 614
-# times in one boot. setup_suspend_hook drops the module before sleep.
+# Lid closed at 30%, flat by morning: a wedged btintel_pcie failed suspend 614 times
+# in one boot. setup_suspend_hook drops the module before sleep.
 #
-# Asserts on the hook text setups.sh ships, not a copy. modprobe is stubbed and
-# the hook's /run and /sys paths are redirected, so this runs unprivileged.
+# Asserts on the hook text setups.sh ships, not a copy. modprobe is stubbed and the
+# hook's /run and /sys paths redirected, so this runs unprivileged.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
