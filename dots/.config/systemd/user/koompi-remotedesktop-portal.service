@@ -1,0 +1,12 @@
+[Unit]
+Description=KOOMPI RemoteDesktop portal backend
+Documentation=man:xdg-desktop-portal(1)
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.impl.portal.desktop.koompi
+ExecStart=%h/.local/bin/koompi-remotedesktop-portal
+Restart=on-failure
+RestartSec=2
+Slice=session.slice

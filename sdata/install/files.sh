@@ -222,23 +222,32 @@ install_files() {
     ok "config files installed"
 }
 
-# The shipped koompi.desktop points at /usr/bin/koompi-session, which is where
-# the Arch package puts it. A user-level install has no such file, so the Exec
-# is rewritten to the copy that actually exists. Display managers need an
-# absolute path here; $HOME is not expanded in a desktop entry's Exec.
+# The shipped session entries point at /usr/bin/koompi-session and
+# /usr/bin/koompi-otto-session, which is where the Arch package puts them. A
+# user-level install has no such file, so the Exec is rewritten to the copy
+# that actually exists. Display managers need an absolute path here; $HOME is
+# not expanded in a desktop entry's Exec.
 install_session_entry() {
-    local entry="${XDG_DATA_HOME}/wayland-sessions/koompi.desktop"
+    local launcher
+    for launcher in koompi-session koompi-otto-session; do
+        install_one_session_entry "$launcher" \
+            "${XDG_DATA_HOME}/wayland-sessions/${launcher%-session}.desktop"
+    done
+}
+
+install_one_session_entry() {
+    local launcher="$1" entry="$2"
     [[ -f "$entry" ]] || return 0
-    if [[ -x /usr/bin/koompi-session ]]; then
-        info "system koompi-session present, leaving session entry pointing at it"
+    if [[ -x "/usr/bin/$launcher" ]]; then
+        info "system $launcher present, leaving session entry pointing at it"
         return 0
     fi
-    info "pointing the session entry at ${XDG_BIN_HOME}/koompi-session"
+    info "pointing the session entry at ${XDG_BIN_HOME}/$launcher"
     if [[ "$DRY_RUN" == true ]]; then return 0; fi
     local tmp
     tmp="$(mktemp)"
-    sed "s|^Exec=/usr/bin/koompi-session$|Exec=${XDG_BIN_HOME}/koompi-session|" "$entry" > "$tmp"
-    grep -q "^Exec=${XDG_BIN_HOME}/koompi-session$" "$tmp" \
+    sed "s|^Exec=/usr/bin/${launcher}$|Exec=${XDG_BIN_HOME}/${launcher}|" "$entry" > "$tmp"
+    grep -q "^Exec=${XDG_BIN_HOME}/${launcher}$" "$tmp" \
         || { rm -f "$tmp"; die "failed to rewrite Exec= in $entry"; }
     mv -f "$tmp" "$entry"
     chmod 644 "$entry"

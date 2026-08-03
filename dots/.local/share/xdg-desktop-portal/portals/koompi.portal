@@ -1,0 +1,4 @@
+[portal]
+DBusName=org.freedesktop.impl.portal.desktop.koompi
+Interfaces=org.freedesktop.impl.portal.RemoteDesktop;
+UseIn=wlroots;Hyprland;sway;Wayfire;river;

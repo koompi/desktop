@@ -1,0 +1,7 @@
+[D-BUS Service]
+Name=org.freedesktop.impl.portal.desktop.koompi
+# ponytail: /bin/false because SystemdService below does the activation and the
+# unit expands %h; a real Exec= here would have to hardcode one user's $HOME.
+# Give it a real path if this ever ships to a box without a systemd user session.
+Exec=/bin/false
+SystemdService=koompi-remotedesktop-portal.service

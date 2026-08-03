@@ -1,0 +1,116 @@
+# KOOMPI on Otto. Merged key by key over /etc/otto/config.toml, so this holds
+# only what KOOMPI changes.
+#
+# Otto's own components are the desktop here - otto-bar, otto-islands,
+# otto-lock, the dock and the exposé Otto draws itself. KOOMPI's design lives
+# in them, in Rust, on the koompi branch. Nothing Quickshell runs on this
+# session; that is the Hyprland half of the desktop.
+#
+# Bare keys first: TOML gives every key after a table header to that table, so
+# anything below the exec_once array would land inside the last one and never
+# reach Otto.
+
+# The Hyprland session starts xdg-desktop-autostart.target; this is the same
+# set of entries, scanned by Otto itself.
+xdg_autostart = true
+
+# Exports WAYLAND_DISPLAY to the user manager and activates
+# graphical-session.target, which is what pipewire and the portals wait on.
+systemd_notify = true
+
+# Theme. The rest is undoing /etc/otto/config.toml, which names a cursor and a
+# font no KOOMPI machine has.
+theme_scheme = "Dark"
+# No icon_theme. Otto matches it on index.theme's Name=, not the directory name,
+# and its lookup does not follow Inherits=, so a theme that carries only its own
+# additions - "Breeze Plus" - resolves and then finds nothing, blanking the dock
+# instead of drawing the generic gear. Every theme that does resolve gives the
+# same result as auto-detection: chrome and dolphin land on the gear either way.
+font_family = "Google Sans Flex"
+# The macOS-alike pointer, from koompi-apple-cursor-bin. Test for
+# /usr/share/icons/<name>/cursors, not the name: Mkos-Big-Sur, WhiteSur and the
+# rest of the Mac-sounding themes on this box are icon themes with no cursor in
+# them, and Otto silently falls back to its built-in arrow.
+cursor_theme = "macOS"
+cursor_size = 24
+background_color = "#1b1b1f"
+
+keyboard_repeat_delay = 250
+keyboard_repeat_rate = 35
+
+# First, before anything D-Bus-activated: the portal is what reads
+# XDG_CURRENT_DESKTOP to decide which backend to load, and it is activated by
+# the first screenshare request, not by the session. Without this it inherits
+# the display manager's environment and picks the Hyprland backend.
+[[exec_once]]
+cmd = "dbus-update-activation-environment"
+args = ["--systemd", "WAYLAND_DISPLAY", "XDG_CURRENT_DESKTOP", "XDG_SESSION_TYPE"]
+
+# The topbar and the dynamic island. Otto spawns neither; exec_once does.
+[[exec_once]]
+cmd = "otto-bar"
+args = []
+
+[[exec_once]]
+cmd = "otto-islands"
+args = []
+
+# Clipboard survives the app it was copied from, the same two watchers the
+# Hyprland session runs. Otto serves them wlr-data-control.
+[[exec_once]]
+cmd = "wl-paste"
+args = ["--type", "text", "--watch", "cliphist", "store"]
+
+[[exec_once]]
+cmd = "wl-paste"
+args = ["--type", "image", "--watch", "cliphist", "store"]
+
+[input]
+xkb_layout = "us,kh"
+xkb_options = ["grp:win_space_toggle"]
+touchpad_natural_scroll_enabled = true
+touchpad_dwt_enabled = true
+touchpad_click_method = "clickfinger"
+scroll_speed = 0.7
+
+# otto-lock is already the default locker; only the timeout is off by default.
+# Five minutes, the same hypridle locks the Hyprland session after.
+[lock]
+auto_lock_timeout = 300
+
+# Super, not Ctrl: the shipped bindings are Ctrl-based, which collides with
+# every text field on the machine. These sit beside them rather than replacing
+# them - a merged table cannot delete a key, only rebind it.
+[keyboard_shortcuts]
+"Logo+Return" = { open_default = { role = "terminal", fallback = "wezterm" } }
+"Ctrl+Return" = { open_default = { role = "terminal", fallback = "wezterm" } }
+"Logo+B" = { open_default = "browser" }
+"Logo+E" = { open_default = "file_manager" }
+"Logo+L" = "LockSession"
+# Only reachable on the KOOMPI build: upstream reads Logo+Q ahead of the config
+# and quits the session on it. koompi-otto patches that out.
+"Logo+Q" = "CloseWindow"
+"Logo+Tab" = "ExposeShowAll"
+"Logo+D" = "ExposeShowDesktop"
+"Logo+Up" = "ToggleMaximizeWindow"
+"Logo+Left" = "TileWindowLeft"
+"Logo+Right" = "TileWindowRight"
+
+"Logo+1" = { builtin = "Workspace", index = 0 }
+"Logo+2" = { builtin = "Workspace", index = 1 }
+"Logo+3" = { builtin = "Workspace", index = 2 }
+"Logo+4" = { builtin = "Workspace", index = 3 }
+"Logo+5" = { builtin = "Workspace", index = 4 }
+"Logo+6" = { builtin = "Workspace", index = 5 }
+"Logo+7" = { builtin = "Workspace", index = 6 }
+"Logo+8" = { builtin = "Workspace", index = 7 }
+"Logo+9" = { builtin = "Workspace", index = 8 }
+"Logo+0" = { builtin = "Workspace", index = 9 }
+
+[dock]
+size = 0.75
+bookmarks = [
+  { desktop_id = "org.wezfurlong.wezterm.desktop" },
+  { desktop_id = "google-chrome.desktop" },
+  { desktop_id = "org.kde.dolphin.desktop" },
+]
