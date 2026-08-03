@@ -117,10 +117,9 @@ Singleton {
                 easing.bezierCurve: Appearance.animationCurves.expressiveEffects
             }
         }
-        onMultipliedBrightnessChanged: {
-            if (monitor.animationEnabled) syncBrightness();
-            else setTimer.restart();
-        }
+        // Always through the timer. The Behavior below ticks ~60x/s, and a
+        // brightnessctl fork per animation frame is not worth the smoothness.
+        onMultipliedBrightnessChanged: setTimer.restart()
 
         function initialize() {
             monitor.ready = false;
@@ -185,7 +184,9 @@ Singleton {
 
     // Anti-flashbang
     property int workspaceAnimationDelay: 500
-    property int contentSwitchDelay: 30
+    // A capture round trip is ~400ms-1s, so a 30ms debounce only queued work
+    // that could never keep up with a terminal rewriting its title.
+    property int contentSwitchDelay: 500
     property string screenshotDir: "/tmp/quickshell/brightness/antiflashbang"
     function brightnessMultiplierForLightness(x: real): real {
         // I hand picked some values and fitted an exponential curve for this
@@ -218,7 +219,12 @@ Singleton {
                 id: screenshotTimer
                 interval: 700 // This is what I have for a Hyprland ws anim
                 onTriggered: {
-                    screenshotProc.running = false;
+                    // Killing an in-flight grim to start a fresh one means a
+                    // busy title bar never produces a lightness at all.
+                    if (screenshotProc.running) {
+                        restart();
+                        return;
+                    }
                     screenshotProc.running = true;
                 }
             }
