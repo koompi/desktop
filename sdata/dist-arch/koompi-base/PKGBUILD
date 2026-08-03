@@ -24,7 +24,10 @@ depends=(
   koompi-python
   koompi-screencapture
   koompi-toolkit
+  # One cursor theme per session: Bibata for Hyprland (sdata/install/setups.sh),
+  # the macOS-alike for Otto (dots/.config/otto/config.toml).
   koompi-bibata-modern-classic-bin
+  koompi-apple-cursor-bin
   # Shared branding (wallpapers, plymouth/grub/sddm theming, sddm enablement).
   koompi-branding
   # Login manager — no koompi-* package declared one before; both editions use it.
