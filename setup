@@ -226,6 +226,13 @@ main() {
     $DO_SETUPS && run_setups
     $DO_FILES  && install_files
 
+    # Installing into a session that is already running leaves that session on the
+    # old files: Quickshell holds its QML and its config in memory, so a migration
+    # that rewrote config.json changes nothing on screen and reads as "the update
+    # did nothing". `hyprctl reload` does not cover this - it reloads Hyprland, not
+    # the shell. No-ops outside a Hyprland session, which is the first-install case.
+    $DO_FILES  && reload_session
+
     record_repo_path
 
     sudo_stop
@@ -234,7 +241,6 @@ main() {
     step "Done"
     cat <<EOF
   Log out and pick ${C_BOLD}KOOMPI${C_RST} at your display manager.
-  Already in Hyprland? ${C_BOLD}hyprctl reload${C_RST} picks up the new config.
   Later on, ${C_BOLD}koompi update${C_RST} (or ${C_BOLD}./setup update${C_RST}) brings you up to date.
 
   ${C_BOLD}Super + /${C_RST}       keybind cheatsheet
