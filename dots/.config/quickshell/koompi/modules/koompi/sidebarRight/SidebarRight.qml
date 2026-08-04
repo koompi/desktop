@@ -13,6 +13,26 @@ Scope {
 
     readonly property bool pinned: Persistent.states.sidebar.pinned
 
+    // Held until the content exists: opening from a closed sidebar creates the
+    // Loader's item in the same call, but keepRightSidebarLoaded makes that order
+    // vary, so the page is applied from onLoaded as well.
+    property string pendingDrawer: ""
+
+    function showDrawer(page: string): void {
+        const content = sidebarContentLoader.item;
+        if (content && content.drawer === page) {
+            content.drawer = "";
+            panelWindow.hide();
+            return;
+        }
+        root.pendingDrawer = page;
+        GlobalStates.sidebarRightOpen = true;
+        if (sidebarContentLoader.item) {
+            sidebarContentLoader.item.drawer = root.pendingDrawer;
+            root.pendingDrawer = "";
+        }
+    }
+
     PanelWindow {
         id: panelWindow
         visible: GlobalStates.sidebarRightOpen || root.pinned
@@ -75,11 +95,22 @@ Scope {
             focus: GlobalStates.sidebarRightOpen
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
+                    if (sidebarContentLoader.item?.drawer.length > 0) {
+                        sidebarContentLoader.item.drawer = "";
+                        return;
+                    }
                     panelWindow.hide();
                 }
             }
 
             sourceComponent: SidebarRightContent {}
+
+            onLoaded: {
+                if (root.pendingDrawer.length > 0) {
+                    item.drawer = root.pendingDrawer;
+                    root.pendingDrawer = "";
+                }
+            }
         }
     }
 
@@ -96,6 +127,10 @@ Scope {
 
         function open(): void {
             GlobalStates.sidebarRightOpen = true;
+        }
+
+        function drawer(page: string): void {
+            root.showDrawer(page);
         }
     }
 
@@ -122,5 +157,30 @@ Scope {
         onPressed: {
             GlobalStates.sidebarRightOpen = false;
         }
+    }
+
+    GlobalShortcut {
+        name: "sidebarRightControls"
+        description: "Opens the right sidebar on all controls"
+
+        onPressed: root.showDrawer("controls")
+    }
+    GlobalShortcut {
+        name: "sidebarRightCalendar"
+        description: "Opens the right sidebar on the calendar"
+
+        onPressed: root.showDrawer("calendar")
+    }
+    GlobalShortcut {
+        name: "sidebarRightTodo"
+        description: "Opens the right sidebar on the to-do list"
+
+        onPressed: root.showDrawer("todo")
+    }
+    GlobalShortcut {
+        name: "sidebarRightTimer"
+        description: "Opens the right sidebar on the timer"
+
+        onPressed: root.showDrawer("timer")
     }
 }

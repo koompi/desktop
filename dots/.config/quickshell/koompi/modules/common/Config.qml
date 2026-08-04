@@ -595,26 +595,27 @@ Singleton {
                         property int columns: 6
                         // Ordered in pairs: size 2 lands two per row, so each row is one subject. The last
                         // row holds what may not be installed, so hiding an unavailable toggle trims the
-                        // end instead of punching a gap through the middle.
+                        // end instead of punching a gap through the middle. The first three rows are what
+                        // the sidebar's main screen shows; the rest live in its drawer.
                         property list<var> toggles: [
                             // Connectivity
                             { "size": 2, "type": "network" },
                             { "size": 2, "type": "bluetooth"  },
+                            // Reached for by hand, not by keybind, so they earn the main screen
+                            { "size": 2, "type": "nightLight" },
+                            { "size": 2, "type": "idleInhibitor" },
                             // Audio
                             { "size": 2, "type": "audio" },
                             { "size": 2, "type": "mic" },
-                            // Display
-                            { "size": 2, "type": "nightLight" },
+                            // Display and session
                             { "size": 2, "type": "darkMode" },
+                            { "size": 2, "type": "notifications" },
                             // Capture
                             { "size": 2, "type": "screenSnip" },
                             { "size": 2, "type": "screenRecord" },
                             // Input tools
                             { "size": 2, "type": "colorPicker" },
                             { "size": 2, "type": "onScreenKeyboard" },
-                            // Session
-                            { "size": 2, "type": "notifications" },
-                            { "size": 2, "type": "idleInhibitor" },
                             // Performance
                             { "size": 2, "type": "powerProfile" },
                             { "size": 2, "type": "gameMode" },

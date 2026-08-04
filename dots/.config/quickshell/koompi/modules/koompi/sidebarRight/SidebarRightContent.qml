@@ -102,11 +102,11 @@ Item {
                 sourceComponent: ClassicQuickPanel {}
             }
 
-            // Two rows only. The rest of the grid lives one drawer deep.
+            // Three rows only. The rest of the grid lives one drawer deep.
             LoaderedQuickPanelImplementation {
                 styleName: "android"
                 sourceComponent: AndroidQuickPanel {
-                    maxRows: 2
+                    maxRows: 3
                 }
             }
 
@@ -234,13 +234,17 @@ Item {
                 if (root.drawerPage === "controls") return Translation.tr("All controls");
                 if (root.drawerPage === "calendar") return Translation.tr("Calendar");
                 if (root.drawerPage === "todo") return Translation.tr("To Do");
-                return Translation.tr("Timer");
+                if (root.drawerPage === "timer") return Translation.tr("Timer");
+                return "";
             }
+            // Every page named, and an unknown one draws nothing. A default branch
+            // here silently opened whichever page it named instead.
             sourceComponent: {
                 if (root.drawerPage === "controls") return controlsPage;
                 if (root.drawerPage === "calendar") return calendarPage;
                 if (root.drawerPage === "todo") return todoPage;
-                return timerPage;
+                if (root.drawerPage === "timer") return timerPage;
+                return null;
             }
         }
     }
@@ -264,6 +268,9 @@ Item {
 
             QuickToggleButton {
                 Layout.alignment: Qt.AlignRight
+                // GroupButton fills its cell unless a ButtonGroup indexes it.
+                Layout.fillHeight: false
+                Layout.fillWidth: false
                 visible: Config.options.sidebar.quickToggles.style === "android"
                 toggled: root.editMode
                 buttonIcon: "edit"

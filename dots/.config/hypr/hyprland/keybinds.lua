@@ -54,6 +54,12 @@ hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scra
 -- SUPER + O is reserved for Quickwork and stays unbound until it exists.
 -- The left sidebar keeps SUPER + A.
 hl.bind("SUPER + N", hl.dsp.global("quickshell:sidebarRightToggle"), { description = "Shell: Toggle right sidebar" })
+-- SUPER + ALT is one level deeper than SUPER + N: the panel opens straight onto
+-- the page instead of onto its summary. Same chord again backs out.
+hl.bind("SUPER + ALT + N", hl.dsp.global("quickshell:sidebarRightControls"), { description = "Shell: Right sidebar - all controls" })
+hl.bind("SUPER + ALT + C", hl.dsp.global("quickshell:sidebarRightCalendar"), { description = "Shell: Right sidebar - calendar" })
+hl.bind("SUPER + ALT + D", hl.dsp.global("quickshell:sidebarRightTodo"), { description = "Shell: Right sidebar - to-do list" })
+hl.bind("SUPER + ALT + T", hl.dsp.global("quickshell:sidebarRightTimer"), { description = "Shell: Right sidebar - timer" })
 hl.bind("SUPER + Slash", hl.dsp.global("quickshell:cheatsheetToggle"), { description = "Shell: Toggle cheatsheet" })
 -- Beside the cheatsheet deliberately: the tour is what a new user needs before
 -- the cheatsheet means anything, and the cheatsheet is what they reach for after.

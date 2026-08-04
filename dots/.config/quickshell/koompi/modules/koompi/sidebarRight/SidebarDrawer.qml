@@ -1,6 +1,5 @@
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.koompi.sidebarRight.quickToggles.classicStyle
 import QtQuick
 import QtQuick.Layouts
 
@@ -11,15 +10,35 @@ Rectangle {
     property bool shown: false
     signal dismissed
 
+    property real dragX: 0
+
     width: parent?.width ?? 0
     height: parent?.height ?? 0
-    x: shown ? 0 : width
+    x: (shown ? 0 : width) + dragX
     visible: x < width
     color: Appearance.colors.colLayer0
     radius: parent?.radius ?? 0
 
     Behavior on x {
+        enabled: !dragHandler.active
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+    }
+
+    // Drag right to go back. A handler, not a MouseArea, so it only takes the
+    // grab once the pointer has travelled: taps still reach the toggles.
+    DragHandler {
+        id: dragHandler
+        target: null
+        yAxis.enabled: false
+        onActiveTranslationChanged: root.dragX = Math.max(0, activeTranslation.x)
+        onActiveChanged: {
+            if (active) {
+                root.dragX = 0;
+                return;
+            }
+            if (root.dragX > root.width / 4) root.dismissed();
+            root.dragX = 0;
+        }
     }
 
     MouseArea {
@@ -33,11 +52,20 @@ Rectangle {
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.fillHeight: false
             spacing: Appearance.spacing.normal
 
-            QuickToggleButton {
-                buttonIcon: "arrow_back"
+            RippleButton {
+                implicitWidth: 32
+                implicitHeight: 32
+                buttonRadius: 16
                 onClicked: root.dismissed()
+                contentItem: MaterialSymbol {
+                    anchors.centerIn: parent
+                    iconSize: 20
+                    color: Appearance.colors.colOnLayer0
+                    text: "arrow_back"
+                }
             }
             StyledText {
                 Layout.fillWidth: true
@@ -61,5 +89,12 @@ Rectangle {
                 active: root.visible
             }
         }
+    }
+
+    // Topmost, but deaf to every other button, so it costs the content nothing.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.BackButton
+        onClicked: root.dismissed()
     }
 }
