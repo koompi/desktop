@@ -87,7 +87,11 @@ Item { // Bar content region
                 // bare text, so screenRounding lands on its glyphs; the star is
                 // centred in a button, so its box has to start that much sooner.
                 Layout.leftMargin: Appearance.rounding.screenRounding - leftSidebarButton.iconInset
-                colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
+                // Resting veil, not transparent: the star's blades are separated
+                // by hairline gaps that vanish against the bar without a field
+                // behind them. Thinner than colBarElementBackground - this one
+                // only has to separate the star, not carry a label.
+                colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colBarElementBackground : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.965)
             }
 
             ActiveWindow {

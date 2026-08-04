@@ -50,8 +50,10 @@ RippleButton {
     CustomIcon {
         id: distroIcon
         anchors.centerIn: parent
-        width: 24
-        height: 24
+        // keep even: centerIn a 40px button halves the remainder, and an odd
+        // size lands the glyph on a half pixel and softens the blade gaps
+        width: 26
+        height: 26
         source: Config.options.bar.topLeftIcon == 'distro' ? SystemInfo.distroIcon : `${Config.options.bar.topLeftIcon}-symbolic`
         colorize: true
         color: Appearance.colors.colOnLayer0
