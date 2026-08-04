@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=KOOMPI Otto
-Comment=KOOMPI Desktop Experience, powered by Otto
-Exec=/usr/bin/koompi-otto-session
-Type=Application
-DesktopNames=KOOMPI;Otto
-Keywords=otto;wayland;koompi;
-Icon=koompi
-X-KOOMPI-Managed=true

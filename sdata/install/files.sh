@@ -217,11 +217,7 @@ install_files() {
 # it. A user-level install has no such file, so the Exec is rewritten to the copy
 # that exists. Absolute path required: $HOME is not expanded in a desktop entry.
 install_session_entry() {
-    local launcher
-    for launcher in koompi-session koompi-otto-session; do
-        install_one_session_entry "$launcher" \
-            "${XDG_DATA_HOME}/wayland-sessions/${launcher%-session}.desktop"
-    done
+    install_one_session_entry koompi-session "${XDG_DATA_HOME}/wayland-sessions/koompi.desktop"
 }
 
 install_one_session_entry() {

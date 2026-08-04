@@ -141,9 +141,8 @@ setup_services() {
 }
 
 # XDG_DESKTOP_PORTAL_DIR does not add a directory, it REPLACES every other one, so
-# the old five-file whitelist made every backend outside it invisible - which is how
-# the Otto session lost its Settings backend, fell back to gtk and rendered a light
-# bar on a dark desktop. xdg-desktop-portal has searched
+# the old five-file whitelist made every backend outside it invisible.
+# xdg-desktop-portal has searched
 # ~/.local/share/xdg-desktop-portal/portals since 1.19, so koompi.portal ships there
 # through dots/ and the override has nothing left to do.
 setup_portals() {
@@ -156,22 +155,6 @@ setup_portals() {
         run rm -f "$dropin"
         run rmdir --ignore-fail-on-non-empty "$(dirname "$dropin")"
         warn "the old whitelist at ${XDG_DATA_HOME}/koompi/portals is now unused; left in place rather than deleted"
-    fi
-
-    # The packaged unit only arrived in koompi-otto 0.15.0.r57. Removing the
-    # hand-made copy before the package that replaces it is installed would
-    # leave the Otto session with no Settings backend at all.
-    local handmade="${XDG_CONFIG_HOME}/systemd/user/xdg-desktop-portal-otto.service"
-    # Overridable so the test can drive both branches; the host's own /usr/lib
-    # would otherwise decide which one runs.
-    local packaged="${OTTO_PORTAL_UNIT:-/usr/lib/systemd/user/xdg-desktop-portal-otto.service}"
-    if [[ -f "$handmade" ]]; then
-        if [[ -f "$packaged" ]]; then
-            info "the koompi-otto package now ships this unit; dropping the hand-made copy"
-            run rm -f "$handmade"
-        else
-            warn "keeping hand-made $handmade; koompi-otto does not ship the unit yet"
-        fi
     fi
 
     run systemctl --user daemon-reload
@@ -299,52 +282,6 @@ setup_system_session() {
     fi
 }
 
-# A second session entry beside the Hyprland one, offered only where Otto is
-# installed - otherwise the greeter would list a session that dies on launch.
-# Nothing here touches the KOOMPI session above.
-setup_otto_session() {
-    have otto || return 0
-    step "Otto login session"
-
-    local launcher=/usr/local/bin/koompi-otto-session
-    local entry=/usr/share/wayland-sessions/koompi-otto.desktop
-    local dm_entry=/usr/share/koompi/wayland-sessions/koompi-otto.desktop
-    local install_launcher=true
-
-    if [[ -x /usr/bin/koompi-otto-session ]]; then
-        launcher=/usr/bin/koompi-otto-session
-        install_launcher=false
-    fi
-    if $install_launcher && [[ -e "$launcher" ]] \
-       && ! grep -q "koompi-otto-session - launch the KOOMPI" "$launcher" 2>/dev/null; then
-        warn "$launcher exists and is not KOOMPI-managed; not overwriting it"
-        return 0
-    fi
-    if [[ -e "$entry" ]] && ! grep -q '^X-KOOMPI-Managed=true$' "$entry" 2>/dev/null; then
-        warn "$entry exists and is not KOOMPI-managed; not overwriting it"
-        return 0
-    fi
-
-    local staged_entry
-    staged_entry="$(mktemp)"
-    sed "s|^Exec=/usr/bin/koompi-otto-session$|Exec=${launcher}|" \
-        "$REPO_ROOT/dots/.local/share/wayland-sessions/koompi-otto.desktop" > "$staged_entry"
-
-    if $install_launcher; then
-        run sudo install -Dm755 "$REPO_ROOT/dots/.local/bin/koompi-otto-session" "$launcher"
-    fi
-    run sudo install -Dm644 "$staged_entry" "$entry"
-    rm -f "$staged_entry"
-    run sudo install -dm755 "$(dirname "$dm_entry")"
-    run sudo ln -sfn "$entry" "$dm_entry"
-
-    if [[ "$DRY_RUN" != true && -x "$launcher" && -f "$entry" ]]; then
-        $install_launcher && printf '%s\n' "$launcher" >> "$SYSTEM_MANIFEST"
-        printf '%s\n%s\n' "$entry" "$dm_entry" >> "$SYSTEM_MANIFEST"
-        ok "KOOMPI Otto is offered as a second session"
-    fi
-}
-
 run_setups() {
     setup_koompi_cli
     setup_python_venv
@@ -355,5 +292,4 @@ run_setups() {
     setup_portals
     setup_toolkit_defaults
     setup_system_session
-    setup_otto_session
 }
