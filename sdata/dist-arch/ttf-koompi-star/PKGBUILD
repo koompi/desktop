@@ -17,7 +17,7 @@
 # changes; that SVG is the single source of the outline.
 groups=(koompi)
 pkgname=ttf-koompi-star
-pkgver=1.0
+pkgver=1.1
 pkgrel=1
 pkgdesc='KOOMPI star as a single font glyph at U+100000, for the Super key and text contexts'
 arch=(any)

@@ -30,11 +30,33 @@ UPM = 1000
 # be shadowed by whichever face fontconfig sorted first.
 CODEPOINT = 0x100000
 GLYPH = "koompistar"
-ADVANCE = UPM
-# Spans the cap band with a hair of overshoot below the baseline, so the mark sits
-# optically centred against uppercase rather than perched on it.
-TARGET_HEIGHT = 740
-BOTTOM = -14
+
+# Everything below matches JetBrains Mono NF, the face the star sits beside, so
+# the glyph behaves like one of its characters instead of needing the caller to
+# correct it. Measured from its own Windows mark, U+E8E5, which is what the Super
+# keycap drew before the star:
+#
+#   advance 600, the same cell as a letter, so a cap sized off the glyph is the
+#           width of a cap sized off "W"
+#   hhea 1020/-300, the same line box, so the two stack identically
+#   ink 800x800 centred on the line-box centre at y 360, exactly, so centring the
+#           text item centres the mark and no offset is left over
+#
+# The ink is deliberately taller than the 730 cap height and wider than the 600
+# cell. That overshoot is what makes a mark read at the same weight as the
+# letters around it; bleeding past the advance is normal for an icon glyph.
+ASCENT = 1020
+DESCENT = -300
+CAP_HEIGHT = 730
+ADVANCE = 600
+# Same 800 as the Windows mark. The ink overhangs the 600 cell by 100 a side,
+# which is what an icon glyph does and what a terminal still renders cleanly;
+# going further to fill the Super keycap would collide with the characters
+# beside it in a prompt. The keycap earns its size from tighter padding instead.
+TARGET_SIZE = 800
+# Centre the ink on the line box rather than pinning it to the baseline.
+INK_CENTRE = (ASCENT + DESCENT) / 2
+BOTTOM = INK_CENTRE - TARGET_SIZE / 2
 
 # potrace writes y-up path data under a negative-y group transform, which the
 # y-down SVG space then cancels. Reading the raw coordinates as y-up is correct;
@@ -70,13 +92,19 @@ def main():
         sys.exit(f"missing artwork: {SVG}")
     rec = record(svg_paths(SVG.read_text(encoding="utf-8")))
     x0, y0, x1, y1 = bounds(rec)
-    scale = TARGET_HEIGHT / (y1 - y0)
-    width = (x1 - x0) * scale
-    dx = (ADVANCE - width) / 2 - x0 * scale
-    dy = BOTTOM - y0 * scale
+    # Each axis scaled to the same target rather than one scale off the height.
+    # potrace traced the mark a hair wider than tall, and carrying that through
+    # lands the vertical tips on different pixel fractions than the horizontal
+    # ones, which is what makes the top and bottom edges read soft.
+    # These read the raw <path d=...>, so any <g transform> on the SVG is not
+    # seen here; the artwork's own viewBox has no bearing on the glyph.
+    sx = TARGET_SIZE / (x1 - x0)
+    sy = TARGET_SIZE / (y1 - y0)
+    dx = (ADVANCE - TARGET_SIZE) / 2 - x0 * sx
+    dy = BOTTOM - y0 * sy
 
     ttpen = TTGlyphPen(None)
-    rec.replay(TransformPen(Cu2QuPen(ttpen, 1.0), (scale, 0, 0, scale, dx, dy)))
+    rec.replay(TransformPen(Cu2QuPen(ttpen, 1.0), (sx, 0, 0, sy, dx, dy)))
     star = ttpen.glyph()
 
     empty = TTGlyphPen(None).glyph()
@@ -85,8 +113,13 @@ def main():
     fb.setupGlyphOrder(order)
     fb.setupCharacterMap({0x20: "space", CODEPOINT: GLYPH})
     fb.setupGlyf({".notdef": empty, "space": empty, GLYPH: star})
-    fb.setupHorizontalMetrics({g: (ADVANCE, 0) for g in order})
-    fb.setupHorizontalHeader(ascent=800, descent=-200)
+    # lsb has to be the glyph's own xMin, not 0: the ink is wider than the cell
+    # and starts left of it, and a renderer that positions off hmtx rather than
+    # glyf would shift the mark by the difference.
+    star_lsb = round(dx + x0 * sx)
+    fb.setupHorizontalMetrics({g: (ADVANCE, star_lsb if g == GLYPH else 0)
+                               for g in order})
+    fb.setupHorizontalHeader(ascent=ASCENT, descent=DESCENT)
     fb.setupNameTable({
         "familyName": "KOOMPI Star",
         "styleName": "Regular",
@@ -99,16 +132,16 @@ def main():
         "description": "The KOOMPI star as a single glyph at U+100000, for the "
                        "Super key and anywhere the mark must be a character.",
     })
-    fb.setupOS2(sTypoAscender=800, sTypoDescender=-200, sTypoLineGap=0,
-                usWinAscent=800, usWinDescent=200,
-                sCapHeight=TARGET_HEIGHT, achVendID="KMPI")
+    fb.setupOS2(sTypoAscender=ASCENT, sTypoDescender=DESCENT, sTypoLineGap=0,
+                usWinAscent=ASCENT, usWinDescent=-DESCENT,
+                sCapHeight=CAP_HEIGHT, achVendID="KMPI")
     fb.setupPost(isFixedPitch=1)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fb.save(OUT)
 
     print(f"wrote {OUT.relative_to(REPO)}")
-    print(f"  source bbox {x1 - x0:.0f}x{y1 - y0:.0f} -> {width:.0f}x{TARGET_HEIGHT} at {UPM} upm")
-    print(f"  U+{CODEPOINT:04X} advance {ADVANCE}, lsb {dx + x0 * scale:.0f}")
+    print(f"  source bbox {x1 - x0:.0f}x{y1 - y0:.0f} -> {TARGET_SIZE}x{TARGET_SIZE} at {UPM} upm")
+    print(f"  U+{CODEPOINT:04X} advance {ADVANCE}, lsb {star_lsb}, ink centred on y {INK_CENTRE:.0f}")
 
 
 if __name__ == "__main__":
