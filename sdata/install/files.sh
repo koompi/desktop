@@ -92,6 +92,93 @@ migrate_workspace_app_icons() {
     fi
 }
 
+# A persisted toggle array replaces the shipped default outright - Quickshell's
+# JsonAdapter does not merge lists - so anyone with an existing config.json keeps
+# the list they first got, however many toggles ship later. That left an install
+# showing six controls on the main screen and the same six behind "All controls",
+# which is the drawer's whole purpose gone. Append what is missing rather than
+# overwrite: the pencil exists so people can arrange this, and an arrangement is
+# theirs to keep.
+migrate_quick_toggles() {
+    local config="${XDG_CONFIG_HOME}/koompi/config.json"
+    local marker="${KOOMPI_STATE_DIR}/migrations/quick-toggles-v1"
+    local defaults="$REPO_ROOT/dots/.config/quickshell/koompi/modules/common/Config.qml"
+
+    [[ -e "$marker" ]] && return 0
+
+    if [[ ! -e "$config" ]]; then
+        info "new config will use the full quick-toggle list"
+        if [[ "$DRY_RUN" != true ]]; then
+            mkdir -p "$(dirname "$marker")"
+            : > "$marker"
+        fi
+        return 0
+    fi
+
+    if ! have jq; then
+        warn "jq is unavailable; cannot check the quick-toggle list"
+        return 0
+    fi
+    if ! jq -e 'type == "object"' "$config" >/dev/null 2>&1; then
+        warn "$config is not a JSON object; leaving it untouched"
+        return 0
+    fi
+
+    # Read the order out of the QML that defines it, so the two cannot drift.
+    local -a shipped=()
+    mapfile -t shipped < <(
+        sed -n '/property list<var> toggles: \[/,/^ *\]/p' "$defaults" |
+            grep -o '"type": *"[A-Za-z]*"' | sed 's/.*"\([A-Za-z]*\)"$/\1/'
+    )
+    (( ${#shipped[@]} )) || { warn "could not read the shipped quick-toggle list"; return 0; }
+
+    local -a missing=()
+    local type
+    for type in "${shipped[@]}"; do
+        jq -e --arg t "$type" '
+            (.sidebar.quickToggles.android.toggles // []) | any(.type == $t)
+        ' "$config" >/dev/null || missing+=("$type")
+    done
+
+    if (( ${#missing[@]} )); then
+        info "adding ${#missing[@]} missing quick toggle(s): ${missing[*]}"
+        if [[ "$DRY_RUN" != true ]]; then
+            local backup_dir tmp
+            backup_dir="${BACKUP_ROOT}/$(date +%Y%m%d-%H%M%S)"
+            mkdir -p "$backup_dir/.config/koompi"
+            cp -a "$config" "$backup_dir/.config/koompi/config.json" \
+                || { err "could not back up $config"; return 1; }
+
+            tmp="$(mktemp "${config}.tmp.XXXXXX")"
+            # Size 2 throughout: a size-1 toggle draws its icon with no label, which
+            # is what made an appended keep-awake read as an unlabelled block.
+            if ! jq --argjson add "$(printf '%s\n' "${missing[@]}" |
+                    jq -R '{size: 2, type: .}' | jq -s '.')" '
+                    .sidebar.quickToggles.android.toggles =
+                        ((.sidebar.quickToggles.android.toggles // []) + $add)
+                ' "$config" > "$tmp"; then
+                rm -f "$tmp"
+                err "could not migrate $config"
+                return 1
+            fi
+            # jq empty passes on the empty file a failed redirect leaves behind.
+            if ! jq -e 'type == "object"' "$tmp" >/dev/null 2>&1; then
+                rm -f "$tmp"
+                err "migration produced invalid JSON; $config left untouched"
+                return 1
+            fi
+            chmod --reference="$config" "$tmp"
+            mv -f "$tmp" "$config"
+            ok "quick toggles restored; backup saved under $backup_dir"
+        fi
+    fi
+
+    if [[ "$DRY_RUN" != true ]]; then
+        mkdir -p "$(dirname "$marker")"
+        : > "$marker"
+    fi
+}
+
 # Copy aside every path in $HOME this install is about to change. Driven off dots/,
 # so it can neither miss a file we install nor hoard files we do not touch.
 #
@@ -160,6 +247,7 @@ install_files() {
     done
 
     migrate_workspace_app_icons
+    migrate_quick_toggles
 
     if [[ "$SKIP_BACKUP" != true ]]; then
         backup_existing
