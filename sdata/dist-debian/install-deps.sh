@@ -186,6 +186,7 @@ fi
 step "Debian/Ubuntu: the parts no archive carries"
 source "$REPO_ROOT/sdata/lib/from-source.sh"
 install_uv
+install_zig
 have yq || install_go_yq
 install_matugen
 install_hyprshot

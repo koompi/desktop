@@ -12,9 +12,9 @@ setup_koompi_cli() {
     local build_root="$XDG_CACHE_HOME/koompi/build/cli"
     local binary="$build_root/out/bin/koompi"
     [[ -f "$src/build.zig" ]] || { warn "CLI source not found, skipping"; return 0; }
-    if ! have zig; then
-        warn "zig not found; the koompi command cannot be built."
-        warn "Install zig, then re-run: ./setup install --only-setups"
+    if ! zig_usable; then
+        warn "zig ${ZIG_MIN} or newer not found; the koompi command cannot be built."
+        warn "Install one, then re-run: ./setup install --only-setups"
         return 0
     fi
     run mkdir -p "$build_root"
@@ -60,9 +60,9 @@ setup_global_menu() {
     step "Global menu daemon"
     local src="${XDG_CONFIG_HOME}/quickshell/koompi/scripts/global-menu"
     [[ -d "$src" ]] || { info "not installed, skipping"; return 0; }
-    if ! have zig; then
-        warn "zig not found; the global menu will be empty until it is built."
-        warn "Install zig, then re-run: ./setup install --only-setups"
+    if ! zig_usable; then
+        warn "zig ${ZIG_MIN} or newer not found; the global menu will be empty until it is built."
+        warn "Install one, then re-run: ./setup install --only-setups"
         return 0
     fi
     ( cd "$src" && run zig build -Doptimize=ReleaseSafe )

@@ -10,7 +10,8 @@
 # whole transaction.
 
 # --- terminals ---------------------------------------------------------------
-wezterm                         # trixie and later; absent on older Ubuntu
+wezterm                         # Ubuntu only. Dropped from Debian before trixie, so Debian falls
+                                # through to konsole; variables.lua tries eight terminals in turn
 konsole
 
 # --- KOOMPI Workbench --------------------------------------------------------

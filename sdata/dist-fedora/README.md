@@ -49,6 +49,20 @@ sudo dnf copr enable errornointernet/quickshell -y
 ./setup install --only-deps
 ```
 
+## `xorg-x11-utils` is gone
+
+Fedora 41 split `xorg-x11-utils` into one package per binary and retired the old name.
+It resolved to nothing from 41 onward, and because the package step runs with `--skip-unavailable` it took `xprop` with it in silence - so the global menu could not read menu addresses and there was no error saying why.
+The list asks for **`xprop`** directly now.
+
+`xorg-x11-server-Xwayland` survived the split and is unchanged.
+
+## The zig floor
+
+`scripts/global-menu/build.zig.zon` declares `minimum_zig_version = "0.16.0"`.
+Fedora 44 packages zig 0.16.0, so this costs nothing here today.
+The recipe still calls `install_zig` from `sdata/lib/from-source.sh`, which is a no-op whenever the packaged compiler clears the floor: a Fedora release that falls behind should cost a download, not the global menu.
+
 ## Failure handling
 
 The package install runs with `--skip-unavailable`.

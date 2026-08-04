@@ -141,5 +141,7 @@ microtex                        # copr: ririko66z/dots-hyprland - LaTeX in the s
 zig                             # builds the global-menu daemon
 glib2-devel                     # GDBus headers the global-menu daemon links against
 pkgconf-pkg-config              # zig build resolves glib through it
-xorg-x11-utils                  # xprop; the global menu reads menu addresses with it
+xprop                           # the global menu reads menu addresses with it. Fedora 41 split
+                                # xorg-x11-utils into one package per binary, so the old name now
+                                # resolves to nothing and took xprop down with it silently
 xorg-x11-server-Xwayland        # Qt exports its menubar over D-Bus only on X11

@@ -67,6 +67,31 @@ The correct package name is `yq-go`, which exists in Debian forky/sid and trixie
 | `bibata-cursor-theme` | upstream release tarball | not packaged |
 | `hyprshot` | a single upstream bash script | not packaged |
 | `hyprsunset` | source build, Ubuntu only | in Debian backports; in no Ubuntu archive or PPA. Its build deps are all in resolute universe, so this is minutes, not a Wayland rebuild |
+| `zig` | `ziglang.org` release tarball | **neither release can supply one.** See below |
+
+## The zig floor, and why the package is not enough
+
+`scripts/global-menu/build.zig.zon` declares `minimum_zig_version = "0.16.0"`.
+Neither Debian nor Ubuntu meets it:
+
+| Release | `zig` | Result |
+|---|---|---|
+| Debian 13 + backports | no package at all | the global menu and the `koompi` command are never built |
+| Ubuntu 26.04 | metapackage `zig-defaults` depending on `zig0.14`; `zig0.15` is the newest on offer | worse - `have zig` succeeds, `zig build` then fails on the version floor |
+
+The Ubuntu case is the one that matters: a plain "is zig installed" check finds a compiler that cannot build the daemon, so the step fails instead of skipping.
+`zig_usable()` in `sdata/lib/common.sh` checks the version, not the name, and `install_zig()` fetches the official static tarball when the answer is no.
+It unpacks to `/usr/local/lib/zig-<version>` with `/usr/local/bin/zig` linked at it, because zig reads its own `lib/` at runtime and a lone binary does not work.
+
+`zig` stays on `packages.list`: where a distro does ship a new enough one, that is the copy to use.
+
+## WezTerm is Ubuntu-only
+
+`packages-apps.list` used to claim WezTerm was in "trixie and later". It is not: Debian dropped it before trixie, and `apt-cache show wezterm` on trixie with backports, contrib and non-free enabled returns nothing.
+Ubuntu 26.04 has it.
+
+Nothing breaks. `variables.lua` runs `launch_first_available.sh` over wezterm, foot, kitty, alacritty, konsole, kgx, uxterm and xterm, and `konsole` installs on both, so Debian lands on konsole.
+The only loss is the wezterm-specific scratchpad classes, which fall back to the same chain.
 
 ## Deliberately not installed
 

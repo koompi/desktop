@@ -116,7 +116,9 @@ ffmpeg                          # switchwall.sh, Audio.qml's ffplay, koompi-quic
 easyeffects                     # the sidebar toggle, started in service mode at login
 
 # --- compositor and shell ----------------------------------------------------
-zig                             # builds the global-menu daemon; skipped if absent
+zig                             # builds the global-menu daemon. Absent on Debian 13, and Ubuntu's
+                                # metapackage pins 0.14; both are below the 0.16 floor, so
+                                # from-source.sh fetches a real one when this name disappoints
 libglib2.0-dev                  # GDBus headers the global-menu daemon links against
 pkg-config                      # zig build resolves glib through it
 x11-utils                       # xprop; the global menu reads menu addresses with it

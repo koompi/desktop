@@ -155,6 +155,37 @@ install_zed() {
     fi
 }
 
+# Neither apt nor dnf reliably offers a zig new enough: Debian 13 packages none,
+# Ubuntu's `zig` metapackage pulls 0.14, and the global-menu daemon floors at
+# ZIG_MIN. Without it the top bar's global menu stays empty and the koompi
+# command never gets built, so this is a feature, not a toolchain nicety.
+# zig is not a lone binary - it reads its own lib/ at runtime - so the whole
+# tree is installed and only the entry point is linked onto PATH.
+install_zig() {
+    zig_usable && return 0
+    step "zig ${ZIG_MIN}"
+    local target
+    case "$OS_ARCH" in
+        x86_64)  target=x86_64-linux ;;
+        aarch64) target=aarch64-linux ;;
+        *)       warn "no zig build for $OS_ARCH; the global menu and the koompi command stay unbuilt"; return 0 ;;
+    esac
+    have zig && info "the packaged zig ($(zig version 2>/dev/null)) is below ${ZIG_MIN}; installing beside it"
+
+    local tmp dir="/usr/local/lib/zig-${ZIG_MIN}"
+    tmp="$(mktemp -d)"
+    if ! _fetch "https://ziglang.org/download/${ZIG_MIN}/zig-${target}-${ZIG_MIN}.tar.xz" "$tmp/zig.tar.xz"; then
+        warn "could not fetch zig; the global menu and the koompi command stay unbuilt"
+        rm -rf "$tmp"; return 0
+    fi
+    run sudo mkdir -p "$dir"
+    # --strip-components drops the versioned top directory so the layout is
+    # stable whatever the tarball calls itself.
+    run sudo tar -xf "$tmp/zig.tar.xz" -C "$dir" --strip-components=1
+    run sudo ln -sfn "$dir/zig" "$LOCAL_BIN/zig"
+    rm -rf "$tmp"
+}
+
 install_matugen() {
     have matugen && return 0
     step "matugen"

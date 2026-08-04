@@ -38,6 +38,23 @@ die()     { err "$*"; exit 1; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# scripts/global-menu/build.zig.zon floors at 0.16.0, and a distro zig is not
+# enough on its own: Debian 13 has no zig at all and Ubuntu's `zig` metapackage
+# still points at 0.14, which fails the build rather than skipping it.
+ZIG_MIN=0.16.0
+zig_usable() {
+    have zig || return 1
+    local v core
+    v="$(zig version 2>/dev/null)" || return 1
+    core="${v%%-*}"
+    # sort -V ranks 0.16.0-dev above 0.16.0; semver, and zig's own
+    # minimum_zig_version, rank it below. Refuse a pre-release of the floor
+    # itself and let sort decide the rest.
+    [[ "$core" == "$v" || "$core" != "$ZIG_MIN" ]] || return 1
+    # Already-sorted check: true when ZIG_MIN <= core.
+    printf '%s\n%s\n' "$ZIG_MIN" "$core" | sort -C -V
+}
+
 # Run a command, echoing it first. Honours --dry-run. On failure the user
 # chooses to retry, skip, or abort, because a half-installed desktop is worse
 # than a stopped installer.
