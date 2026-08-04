@@ -15,8 +15,11 @@ import qs.modules.koompi.sidebarRight.quickToggles
 import qs.modules.koompi.sidebarRight.quickToggles.classicStyle
 
 import qs.modules.koompi.sidebarRight.bluetoothDevices
+import qs.modules.koompi.sidebarRight.calendar
 import qs.modules.koompi.sidebarRight.nightLight
 import qs.modules.koompi.sidebarRight.notifications
+import qs.modules.koompi.sidebarRight.pomodoro
+import qs.modules.koompi.sidebarRight.todo
 import qs.modules.koompi.sidebarRight.volumeMixer
 import qs.modules.koompi.sidebarRight.wifiNetworks
 
@@ -31,6 +34,10 @@ Item {
     property bool showNightLightDialog: false
     property bool showWifiDialog: false
     property bool editMode: false
+    property string drawer: ""
+    // Survives the slide-out so the drawer keeps its content while closing.
+    property string drawerPage: ""
+    onDrawerChanged: if (drawer.length > 0) drawerPage = drawer
 
     Connections {
         target: GlobalStates
@@ -40,6 +47,8 @@ Item {
                 root.showBluetoothDialog = false;
                 root.showAudioOutputDialog = false;
                 root.showAudioInputDialog = false;
+                root.drawer = "";
+                root.editMode = false;
             }
         }
     }
@@ -76,68 +85,70 @@ Item {
                 Layout.bottomMargin: 0
             }
 
-            SecondaryTabBar {
-                id: tabBar
-                // Settings is the landing tab: it carries the controls, and Today
-                // is a glance you take, not a place you act.
-                Component.onCompleted: currentIndex = 2
-                Repeater {
-                    model: [
-                        {
-                            "name": Translation.tr("Today"),
-                            "icon": "notifications"
-                        },
-                        {
-                            "name": Translation.tr("Personal"),
-                            "icon": "checklist"
-                        },
-                        {
-                            "name": Translation.tr("Settings"),
-                            "icon": "tune"
-                        },
-                    ]
-                    delegate: SecondaryTabButton {
-                        required property var modelData
-                        buttonText: modelData.name
-                        buttonIcon: modelData.icon
+            Loader {
+                Layout.fillWidth: true
+                visible: active
+                active: {
+                    const configQuickSliders = Config.options.sidebar.quickSliders
+                    if (!configQuickSliders.enable) return false
+                    if (!configQuickSliders.showMic && !configQuickSliders.showVolume && !configQuickSliders.showBrightness) return false;
+                    return true;
+                }
+                sourceComponent: QuickSliders {}
+            }
+
+            LoaderedQuickPanelImplementation {
+                styleName: "classic"
+                sourceComponent: ClassicQuickPanel {}
+            }
+
+            // Two rows only. The rest of the grid lives one drawer deep.
+            LoaderedQuickPanelImplementation {
+                styleName: "android"
+                sourceComponent: AndroidQuickPanel {
+                    maxRows: 2
+                }
+            }
+
+            DrawerRow {
+                rowIcon: "tune"
+                rowText: Translation.tr("All controls")
+                onClicked: root.drawer = "controls"
+            }
+
+            Loader {
+                Layout.fillWidth: true
+                active: MprisController.hasActiveMedia
+                visible: active
+                sourceComponent: Rectangle {
+                    implicitHeight: mediaWidget.implicitHeight + Appearance.spacing.small * 2
+                    radius: Appearance.rounding.normal
+                    color: Appearance.colors.colLayer1
+                    Media {
+                        id: mediaWidget
+                        anchors.centerIn: parent
                     }
                 }
             }
 
-            // One Loader per tab, gated on `active`, so the hidden tab's tools do
-            // not exist at all: switching builds the incoming one and destroys the
-            // outgoing one.
-            Loader {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                active: tabBar.currentIndex === 0
-                visible: active
-                sourceComponent: todayTab
+            SectionLabel {
+                text: Translation.tr("Today")
             }
 
             Loader {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                active: tabBar.currentIndex === 1
+                active: Config.options.bar.weather.enable
                 visible: active
-                sourceComponent: personalTab
+                sourceComponent: Rectangle {
+                    implicitHeight: weatherBar.implicitHeight + Appearance.spacing.small * 2
+                    radius: Appearance.rounding.normal
+                    color: Appearance.colors.colLayer1
+                    WeatherBar {
+                        id: weatherBar
+                        anchors.centerIn: parent
+                    }
+                }
             }
-
-            Loader {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                active: tabBar.currentIndex === 2
-                visible: active
-                sourceComponent: settingsTab
-            }
-        }
-    }
-
-    // Today: only what is happening today. Controls live under Settings.
-    Component {
-        id: todayTab
-        ColumnLayout {
-            spacing: root.sidebarPadding
 
             // Today's meetings, when a calendar is connected. Bound to the clock
             // so it rolls over at midnight instead of pinning to load time.
@@ -183,6 +194,7 @@ Item {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.minimumHeight: 120
                 radius: Appearance.rounding.normal
                 color: Appearance.colors.colLayer1
 
@@ -191,31 +203,52 @@ Item {
                     anchors.margins: Appearance.spacing.small
                 }
             }
+
+            SectionLabel {
+                text: Translation.tr("Personal")
+            }
+
+            DrawerRow {
+                rowIcon: "calendar_month"
+                rowText: Translation.tr("Calendar")
+                onClicked: root.drawer = "calendar"
+            }
+
+            DrawerRow {
+                rowIcon: "done_outline"
+                rowText: Translation.tr("To Do")
+                onClicked: root.drawer = "todo"
+            }
+
+            DrawerRow {
+                rowIcon: "schedule"
+                rowText: Translation.tr("Timer")
+                onClicked: root.drawer = "timer"
+            }
+        }
+
+        SidebarDrawer {
+            shown: root.drawer.length > 0
+            onDismissed: root.drawer = ""
+            title: {
+                if (root.drawerPage === "controls") return Translation.tr("All controls");
+                if (root.drawerPage === "calendar") return Translation.tr("Calendar");
+                if (root.drawerPage === "todo") return Translation.tr("To Do");
+                return Translation.tr("Timer");
+            }
+            sourceComponent: {
+                if (root.drawerPage === "controls") return controlsPage;
+                if (root.drawerPage === "calendar") return calendarPage;
+                if (root.drawerPage === "todo") return todoPage;
+                return timerPage;
+            }
         }
     }
 
     Component {
-        id: personalTab
-        PersonalTools {}
-    }
-
-    // Settings: the quick controls Today used to carry.
-    Component {
-        id: settingsTab
+        id: controlsPage
         ColumnLayout {
-            spacing: root.sidebarPadding
-
-            Loader {
-                Layout.fillWidth: true
-                visible: active
-                active: {
-                    const configQuickSliders = Config.options.sidebar.quickSliders
-                    if (!configQuickSliders.enable) return false
-                    if (!configQuickSliders.showMic && !configQuickSliders.showVolume && !configQuickSliders.showBrightness) return false;
-                    return true;
-                }
-                sourceComponent: QuickSliders {}
-            }
+            spacing: Appearance.spacing.small
 
             LoaderedQuickPanelImplementation {
                 styleName: "classic"
@@ -229,37 +262,14 @@ Item {
                 }
             }
 
-            // Weather and the player used to sit behind the bar's "..." menu.
-            // Everything that menu offered is reachable here now.
-            Loader {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                active: Config.options.bar.weather.enable
-                visible: active
-                sourceComponent: Rectangle {
-                    implicitHeight: weatherBar.implicitHeight + Appearance.spacing.small * 2
-                    radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
-                    WeatherBar {
-                        id: weatherBar
-                        anchors.centerIn: parent
-                    }
-                }
-            }
-
-            Loader {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                active: MprisController.hasActiveMedia
-                visible: active
-                sourceComponent: Rectangle {
-                    implicitHeight: mediaWidget.implicitHeight + Appearance.spacing.small * 2
-                    radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
-                    Media {
-                        id: mediaWidget
-                        anchors.centerIn: parent
-                    }
+            QuickToggleButton {
+                Layout.alignment: Qt.AlignRight
+                visible: Config.options.sidebar.quickToggles.style === "android"
+                toggled: root.editMode
+                buttonIcon: "edit"
+                onClicked: root.editMode = !root.editMode
+                StyledToolTip {
+                    text: Translation.tr("Edit quick toggles") + (root.editMode ? Translation.tr("\nLMB to enable/disable\nRMB to toggle size\nScroll to swap position") : "")
                 }
             }
 
@@ -267,6 +277,21 @@ Item {
                 Layout.fillHeight: true
             }
         }
+    }
+
+    Component {
+        id: calendarPage
+        CalendarWidget {}
+    }
+
+    Component {
+        id: todoPage
+        TodoWidget {}
+    }
+
+    Component {
+        id: timerPage
+        PomodoroWidget {}
     }
 
     ToggleDialog {
@@ -334,6 +359,47 @@ Item {
             }
             function onVisibleChanged() {
                 if (!toggleDialogLoader.item.visible && !root[toggleDialogLoader.shownPropertyString]) toggleDialogLoader.active = false;
+            }
+        }
+    }
+
+    component SectionLabel: StyledText {
+        Layout.fillWidth: true
+        Layout.leftMargin: Appearance.spacing.small
+        Layout.bottomMargin: -Appearance.spacing.small
+        font.pixelSize: Appearance.font.pixelSize.small
+        color: Appearance.colors.colSubtext
+    }
+
+    component DrawerRow: RippleButton {
+        id: drawerRow
+        property string rowIcon
+        property string rowText
+
+        Layout.fillWidth: true
+        implicitHeight: 44
+        horizontalPadding: Appearance.spacing.normal
+        buttonRadius: Appearance.rounding.normal
+        colBackground: Appearance.colors.colLayer1
+
+        contentItem: RowLayout {
+            spacing: Appearance.spacing.normal
+            MaterialSymbol {
+                iconSize: 20
+                color: Appearance.colors.colOnLayer1
+                text: drawerRow.rowIcon
+            }
+            StyledText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: Appearance.colors.colOnLayer1
+                text: drawerRow.rowText
+            }
+            MaterialSymbol {
+                iconSize: 20
+                color: Appearance.colors.colSubtext
+                text: "chevron_right"
             }
         }
     }
@@ -413,16 +479,6 @@ Item {
             color: Appearance.colors.colLayer1
             padding: Appearance.spacing.small
 
-            QuickToggleButton {
-                toggled: root.editMode
-                // The panel it edits lives in Settings now.
-                visible: Config.options.sidebar.quickToggles.style === "android" && tabBar.currentIndex === 2
-                buttonIcon: "edit"
-                onClicked: root.editMode = !root.editMode
-                StyledToolTip {
-                    text: Translation.tr("Edit quick toggles") + (root.editMode ? Translation.tr("\nLMB to enable/disable\nRMB to toggle size\nScroll to swap position") : "")
-                }
-            }
             QuickToggleButton {
                 toggled: Persistent.states.sidebar.pinned
                 buttonIcon: Persistent.states.sidebar.pinned ? "keep" : "keep_off"

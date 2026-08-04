@@ -80,12 +80,22 @@ LazyLoader {
         function barEdgeOffset(barExtent) {
             return barExtent - Appearance.sizes.elevationMargin + Appearance.sizes.hyprlandGapsOut + 1;
         }
+
+        // The workspaces widget sits at the near end of its bar, so a hint
+        // centred under it starts past the viewport edge - measured at x=-180
+        // for a 380-wide surface, losing half the text. Layer-shell clips
+        // instead of nudging, so the clamp has to happen here. Zero puts the
+        // visible card an elevation margin in, since that margin is shadow
+        // allowance held inside this window.
+        function clampToScreen(offset, windowExtent, screenExtent) {
+            return Math.min(Math.max(0, offset), Math.max(0, screenExtent - windowExtent));
+        }
         margins {
             left: helpWindow.vertical
                 ? helpWindow.barEdgeOffset(Appearance.sizes.verticalBarWidth)
-                : (root.QsWindow?.mapFromItem(root.target, (root.target.width - helpBackground.implicitWidth) / 2, 0).x ?? 0)
+                : helpWindow.clampToScreen(root.QsWindow?.mapFromItem(root.target, (root.target.width - helpBackground.implicitWidth) / 2, 0).x ?? 0, helpWindow.implicitWidth, helpWindow.screen?.width ?? 0)
             top: helpWindow.vertical
-                ? (root.QsWindow?.mapFromItem(root.target, 0, (root.target.height - helpBackground.implicitHeight) / 2).y ?? 0)
+                ? helpWindow.clampToScreen(root.QsWindow?.mapFromItem(root.target, 0, (root.target.height - helpBackground.implicitHeight) / 2).y ?? 0, helpWindow.implicitHeight, helpWindow.screen?.height ?? 0)
                 : helpWindow.barEdgeOffset(Appearance.sizes.barHeight)
             right: helpWindow.barEdgeOffset(Appearance.sizes.verticalBarWidth)
             bottom: helpWindow.barEdgeOffset(Appearance.sizes.barHeight)

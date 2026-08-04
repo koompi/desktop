@@ -36,7 +36,11 @@ AbstractQuickPanel {
         ? Math.min(configuredColumns, 4)
         : configuredColumns
     readonly property list<var> toggles: Config.ready ? Config.options.sidebar.quickToggles.android.toggles : []
-    readonly property list<var> toggleRows: toggleRowsForList(toggles)
+    property int maxRows: 0
+    readonly property list<var> toggleRows: {
+        const rows = toggleRowsForList(toggles);
+        return (maxRows > 0 && !editMode) ? rows.slice(0, maxRows) : rows;
+    }
     readonly property list<var> unusedToggles: {
         const types = availableToggleTypes.filter(type => !toggles.some(toggle => (toggle && toggle.type === type)))
         return types.map(type => { return { type: type, size: 1 } })
