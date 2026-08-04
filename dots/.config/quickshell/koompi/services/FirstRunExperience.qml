@@ -26,7 +26,12 @@ Singleton {
     }
 
     function handleFirstRun() {
-        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, root.defaultWallpaperPath])
+        // A missing marker is not proof of a first run - it is equally what a lost
+        // or hand-cleared state file looks like. wallpaperPath defaults to "", so
+        // an existing user always has one, and switching it takes their generated
+        // colour scheme with it.
+        if (Config.options.background.wallpaperPath.length === 0)
+            Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, root.defaultWallpaperPath])
         Quickshell.execDetached(["bash", "-c", `qs -p '${root.welcomeQmlPath}'`])
     }
 
