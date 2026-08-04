@@ -12,11 +12,15 @@ have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 # shellcheck source=sdata/lib/arch.sh
 source "$REPO_ROOT/sdata/lib/arch.sh"
 
-# Dependency metas only, in dependency order.
+# Dependency metas, in dependency order. A meta's depends[] go in through yay,
+# which only knows the repos and the AUR, so anything built from this directory
+# has to be listed here ahead of whatever names it. tests/test_arch_local_dep_order.sh
+# fails if one is missing or listed too late.
 ARCH_DEP_PKGBUILDS=(
     koompi-basic
     koompi-audio
     koompi-backlight
+    ttf-koompi-star
     koompi-fonts-themes
     koompi-kde
     koompi-portal
