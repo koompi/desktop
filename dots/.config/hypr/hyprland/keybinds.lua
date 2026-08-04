@@ -55,6 +55,9 @@ hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scra
 -- The left sidebar keeps SUPER + A.
 hl.bind("SUPER + N", hl.dsp.global("quickshell:sidebarRightToggle"), { description = "Shell: Toggle right sidebar" })
 hl.bind("SUPER + Slash", hl.dsp.global("quickshell:cheatsheetToggle"), { description = "Shell: Toggle cheatsheet" })
+-- Beside the cheatsheet deliberately: the tour is what a new user needs before
+-- the cheatsheet means anything, and the cheatsheet is what they reach for after.
+hl.bind("SHIFT + SUPER + Slash", hl.dsp.global("quickshell:tourToggle"), { description = "Shell: Take the desktop tour" })
 hl.bind("SUPER + K", hl.dsp.global("quickshell:oskToggle"), { description = "Shell: Toggle on-screen keyboard" })
 hl.bind("SUPER + M", hl.dsp.global("quickshell:mediaControlsToggle"), { description = "Shell: Toggle media controls" })
 hl.bind("SUPER + G", hl.dsp.global("quickshell:overlayToggle"), { description = "Shell: Toggle widget overlay" })

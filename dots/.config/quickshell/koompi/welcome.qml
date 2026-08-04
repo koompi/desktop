@@ -391,6 +391,28 @@ ApplicationWindow {
                         spacing: 5
 
                         RippleButtonWithIcon {
+                            materialIcon: "explore"
+                            StyledToolTip {
+                                text: Translation.tr("Walk through every part of the desktop, one step at a time")
+                            }
+                            onClicked: {
+                                // Same reason as the cheatsheet below: this is its own
+                                // process and cannot reach the shell's state directly.
+                                Hyprland.dispatch(`hl.dsp.global("quickshell:tourToggle")`);
+                            }
+                            mainContentComponent: Component {
+                                RowLayout {
+                                    spacing: 10
+                                    StyledText {
+                                        font.pixelSize: Appearance.font.pixelSize.small
+                                        text: Translation.tr("Take the tour")
+                                        color: Appearance.colors.colOnSecondaryContainer
+                                    }
+                                }
+                            }
+                        }
+
+                        RippleButtonWithIcon {
                             materialIcon: "keyboard_alt"
                             onClicked: {
                                 // Through Hyprland: this is its own process, so it can

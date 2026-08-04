@@ -21,6 +21,7 @@ import qs.modules.koompi.sessionScreen
 import qs.modules.koompi.sidebarLeft
 import qs.modules.koompi.sidebarRight
 import qs.modules.koompi.snapPreview
+import qs.modules.koompi.tour
 import qs.modules.koompi.overlay
 import qs.modules.koompi.verticalBar
 import qs.modules.koompi.wallpaperSelector
@@ -50,4 +51,5 @@ Scope {
     PanelLoader { extraCondition: Config.options.bar.vertical; component: VerticalBar {} }
     PanelLoader { component: WallpaperSelector {} }
     PanelLoader { component: ScratchpadDismiss {} }
+    PanelLoader { component: Tour {} }
 }

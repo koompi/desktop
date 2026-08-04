@@ -286,6 +286,7 @@ Conformance as of 2026-07-30:
 | Region selector | none, modal capture surface | unconditional `OnDemand` |
 | Screen translator | none, modal capture surface | unconditional `OnDemand` |
 | Session menu | none, modal | `Exclusive`, loader-gated |
+| Tour | persistent, deliberately | gated on `tourOpen` |
 
 An unconditional `OnDemand` is not by itself a bug: a layer surface whose `visible` is gated on its own flag has no surface to focus while closed.
 `OnDemand` is also the correct value rather than `Exclusive`, because since Hyprland 0.49 `Exclusive` breaks click-outside-to-close.
@@ -299,6 +300,18 @@ A surface that is fullscreen but masked to a smaller item, like the cheatsheet, 
 
 The remaining gap is the one surface whose keyboard focus is set but not gated.
 The wallpaper selector and the left sidebar both ask for `OnDemand` unconditionally, which is currently harmless and will stop being harmless the moment either window outlives a single open.
+
+## The tour is a utility surface, not a role
+
+`20260804-guided-tour` adds a guided walkthrough of the whole desktop, and it joins **no** role.
+The rule below says a new capability joins an existing role or this document changes first, so the exception is worth stating rather than leaving to be rediscovered: the Roles table describes the six surfaces that may claim a primary gesture or a bare `Super` chord, and the model already carries utility surfaces outside it - the cheatsheet, the session menu, the wallpaper selector.
+The tour joins that category. The Roles table stays at six.
+
+Its entry point is `SUPER + SHIFT + Slash`, beside the cheatsheet on purpose: the tour is what a new user needs before the cheatsheet means anything, and the cheatsheet is what they reach for afterwards.
+
+It registers **persistent** rather than dismissable, which is the one place it departs from every other non-bar surface.
+Each of its steps opens the real surface it is describing, and nearly all of those are dismissable; a dismissable tour would be closed by the shared grab the moment it demonstrated anything.
+That is the same reason the bar and the on-screen keyboard are persistent.
 
 ## Rules for adding to this model
 
