@@ -2,11 +2,14 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
  "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="2037.000000pt" height="2033.505156pt" viewBox="0 0 2037.000000 2033.505156"
+ width="2037" height="2037" viewBox="0 0 2037 2037"
  preserveAspectRatio="xMidYMid meet">
 <metadata>
 Created by potrace 1.16, written by Peter Selinger 2001-2019
 </metadata>
+<!-- potrace traced 2037x2033.505156; square viewBox keeps top/bottom edges on
+     pixel boundaries when scaled into a square box -->
+<g transform="scale(1,1.00171863)">
 <g transform="translate(-1.500000,2036.214730) scale(0.100000,-0.100000)"
 fill="#000000" stroke="none">
 <path d="M10837 20326 c-12 -83 -8 -6614 4 -6776 29 -420 120 -761 300 -1126
@@ -26,5 +29,6 @@ fill="#000000" stroke="none">
 -1907 -2298 -15 -136 -14 -7076 1 -7033 469 1341 1017 2443 1773 3566 946
 1407 2121 2642 3480 3661 1216 911 2578 1642 4005 2148 96 34 182 66 190 71
 14 8 -6783 10 -6890 2z"/>
+</g>
 </g>
 </svg>
