@@ -22,7 +22,7 @@ LazyLoader {
     // The workspaces widget, used to place the hint under it.
     property Item target
 
-    readonly property string superKey: Config.options.cheatsheet.superKey || "󰖳"
+    readonly property string superKey: Config.options.cheatsheet.superKey || "􀀀"
     readonly property string markerPath: FileUtils.trimFileProtocol(`${Directories.state}/user/workspace_help_seen.txt`)
     // Shown only once the marker is known to be missing, so a slow or failed
     // read leaves the desktop as it was rather than popping a hint at someone

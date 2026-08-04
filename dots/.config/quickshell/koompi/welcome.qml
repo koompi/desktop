@@ -324,7 +324,7 @@ ApplicationWindow {
                                             key: "Ctrl"
                                         }
                                         KeyboardKey {
-                                            key: "󰖳"
+                                            key: "􀀀"
                                         }
                                         StyledText {
                                             Layout.alignment: Qt.AlignVCenter
@@ -431,7 +431,7 @@ ApplicationWindow {
                                     RowLayout {
                                         spacing: 3
                                         KeyboardKey {
-                                            key: "󰖳"
+                                            key: "􀀀"
                                         }
                                         StyledText {
                                             Layout.alignment: Qt.AlignVCenter

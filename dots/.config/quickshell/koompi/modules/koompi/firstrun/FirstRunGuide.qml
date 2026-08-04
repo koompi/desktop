@@ -9,7 +9,7 @@ ContentSection {
     icon: "explore"
     title: Translation.tr("Getting started")
 
-    readonly property string superKey: Config.options.cheatsheet.superKey || "󰖳"
+    readonly property string superKey: Config.options.cheatsheet.superKey || "􀀀"
 
     // Translations are extracted from these Translation.tr() calls, so adding one never
     // touches the layout below. Four steps is the ceiling, not a starting set.

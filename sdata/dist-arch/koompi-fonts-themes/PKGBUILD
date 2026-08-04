@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-fonts-themes
 pkgver=1.0
-pkgrel=8
+pkgrel=9
 pkgdesc='KOOMPI Fonts and Theming Dependencies'
 arch=(any)
 license=(None)
@@ -28,6 +28,9 @@ depends=(
   qt6ct
   starship
   ttf-jetbrains-mono-nerd
+  # The Super keycap resolves the KOOMPI star through fontconfig fallback, so the
+  # font has to be installed or the key renders as a tofu box.
+  ttf-koompi-star
   ttf-material-symbols-variable-git
   ttf-readex-pro
   ttf-rubik-vf

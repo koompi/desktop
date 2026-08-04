@@ -361,11 +361,9 @@ Singleton {
             }
 
             property JsonObject cheatsheet: JsonObject {
-                // Use a nerdfont to see the icons
-                // 0: 󰖳  | 1: 󰌽 | 2: 󰘳 | 3:  | 4: 󰨡
-                // 5:  | 6:  | 7: 󰣇 | 8:  | 9: 
-                // 10:  | 11:  | 12:  | 13:  | 14: 󱄛
-                property string superKey: ""
+                // KOOMPI star, from ttf-koompi-star. Settings > Interface offers
+                // the alternatives, the Windows and Apple marks included.
+                property string superKey: "􀀀"
                 property bool useMacSymbol: false
                 property bool splitButtons: false
                 property bool useMouseSymbol: false

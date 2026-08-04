@@ -21,7 +21,7 @@ ContentPage {
                 }
                 // Use a nerdfont to see the icons
                 options: ([
-                  "󰖳", "", "󰨡", "", "󰌽", "󰣇", "", "", "", 
+                  "􀀀", "󰖳", "", "󰨡", "", "󰌽", "󰣇", "", "", "", 
                   "", "", "󱄛", "", "", "", "⌘", "󰀲", "󰟍", ""
                 ]).map(icon => { return {
                   displayName: icon,

@@ -1,0 +1,33 @@
+# ttf-koompi-star — the KOOMPI star as a font glyph, so the mark can be a
+# character anywhere a string is the only channel: the Super keycap in the shell,
+# starship prompts, fastfetch, terminal output, other toolkits' widgets. An SVG
+# covers the QML side alone; this covers the rest.
+#
+# NOTE (codepoint): the glyph sits at U+100000, in Plane 16 private use. The BMP
+# private-use area is not free: ttf-material-symbols-variable claims most of it,
+# the E8F0-EA5F gap between Nerd Fonts' Devicons and Codicons blocks included,
+# and Nerd Fonts owns the rest of the BMP plus Plane 15 (F0001-F1AF0). Both are
+# sibling dependencies of koompi-fonts-themes, so a BMP codepoint resolves to
+# whichever face fontconfig sorted first and the star gets shadowed. Plane 16 is
+# untouched by either, which is what makes the fallback deterministic.
+#
+# NOTE (prebuilt): files/KoompiStar.ttf is committed, not generated at build
+# time, so neither this PKGBUILD nor a clean-chroot build needs fonttools.
+# Regenerate it with build-font.py when dots/.../icons/koompi-symbolic.svg
+# changes; that SVG is the single source of the outline.
+groups=(koompi)
+pkgname=ttf-koompi-star
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI star as a single font glyph at U+100000, for the Super key and text contexts'
+arch=(any)
+url='https://github.com/koompi/desktop'
+license=('custom')
+# fontconfig owns the cache the shell resolves "KOOMPI Star" through. Arch's
+# fontconfig hook rebuilds it on install, so no .install file is needed.
+depends=(fontconfig)
+
+package() {
+  install -Dm644 "$startdir/files/KoompiStar.ttf" \
+    "$pkgdir/usr/share/fonts/TTF/KoompiStar.ttf"
+}
