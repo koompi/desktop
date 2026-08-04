@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Signature
+GenericName=E-signature capture
+Comment=Photograph your handwritten signature and stamp it onto PDFs
+Exec=koompi-signature capture
+Icon=document-edit-sign
+Terminal=false
+Categories=Office;
+Keywords=signature;sign;pdf;esign;

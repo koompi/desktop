@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Flatpak Installer
+Comment=Install Flatpak apps and remotes from .flatpakref files
+Exec=wezterm start -- koompi-flatpak-open %f
+Type=Application
+Terminal=false
+NoDisplay=true
+MimeType=application/vnd.flatpak.ref;application/vnd.flatpak.repo;application/vnd.flatpak;
