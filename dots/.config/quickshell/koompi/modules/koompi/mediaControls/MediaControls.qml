@@ -22,7 +22,7 @@ Scope {
     readonly property real widgetWidth: Appearance.sizes.mediaControlsWidth
     readonly property real widgetHeight: Appearance.sizes.mediaControlsHeight
     property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
-    property list<real> visualizerPoints: []
+    readonly property list<real> visualizerPoints: Cava.points
 
     function filterDuplicatePlayers(players) {
         let filtered = [];
@@ -53,23 +53,8 @@ Scope {
         return filtered;
     }
 
-    Process {
-        id: cavaProc
-        running: mediaControlsLoader.active
-        onRunningChanged: {
-            if (!cavaProc.running) {
-                root.visualizerPoints = [];
-            }
-        }
-        command: ["cava", "-p", `${FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config.txt`]
-        stdout: SplitParser {
-            onRead: data => {
-                // Parse `;`-separated values into the visualizerPoints array
-                let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
-                root.visualizerPoints = points;
-            }
-        }
-    }
+    // cava moved to services/Cava.qml: the sidebar's player card draws the same
+    // spectrum, and a process each would mean two of them whenever both are open.
 
     Loader {
         id: mediaControlsLoader

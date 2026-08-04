@@ -323,6 +323,23 @@ Item { // Bar content region
                 Layout.alignment: Qt.AlignVCenter
             }
 
+            BarGroup { // Media, immediately left of the battery.
+                // This layout is RightToLeft, so declaring it after the battery
+                // is what puts it to the battery's left.
+                //
+                // The bar shed its media copy when the overflow control went and
+                // everything moved to the sidebar. It is back by request, but as
+                // a transport rather than a second panel: gated on real playback
+                // the same way the pomodoro is gated on a live lap, so the bar
+                // stays quiet when nothing is playing.
+                Layout.alignment: Qt.AlignVCenter
+                visible: root.useShortenedForm === 0 && MprisController.hasActiveMedia
+
+                Media {
+                    Layout.fillHeight: true
+                }
+            }
+
             SysTray {
                 visible: root.useShortenedForm === 0
                 Layout.fillWidth: false
@@ -331,8 +348,9 @@ Item { // Bar content region
             }
 
             // The overflow "..." control lived here. Everything behind it -
-            // utility actions, weather, media, the pomodoro - is in the right
-            // sidebar now, so the bar no longer carries a second copy.
+            // utility actions, weather, media, the pomodoro - moved to the right
+            // sidebar. Media and the pomodoro have since come back to the bar as
+            // transports, each only on screen while it has something to show.
 
             Item { // Leftmost in RTL: absorbs slack so the cluster pins to the right edge
                 Layout.fillWidth: true

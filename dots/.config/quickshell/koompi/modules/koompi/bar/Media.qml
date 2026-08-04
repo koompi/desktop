@@ -19,6 +19,28 @@ Item {
     Layout.fillHeight: true
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
     implicitHeight: Appearance.sizes.barHeight
+    // The spectrum below is drawn to the full item and would otherwise spill
+    // over the group's rounded background.
+    clip: true
+
+    // Subtle spectrum behind the transport. WaveVisualizer already fills at 0.15
+    // alpha and blurs itself, so it reads as texture on the bar rather than as a
+    // second widget competing with the title.
+    WaveVisualizer {
+        z: -1
+        points: Cava.points
+        live: root.activePlayer?.isPlaying ?? false
+        color: Appearance.colors.colPrimary
+        // Heavier than the popup's default and barely blurred: this is a 63px
+        // strip with no art beneath it, so the popup's settings vanish here.
+        fillAlpha: 0.55
+        blurAmount: 0.35
+        // cava's ascii range is 0-1000 but ordinary listening sits well under
+        // half of it, so scaling to the full range leaves the wave flat against
+        // the bottom edge. Loud passages clip at the top of the strip, which for
+        // a background texture is the right trade.
+        maxVisualizerValue: 380
+    }
 
     Timer {
         running: activePlayer?.playbackState == MprisPlaybackState.Playing

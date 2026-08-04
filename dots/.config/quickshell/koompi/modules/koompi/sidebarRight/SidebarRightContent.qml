@@ -11,6 +11,7 @@ import Quickshell.Hyprland
 
 import qs.modules.koompi.bar
 import qs.modules.koompi.bar.weather
+import qs.modules.koompi.mediaControls
 import qs.modules.koompi.sidebarRight.quickToggles
 import qs.modules.koompi.sidebarRight.quickToggles.classicStyle
 
@@ -116,18 +117,19 @@ Item {
                 onClicked: root.drawer = "controls"
             }
 
+            // The bar's Media widget used to sit here, centred. It is built for a
+            // bar: one line, a 150px title cap, no artist, no track buttons. In a
+            // 420px panel that read as a label rather than a player, so this is
+            // the same card the media popup uses, at the width it was drawn for.
             Loader {
                 Layout.fillWidth: true
                 active: MprisController.hasActiveMedia
                 visible: active
-                sourceComponent: Rectangle {
-                    implicitHeight: mediaWidget.implicitHeight + Appearance.spacing.small * 2
+                sourceComponent: PlayerControl {
+                    player: MprisController.activePlayer
+                    visualizerPoints: Cava.points
+                    implicitHeight: Appearance.sizes.mediaControlsHeight
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
-                    Media {
-                        id: mediaWidget
-                        anchors.centerIn: parent
-                    }
                 }
             }
 

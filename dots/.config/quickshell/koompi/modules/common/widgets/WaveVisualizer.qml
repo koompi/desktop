@@ -12,6 +12,11 @@ Canvas { // Visualizer
     property int smoothing: 2
     property bool live: true
     property color color: Appearance.m3colors.m3primary
+    // The media popup draws this over album art, where 0.15 is all it can take
+    // before it fights the artwork. On the bar there is no art underneath and the
+    // strip is small, so it needs more to register at all.
+    property real fillAlpha: 0.15
+    property real blurAmount: 1
 
     onPointsChanged: () => {
         root.requestPaint()
@@ -57,7 +62,7 @@ Canvas { // Visualizer
             root.color.r,
             root.color.g,
             root.color.b,
-            0.15
+            root.fillAlpha
         );
         ctx.fill();
     }
@@ -68,6 +73,6 @@ Canvas { // Visualizer
         saturation: 0.2
         blurEnabled: true
         blurMax: 7
-        blur: 1
+        blur: root.blurAmount
     }
 }
