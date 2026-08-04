@@ -88,6 +88,7 @@ libportal-gtk4
 gobject-introspection-devel
 python3-gobject
 python3-opencv
+python3-evdev                   # touch-gestures.service reads the touchscreen
 
 # --- screen capture ----------------------------------------------------------
 hyprshot                        # copr: sdegler/hyprland

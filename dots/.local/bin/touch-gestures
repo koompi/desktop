@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""Drag-to-scroll on the touchscreen, for windows that cannot handle touch themselves.
+
+wezterm has no touch support at all: its Wayland backend never binds wl_touch, so it
+runs on XWayland (see wezterm.lua), where a finger arrives as a plain button-1 drag.
+That gives taps and text selection but no scrolling, and wezterm's lua mouse bindings
+expose no pointer coordinates, so the gesture cannot be reconstructed in config.
+
+This daemon grabs the touchscreen while a target window is focused and replays every
+event onto a clone device, so taps keep working exactly as before. Once a finger
+travels far enough it lifts the clone and turns the rest of the drag into wheel
+events instead. The clone's touch-down has already put the cursor under the finger,
+so the wheel lands on the right window and the right pane.
+
+Nothing is grabbed while other windows are focused, so browsers keep native multitouch.
+"""
+
+import json
+import os
+import selectors
+import socket
+import sys
+
+import evdev
+from evdev import ecodes as e
+
+TARGET_CLASSES = {"org.wezfurlong.wezterm"}
+
+# How far a finger must travel before the gesture is committed to scrolling.
+# Small enough to feel immediate, large enough that a sloppy tap is still a tap.
+SCROLL_START_PX = 16
+# Finger travel that equals one wheel notch.
+PX_PER_NOTCH = 36
+HI_RES_PER_NOTCH = 120
+
+
+def find_touchscreen():
+    for path in evdev.list_devices():
+        dev = evdev.InputDevice(path)
+        caps = dev.capabilities()
+        abs_codes = {code for code, _ in caps.get(e.EV_ABS, [])}
+        if e.ABS_MT_POSITION_X in abs_codes and e.INPUT_PROP_DIRECT in dev.input_props():
+            return dev
+        dev.close()
+    return None
+
+
+def hypr_socket_dir():
+    sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+    runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    if sig:
+        return f"{runtime}/hypr/{sig}"
+    base = f"{runtime}/hypr"
+    entries = [f"{base}/{n}" for n in os.listdir(base)]
+    return max(entries, key=os.path.getmtime)
+
+
+def hypr_request(sockdir, payload):
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+        sock.connect(f"{sockdir}/.socket.sock")
+        sock.sendall(payload.encode())
+        chunks = []
+        while True:
+            chunk = sock.recv(8192)
+            if not chunk:
+                break
+            chunks.append(chunk)
+    return b"".join(chunks).decode()
+
+
+class Gesture:
+    """Tracks one finger and decides whether it is a tap or a scroll."""
+
+    IDLE, PENDING, SCROLLING, DEAD = range(4)
+
+    def __init__(self, clone, wheel, units_per_px):
+        self.clone = clone
+        self.wheel = wheel
+        self.units_per_px = units_per_px
+        self.reset()
+        self.enabled = False
+
+    def reset(self):
+        self.state = self.IDLE
+        self.slots = {}
+        self.slot = 0
+        self.origin = None
+        self.last_y = None
+        self.hi_res = 0
+        self.notch_carry = 0
+
+    def fingers(self):
+        return sum(1 for tid in self.slots.values() if tid >= 0)
+
+    def absorb(self, event):
+        """Feed one event in. Returns True if it should be replayed onto the clone."""
+        if event.type == e.EV_ABS:
+            if event.code == e.ABS_MT_SLOT:
+                self.slot = event.value
+            elif event.code == e.ABS_MT_TRACKING_ID:
+                self.slots[self.slot] = event.value
+            elif event.code == e.ABS_MT_POSITION_Y and self.slot == 0 and self.enabled:
+                self.track_y(event.value)
+        # Slots are tracked even when disabled, so the daemon knows when no finger
+        # is down and it is safe to hand the device over.
+        return self.enabled and self.state != self.SCROLLING
+
+    def track_y(self, y):
+        if self.state == self.IDLE:
+            self.state = self.PENDING
+            self.origin = y
+            self.last_y = y
+        elif self.state == self.PENDING:
+            if self.fingers() > 1:
+                # Multi-finger gestures stay untouched; only lone fingers scroll.
+                self.state = self.DEAD
+            elif abs(y - self.origin) / self.units_per_px >= SCROLL_START_PX:
+                self.start_scrolling()
+                self.last_y = y
+        elif self.state == self.SCROLLING:
+            self.scroll(y - self.last_y)
+            self.last_y = y
+
+    def release_clone(self):
+        """Lift any touch still held on the clone.
+
+        A finger stranded here reads as permanently pressed and breaks touch
+        handling for every application, not just the one being scrolled.
+        """
+        if e.BTN_TOUCH not in self.clone.device.active_keys():
+            return
+        for slot, tid in self.slots.items():
+            if tid >= 0:
+                self.clone.write(e.EV_ABS, e.ABS_MT_SLOT, slot)
+                self.clone.write(e.EV_ABS, e.ABS_MT_TRACKING_ID, -1)
+        self.clone.write(e.EV_KEY, e.BTN_TOUCH, 0)
+        self.clone.syn()
+
+    def start_scrolling(self):
+        """Lift the clone so the host sees a clean button release, then take over."""
+        self.release_clone()
+        self.state = self.SCROLLING
+        self.hi_res = 0
+        self.notch_carry = 0
+
+    def scroll(self, dy_units):
+        # Content follows the finger: dragging down scrolls up.
+        self.hi_res += dy_units / self.units_per_px / PX_PER_NOTCH * HI_RES_PER_NOTCH
+        steps = int(self.hi_res)
+        if not steps:
+            return
+        self.hi_res -= steps
+        self.notch_carry += steps
+        notches = int(self.notch_carry / HI_RES_PER_NOTCH)
+        self.notch_carry -= notches * HI_RES_PER_NOTCH
+        self.wheel.write(e.EV_REL, e.REL_WHEEL_HI_RES, steps)
+        if notches:
+            self.wheel.write(e.EV_REL, e.REL_WHEEL, notches)
+        self.wheel.syn()
+
+    def sync(self):
+        if self.fingers() == 0 and self.state != self.IDLE:
+            self.reset()
+
+
+class Daemon:
+    def __init__(self):
+        self.touch = find_touchscreen()
+        if self.touch is None:
+            sys.exit("no touchscreen found")
+        self.sockdir = hypr_socket_dir()
+
+        absinfo = dict(self.touch.capabilities()[e.EV_ABS])[e.ABS_MT_POSITION_Y]
+        height = self.monitor_height()
+        units_per_px = (absinfo.max - absinfo.min + 1) / height
+
+        # from_device copies capabilities but not input_props, and without
+        # INPUT_PROP_DIRECT libinput reads the clone as a touchpad, not a screen.
+        info = self.touch.info
+        self.clone = evdev.UInput.from_device(
+            self.touch,
+            name="touch-gestures touchscreen",
+            input_props=self.touch.input_props(),
+            vendor=info.vendor,
+            product=info.product,
+            bustype=info.bustype,
+        )
+        self.wheel = evdev.UInput(
+            {
+                e.EV_REL: [e.REL_X, e.REL_Y, e.REL_WHEEL, e.REL_WHEEL_HI_RES],
+                e.EV_KEY: [e.BTN_LEFT],
+            },
+            name="touch-gestures wheel",
+        )
+        self.gesture = Gesture(self.clone, self.wheel, units_per_px)
+        self.grabbed = False
+        self.wanted = False
+
+    def monitor_height(self):
+        monitors = json.loads(hypr_request(self.sockdir, "j/monitors"))
+        output = self.touch_output()
+        for mon in monitors:
+            if mon["name"] == output:
+                return mon["height"]
+        return monitors[0]["height"]
+
+    def touch_output(self):
+        try:
+            reply = json.loads(
+                hypr_request(self.sockdir, "j/getoption input:touchdevice:output")
+            )
+            return reply.get("str", "")
+        except (ValueError, OSError):
+            return ""
+
+    def focused_class(self):
+        try:
+            return json.loads(
+                hypr_request(self.sockdir, "j/activewindow")
+            ).get("class", "")
+        except (ValueError, OSError):
+            return ""
+
+    def set_grabbed(self, wanted):
+        self.wanted = wanted
+        self.apply_grab()
+
+    def apply_grab(self):
+        """Take or hand back the touchscreen, but never in the middle of a touch.
+
+        Focus changes usually arrive while a finger is still down, because the tap
+        that moved focus is that same finger. Switching then would strand the touch
+        on whichever device is about to stop receiving events.
+        """
+        if self.wanted == self.grabbed or self.gesture.fingers():
+            return
+        try:
+            if self.wanted:
+                self.touch.grab()
+            else:
+                self.touch.ungrab()
+        except OSError:
+            return
+        self.grabbed = self.wanted
+        self.gesture.enabled = self.grabbed
+        if not self.grabbed:
+            self.gesture.release_clone()
+            self.gesture.reset()
+
+    def run(self):
+        events = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        events.connect(f"{self.sockdir}/.socket2.sock")
+
+        self.set_grabbed(self.focused_class() in TARGET_CLASSES)
+
+        sel = selectors.DefaultSelector()
+        sel.register(events, selectors.EVENT_READ, "focus")
+        sel.register(self.touch, selectors.EVENT_READ, "touch")
+
+        buffer = b""
+        while True:
+            for key, _ in sel.select():
+                if key.data == "focus":
+                    chunk = events.recv(4096)
+                    if not chunk:
+                        return
+                    buffer += chunk
+                    *lines, buffer = buffer.split(b"\n")
+                    self.on_focus_event(lines)
+                else:
+                    self.on_touch_event()
+
+    def on_focus_event(self, lines):
+        for line in lines:
+            name, _, payload = line.decode("utf-8", "replace").partition(">>")
+            if name == "activewindow":
+                cls = payload.split(",", 1)[0]
+                self.set_grabbed(cls in TARGET_CLASSES)
+            elif name in ("closewindow", "focusedmon"):
+                self.set_grabbed(self.focused_class() in TARGET_CLASSES)
+
+    def on_touch_event(self):
+        try:
+            events = list(self.touch.read())
+        except BlockingIOError:
+            return
+        for event in events:
+            if self.gesture.absorb(event):
+                self.clone.write_event(event)
+            if event.type == e.EV_SYN and event.code == e.SYN_REPORT:
+                self.gesture.sync()
+                # A deferred handover becomes safe the moment the last finger lifts.
+                self.apply_grab()
+
+
+if __name__ == "__main__":
+    Daemon().run()

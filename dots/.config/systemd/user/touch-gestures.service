@@ -1,0 +1,14 @@
+[Unit]
+Description=Touch drag-to-scroll for windows without touch support
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/touch-gestures
+Restart=on-failure
+RestartSec=2
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target

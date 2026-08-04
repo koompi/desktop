@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-toolkit
 pkgver=1.0
-pkgrel=4
+pkgrel=5
 pkgdesc='KOOMPI Toolkit Dependencies'
 arch=(any)
 license=(None)
@@ -12,6 +12,8 @@ depends=(
   power-profiles-daemon
   wtype
   ydotool
+  # touch-gestures.service grabs the touchscreen through evdev and replays it.
+  python-evdev
 
   # Khmer input. KOOMPI is a Cambodian desktop and could not type Khmer out of
   # the box; the shell's own UI stays English (LEDGER, 2026-07-30). fcitx5

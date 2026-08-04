@@ -70,6 +70,7 @@ python3
 python3-dev
 python3-gi
 python3-opencv
+python3-evdev                   # touch-gestures.service reads the touchscreen
 libgtk-4-dev
 libadwaita-1-dev
 libsoup-3.0-dev

@@ -138,6 +138,15 @@ setup_services() {
     if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
         run sudo systemctl enable --now bluetooth
     fi
+
+    # Only useful with a touchscreen, and it needs python-evdev to start at all.
+    # Enabled without --now: the unit is WantedBy=graphical-session.target and
+    # starts with the next session.
+    if python3 -c 'import evdev' 2>/dev/null; then
+        run systemctl --user enable touch-gestures
+    else
+        warn "python-evdev missing; touchscreen drag-to-scroll not enabled"
+    fi
 }
 
 # XDG_DESKTOP_PORTAL_DIR does not add a directory, it REPLACES every other one, so
