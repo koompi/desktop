@@ -47,11 +47,14 @@ Singleton {
     // The Wayland inhibitor below only works while its surface is mapped, which
     // is unreliable on Hyprland (the 1x1 window often never maps). Back it with a
     // systemd idle inhibitor, which hypridle honors directly.
+    //
+    // handle-lid-switch is separate on purpose: logind weighs the lid against that
+    // class alone, so a blocked idle:sleep still suspended the moment the lid shut.
     Process {
         running: root.inhibit
         command: ["bash", "-c",
             "pkill -f 'who=[q]uickshell --why=Keep system awake'; " +
-            "exec systemd-inhibit --what=idle:sleep --mode=block --who=quickshell --why='Keep system awake' sleep infinity"]
+            "exec systemd-inhibit --what=idle:sleep:handle-lid-switch --mode=block --who=quickshell --why='Keep system awake' sleep infinity"]
     }
 
     IdleInhibitor {

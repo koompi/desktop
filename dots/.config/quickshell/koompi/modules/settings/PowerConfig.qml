@@ -196,5 +196,13 @@ ContentPage {
                 Idle.toggleInhibit(checked);
             }
         }
+        StyledText {
+            Layout.fillWidth: true
+            Layout.leftMargin: 10
+            wrapMode: Text.Wrap
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.smallie
+            text: Translation.tr("Nothing suspends, not even a closed lid, so a long job keeps running. The session stays unlocked too: press SUPER + L before you pack up.")
+        }
     }
 }
