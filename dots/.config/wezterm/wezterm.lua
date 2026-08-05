@@ -1,17 +1,9 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
--- wezterm's Wayland backend never calls wl_seat.get_touch, so touchscreen
--- input is dropped entirely. XWayland exposes the touchscreen as a slave
--- pointer device, so the X11 backend gets pointer-emulated touch instead.
-config.enable_wayland = false
-
--- As an X11 client wezterm picks its own pointer via libXcursor instead of
--- inheriting the one `hyprctl setcursor` hands to Wayland clients, so it
--- followed a stale XCURSOR_THEME in the session env. Pin it to the same
--- Adwaita 24 that hypr/hyprland/env.lua and the GTK settings use.
-config.xcursor_theme = 'Adwaita'
-config.xcursor_size = 24
+-- Touch is dropped here on purpose: wezterm's Wayland backend never calls
+-- wl_seat.get_touch, and the X11 backend that did give pointer-emulated touch
+-- put every keystroke through XWayland. Typing latency won over the touchscreen.
 
 -- Kitty keyboard protocol is opt-in per application. zsh never asks for it, so
 -- it kept getting the legacy ^[[3~ for Delete and behaved; TUIs that DO ask for
