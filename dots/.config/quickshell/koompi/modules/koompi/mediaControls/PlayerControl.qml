@@ -60,8 +60,11 @@ Item { // Player instance
     }
 
     onArtFilePathChanged: {
-        if (root.artUrl.length == 0) {
+        if ((root.artUrl ?? "").length == 0) {
             root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+            // Without this the card keeps claiming a downloaded file and points
+            // the image at the md5 of the empty string, which is never on disk.
+            root.downloaded = false
             return;
         }
 

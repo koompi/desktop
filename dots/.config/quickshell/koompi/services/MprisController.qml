@@ -18,7 +18,11 @@ Singleton {
 	id: root;
 	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
 	property MprisPlayer trackedPlayer: null;
-	property MprisPlayer activePlayer: trackedPlayer ?? players[0] ?? null;
+	// A bus can stop being real after it was tracked: chromium registers first and
+	// only becomes a duplicate once plasma-browser-integration shows up. The
+	// browser's own bus carries no art and no artist, so anything reading
+	// activePlayer drew a bare title while the popup, which filters, drew a card.
+	property MprisPlayer activePlayer: (trackedPlayer && isRealPlayer(trackedPlayer)) ? trackedPlayer : (players[0] ?? null);
 	signal trackChanged(reverse: bool);
 
 	property bool __reverse: false;
@@ -50,6 +54,7 @@ Singleton {
 			target: modelData;
 
 			Component.onCompleted: {
+				if (!root.isRealPlayer(modelData)) return;
 				if (root.trackedPlayer == null || modelData.isPlaying) {
 					root.trackedPlayer = modelData;
 				}
@@ -71,6 +76,7 @@ Singleton {
 			}
 
 			function onPlaybackStateChanged() {
+				if (!root.isRealPlayer(modelData)) return;
 				if (root.trackedPlayer !== modelData) root.trackedPlayer = modelData;
 			}
 		}
