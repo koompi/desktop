@@ -18,27 +18,21 @@
 #
 # MODELS: none are shipped. Kiri keeps them per user under
 # ~/.local/share/kiri/models and they are hundreds of MB, so they are not
-# package payload.
-#   - Default backend (settings stt_backend=parakeet): the Parakeet TDT English
-#     model, ~460MB, from https://blob.handy.computer/parakeet-v3-int8.tar.gz,
-#     extracted to ~/.local/share/kiri/models/parakeet-tdt-0.6b-v3-int8/, gated
-#     by Silero VAD, ~2MB, from https://blob.handy.computer/silero_vad_v4.onnx.
-#   - Whisper ggml models (Khmer and fallback) come from huggingface.co and are
-#     the only ones the binary itself knows how to fetch (`kiri model list`,
-#     `kiri model download <name>`).
+# package payload. Every one of them is reachable from the binary:
+#   kiri model list
+#   kiri model download parakeet     # default backend, English, ~460MB
+#   kiri model download silero-vad   # speech gate, ~2MB, needed by any backend
+#   kiri model download <tiny|base|small|medium|large|turbo>   # whisper ggml
+# The Khmer model (ggml-khmer-small.bin) is converted locally, not downloadable;
+# see the khmerstt/ pipeline upstream.
 # WHAT A FRESH USER GETS ON FIRST RUN: `kiri` with no settings file runs the
-# built-in setup wizard, which offers only the Whisper ggml models. Upstream
-# ships the blob.handy.computer URLs in install.sh, not in the binary, so a
-# package-only install has no parakeet-tdt-0.6b-v3-int8 or silero_vad_v4.onnx
-# and the default parakeet backend fails with "encoder-model.int8.onnx not found
-# in <models dir>". Until upstream teaches `kiri model` about those two, a
-# packaged user must either fetch them by hand or run
-# `kiri config set stt_backend whisper` and let the wizard download a ggml model.
+# built-in setup wizard. If the AI key is pressed before any model is installed,
+# the voice pill names the command to run.
 groups=(koompi)
 pkgname=koompi-kiri
 _pkgname=kiri
-_commit='ccb4800ce01e63899579c393e193a9bcf0bc5f05'
-pkgver=0.1.0.r60.gccb4800
+_commit='b380f50c20bc4f0da85138cd68736e46ee536ea7'
+pkgver=0.1.0.r67.gb380f50
 pkgrel=1
 pkgdesc='Kiri — voice-to-text assistant for the KOOMPI AI/Copilot key'
 arch=(x86_64 aarch64)
@@ -102,13 +96,16 @@ build() {
 package() {
   cd "$_pkgname"
   install -Dm755 target/release/kiri "$pkgdir/usr/bin/kiri"
+  install -Dm644 packaging/kiri.desktop \
+    "$pkgdir/usr/share/applications/kiri.desktop"
+  # Not enabled here — a package does not enable units. Users who want models
+  # kept hot run `systemctl --user enable --now kiri-daemon.service`; without it
+  # `kiri voice` still spawns the daemon on demand.
+  install -Dm644 packaging/systemd/kiri-daemon.service \
+    "$pkgdir/usr/lib/systemd/user/kiri-daemon.service"
 
   # The Tauri settings GUI (gui/, binary kiri-gui) is NOT built here: it needs
   # bun, a `bunx tauri build` npm install, and webkit2gtk-4.1, which is a second
   # toolchain inside one package. Super+Alt+K opens kiri-gui and will do nothing
   # for a packaged user; every setting is reachable with `kiri config set`.
-  # Upstream's packaging/kiri.desktop is not installed either: its Exec names
-  # `kiri-popup`, a binary this repo does not build. Same for
-  # packaging/systemd/kiri-sync.*, which run a `kiri-sync` that does not exist,
-  # and kiri-daemon.service, which hardcodes %h/.cargo/bin/kiri.
 }
