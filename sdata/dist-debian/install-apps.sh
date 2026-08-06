@@ -15,32 +15,11 @@ export DEBIAN_FRONTEND
 # application here lives in backports.
 APT_PIN_SUITE="${APT_PIN_SUITE:-}"
 
-# Likewise these two, so --only-apps works on its own.
-if ! declare -F debian_install >/dev/null; then
-    debian_read_list() {
-        local f="$REPO_ROOT/sdata/dist-debian/$1"
-        [[ -f "$f" ]] || return 0
-        sed -e 's/#.*//' -e '/^[[:space:]]*$/d' -e 's/[[:space:]]*$//' "$f"
-    }
-    debian_install() {
-        local -a wanted=("$@") available=() missing=()
-        local pkg
-        for pkg in "${wanted[@]}"; do
-            if apt-cache show "$pkg" >/dev/null 2>&1; then
-                available+=("$pkg")
-            else
-                missing+=("$pkg")
-            fi
-        done
-        if (( ${#missing[@]} )); then
-            warn "not available on this release, skipping: ${missing[*]}"
-        fi
-        (( ${#available[@]} )) || return 0
-        local -a apt_args=(install -y --no-install-recommends)
-        [[ -n "$APT_PIN_SUITE" ]] && apt_args+=(-t "$APT_PIN_SUITE")
-        run sudo apt-get "${apt_args[@]}" "${available[@]}"
-    }
-fi
+# debian_read_list and debian_install, so --only-apps works on its own. This
+# file used to carry its own copy of both, which is how it kept the apt-cache
+# show filter after install-deps.sh had been fixed.
+# shellcheck source=sdata/lib/debian.sh
+source "$REPO_ROOT/sdata/lib/debian.sh"
 
 # dearmor because apt only accepts a binary keyring at signed-by, and a key in
 # /etc/apt/trusted.gpg.d would be trusted for every repository. Brave already

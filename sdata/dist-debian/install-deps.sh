@@ -8,7 +8,7 @@
 
 have apt-get || die "no apt-get; sdata/dist-debian is for Debian and Ubuntu"
 
-# debian_candidate, kept out of here so the tests can source it.
+# debian_candidate, debian_read_list and debian_install, shared with install-apps.sh.
 # shellcheck source=sdata/lib/debian.sh
 source "$REPO_ROOT/sdata/lib/debian.sh"
 
@@ -127,37 +127,6 @@ debian_enable_components() {
         sudo_write /etc/apt/sources.list.d/koompi-components.list \
             "deb http://deb.debian.org/debian ${OS_VERSION_CODENAME} contrib non-free non-free-firmware"
     fi
-}
-
-debian_read_list() {
-    local f="$REPO_ROOT/sdata/dist-debian/$1"
-    [[ -f "$f" ]] || return 0
-    sed -e 's/#.*//' -e '/^[[:space:]]*$/d' -e 's/[[:space:]]*$//' "$f"
-}
-
-# apt fails the whole transaction on one unknown package name, which on a
-# derivative is a near certainty. Ask what apt would actually install first and
-# report the rest instead of aborting.
-debian_install() {
-    local -a wanted=("$@") available=() missing=()
-    local pkg
-    for pkg in "${wanted[@]}"; do
-        if debian_candidate "$pkg" >/dev/null; then
-            available+=("$pkg")
-        else
-            missing+=("$pkg")
-        fi
-    done
-    if (( ${#missing[@]} )); then
-        warn "not available on this release, skipping: ${missing[*]}"
-    fi
-    (( ${#available[@]} )) || return 0
-
-    local -a apt_args=(install -y --no-install-recommends)
-    # Backported packages are lower priority than main by design, so they need
-    # naming explicitly or apt quietly installs nothing.
-    [[ -n "$APT_PIN_SUITE" ]] && apt_args+=(-t "$APT_PIN_SUITE")
-    run sudo apt-get "${apt_args[@]}" "${available[@]}"
 }
 
 # Ubuntu packages neither hyprsunset nor its absence: the night-light feature
