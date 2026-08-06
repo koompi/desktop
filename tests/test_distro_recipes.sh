@@ -97,4 +97,52 @@ grep -q '^xorg-x11-utils' "$ROOT/sdata/dist-fedora/packages.list" \
 grep -q '^xprop' "$ROOT/sdata/dist-fedora/packages.list" \
     || fail "Fedora no longer asks for xprop; the global menu cannot read menu addresses"
 
+# 7. The apt availability filter. A name apt cannot install has to be skipped
+#    with a warning, because apt fails the whole transaction on one bad name and
+#    the batch is 112 packages. A stub apt-cache stands in for the archive.
+# shellcheck source=sdata/lib/debian.sh
+source "$ROOT/sdata/lib/debian.sh"
+cat > "$tmp/bin/apt-cache" <<'STUB'
+#!/bin/sh
+# $1 is the subcommand, $2 the package.
+case "$2" in
+    # A real package.
+    hyprland) real='1:0.55.2+ds-1~bpo13+1' ;;
+    # In contrib, which a stock install does not enable. `apt-cache show` still
+    # answers for it because packages.list's neighbours depend on it.
+    translate-shell) real='' ;;
+    # Not in this archive at all under any name.
+    *) [ "$1" = show ] && exit 1; echo "N: Unable to locate package $2" >&2; exit 0 ;;
+esac
+if [ "$1" = show ]; then echo "Package: $2"; exit 0; fi
+echo "$2:"
+echo "  Installed: (none)"
+if [ -n "$real" ]; then echo "  Candidate: $real"; else echo "  Candidate: (none)"; fi
+STUB
+chmod +x "$tmp/bin/apt-cache"
+
+with_stub() { ( PATH="$tmp/bin:$PATH"; "$@" ); }
+with_stub debian_candidate hyprland >/dev/null \
+    || fail "debian_candidate rejected a package apt offers a version for"
+[[ "$(with_stub debian_candidate hyprland)" == '1:0.55.2+ds-1~bpo13+1' ]] \
+    || fail "debian_candidate did not return the candidate version"
+with_stub debian_candidate translate-shell >/dev/null \
+    && fail "debian_candidate accepted a package with no installation candidate; apt-get would abort the whole batch on it"
+with_stub debian_candidate no-such-package >/dev/null \
+    && fail "debian_candidate accepted a package apt has never heard of"
+grep -q 'apt-cache show' "$ROOT/sdata/dist-debian/install-deps.sh" \
+    && fail "the Debian recipe is back to filtering on 'apt-cache show', which answers for any name a neighbour depends on"
+
+# 8. Debian's contrib has to be enabled for the release itself. Backports does
+#    not cover it, and translate-shell is in trixie/contrib and nowhere else.
+grep -q 'koompi-components.list' "$ROOT/sdata/dist-debian/install-deps.sh" \
+    || fail "the Debian recipe no longer enables contrib for the release; translate-shell has no candidate in main"
+grep -q 'OS_VERSION_CODENAME' "$ROOT/sdata/lib/distro.sh" \
+    || fail "distro.sh stopped exporting OS_VERSION_CODENAME, which names the apt suite"
+: > "$tmp/os-release"
+printf 'ID=debian\nVERSION_ID="13"\nVERSION_CODENAME=trixie\n' > "$tmp/os-release"
+KOOMPI_OS_RELEASE="$tmp/os-release" detect_distro
+[[ "$OS_VERSION_CODENAME" == trixie ]] \
+    || fail "detect_distro read the codename as '${OS_VERSION_CODENAME:-empty}', expected trixie"
+
 echo "ok"

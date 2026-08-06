@@ -8,6 +8,10 @@
 
 have apt-get || die "no apt-get; sdata/dist-debian is for Debian and Ubuntu"
 
+# debian_candidate, kept out of here so the tests can source it.
+# shellcheck source=sdata/lib/debian.sh
+source "$REPO_ROOT/sdata/lib/debian.sh"
+
 DEBIAN_FRONTEND=noninteractive
 export DEBIAN_FRONTEND
 
@@ -53,9 +57,9 @@ debian_check_release() {
 # forked before the stack landed.
 debian_require_hyprland() {
     local candidate
-    candidate="$(apt-cache policy hyprland 2>/dev/null | awk '/Candidate:/ { print $2 }')"
+    candidate="$(debian_candidate hyprland)"
 
-    if [[ -z "$candidate" || "$candidate" == "(none)" ]]; then
+    if [[ -z "$candidate" ]]; then
         err "apt has no installable 'hyprland'."
         [[ -n "$APT_PIN_SUITE" ]] && err "Even with ${APT_PIN_SUITE} enabled - check that the mirror carries it."
         $IS_UBUNTU && err "On Ubuntu the compositor lives in 'universe'; check that it is enabled."
@@ -86,6 +90,15 @@ debian_require_hyprland() {
 # which is enabled by default.
 debian_enable_components() {
     if $IS_UBUNTU; then
+        # Shipped on the desktop images but not on the minimal ones, and the
+        # three add-apt-repository calls below are the first thing the recipe
+        # does, so without this the install dies on line one.
+        if ! have add-apt-repository; then
+            step "Ubuntu: add-apt-repository"
+            run sudo apt-get update
+            run sudo apt-get install -y --no-install-recommends software-properties-common
+        fi
+
         step "Ubuntu: enabling universe and multiverse"
         run sudo add-apt-repository -y universe
         run sudo add-apt-repository -y multiverse
@@ -101,6 +114,19 @@ debian_enable_components() {
         sudo_write /etc/apt/sources.list.d/koompi-backports.list \
             "deb http://deb.debian.org/debian ${APT_PIN_SUITE} main contrib non-free non-free-firmware"
     fi
+
+    # A stock Debian install enables main only, and the backports line above does
+    # not cover it: translate-shell lives in trixie/contrib and nowhere else, so
+    # without this apt has no candidate for it and refuses the whole batch.
+    #
+    # Debian proper only. A derivative's codename is not a suite on
+    # deb.debian.org, and a source that 404s fails `apt-get update` itself,
+    # which would cost the whole install rather than one package.
+    if [[ "$OS_DISTRO_ID" == debian && -n "$OS_VERSION_CODENAME" ]]; then
+        step "Debian: enabling contrib and non-free for ${OS_VERSION_CODENAME}"
+        sudo_write /etc/apt/sources.list.d/koompi-components.list \
+            "deb http://deb.debian.org/debian ${OS_VERSION_CODENAME} contrib non-free non-free-firmware"
+    fi
 }
 
 debian_read_list() {
@@ -110,13 +136,13 @@ debian_read_list() {
 }
 
 # apt fails the whole transaction on one unknown package name, which on a
-# derivative is a near certainty. Ask apt-cache what it actually has first and
+# derivative is a near certainty. Ask what apt would actually install first and
 # report the rest instead of aborting.
 debian_install() {
     local -a wanted=("$@") available=() missing=()
     local pkg
     for pkg in "${wanted[@]}"; do
-        if apt-cache show "$pkg" >/dev/null 2>&1; then
+        if debian_candidate "$pkg" >/dev/null; then
             available+=("$pkg")
         else
             missing+=("$pkg")

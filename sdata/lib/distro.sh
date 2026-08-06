@@ -13,7 +13,10 @@ detect_distro() {
     OS_DISTRO_ID="$(awk -F= '/^ID=/        { gsub(/["\047]/,"",$2); print tolower($2); exit }' "$os_release")"
     OS_DISTRO_LIKE="$(awk -F= '/^ID_LIKE=/ { gsub(/["\047]/,"",$2); print tolower($2); exit }' "$os_release")"
     OS_VERSION_ID="$(awk -F= '/^VERSION_ID=/ { gsub(/["\047]/,"",$2); print $2; exit }' "$os_release")"
-    export OS_DISTRO_ID OS_DISTRO_LIKE OS_VERSION_ID
+    # The apt suite name. Debian package sources are addressed by codename, not
+    # by number, and a derivative may carry neither.
+    OS_VERSION_CODENAME="$(awk -F= '/^VERSION_CODENAME=/ { gsub(/["\047]/,"",$2); print tolower($2); exit }' "$os_release")"
+    export OS_DISTRO_ID OS_DISTRO_LIKE OS_VERSION_ID OS_VERSION_CODENAME
 
     OS_GROUP_ID=''
     OS_GROUP_EXACT=true
