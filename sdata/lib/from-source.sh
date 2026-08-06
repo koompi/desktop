@@ -6,9 +6,38 @@
 FONT_DIR="${XDG_DATA_HOME}/fonts/koompi"
 LOCAL_BIN=/usr/local/bin
 
+# Deliberately not run(). Under --yes a failed run() calls die, so the whole
+# install went down on one moved release asset and every `_fetch ... || warn`
+# below it was unreachable. Failure is returned to the caller instead, and the
+# caller decides whether a missing download is fatal.
 _fetch() {
     local url="$1" out="$2"
-    run curl -fsSL --retry 3 --connect-timeout 15 -o "$out" "$url"
+    printf '%s     $ curl -o %s %s%s\n' "${C_DIM}" "$out" "$url" "${C_RST}"
+    [[ "$DRY_RUN" == true ]] && return 0
+    curl -fsSL --retry 3 --connect-timeout 15 -o "$out" "$url"
+}
+
+# The tag of a project's newest GitHub release, from the redirect that
+# /releases/latest serves. Cheaper than the API and not rate limited, which
+# matters for a step every install runs.
+_github_latest_tag() {
+    local url
+    url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+        "https://github.com/$1/releases/latest" 2>/dev/null)" || return 1
+    [[ "$url" == */tag/* ]] || return 1
+    printf '%s\n' "${url##*/tag/}"
+}
+
+# `fc-list | grep -q` is not this check. grep -q closes the pipe on its first
+# match, ./setup runs under `set -o pipefail`, and fc-list's output is far larger
+# than a pipe buffer, so fc-list dies of SIGPIPE and the pipeline reports 141 -
+# every font reads as missing even when it is installed. That is what had Fedora
+# re-downloading four fonts its own RPMs had just put on disk, and re-cloning
+# Google Sans Flex and the 30 MiB Nerd Font tarball on every single run.
+_font_installed() {
+    local listed
+    listed="$(fc-list 2>/dev/null)" || return 1
+    grep -qi -- "$1" <<< "$listed"
 }
 
 # The shell renders its icons as Material Symbols glyphs. Without that font
@@ -17,14 +46,16 @@ _fetch() {
 install_fonts_from_release() {
     local -a fonts=(
         "Material Symbols Rounded|https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf|MaterialSymbolsRounded.ttf"
-        "Readex Pro|https://github.com/ThomasJockin/readexpro/raw/master/fonts/variable/ReadexPro%5BHEXP%2Cwght%5D.ttf|ReadexPro.ttf"
-        "Space Grotesk|https://github.com/floriankarsten/space-grotesk/raw/master/fonts/variable/SpaceGrotesk%5Bwght%5D.ttf|SpaceGrotesk.ttf"
+        # Both designers' own repos dropped fonts/variable/ and the old paths
+        # 404. google/fonts is where the released variable build lives now.
+        "Readex Pro|https://github.com/google/fonts/raw/main/ofl/readexpro/ReadexPro%5BHEXP%2Cwght%5D.ttf|ReadexPro.ttf"
+        "Space Grotesk|https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf|SpaceGrotesk.ttf"
         "Rubik|https://github.com/googlefonts/rubik/raw/main/fonts/variable/Rubik%5Bwght%5D.ttf|Rubik.ttf"
     )
     local entry name url file missing=()
     for entry in "${fonts[@]}"; do
         IFS='|' read -r name url file <<< "$entry"
-        if fc-list 2>/dev/null | grep -qi "$name"; then continue; fi
+        _font_installed "$name" && continue
         missing+=("$entry")
     done
     (( ${#missing[@]} )) || { info "fonts already present"; return 0; }
@@ -34,7 +65,13 @@ install_fonts_from_release() {
     for entry in "${missing[@]}"; do
         IFS='|' read -r name url file <<< "$entry"
         info "$name"
-        _fetch "$url" "$FONT_DIR/$file"
+        _fetch "$url" "$FONT_DIR/$file" && continue
+        rm -f "$FONT_DIR/$file"
+        # Material Symbols is what every icon in the shell is drawn from, so a
+        # bar of tofu boxes is not a partial install worth finishing quietly.
+        [[ "$name" == "Material Symbols Rounded" ]] \
+            && die "could not fetch $name; without it every icon in the shell is a blank box"
+        warn "could not fetch $name; text using it falls back to another face"
     done
     run fc-cache -f "$FONT_DIR"
 }
@@ -42,7 +79,7 @@ install_fonts_from_release() {
 # Google Sans Flex is the UI typeface. It is a git repo of build outputs rather
 # than a release artefact, so it is cloned.
 install_google_sans_flex() {
-    fc-list 2>/dev/null | grep -qi "Google Sans Flex" && return 0
+    _font_installed "Google Sans Flex" && return 0
     step "Google Sans Flex"
     local dir="$FONT_DIR/google-sans-flex"
     if [[ -d "$dir/.git" ]]; then
@@ -56,11 +93,12 @@ install_google_sans_flex() {
 # JetBrains Mono is widely packaged, but only the unpatched upstream; the shell
 # wants the Nerd Font build for its glyph range.
 install_nerd_font() {
-    fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd" && return 0
+    _font_installed "JetBrainsMono Nerd" && return 0
     step "JetBrains Mono Nerd Font"
     local tmp
     tmp="$(mktemp -d)"
-    _fetch "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" "$tmp/f.tar.xz"
+    _fetch "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" "$tmp/f.tar.xz" \
+        || { warn "could not fetch JetBrains Mono Nerd Font; the bar and the terminal lose their glyphs"; rm -rf "$tmp"; return 0; }
     run mkdir -p "$FONT_DIR/JetBrainsMono"
     run tar -xf "$tmp/f.tar.xz" -C "$FONT_DIR/JetBrainsMono"
     rm -rf "$tmp"
@@ -69,13 +107,20 @@ install_nerd_font() {
 
 # GTK apps read the theme by name from gsettings; without adw-gtk3 on disk the
 # name resolves to nothing and they stay stock Adwaita.
+# The asset is named adw-gtk3v6.5.tar.xz, version and all, so the tag has to be
+# resolved before it can be addressed.
 install_adw_gtk3() {
     [[ -d /usr/share/themes/adw-gtk3 || -d "${XDG_DATA_HOME}/themes/adw-gtk3" ]] && return 0
     step "adw-gtk3 theme"
+    local tag
+    if ! tag="$(_github_latest_tag lassekongo83/adw-gtk3)"; then
+        warn "could not reach the adw-gtk3 releases; GTK apps will stay unthemed"
+        return 0
+    fi
     local tmp
     tmp="$(mktemp -d)"
-    _fetch "https://github.com/lassekongo83/adw-gtk3/releases/latest/download/adw-gtk3.tar.xz" "$tmp/t.tar.xz" \
-        || { warn "could not fetch adw-gtk3; GTK apps will stay unthemed"; rm -rf "$tmp"; return 0; }
+    _fetch "https://github.com/lassekongo83/adw-gtk3/releases/download/${tag}/adw-gtk3${tag}.tar.xz" "$tmp/t.tar.xz" \
+        || { warn "could not fetch adw-gtk3 ${tag}; GTK apps will stay unthemed"; rm -rf "$tmp"; return 0; }
     run mkdir -p "${XDG_DATA_HOME}/themes"
     run tar -xf "$tmp/t.tar.xz" -C "${XDG_DATA_HOME}/themes"
     rm -rf "$tmp"
@@ -119,7 +164,8 @@ install_go_yq() {
     esac
     local tmp
     tmp="$(mktemp -d)"
-    _fetch "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${arch_suffix}" "$tmp/yq"
+    _fetch "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${arch_suffix}" "$tmp/yq" \
+        || { warn "could not fetch yq; the scripts that read YAML config will fail"; rm -rf "$tmp"; return 0; }
     run chmod +x "$tmp/yq"
     run sudo install -Dm755 "$tmp/yq" "$LOCAL_BIN/yq"
     rm -rf "$tmp"
@@ -131,7 +177,8 @@ install_hyprshot() {
     step "hyprshot"
     local tmp
     tmp="$(mktemp)"
-    _fetch "https://raw.githubusercontent.com/Gustash/hyprshot/main/hyprshot" "$tmp"
+    _fetch "https://raw.githubusercontent.com/Gustash/hyprshot/main/hyprshot" "$tmp" \
+        || { warn "could not fetch hyprshot; the screenshot keybinds will do nothing"; rm -f "$tmp"; return 0; }
     run sudo install -Dm755 "$tmp" "$LOCAL_BIN/hyprshot"
     rm -f "$tmp"
 }
@@ -186,19 +233,27 @@ install_zig() {
     rm -rf "$tmp"
 }
 
+# The asset name carries the version, so /releases/latest/download/<name> cannot
+# address it and the tag has to be resolved first. Upstream has published x86_64
+# alone for every release back to 2.4.1; there is no aarch64 build to fetch.
 install_matugen() {
     have matugen && return 0
     step "matugen"
-    local arch_suffix
-    case "$OS_ARCH" in
-        x86_64)  arch_suffix=x86_64-unknown-linux-gnu ;;
-        aarch64) arch_suffix=aarch64-unknown-linux-gnu ;;
-        *)       warn "no matugen build for $OS_ARCH; colour generation stays off"; return 0 ;;
-    esac
+    if [[ "$OS_ARCH" != x86_64 ]]; then
+        warn "matugen publishes x86_64 builds only; on $OS_ARCH colour generation stays off"
+        warn "build it from source (cargo install matugen) if you want wallpaper colours"
+        return 0
+    fi
+    local tag ver
+    if ! tag="$(_github_latest_tag InioX/matugen)"; then
+        warn "could not reach the matugen releases; koompi-theme will keep the current colours"
+        return 0
+    fi
+    ver="${tag#v}"
     local tmp
     tmp="$(mktemp -d)"
-    if ! _fetch "https://github.com/InioX/matugen/releases/latest/download/matugen-${arch_suffix}.tar.gz" "$tmp/m.tar.gz"; then
-        warn "could not fetch matugen; koompi-theme will keep the current colours"
+    if ! _fetch "https://github.com/InioX/matugen/releases/download/${tag}/matugen-${ver}-x86_64.tar.gz" "$tmp/m.tar.gz"; then
+        warn "could not fetch matugen ${ver}; koompi-theme will keep the current colours"
         rm -rf "$tmp"; return 0
     fi
     run tar -xf "$tmp/m.tar.gz" -C "$tmp"
