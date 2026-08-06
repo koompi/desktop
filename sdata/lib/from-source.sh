@@ -6,15 +6,11 @@
 FONT_DIR="${XDG_DATA_HOME}/fonts/koompi"
 LOCAL_BIN=/usr/local/bin
 
-# Deliberately not run(). Under --yes a failed run() calls die, so the whole
-# install went down on one moved release asset and every `_fetch ... || warn`
-# below it was unreachable. Failure is returned to the caller instead, and the
-# caller decides whether a missing download is fatal.
+# try(), not run(). Under --yes a failed run() calls die, so the whole install
+# went down on one moved release asset and every `_fetch ... || warn` below it
+# was unreachable.
 _fetch() {
-    local url="$1" out="$2"
-    printf '%s     $ curl -o %s %s%s\n' "${C_DIM}" "$out" "$url" "${C_RST}"
-    [[ "$DRY_RUN" == true ]] && return 0
-    curl -fsSL --retry 3 --connect-timeout 15 -o "$out" "$url"
+    try curl -fsSL --retry 3 --connect-timeout 15 -o "$2" "$1"
 }
 
 # The tag of a project's newest GitHub release, from the redirect that

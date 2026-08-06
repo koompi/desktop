@@ -3,6 +3,13 @@
 # file": the Python venv the colour pipeline runs in, the compiled global-menu
 # daemon, group membership, kernel modules and user services.
 
+# systemctl on PATH is not a running manager. A container, a chroot and an image
+# build all have the binary and no pid 1 to talk to, and every enable below then
+# fails: /run/systemd/system is what sd_booted(3) itself looks for. The user
+# manager is a second question, absent in any session logind did not create.
+systemd_running() { [[ -d /run/systemd/system ]]; }
+systemd_user_running() { systemctl --user show --property=Version >/dev/null 2>&1; }
+
 # The native `koompi` command is the front door to desktop maintenance and the
 # shipped helpers. Build it from the same checkout being installed so its
 # command surface always matches the scripts and desktop version beside it.
@@ -58,8 +65,15 @@ setup_python_venv() {
 # gitignored, so a fresh clone has no binary and the menu silently stays empty.
 setup_global_menu() {
     step "Global menu daemon"
+    # The shell resolves the binary at ../scripts/global-menu/zig-out/bin from
+    # its own QML, so it has to be built where the config was installed, not in
+    # the checkout. ./setup calls this after the files step for that reason.
     local src="${XDG_CONFIG_HOME}/quickshell/koompi/scripts/global-menu"
-    [[ -d "$src" ]] || { info "not installed, skipping"; return 0; }
+    [[ -d "$src" ]] || {
+        warn "the shell config is not installed, so there is nowhere to build the daemon"
+        warn "run './setup install --only-files' first, then './setup install --only-setups'"
+        return 0
+    }
     if ! zig_usable; then
         warn "zig ${ZIG_MIN} or newer not found; the global menu will be empty until it is built."
         warn "Install one, then re-run: ./setup install --only-setups"
@@ -86,7 +100,12 @@ setup_groups_and_modules() {
     sudo_write /etc/modules-load.d/koompi.conf $'i2c-dev\nuinput'
     sudo_write /etc/udev/rules.d/99-koompi-uinput.rules \
         'SUBSYSTEM=="misc", KERNEL=="uinput", MODE="0660", GROUP="input"'
-    run sudo udevadm control --reload-rules
+    # The rule is on disk and applies from the next boot either way, and where
+    # udevd is not running - a container, a chroot, an image build - there is
+    # nothing to reload. Losing the file and service steps over that head start
+    # is the wrong trade.
+    try sudo udevadm control --reload-rules \
+        || warn "could not reload udev rules; the uinput rule applies from your next boot"
 }
 
 # A wedged btintel_pcie returns -EBUSY from suspend forever, so the kernel aborts
@@ -94,7 +113,7 @@ setup_groups_and_modules() {
 # module before sleep, reload after.
 setup_suspend_hook() {
     step "Suspend reliability"
-    have systemctl || { info "no systemd; skipping"; return 0; }
+    systemd_running || { info "no running systemd; skipping"; return 0; }
 
     local hook=/usr/lib/systemd/system-sleep/koompi-btintel-pcie
     sudo_write "$hook" '#!/bin/sh
@@ -123,17 +142,19 @@ exit 0'
 # service; link it into the user manager where the distro has not.
 setup_services() {
     step "User services"
-    have systemctl || { warn "no systemd; start ydotool yourself"; return 0; }
+    systemd_running || { warn "no running systemd; start ydotool yourself"; return 0; }
 
     if [[ ! -e /usr/lib/systemd/user/ydotool.service ]] \
        && [[ -e /usr/lib/systemd/system/ydotool.service ]]; then
         run sudo ln -sf /usr/lib/systemd/system/ydotool.service \
                         /usr/lib/systemd/user/ydotool.service
     fi
-    if [[ -e /usr/lib/systemd/user/ydotool.service ]]; then
-        run systemctl --user enable --now ydotool
-    else
+    if [[ ! -e /usr/lib/systemd/user/ydotool.service ]]; then
         warn "no ydotool user service found; input synthesis will not work"
+    elif ! systemd_user_running; then
+        warn "no user systemd manager here; enable ydotool after your next login"
+    else
+        run systemctl --user enable --now ydotool
     fi
     if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
         run sudo systemctl enable --now bluetooth
@@ -142,10 +163,12 @@ setup_services() {
     # Only useful with a touchscreen, and it needs python-evdev to start at all.
     # Enabled without --now: the unit is WantedBy=graphical-session.target and
     # starts with the next session.
-    if python3 -c 'import evdev' 2>/dev/null; then
-        run systemctl --user enable touch-gestures
-    else
+    if ! python3 -c 'import evdev' 2>/dev/null; then
         warn "python-evdev missing; touchscreen drag-to-scroll not enabled"
+    elif ! systemd_user_running; then
+        warn "no user systemd manager here; enable touch-gestures after your next login"
+    else
+        run systemctl --user enable touch-gestures
     fi
 }
 
@@ -156,7 +179,7 @@ setup_services() {
 # through dots/ and the override has nothing left to do.
 setup_portals() {
     step "Desktop portals"
-    have systemctl || { warn "no systemd; skipping portal cleanup"; return 0; }
+    systemd_running || { warn "no running systemd; skipping portal cleanup"; return 0; }
 
     local dropin="${XDG_CONFIG_HOME}/systemd/user/xdg-desktop-portal.service.d/koompi-remotedesktop.conf"
     if [[ -f "$dropin" ]] && grep -q 'XDG_DESKTOP_PORTAL_DIR' "$dropin"; then
@@ -166,7 +189,8 @@ setup_portals() {
         warn "the old whitelist at ${XDG_DATA_HOME}/koompi/portals is now unused; left in place rather than deleted"
     fi
 
-    run systemctl --user daemon-reload
+    systemd_user_running && run systemctl --user daemon-reload
+    return 0
 }
 
 # The cursor theme KOOMPI ships, kept in one place because it has to be stated
@@ -219,7 +243,7 @@ setup_toolkit_defaults() {
         run fc-cache -f
     fi
     if have update-desktop-database; then
-        run update-desktop-database "${XDG_DATA_HOME}/applications" 2>/dev/null || true
+        try update-desktop-database "${XDG_DATA_HOME}/applications" 2>/dev/null || true
     fi
 }
 
@@ -294,7 +318,6 @@ setup_system_session() {
 run_setups() {
     setup_koompi_cli
     setup_python_venv
-    setup_global_menu
     setup_groups_and_modules
     setup_suspend_hook
     setup_services

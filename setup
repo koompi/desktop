@@ -226,6 +226,13 @@ main() {
     $DO_SETUPS && run_setups
     $DO_FILES  && install_files
 
+    # After the files step, not inside run_setups. The daemon builds inside the
+    # installed config and the shell loads it from there by relative path, so on
+    # a first install there was nothing to build yet and the global menu came up
+    # empty on every fresh machine. --only-setups still reaches it because the
+    # config is already there by then.
+    { $DO_SETUPS || $DO_FILES; } && setup_global_menu
+
     # Installing into a session that is already running leaves that session on the
     # old files: Quickshell holds its QML and its config in memory, so a migration
     # that rewrote config.json changes nothing on screen and reads as "the update

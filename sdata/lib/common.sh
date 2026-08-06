@@ -77,6 +77,16 @@ run() {
     return 0
 }
 
+# run() for a step the install can live without: the failure is returned rather
+# than turned into a prompt or a die, so the caller says what was lost and
+# carries on. `run cmd || warn` cannot express that - run() calls die under
+# --yes, and die exits before the || is reached.
+try() {
+    printf '%s     $ %s%s\n' "${C_DIM}" "$*" "${C_RST}"
+    [[ "$DRY_RUN" == true ]] && return 0
+    "$@"
+}
+
 # run() from inside a directory without the subshell that would swallow the abort.
 # `( cd d && run cmd )` is not equivalent: run aborts via die, die is exit, and in a
 # subshell that ends only the subshell. The caller then reads a status it never
@@ -192,6 +202,11 @@ sudo_write() {
     local path="$1" content="$2"
     printf '%s     $ write %s%s\n' "${C_DIM}" "$path" "${C_RST}"
     [[ "$DRY_RUN" == true ]] && return 0
+    # Not every one of these directories is on every machine. Nothing on Debian
+    # had ever created /usr/lib/systemd/system-sleep, so the suspend hook took
+    # the install down with a bare "No such file or directory" from tee.
+    local dir; dir="$(dirname -- "$path")"
+    sudo mkdir -p -- "$dir" || die "could not create $dir"
     printf '%s\n' "$content" | sudo tee "$path" >/dev/null || die "could not write $path"
 }
 
