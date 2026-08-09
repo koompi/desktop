@@ -26,14 +26,17 @@ ContentPage {
 
     component SmallLightDarkPreferenceButton: RippleButton {
         id: smallLightDarkPreferenceButton
-        required property bool dark
+        required property string mode
         property color colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2
         padding: 5
         Layout.fillWidth: true
-        toggled: Appearance.m3colors.darkmode === dark
+        toggled: DarkMode.mode === mode
         colBackground: Appearance.colors.colLayer2
         onClicked: {
-            Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`]);
+            if (mode === "auto")
+                DarkMode.setAutomatic(true);
+            else
+                DarkMode.setMode(mode === "dark");
         }
         contentItem: Item {
             anchors.centerIn: parent
@@ -43,12 +46,12 @@ ContentPage {
                 MaterialSymbol {
                     Layout.alignment: Qt.AlignHCenter
                     iconSize: 30
-                    text: dark ? "dark_mode" : "light_mode"
+                    text: smallLightDarkPreferenceButton.mode === "auto" ? "brightness_auto" : (smallLightDarkPreferenceButton.mode === "dark" ? "dark_mode" : "light_mode")
                     color: smallLightDarkPreferenceButton.colText
                 }
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: dark ? Translation.tr("Dark") : Translation.tr("Light")
+                    text: smallLightDarkPreferenceButton.mode === "auto" ? Translation.tr("Auto") : (smallLightDarkPreferenceButton.mode === "dark" ? Translation.tr("Dark") : Translation.tr("Light"))
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     color: smallLightDarkPreferenceButton.colText
                 }
@@ -158,11 +161,32 @@ ContentPage {
 
                     SmallLightDarkPreferenceButton {
                         Layout.fillHeight: true
-                        dark: false
+                        mode: "light"
                     }
                     SmallLightDarkPreferenceButton {
                         Layout.fillHeight: true
-                        dark: true
+                        mode: "dark"
+                    }
+                    SmallLightDarkPreferenceButton {
+                        Layout.fillHeight: true
+                        mode: "auto"
+                    }
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: DarkMode.automatic
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colSubtext
+                    text: {
+                        if (DarkMode.polarDay)
+                            return Translation.tr("Light: the sun does not set today");
+                        if (DarkMode.polarNight)
+                            return Translation.tr("Dark: the sun does not rise today");
+                        if (!DarkMode.located)
+                            return Translation.tr("No location for this timezone, using 18:00 to 06:00");
+                        return Translation.tr("Dark at %1, light at %2").arg(DarkMode.sunsetText).arg(DarkMode.sunriseText);
                     }
                 }
             }

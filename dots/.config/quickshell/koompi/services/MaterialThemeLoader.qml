@@ -74,8 +74,7 @@ Singleton {
     }
 
     function toggleLightDark() {
-        const currentlyDark = Appearance.m3colors.darkmode;
-        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", currentlyDark ? "light" : "dark", "--noswitch"]);
+        DarkMode.toggle();
     }
 
     GlobalShortcut {

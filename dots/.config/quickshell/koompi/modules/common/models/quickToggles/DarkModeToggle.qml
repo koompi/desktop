@@ -7,19 +7,20 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 
 QuickToggleModel {
-    name: Translation.tr("Dark Mode")
-    statusText: Appearance.m3colors.darkmode ? Translation.tr("Dark") : Translation.tr("Light")
+    property bool auto: DarkMode.automatic
 
-    toggled: Appearance.m3colors.darkmode
-    icon: "contrast"
-    
+    name: Translation.tr("Dark Mode")
+    statusText: (auto ? Translation.tr("Auto, ") : "") + (DarkMode.dark ? Translation.tr("Dark") : Translation.tr("Light"))
+
+    toggled: DarkMode.dark
+    icon: auto ? "brightness_auto" : "contrast"
+
     mainAction: () => {
-        if (Appearance.m3colors.darkmode) {
-            Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "light", "--noswitch"]);
-        } else {
-            Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "dark", "--noswitch"]);
-        }
+        DarkMode.toggle();
+    }
+    altAction: () => {
+        DarkMode.setAutomatic(!DarkMode.automatic);
     }
 
-    tooltipText: Translation.tr("Dark Mode")
+    tooltipText: Translation.tr("Dark Mode | Right-click for sunset to sunrise")
 }

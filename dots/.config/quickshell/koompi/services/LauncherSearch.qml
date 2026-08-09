@@ -73,13 +73,13 @@ Singleton {
         {
             action: "dark",
             execute: () => {
-                Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "dark", "--noswitch"]);
+                DarkMode.setMode(true);
             }
         },
         {
             action: "light",
             execute: () => {
-                Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "light", "--noswitch"]);
+                DarkMode.setMode(false);
             }
         },
         {

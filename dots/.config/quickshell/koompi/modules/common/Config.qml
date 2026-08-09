@@ -431,6 +431,11 @@ Singleton {
                 property JsonObject antiFlashbang: JsonObject {
                     property bool enable: false
                 }
+                property JsonObject darkMode: JsonObject {
+                    property bool automatic: false
+                    property real latitude: 0  // 0, 0 means take the system timezone's coordinates
+                    property real longitude: 0
+                }
             }
 
             property JsonObject lock: JsonObject {
