@@ -30,3 +30,7 @@ __pycache__/
 
 # built by plugins/koompi-swipe-progress/Makefile
 plugins/koompi-swipe-progress/*.so
+
+.work/
+
+globalmenu/target/

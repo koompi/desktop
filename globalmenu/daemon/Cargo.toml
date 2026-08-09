@@ -1,0 +1,15 @@
+[package]
+name = "koompi-globalmenu-daemon"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Speaks the shell's stdio menu protocol; a drop-in for the zig global-menu-daemon"
+
+[[bin]]
+name = "global-menu-daemon"
+path = "src/main.rs"
+
+[dependencies]
+koompi-globalmenu-core.workspace = true
+zbus.workspace = true

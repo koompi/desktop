@@ -1,0 +1,11 @@
+[package]
+name = "koompi-globalmenu-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Resolves the focused window's exported menu over org.gtk.Menus or com.canonical.dbusmenu"
+
+[dependencies]
+zbus.workspace = true
+serde_json.workspace = true

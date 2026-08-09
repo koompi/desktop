@@ -22,7 +22,12 @@ import tempfile
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DAEMON = os.path.join(HERE, "..", "zig-out", "bin", "global-menu-daemon")
+# Two implementations answer this protocol, so the suite is the conformance
+# gate for both. GLOBAL_MENU_DAEMON points it at the one under test.
+DAEMON = os.environ.get(
+    "GLOBAL_MENU_DAEMON",
+    os.path.join(HERE, "..", "zig-out", "bin", "global-menu-daemon"),
+)
 
 failures = []
 

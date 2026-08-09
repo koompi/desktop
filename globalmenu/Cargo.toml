@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = ["core", "daemon"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# zbus 5 sets this floor, and it is the highest of anything we pull in.
+# sdata/lib/common.sh RUST_MIN must agree; tests/test_distro_recipes.sh asserts it.
+rust-version = "1.87"
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+koompi-globalmenu-core = { path = "core" }
+zbus = "5.18"
+serde_json = "1"
+
+[profile.release]
+# Matches the ReleaseSafe the zig components build with: overflow checks stay on.
+overflow-checks = true
+debug-assertions = false
