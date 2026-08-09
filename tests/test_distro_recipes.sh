@@ -80,6 +80,24 @@ declared="$(sed -n 's/.*\.minimum_zig_version = "\([^"]*\)".*/\1/p' \
 [[ "$declared" == "$ZIG_MIN" ]] \
     || fail "global-menu declares zig $declared but common.sh floors at $ZIG_MIN"
 
+# 4b. Same trap on the rust side. cargo_usable is a plain version compare, so
+#     the pre-release trap zig has does not apply, but the drift one does.
+cargo_says() {
+    printf '#!/bin/sh\necho "cargo %s (c980f4866 2026-06-30)"\n' "$1" > "$tmp/bin/cargo"
+    chmod +x "$tmp/bin/cargo"
+}
+cargo_floor_accepts() { ( PATH="$tmp/bin"; cargo_usable ); }
+ln -sf "$(command -v awk)" "$tmp/bin/awk"
+
+cargo_says 1.75.0; cargo_floor_accepts && fail "cargo 1.75.0 passed a ${RUST_MIN} floor"
+cargo_says 1.87.0; cargo_floor_accepts || fail "cargo 1.87.0 failed a ${RUST_MIN} floor"
+cargo_says 1.97.1; cargo_floor_accepts || fail "cargo 1.97.1 failed a ${RUST_MIN} floor"
+rm -f "$tmp/bin/cargo"; cargo_floor_accepts && fail "no cargo at all passed the floor"
+
+rust_declared="$(sed -n 's/^rust-version = "\([^"]*\)".*/\1/p' "$ROOT/globalmenu/Cargo.toml")"
+[[ "$rust_declared" == "$RUST_MIN" ]] \
+    || fail "globalmenu declares rust $rust_declared but common.sh floors at $RUST_MIN"
+
 # 5. Debian and Ubuntu cannot rely on the packaged zig, so the recipe has to
 #    fetch one; Fedora calls it too so a future release falling behind is a
 #    download rather than a missing global menu.

@@ -83,6 +83,29 @@ setup_global_menu() {
     ok "global-menu-daemon built"
 }
 
+# The Rust daemon answers the same stdio protocol as the zig one above, and the
+# shell prefers it when it is present. Both are kept while the port is proven:
+# tests/test_globalmenu.sh runs the one conformance suite against each. Unlike
+# the zig build this installs to a normal bin dir, because nothing resolves it
+# by a path relative to the QML.
+setup_globalmenu_rs() {
+    step "Global menu daemon (rust)"
+    local src="$REPO_ROOT/globalmenu"
+    local build_root="$XDG_CACHE_HOME/koompi/build/globalmenu"
+    local binary="$build_root/release/global-menu-daemon"
+    [[ -f "$src/Cargo.toml" ]] || { warn "globalmenu source not found, skipping"; return 0; }
+    if ! cargo_usable; then
+        warn "cargo ${RUST_MIN} or newer not found; the shell falls back to the zig daemon."
+        warn "Install one, then re-run: ./setup install --only-setups"
+        return 0
+    fi
+    # Same discipline as the zig builds: nothing generated lands in the checkout.
+    ( cd "$src" && run cargo build --release --locked --target-dir "$build_root" )
+    run install -Dm755 "$binary" "$XDG_BIN_HOME/koompi-global-menu-daemon"
+    manifest_add "$XDG_BIN_HOME/koompi-global-menu-daemon"
+    ok "koompi-global-menu-daemon installed"
+}
+
 # ddcutil needs i2c to talk to external monitors; ydotool and the on-screen
 # keyboard need uinput. Both are group + module questions, not package ones.
 setup_groups_and_modules() {
@@ -317,6 +340,7 @@ setup_system_session() {
 
 run_setups() {
     setup_koompi_cli
+    setup_globalmenu_rs
     setup_python_venv
     setup_groups_and_modules
     setup_suspend_hook

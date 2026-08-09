@@ -55,6 +55,19 @@ zig_usable() {
     printf '%s\n%s\n' "$ZIG_MIN" "$core" | sort -C -V
 }
 
+# globalmenu/Cargo.toml floors at 1.87, which is zbus 5's own floor. Parsed
+# rather than probed for the same reason as zig: a distro rustc that is present
+# but too old fails the build instead of skipping it.
+RUST_MIN=1.87
+cargo_usable() {
+    have cargo || return 1
+    local v
+    # `cargo 1.97.1 (c980f4866 2026-06-30)`
+    v="$(cargo --version 2>/dev/null | awk '{print $2}')" || return 1
+    [[ -n "$v" ]] || return 1
+    printf '%s\n%s\n' "$RUST_MIN" "$v" | sort -C -V
+}
+
 # Run a command, echoing it first. Honours --dry-run. On failure the user
 # chooses to retry, skip, or abort, because a half-installed desktop is worse
 # than a stopped installer.

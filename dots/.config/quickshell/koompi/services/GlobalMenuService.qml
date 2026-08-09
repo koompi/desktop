@@ -11,7 +11,11 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string daemonBin: {
+    readonly property string rustDaemonBin: Quickshell.env("HOME") + "/.local/bin/koompi-global-menu-daemon"
+    // setups.sh skips the Rust build where cargo is too old to compile it, so
+    // the Zig daemon it always builds stays reachable. Both answer the same
+    // protocol; tests/test_globalmenu.sh is what keeps that true.
+    readonly property string zigDaemonBin: {
         const url = Qt.resolvedUrl("../scripts/global-menu/zig-out/bin/global-menu-daemon");
         return url.toString().replace("file://", "");
     }
@@ -56,7 +60,7 @@ Singleton {
 
     Process {
         id: daemon
-        command: [root.daemonBin]
+        command: ["bash", "-c", 'if [ -x "$1" ]; then exec "$1"; fi; exec "$2"', "bash", root.rustDaemonBin, root.zigDaemonBin]
         running: true
         stdinEnabled: true
 
