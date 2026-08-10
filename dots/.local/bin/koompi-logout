@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# End this login session, and only this one.
+#
+# `loginctl terminate-session` alone cannot do it under SDDM: the session leader
+# is sddm-helper, so terminating the scope SIGTERMs the helper out from under
+# SDDM. The helper then exits 1, SDDM reads that as "Process crashed" instead of
+# a session that ended, and never respawns the greeter - the seat is left on a
+# black screen with no way back but a hard reboot.
+#
+# So bring the compositor down first and let the helper exit on its own. The
+# sweep afterwards is only for leftovers logind waits on with
+# KillUserProcesses=no, and it is gated on the leader already being gone: a
+# sweep while the leader is alive IS the black screen.
+set -uo pipefail
+
+grace="${KOOMPI_LOGOUT_GRACE:-15}"
+kill_grace="${KOOMPI_LOGOUT_KILL_GRACE:-5}"
+
+session="${XDG_SESSION_ID:-}"
+leader=""
+[[ -n "$session" ]] && leader="$(loginctl show-session "$session" --value -p Leader 2>/dev/null)"
+
+# hyprland reads lua here, where `dispatch exit` parses as the undefined
+# identifier `exit` and dispatches nothing. stock hyprland only knows the bare
+# name, so try the lua form and fall back.
+exit_compositor() {
+    local out
+    out="$(hyprctl dispatch 'hl.dsp.exit()' 2>&1)"
+    case "$out" in
+        *rror*|*nvalid*|*expected*) hyprctl dispatch exit > /dev/null 2>&1 ;;
+    esac
+}
+
+compositor_pids() {
+    local p
+    for p in $(pgrep -x Hyprland 2> /dev/null); do
+        grep -q "session-$session.scope" "/proc/$p/cgroup" 2> /dev/null && printf '%s\n' "$p"
+    done
+}
+
+leader_gone() {
+    [[ -z "$leader" ]] && return 0
+    ! kill -0 "$leader" 2> /dev/null
+}
+
+await_leader() {
+    local deadline=$((SECONDS + $1))
+    while ((SECONDS < deadline)); do
+        leader_gone && return 0
+        sleep 0.1
+    done
+    leader_gone
+}
+
+exit_compositor
+await_leader "$grace" || {
+    # shellcheck disable=SC2046
+    kill $(compositor_pids) 2> /dev/null
+    await_leader "$kill_grace" || {
+        # shellcheck disable=SC2046
+        kill -9 $(compositor_pids) 2> /dev/null
+        await_leader "$kill_grace"
+    }
+}
+
+leader_gone || {
+    printf 'koompi-logout: session leader %s is still alive; not sweeping\n' "$leader" >&2
+    exit 1
+}
+
+# Without a leader to check against there is no way to know the sweep is safe.
+[[ -n "$session" && -z "$leader" ]] && exit 1
+
+[[ -n "$session" ]] && exec loginctl terminate-session "$session"
+exit 0

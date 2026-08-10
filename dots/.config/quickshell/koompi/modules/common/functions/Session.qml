@@ -27,10 +27,10 @@ Singleton {
     }
 
     function logout() {
-        // Not `pkill -i Hyprland`: unscoped across this user's compositors, and it leaves
-        // the rest of the session in a scope logind then waits on indefinitely.
-        Quickshell.execDetached(["bash", "-c",
-            'loginctl terminate-session "$XDG_SESSION_ID" || hyprctl dispatch exit']);
+        // koompi-logout, not terminate-session inline: the session leader is sddm-helper,
+        // and killing it leaves SDDM with no greeter. Not `pkill -i Hyprland` either,
+        // which is unscoped across this user's compositors.
+        Quickshell.execDetached(["koompi-logout"]);
     }
 
     function launchTaskManager() {
