@@ -22,9 +22,6 @@ QtObject {
     property var _clearSnapshot: null
     readonly property bool canUndoClear: _clearSnapshot !== null
 
-    // Subtask context isolation slot (#15)
-    property var _savedContext: null
-
     function idForMessage(message) {
         // Generate a unique ID using timestamp and random value
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
@@ -124,8 +121,12 @@ QtObject {
     }
 
     function chatToJson() {
-        return root.messageIDs.map(id => {
-            const message = root.messageByID[id]
+        return root._toJson(root.messageIDs, root.messageByID);
+    }
+
+    function _toJson(ids, byID) {
+        return ids.map(id => {
+            const message = byID[id]
             return ({
                 "role": message.role,
                 "rawContent": message.rawContent,
@@ -147,64 +148,115 @@ QtObject {
         })
     }
 
-    readonly property FileView chatSaveFile: FileView {
-        property string chatName: ""
-        path: chatName.length > 0 ? `${Directories.aiChats}/${chatName}.json` : ""
-        blockLoading: true // Prevent race conditions
+    // --- threads --------------------------------------------------------
+
+    property bool isSubtask: false
+
+    property string chatsDirectory: Directories.aiChats
+
+    readonly property ThreadStore threadStore: ThreadStore {
+        active: !root.isSubtask
+        directory: root.chatsDirectory
+    }
+
+    readonly property string sessionId: root.threadStore.sessionId
+    readonly property string threadTitle: root.threadStore.currentTitle
+    readonly property string threadId: root.threadStore.currentThreadId
+
+    function newThread() {
+        root.clearMessages(false);
+        return root.threadStore.createThread("");
+    }
+
+    function openThread(id) {
+        return root.loadChat(id);
+    }
+
+    function renameThread(id, title) {
+        return root.threadStore.renameThread(id, title);
+    }
+
+    function deleteThread(id) {
+        const wasCurrent = id === root.threadStore.currentThreadId;
+        const removed = root.threadStore.deleteThread(id);
+        if (removed && wasCurrent) root.clearMessages(false);
+        if (removed) root.engine.refreshSavedChats();
+        return removed;
+    }
+
+    /** What belongs in the thread file: the user's conversation, never a subtask's. */
+    function _persistedMessages() {
+        if (root._parked) return root._toJson(root._parked.ids, root._parked.byID);
+        return root.chatToJson();
     }
 
     /**
-     * Saves chat to a JSON list of message objects.
-     * @param chatName name of the chat
+     * Writes the conversation to its thread file. An empty name, or the
+     * `lastSession` alias every turn still autosaves under, means the active
+     * thread; any other name is a thread of its own.
      */
     function saveChat(chatName) {
-        chatSaveFile.chatName = chatName.trim()
-        const saveContent = JSON.stringify(root.chatToJson())
-        chatSaveFile.setText(saveContent)
+        const requested = (chatName ?? "").trim();
+        const id = (requested.length === 0 || requested === root.threadStore.autosaveAlias)
+            ? root.threadStore.ensureCurrentThread()
+            : requested;
+        root.threadStore.selectThread(id);
+        const messages = root._persistedMessages();
+        root.threadStore.writeThread(id, messages, null);
+        root.threadStore.noteSaved(id, messages.length);
+        const firstUser = messages.find(m => m.role === "user"
+            && (m.rawContent ?? "").length > 0 && m.visibleToUser !== false);
+        if (firstUser) root.threadStore.suggestTitle(id, firstUser.rawContent);
         root.engine.refreshSavedChats();
     }
 
     /**
-     * Loads chat from a JSON list of message objects.
-     * @param chatName name of the chat
+     * Replaces the conversation with a stored thread. A read that fails leaves
+     * the current conversation alone — an unreadable file is not an empty chat.
      */
     function loadChat(chatName) {
-        try {
-            chatSaveFile.chatName = chatName.trim()
-            chatSaveFile.reload()
-            const saveContent = chatSaveFile.text()
-            const saveData = JSON.parse(saveContent)
-            root.clearMessages(false)
-            root.messageIDs = saveData.map((_, i) => {
-                return i
-            })
-            for (let i = 0; i < saveData.length; i++) {
-                const message = saveData[i];
-                root.messageByID[i] = root.engine.aiMessageComponent.createObject(root, {
-                    "role": message.role,
-                    "rawContent": message.rawContent,
-                    "content": message.rawContent,
-                    "fileMimeType": message.fileMimeType,
-                    "fileUri": message.fileUri,
-                    "localFilePath": message.localFilePath,
-                    "model": message.model,
-                    "thinking": message.thinking,
-                    "done": message.done,
-                    "annotations": message.annotations,
-                    "annotationSources": message.annotationSources,
-                    "functionName": message.functionName,
-                    "functionCall": message.functionCall,
-                    "thoughtSignature": message.thoughtSignature ?? "",
-                    "functionResponse": message.functionResponse,
-                    "visibleToUser": message.visibleToUser,
-                    "timestamp": message.timestamp ?? 0,
-                });
-            }
-        } catch (e) {
-            console.log("[AI] Could not load chat: ", e);
-        } finally {
+        const id = (chatName ?? "").trim();
+        if (id.length === 0) return false;
+        const stored = root.threadStore.readThread(id);
+        if (!stored) {
+            console.log("[AI] No conversation stored as", id, "— keeping the current one");
             root.engine.refreshSavedChats();
+            return false;
         }
+        root.clearMessages(false);
+        const ids = [];
+        const byID = ({});
+        for (let i = 0; i < stored.messages.length; i++) {
+            const message = stored.messages[i];
+            const messageId = `${id}:${i}`;
+            byID[messageId] = root.engine.aiMessageComponent.createObject(root, {
+                "role": message.role,
+                "rawContent": message.rawContent,
+                "content": message.rawContent,
+                "fileMimeType": message.fileMimeType,
+                "fileUri": message.fileUri,
+                "localFilePath": message.localFilePath,
+                "model": message.model,
+                "thinking": message.thinking,
+                "done": message.done,
+                "annotations": message.annotations,
+                "annotationSources": message.annotationSources,
+                "functionName": message.functionName,
+                "functionCall": message.functionCall,
+                "thoughtSignature": message.thoughtSignature ?? "",
+                "functionResponse": message.functionResponse,
+                "visibleToUser": message.visibleToUser,
+                "timestamp": message.timestamp ?? 0,
+            });
+            ids.push(messageId);
+        }
+        root.messageByID = byID;
+        root.messageIDs = ids;
+        root.threadStore.selectThread(id);
+        root.threadStore.adoptMeta(id, stored.meta);
+        root.threadStore.noteLoaded(id, ids.length);
+        root.engine.refreshSavedChats();
+        return true;
     }
 
     // Inject a hidden context pair into message history (#11)
@@ -222,48 +274,235 @@ QtObject {
         root.appendMessage(ctxA);
     }
 
-    // Run a subtask in an isolated context; result injected back into main chat (#15)
+    // --- subtasks -------------------------------------------------------
+
+    // The subtask's turns belong to this object, not to the user's chat. The
+    // user's messages are parked whole while it runs, so a save, a compaction
+    // or a concurrent turn during a subtask can no longer write the subtask's
+    // context over the thread (#15, D37).
+    property Conversation subtaskConversation: null
+    property var _parked: null
+    property var _parkedHook: null
+    readonly property bool inSubtask: root.subtaskConversation !== null
+
+    // Created at runtime: a QML type may not name itself in its own file.
+    property var subtaskComponent: null
+
+    function _subtaskComponent() {
+        if (!root.subtaskComponent)
+            root.subtaskComponent = Qt.createComponent(Qt.resolvedUrl("Conversation.qml"));
+        return root.subtaskComponent;
+    }
+
+    readonly property Timer subtaskWatchdog: Timer {
+        interval: 300000
+        repeat: false
+        onTriggered: {
+            if (!root.inSubtask) return;
+            root._endSubtask(Translation.tr("(subtask timed out)"));
+        }
+    }
+
+    onMessageIDsChanged: {
+        if (root.subtaskConversation) root.subtaskConversation.messageIDs = root.messageIDs;
+        root.updateTokenEstimate();
+    }
+
     function spawnSubtask(description) {
-        if (root._savedContext) {
+        if (root.inSubtask) {
             root.addMessage(Translation.tr("A subtask is already running."), root.engine.interfaceRole);
             return;
         }
-        root._savedContext = {
-            "messageIDs": root.messageIDs.slice(),
-            "messageByID": Object.assign({}, root.messageByID),
+        const component = root._subtaskComponent();
+        const sub = component.status === Component.Ready
+            ? component.createObject(root, { "engine": root.engine, "isSubtask": true })
+            : null;
+        if (!sub) {
+            root.addMessage(Translation.tr("Could not start the subtask."), root.engine.interfaceRole);
+            return;
+        }
+        root._parked = {
+            "ids": root.messageIDs.slice(),
+            "byID": Object.assign({}, root.messageByID),
             "tokenInput": root.engine.tokenCount.input,
             "tokenOutput": root.engine.tokenCount.output,
             "tokenTotal": root.engine.tokenCount.total
         };
-        root.messageIDs = [];
         root.messageByID = ({});
+        sub.messageByID = root.messageByID;
+        root.subtaskConversation = sub;
+        root.messageIDs = [];
         root.engine.tokenCount.input = -1;
         root.engine.tokenCount.output = -1;
         root.engine.tokenCount.total = -1;
         root.addMessage(Translation.tr("_Subtask: %1_").arg(description), root.engine.interfaceRole);
-        root.engine.postResponseHook = () => {
-            const lastId = root.messageIDs[root.messageIDs.length - 1];
-            const lastMsg = root.messageByID[lastId];
-            const resultText = (lastMsg && lastMsg.role === "assistant")
-                ? lastMsg.rawContent
-                : Translation.tr("(no result)");
-            if (root._savedContext) {
-                root.messageIDs = root._savedContext.messageIDs;
-                root.messageByID = root._savedContext.messageByID;
-                root.engine.tokenCount.input = root._savedContext.tokenInput;
-                root.engine.tokenCount.output = root._savedContext.tokenOutput;
-                root.engine.tokenCount.total = root._savedContext.tokenTotal;
-                root._savedContext = null;
-            }
-            root.addMessage(Translation.tr("**Subtask result:**\n\n%1").arg(resultText), root.engine.interfaceRole);
-        };
+        root._parkedHook = root.engine.postResponseHook;
+        root.engine.postResponseHook = () => root._endSubtask(null);
+        root.subtaskWatchdog.restart();
         root.engine.requester.sendUserMessage(description);
+    }
+
+    function _endSubtask(failure) {
+        if (!root.inSubtask) return;
+        root.subtaskWatchdog.stop();
+        const lastId = root.messageIDs[root.messageIDs.length - 1];
+        const lastMsg = root.messageByID[lastId];
+        const resultText = failure ?? ((lastMsg && lastMsg.role === "assistant")
+            ? lastMsg.rawContent
+            : Translation.tr("(no result)"));
+
+        root.subtaskConversation = null;
+        const parked = root._parked;
+        root._parked = null;
+        if (parked) {
+            root.messageByID = parked.byID;
+            root.messageIDs = parked.ids;
+            root.engine.tokenCount.input = parked.tokenInput;
+            root.engine.tokenCount.output = parked.tokenOutput;
+            root.engine.tokenCount.total = parked.tokenTotal;
+        }
+        root.engine.postResponseHook = root._parkedHook;
+        root._parkedHook = null;
+        root.addMessage(Translation.tr("**Subtask result:**\n\n%1").arg(resultText), root.engine.interfaceRole);
     }
 
     property bool compacting: false
     property var _compactionDone: null
     property string _queuedMessage: ""
-    readonly property int compactionThreshold: Config.options?.ai?.memory?.compactionThreshold ?? 30000
+    // --- context budget -------------------------------------------------
+
+    readonly property string litertConfigPath:
+        (Quickshell.env("LITERT_LM_DIR") || `${Quickshell.env("HOME")}/.litert-lm`) + "/config.json"
+
+    readonly property FileView litertConfigFile: FileView {
+        path: root.isSubtask ? "" : root.litertConfigPath
+        blockLoading: true
+        printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
+    }
+
+    readonly property var litertConfig: {
+        try {
+            return JSON.parse(root.litertConfigFile.text());
+        } catch (e) {
+            return null;
+        }
+    }
+
+    readonly property var currentModel: {
+        const models = root.engine ? root.engine.models : null;
+        if (!models) return null;
+        return models[root.engine.currentModelId] ?? null;
+    }
+
+    readonly property string currentModelName: root.currentModel ? (root.currentModel.model ?? "") : ""
+
+    readonly property string litertPort: `${Config.options?.ai?.memory?.litertPort ?? 9379}`
+
+    readonly property bool servedByLitert:
+        root.currentModel !== null && (root.currentModel.endpoint ?? "").indexOf(`:${root.litertPort}`) >= 0
+
+    // Same merge LiteRT-LM does when it starts the model: per-model over default.
+    // Whatever this says is what the server will accept, and the request is
+    // rejected outright above it.
+    readonly property int litertWindow: {
+        const cfg = root.litertConfig;
+        if (!cfg) return 0;
+        const name = root.currentModelName;
+        const alt = name.indexOf("/") >= 0 ? name.replace(/\//g, "--") : name.replace(/--/g, "/");
+        const models = cfg.models ?? ({});
+        const perModel = models[name] ?? models[alt] ?? null;
+        if (perModel && perModel.max_num_tokens) return perModel.max_num_tokens;
+        if (cfg.default && cfg.default.max_num_tokens) return cfg.default.max_num_tokens;
+        return 0;
+    }
+
+    readonly property var modelWindows: ({
+        "gemini-1.5": 1048576, "gemini-2.0": 1048576, "gemini-2.5": 1048576,
+        "gpt-4o": 128000, "gpt-4.1": 1047576, "gpt-5": 400000, "o3": 200000,
+        "claude": 200000, "codestral": 256000, "mistral": 128000,
+        "gemma": 8192, "llama": 8192, "phi": 16384, "qwen": 32768, "deepseek": 65536,
+    })
+
+    readonly property int modelDefaultWindow: {
+        const name = root.currentModelName.toLowerCase();
+        if (name.length === 0) return 0;
+        const keys = Object.keys(root.modelWindows);
+        for (let i = 0; i < keys.length; i++)
+            if (name.indexOf(keys[i]) >= 0) return root.modelWindows[keys[i]];
+        return 0;
+    }
+
+    readonly property int configuredWindow: Config.options?.ai?.memory?.contextWindow ?? 0
+
+    readonly property int contextWindow:
+        (root.servedByLitert && root.litertWindow > 0) ? root.litertWindow
+        : root.modelDefaultWindow > 0 ? root.modelDefaultWindow
+        : root.configuredWindow > 0 ? root.configuredWindow
+        : 8192
+
+    readonly property string contextWindowSource:
+        (root.servedByLitert && root.litertWindow > 0) ? `litert-lm ${root.litertConfigPath}`
+        : root.modelDefaultWindow > 0 ? `model default for ${root.currentModelName}`
+        : root.configuredWindow > 0 ? "Config.options.ai.memory.contextWindow"
+        : "fallback"
+
+    readonly property real compactionFraction: {
+        const configured = Config.options?.ai?.memory?.compactionFraction ?? 0.6;
+        return Math.min(0.95, Math.max(0.1, configured));
+    }
+
+    readonly property int derivedCompactionThreshold:
+        Math.max(512, Math.floor(root.contextWindow * root.compactionFraction))
+
+    // A configured threshold may lower the bar, never raise it past what the
+    // server accepts: the shipped 30000 is nearly twice a 16384-token window.
+    readonly property int compactionThreshold: {
+        const configured = Config.options?.ai?.memory?.compactionThreshold ?? 0;
+        return configured > 0
+            ? Math.min(configured, root.derivedCompactionThreshold)
+            : root.derivedCompactionThreshold;
+    }
+
+    // LiteRT-LM's streamed responses carry no `usage` block, so tokenCount stays
+    // at -1 and a threshold on the reported number can never be crossed. This is
+    // measured from what is about to be sent instead. 3.6 chars per token
+    // slightly overcounts English prose, which errs towards compacting early.
+    readonly property real charsPerToken: 3.6
+    property int estimatedTokens: 0
+    readonly property int tokensInUse: Math.max(root.engine ? root.engine.tokenCount.total : -1, root.estimatedTokens)
+
+    function updateTokenEstimate() {
+        let chars = root.engine ? (root.engine.systemPrompt ?? "").length : 0;
+        for (let i = 0; i < root.messageIDs.length; i++) {
+            const message = root.messageByID[root.messageIDs[i]];
+            if (!message) continue;
+            chars += (message.rawContent ?? "").length + (message.functionResponse ?? "").length;
+        }
+        root.estimatedTokens = Math.ceil(chars / root.charsPerToken);
+    }
+
+    function maybeCompact() {
+        if (root.compacting || root.inSubtask) return false;
+        if (root.engine && root.engine.requestActive) return false;
+        if (root.tokensInUse <= root.compactionThreshold) return false;
+        console.log("[AI] compacting:", root.tokensInUse, "tokens of a", root.contextWindow, "window");
+        root.compact(null);
+        return true;
+    }
+
+    // The turn is over and the next one has to fit: check the budget here rather
+    // than after the server has already refused the request.
+    readonly property Connections turnWatcher: Connections {
+        target: root.engine
+        enabled: !root.isSubtask
+        function onRequestActiveChanged() {
+            if (root.engine.requestActive) return;
+            root.updateTokenEstimate();
+            root.maybeCompact();
+        }
+    }
     readonly property string compactionSystemPrompt:
         "You are a conversation summarizer. Produce a compact context block in exactly this format:\n\n" +
         "## Goal\n<what the user is trying to accomplish>\n\n" +
@@ -327,9 +566,22 @@ QtObject {
             root._afterCompaction();
             return;
         }
+        // Keeping a fixed six messages made compaction *grow* the context when
+        // one of them was a 35k-character paste. The tail is kept by token
+        // budget instead, so what survives always fits.
         const keepCount = 6;
+        const keepBudget = Math.floor(root.compactionThreshold / 2);
         const allIds = root.messageIDs.filter(id => root.messageByID[id].role !== root.engine.interfaceRole);
-        const idsToKeep = allIds.slice(-keepCount);
+        const idsToKeep = [];
+        let kept = Math.ceil(summaryText.length / root.charsPerToken);
+        for (let i = allIds.length - 1; i >= 0 && idsToKeep.length < keepCount; i--) {
+            const message = root.messageByID[allIds[i]];
+            const cost = Math.ceil(((message.rawContent ?? "").length
+                + (message.functionResponse ?? "").length) / root.charsPerToken);
+            if (idsToKeep.length > 0 && kept + cost > keepBudget) break;
+            idsToKeep.unshift(allIds[i]);
+            kept += cost;
+        }
         const savedMsgs = {};
         idsToKeep.forEach(id => { savedMsgs[id] = root.messageByID[id]; });
         const droppedCount = allIds.length - idsToKeep.length;

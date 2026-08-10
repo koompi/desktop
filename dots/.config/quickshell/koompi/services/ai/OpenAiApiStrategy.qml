@@ -7,27 +7,31 @@ ApiStrategy {
     property var pendingToolCalls: ({})
     property bool toolCallEmitted: false
 
-    function takeCompletedToolCall(message) {
+    // Every call the turn asked for. LiteRT-LM reuses one id for all of them, so the
+    // id we answer with is ours: index-suffixed here and echoed back on the result.
+    function takeCompletedToolCalls(message) {
         const indices = Object.keys(pendingToolCalls);
         if (indices.length === 0 || toolCallEmitted) return null;
         toolCallEmitted = true;
-        const call = pendingToolCalls[indices[0]];
-        let args = {};
-        try {
-            if (call.arguments && call.arguments.length > 0) args = JSON.parse(call.arguments);
-        } catch (e) {
-            console.log("[AI] OpenAI: Could not parse tool call arguments: ", e);
+        const calls = [];
+        const wire = [];
+        for (let k = 0; k < indices.length; k++) {
+            const call = pendingToolCalls[indices[k]];
+            if (!call.name || call.name.length === 0) continue;
+            let args = {};
+            try {
+                if (call.arguments && call.arguments.length > 0) args = JSON.parse(call.arguments);
+            } catch (e) {
+                console.log("[AI] OpenAI: Could not parse tool call arguments: ", e);
+            }
+            const id = `${(call.id && call.id.length > 0) ? call.id : "call"}_${k}`;
+            calls.push({ name: call.name, args: args, id: id });
+            wire.push({ "id": id, "name": call.name, "arguments": call.arguments || "{}" });
         }
-        message.functionName = call.name;
-        // rawContent only: the model needs to see its own call in the next request,
-        // the user does not need the plumbing in the chat
-        message.rawContent += `\n\n[[ Function: ${call.name}(${call.arguments || "{}"}) ]]\n`;
-        // one call runs per turn, so name what was skipped instead of losing it silently
-        if (indices.length > 1) {
-            const skipped = indices.slice(1).map(i => pendingToolCalls[i].name).filter(n => n.length > 0).join(", ");
-            if (skipped.length > 0) message.rawContent += `[[ Not run this turn, call again if still needed: ${skipped} ]]\n`;
-        }
-        return { name: call.name, args: args };
+        if (calls.length === 0) return null;
+        message.functionName = calls[0].name;
+        message.toolCalls = wire;
+        return calls;
     }
 
     function buildEndpoint(model: AiModel): string {
@@ -35,26 +39,53 @@ ApiStrategy {
         return model.endpoint;
     }
 
+    // A tool result is its own message keyed by the id of the call it answers, and the
+    // assistant turn that asked carries the calls themselves. A chat saved before this
+    // existed has neither field; those messages go out unchanged, as plain prose, and a
+    // role of "tool" with no id to match would be rejected, so it degrades to "user".
+    function wireMessage(message) {
+        if (message.toolCallId && message.toolCallId.length > 0) {
+            return {
+                "role": "tool",
+                "tool_call_id": message.toolCallId,
+                "content": message.functionResponse ?? ""
+            };
+        }
+        const calls = message.toolCalls ?? [];
+        if (calls.length > 0) {
+            return {
+                "role": "assistant",
+                "content": message.rawContent ?? "",
+                "tool_calls": calls.map(c => ({
+                    "id": c.id,
+                    "type": "function",
+                    "function": { "name": c.name, "arguments": c.arguments ?? "{}" }
+                }))
+            };
+        }
+        if (message.role === "tool") {
+            const legacy = (message.functionResponse ?? "").length > 0 ? message.functionResponse : message.rawContent;
+            return { "role": "user", "content": legacy };
+        }
+        return { "role": message.role, "content": message.rawContent };
+    }
+
     function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>, filePath: string) {
         let baseData = {
             "model": model.model,
             "messages": [
                 {role: "system", content: systemPrompt},
-                ...messages.map(message => {
-                    return {
-                        "role": message.role,
-                        "content": message.rawContent,
-                    }
-                }),
+                ...messages.map(message => wireMessage(message)),
             ],
             "stream": true,
-            "tools": tools,
             "temperature": temperature,
         };
+        if (tools && tools.length > 0) baseData.tools = tools;
         return model.extraParams ? Object.assign({}, baseData, model.extraParams) : baseData;
     }
 
-    function buildAuthorizationHeader(apiKeyEnvVarName: string): string {
+    function buildAuthorizationHeader(apiKeyEnvVarName: string, model: AiModel): string {
+        if (!model?.requires_key) return "";
         return `-H "Authorization: Bearer \$\{${apiKeyEnvVarName}\}"`;
     }
 
@@ -72,8 +103,8 @@ ApiStrategy {
         if (cleanData === "[DONE]") {
             if (toolCallEmitted) return {};
             // Some providers skip the finish_reason chunk; emit any pending call here
-            const fc = takeCompletedToolCall(message);
-            if (fc) return { functionCall: fc, finished: true };
+            const fc = takeCompletedToolCalls(message);
+            if (fc) return { functionCall: fc[0], functionCalls: fc, finished: true };
             return { finished: true };
         }
         
@@ -125,15 +156,16 @@ ApiStrategy {
                     // not a continuation. Without this they concatenate.
                     if (tc.function?.name && pendingToolCalls[idx]?.name)
                         idx = Object.keys(pendingToolCalls).length;
-                    if (!pendingToolCalls[idx]) pendingToolCalls[idx] = { name: "", arguments: "" };
+                    if (!pendingToolCalls[idx]) pendingToolCalls[idx] = { name: "", arguments: "", id: "" };
                     if (tc.function?.name) pendingToolCalls[idx].name += tc.function.name;
                     if (tc.function?.arguments) pendingToolCalls[idx].arguments += tc.function.arguments;
+                    if (tc.id && pendingToolCalls[idx].id.length === 0) pendingToolCalls[idx].id = tc.id;
                 }
             }
 
             if (dataJson.choices[0]?.finish_reason === "tool_calls") {
-                const fc = takeCompletedToolCall(message);
-                if (fc) return { functionCall: fc, finished: true };
+                const fc = takeCompletedToolCalls(message);
+                if (fc) return { functionCall: fc[0], functionCalls: fc, finished: true };
             }
 
             // Usage metadata

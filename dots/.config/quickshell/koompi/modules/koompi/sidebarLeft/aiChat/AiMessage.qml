@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import "grounding.js" as Grounding
 
 Item {
     id: root
@@ -23,9 +24,49 @@ Item {
     property bool renderMarkdown: true
     property bool editing: false
 
-    property bool isUser: messageData?.role == 'user'
-    property bool isInterface: messageData?.role == 'interface'
-    property bool isAssistant: messageData?.role == 'assistant'
+    // A tool result is a role, not a flag. Whatever `visibleToUser` says, a
+    // message carrying a tool result can never reach the assistant bubble: it is
+    // the model's plumbing and the user reads a bubble as an answer. D22.
+    property bool isToolResult: messageData?.role == 'tool'
+        || (messageData?.toolCallId ?? "").length > 0
+        || (messageData?.functionResponse ?? "").length > 0
+
+    property bool isUser: messageData?.role == 'user' && !isToolResult
+    property bool isInterface: messageData?.role == 'interface' && !isToolResult
+    property bool isAssistant: messageData?.role == 'assistant' && !isToolResult
+
+    readonly property var sources: root.isAssistant ? (messageData?.sources ?? []) : []
+    readonly property var toolCalls: root.isAssistant ? (messageData?.toolCalls ?? []) : []
+    readonly property var grounding: (root.isAssistant && (root.messageData?.done ?? false))
+        ? Grounding.computeGrounding(root.sources, root.messageData?.content ?? "")
+        : null
+    readonly property bool usedAgent: root.sources.some(s => s?.type === "agent")
+        || root.toolCalls.some(c => c?.name === "ask_agent")
+
+    // The assistant turn that asked for this result, found by id rather than by
+    // position, so a queued or retried turn cannot mis-pair them.
+    readonly property var callingMessage: {
+        const id = root.messageData?.toolCallId ?? "";
+        if (!root.isToolResult || id.length === 0) return null;
+        const ids = Ai.messageIDs ?? [];
+        for (let i = ids.length - 1; i >= 0; i--) {
+            const message = Ai.messageByID[ids[i]];
+            for (const call of (message?.toolCalls ?? [])) {
+                if (call?.id === id) return { message: message, call: call };
+            }
+        }
+        return null;
+    }
+    readonly property real toolElapsedMs: {
+        const start = root.callingMessage?.message?.timestamp ?? 0;
+        const end = root.messageData?.timestamp ?? 0;
+        return (start > 0 && end > start) ? (end - start) : -1;
+    }
+    readonly property string toolArguments: {
+        const args = root.callingMessage?.call?.arguments;
+        if (args === undefined || args === null) return "";
+        return (typeof args === "string") ? args : JSON.stringify(args);
+    }
 
     property list<var> messageBlocks: []
 
@@ -33,12 +74,21 @@ Item {
     // letting it drive the bubble width squeezes the text into a narrow column.
     readonly property bool hasFullWidthBlock: messageBlocks.some(b => b.type === "think" || b.type === "code")
 
-    // Nothing but the spinner yet, so the bubble would be a coloured box around it
-    readonly property bool loadingOnly: (messageBlocks.length < 1) && !(messageData?.done ?? false)
+    // Nothing but the thinking pulse yet, so the bubble would be a coloured box
+    // around it. Keyed on the content itself, not on the throttled block parse,
+    // so the pulse stops on the first token rather than 120 ms after it.
+    readonly property bool loadingOnly: ((messageData?.content ?? "").length === 0)
+        && !(messageData?.done ?? false)
 
     anchors.left: parent?.left
     anchors.right: parent?.right
     implicitHeight: outerColumn.implicitHeight
+
+    activeFocusOnTab: true
+    Accessible.role: Accessible.Paragraph
+    Accessible.name: root.isToolResult
+        ? Translation.tr("Tool activity: %1").arg(root.messageData?.functionName ?? "")
+        : Translation.tr("%1 message").arg(root.isUser ? Translation.tr("Your") : Translation.tr("Assistant"))
 
     component MessageBlock: QtObject {
         property string type: "text"
@@ -159,8 +209,35 @@ Item {
         anchors.top: parent.top
         spacing: 2
 
-        Item { // Bubble row (aligns the bubble left/right)
+        Loader { // Tool plumbing renders as an activity row, never as a message
             Layout.fillWidth: true
+            active: root.isToolResult
+            visible: active
+            sourceComponent: ToolActivityRow {
+                functionName: root.messageData?.functionName ?? Translation.tr("tool")
+                response: root.messageData?.functionResponse ?? ""
+                arguments: root.toolArguments
+                elapsedMs: root.toolElapsedMs
+            }
+        }
+
+        Loader { // Bubble row (aligns the bubble left/right)
+            Layout.fillWidth: true
+            active: !root.isToolResult
+            visible: active
+            sourceComponent: bubbleRowComponent
+        }
+
+        Loader {
+            Layout.fillWidth: true
+            sourceComponent: controlsRowComponent
+        }
+    }
+
+    Component {
+        id: bubbleRowComponent
+
+        Item {
             implicitHeight: bubble.implicitHeight
 
             Rectangle { // Sender avatar
@@ -191,11 +268,10 @@ Item {
                     color: Appearance.colors.colOnLayer1
                 }
 
-                MaterialLoadingIndicator { // takes the logo's place while the turn works
+                ThinkingIndicator { // takes the logo's place until the first token
                     visible: root.isAssistant && root.loadingOnly
                     anchors.centerIn: parent
-                    implicitSize: root.avatarSize
-                    loading: visible
+                    active: visible
                 }
             }
 
@@ -224,6 +300,21 @@ Item {
                     anchors.top: parent.top
                     anchors.margins: root.messagePadding
                     spacing: root.contentSpacing
+
+                    Loader {
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: active ? 4 : 0
+                        // A turn that only dispatched a tool claims nothing, so it
+                        // gets no grounding header to claim it with.
+                        active: root.isAssistant && (root.messageData?.done ?? false)
+                            && (root.messageData?.content ?? "").trim().length > 0
+                        visible: active
+                        sourceComponent: MessageGroundingHeader {
+                            modelId: root.messageData?.model ?? ""
+                            usedAgent: root.usedAgent
+                            grounding: root.grounding
+                        }
+                    }
 
                     Loader {
                         Layout.fillWidth: true
@@ -272,9 +363,51 @@ Item {
                                     messageData: root.messageData
                                     done: root.messageData?.done ?? false
                                     forceDisableChunkSplitting: root.messageData?.content.includes("```") ?? true
+                                    sources: root.sources
+                                    onSourceActivated: index => citations.highlight(index)
                                 } }
                             }
                         }
+                    }
+
+                    Repeater { // What this turn asked a tool to do, read off the call itself
+                        model: ScriptModel {
+                            values: root.toolCalls
+                        }
+
+                        RowLayout {
+                            id: toolCallRow
+                            required property var modelData
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            MaterialSymbol {
+                                text: "arrow_outward"
+                                iconSize: Appearance.font.pixelSize.smallie
+                                color: Appearance.colors.colSubtext
+                            }
+
+                            StyledText {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
+                                font.pixelSize: Appearance.font.pixelSize.smallest
+                                font.family: Appearance.font.family.monospace
+                                color: Appearance.colors.colSubtext
+                                text: {
+                                    const args = toolCallRow.modelData?.arguments;
+                                    const rendered = (args === undefined || args === null) ? ""
+                                        : (typeof args === "string" ? args : JSON.stringify(args));
+                                    return Translation.tr("called %1 %2").arg(toolCallRow.modelData?.name ?? "").arg(rendered);
+                                }
+                            }
+                        }
+                    }
+
+                    MessageCitations {
+                        id: citations
+                        Layout.fillWidth: true
+                        sources: root.sources
                     }
 
                     Flow { // Annotations
@@ -314,12 +447,18 @@ Item {
                 }
             }
         }
+    }
 
-        Item { // Controls row, revealed on hover, aligned to the message side
-            Layout.fillWidth: true
+    Component {
+        id: controlsRowComponent
+
+        // Revealed on hover, and on keyboard focus: a control that only a mouse
+        // can find is a control half the users do not have. D29.
+        Item {
+            id: controlsContainer
+            readonly property bool revealed: messageHover.hovered || controlsRow.activeFocus || root.activeFocus
             implicitHeight: controlsRow.implicitHeight
-            opacity: messageHover.hovered ? 1 : 0
-            enabled: messageHover.hovered
+            opacity: revealed ? 1 : 0
 
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -329,7 +468,6 @@ Item {
                 id: controlsRow
                 x: root.isUser ? (parent.width - width) : 0
                 spacing: 2
-
 
                 AiMessageControlButton {
                     id: regenButton
@@ -344,10 +482,12 @@ Item {
 
                 AiMessageControlButton {
                     id: copyButton
-                    accessibleName: Translation.tr("Copy message")
+                    accessibleName: root.isToolResult ? Translation.tr("Copy tool output") : Translation.tr("Copy message")
                     buttonIcon: activated ? "inventory" : "content_copy"
                     onClicked: {
-                        Quickshell.clipboardText = root.messageData?.content
+                        Quickshell.clipboardText = root.isToolResult
+                            ? (root.messageData?.functionResponse ?? "")
+                            : (root.messageData?.content ?? "")
                         copyButton.activated = true
                         copyIconTimer.restart()
                     }
@@ -366,6 +506,7 @@ Item {
                     id: editButton
                     accessibleName: root.editing ? Translation.tr("Save message") : Translation.tr("Edit message")
                     activated: root.editing
+                    visible: !root.isToolResult
                     enabled: root.messageData?.done ?? false
                     buttonIcon: "edit"
                     onClicked: {
@@ -383,6 +524,7 @@ Item {
                     id: toggleMarkdownButton
                     accessibleName: Translation.tr("View Markdown source")
                     activated: !root.renderMarkdown
+                    visible: !root.isToolResult
                     buttonIcon: "code"
                     onClicked: root.renderMarkdown = !root.renderMarkdown
                     StyledToolTip {

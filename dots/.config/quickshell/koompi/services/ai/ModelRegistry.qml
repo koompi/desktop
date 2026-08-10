@@ -178,7 +178,8 @@ QtObject {
                 try {
                     if (data.length === 0) return;
                     const dataJson = JSON.parse(data);
-                    root.modelList = [...root.modelList, ...dataJson];
+                    // raw names here would survive into modelList alongside the safe
+                    // ones addModel derives, and setModel matches against both
                     dataJson.forEach(model => {
                         const safeModelName = root.safeModelName(model);
                         root.addModel(safeModelName, {
@@ -217,6 +218,9 @@ QtObject {
                             "endpoint": "http://127.0.0.1:9379/v1/chat/completions",
                             "model": model,
                             "requires_key": false,
+                            // measured on gemma4-e4b at temperature 0: clean at 1461 B
+                            // of compact tool JSON, digits start dropping at 1965 B
+                            "toolBlockByteLimit": 1461,
                         })
                     });
                     root.modelList = Object.keys(root.models);

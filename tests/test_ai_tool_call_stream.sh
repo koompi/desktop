@@ -35,7 +35,7 @@ writeFileSync("./strategy.mjs", `
 let isReasoning = false;
 let pendingToolCalls = {};
 let toolCallEmitted = false;
-${lift("takeCompletedToolCall")}
+${lift("takeCompletedToolCalls")}
 ${lift("parseResponseLine")}
 export { parseResponseLine };
 export function reset() { isReasoning = false; pendingToolCalls = {}; toolCallEmitted = false; }
@@ -61,21 +61,25 @@ const litertStream = [
 ];
 
 reset();
-let message = { content: "", rawContent: "", functionName: "" };
+let message = { content: "", rawContent: "", functionName: "", toolCalls: [] };
 let result = null;
 for (const line of litertStream) {
     const r = parseResponseLine(line, message);
-    if (r?.functionCall) result = r.functionCall;
+    if (r?.functionCalls) result = r.functionCalls;
 }
 
-check("a call is emitted", result !== null);
-check("names are not concatenated", result?.name === "set_owner_name", `got ${result?.name}`);
-check("arguments parse", result?.args?.name === "Rithy", JSON.stringify(result?.args));
-check("the skipped call is named for the model", message.rawContent.includes("remember"), message.rawContent);
+check("calls are emitted", result !== null);
+check("both calls are returned, not just the first", result?.length === 2, `got ${result?.length}`);
+check("names are not concatenated", result?.[0]?.name === "set_owner_name", `got ${result?.[0]?.name}`);
+check("arguments parse", result?.[0]?.args?.name === "Rithy", JSON.stringify(result?.[0]?.args));
+check("the second call survives", result?.[1]?.name === "remember", `got ${result?.[1]?.name}`);
+check("each call gets its own id", result?.[0]?.id !== result?.[1]?.id, `${result?.[0]?.id} vs ${result?.[1]?.id}`);
+check("the assistant turn carries the calls", message.toolCalls?.length === 2, JSON.stringify(message.toolCalls));
+check("no plumbing prose in rawContent", !message.rawContent.includes("[[ Function"), message.rawContent);
 
 // A well-behaved provider fragments arguments across deltas and increments index.
 reset();
-message = { content: "", rawContent: "", functionName: "" };
+message = { content: "", rawContent: "", functionName: "", toolCalls: [] };
 result = null;
 for (const line of [
     chunk([{ index: 0, function: { name: "run_shell_command" } }]),
@@ -84,7 +88,7 @@ for (const line of [
     chunk(null, "tool_calls"),
 ]) {
     const r = parseResponseLine(line, message);
-    if (r?.functionCall) result = r.functionCall;
+    if (r?.functionCalls) result = r.functionCalls[0];
 }
 
 check("fragmented arguments reassemble", result?.args?.command === "ls", JSON.stringify(result?.args));
