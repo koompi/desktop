@@ -4,22 +4,29 @@ pragma ComponentBehavior: Bound
 // Took many bits from https://github.com/caelestia-dots/shell (GPLv3)
 
 import Quickshell
-import Quickshell.Io
 import QtQuick
+import qs.services
 import qs.services.network
 
 /**
- * Network service with nmcli.
+ * Network state from koompi-shelld, which reads NetworkManager over D-Bus.
+ *
+ * Every property below is the same one this file published when it drove eleven
+ * `nmcli` invocations and a twelfth `nmcli monitor`; the derivations that used to run
+ * in JavaScript here are computed in koompi-network and arrive ready. See
+ * shell-services/shelld/PROTOCOL.md, which is the contract.
  */
 Singleton {
     id: root
 
-    property bool wifi: true
-    property bool ethernet: false
+    readonly property var state: ShellServices.network
 
-    property bool wifiEnabled: false
-    property bool wifiScanning: false
-    property bool wifiConnecting: connectProc.running
+    property bool wifi: root.wifiStatus === "connected"
+    property bool ethernet: root.state?.ethernet ?? false
+
+    property bool wifiEnabled: root.state?.wifi?.enabled ?? false
+    property bool wifiScanning: root.state?.wifi?.scanning ?? false
+    property bool wifiConnecting: (root.state?.wifi?.connecting ?? false) || root.wifiConnectTarget !== null
     property WifiAccessPoint wifiConnectTarget
     readonly property list<WifiAccessPoint> wifiNetworks: []
     readonly property WifiAccessPoint active: wifiNetworks.find(n => n.active) ?? null
@@ -30,11 +37,16 @@ Singleton {
             return 1;
         return b.strength - a.strength;
     })
-    property string wifiStatus: "disconnected"
+    property string wifiStatus: root.state?.wifi?.status ?? "disconnected"
 
-    property string networkName: ""
-    property int networkStrength
-    readonly property bool connected: root.ethernet || (root.wifiEnabled && root.wifiStatus === "connected")
+    property string networkName: root.state?.network_name ?? ""
+    property int networkStrength: root.state?.network_strength ?? 0
+    readonly property bool connected: root.state?.connected ?? false
+
+    // NetworkManager answers this outright; nmcli never could, which is why
+    // openPublicWifiPortal exists at all.
+    readonly property bool captivePortal: root.state?.captive_portal ?? false
+
     property string materialSymbol: root.ethernet
         ? "lan"
         : (root.wifiEnabled && root.wifiStatus === "connected")
@@ -56,8 +68,9 @@ Singleton {
 
     // Control
     function enableWifi(enabled = true): void {
-        const cmd = enabled ? "on" : "off";
-        enableWifiProc.exec(["nmcli", "radio", "wifi", cmd]);
+        ShellServices.command("network", "set_wireless_enabled", {
+            enabled: enabled
+        });
     }
 
     function toggleWifi(): void {
@@ -65,269 +78,107 @@ Singleton {
     }
 
     function rescanWifi(): void {
-        wifiScanning = true;
-        rescanProcess.running = true;
+        ShellServices.command("network", "request_scan");
     }
 
     function connectToWifiNetwork(accessPoint: WifiAccessPoint): void {
-        accessPoint.askingPassword = false;
-        root.wifiConnectTarget = accessPoint;
-        // We use this instead of `nmcli connection up SSID` because this also creates a connection profile
-        connectProc.exec(["nmcli", "dev", "wifi", "connect", accessPoint.ssid])
-
+        root._connect(accessPoint, null);
     }
 
     function disconnectWifiNetwork(): void {
-        if (active) disconnectProc.exec(["nmcli", "connection", "down", active.ssid]);
+        ShellServices.command("network", "disconnect");
     }
 
     function openPublicWifiPortal() {
         Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"]) // From some StackExchange thread, seems to work
     }
 
+    /**
+     * The passphrase rides on the connection attempt rather than being written into the
+     * saved profile first. `nmcli connection modify` persisted it before anything had
+     * checked it, so a typo locked the user out of their own network until the profile
+     * was fixed by hand.
+     */
     function changePassword(network: WifiAccessPoint, password: string, username = ""): void {
         // TODO: enterprise wifi with username
-        network.askingPassword = false;
-        changePasswordProc.exec({
-            "environment": {
-                "PASSWORD": password,
-                "SSID": network.ssid
-            },
-            "command": ["bash", "-c", 'nmcli connection modify "$SSID" wifi-sec.psk "$PASSWORD"']
-        })
+        root._connect(network, password);
     }
 
-    Process {
-        id: enableWifiProc
+    property int _connectRequest: 0
+
+    function _connect(accessPoint: WifiAccessPoint, passphrase): void {
+        if (!accessPoint)
+            return;
+        accessPoint.askingPassword = false;
+        root.wifiConnectTarget = accessPoint;
+
+        const args = {
+            path: accessPoint.path
+        };
+        if (passphrase)
+            args.passphrase = passphrase;
+        root._connectRequest = ShellServices.command("network", "connect", args);
     }
 
-    Process {
-        id: connectProc
-        environment: ({
-            LANG: "C",
-            LC_ALL: "C"
-        })
-        stdout: SplitParser {
-            onRead: line => {
-                // print(line)
-                getNetworks.running = true
-            }
-        }
-        stderr: SplitParser {
-            onRead: line => {
-                // print("err:", line)
-                if (line.includes("Secrets were required")) {
-                    root.wifiConnectTarget.askingPassword = true
-                }
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            root.wifiConnectTarget.askingPassword = (exitCode !== 0)
-            root.wifiConnectTarget = null
+    Connections {
+        target: ShellServices
+
+        function onReplyReceived(id, ok, error) {
+            if (id !== root._connectRequest)
+                return;
+            root._connectRequest = 0;
+            const target = root.wifiConnectTarget;
+            root.wifiConnectTarget = null;
+            if (!target)
+                return;
+            // `rejected` is NetworkManager declining the credentials, which is what the
+            // string "Secrets were required" on nmcli's stderr used to stand in for.
+            target.askingPassword = !ok && (error === "rejected" || error === "unavailable");
         }
     }
 
-    Process {
-        id: disconnectProc
-        stdout: SplitParser {
-            onRead: getNetworks.running = true
+    // The daemon publishes one row per bssid and one per ssid; this is the second,
+    // which is the view this file always showed.
+    onStateChanged: root._reconcile(root.state?.wifi?.networks_by_ssid ?? [])
+
+    function _reconcile(rows): void {
+        const incoming = rows.map(ap => ({
+            path: ap.path,
+            active: ap.active,
+            strength: ap.strength,
+            frequency: ap.frequency,
+            ssid: ap.ssid,
+            ssidHex: ap.ssid_hex,
+            bssid: ap.hw_address,
+            security: ap.security.label,
+            wantsPsk: ap.security.wants_psk,
+            enterprise: ap.security.enterprise,
+            bandGhz: ap.band_ghz
+        }));
+
+        const existing = root.wifiNetworks;
+        // Keyed on the ssid bytes and the radio, not on the object path, which
+        // NetworkManager recreates on a rescan. Losing identity here would reset
+        // askingPassword and rebuild every delegate in the list.
+        const key = n => n.ssidHex + "\0" + n.bssid + "\0" + n.frequency;
+        const wanted = new Set(incoming.map(key));
+
+        const destroyed = existing.filter(n => !wanted.has(key(n)));
+        for (const network of destroyed)
+            existing.splice(existing.indexOf(network), 1).forEach(n => n.destroy());
+
+        for (const network of incoming) {
+            const match = existing.find(n => key(n) === key(network));
+            if (match)
+                match.lastIpcObject = network;
+            else
+                existing.push(apComp.createObject(root, {
+                    lastIpcObject: network
+                }));
         }
     }
 
-    Process {
-        id: changePasswordProc
-        onExited: { // Re-attempt connection after changing password
-            connectProc.running = false
-            connectProc.running = true
-        }
-    }
-
-    Process {
-        id: rescanProcess
-        command: ["nmcli", "dev", "wifi", "list", "--rescan", "yes"]
-        stdout: SplitParser {
-            onRead: {
-                wifiScanning = false;
-                getNetworks.running = true;
-            }
-        }
-    }
-
-    // Status update
-    function update() {
-        updateConnectionType.startCheck();
-        wifiStatusProcess.running = true
-        updateNetworkName.running = true;
-        updateNetworkStrength.running = true;
-    }
-
-    Process {
-        id: subscriber
-        running: true
-        // Quickshell does not kill a Process when the shell reloads, so every reload leaked
-        // an `nmcli monitor` subscribed for the rest of the uptime. `-x -f` requires the
-        // whole command line to match, so this wrapper cannot kill itself and the shell's
-        // one-shot `nmcli` queries are never matched.
-        command: ["bash", "-c", "pkill -x -f '(/usr/bin/)?nmcli monitor'; exec nmcli monitor"]
-        stdout: SplitParser {
-            onRead: root.update()
-        }
-    }
-
-    Process {
-        id: updateConnectionType
-        property string buffer
-        command: ["sh", "-c", "nmcli -c no -t -f TYPE,STATE d status && nmcli -c no -t -f CONNECTIVITY g"]
-        running: true
-        function startCheck() {
-            buffer = "";
-            updateConnectionType.running = true;
-        }
-        stdout: SplitParser {
-            onRead: data => {
-                updateConnectionType.buffer += data + "\n";
-            }
-        }
-        onExited: (exitCode, exitStatus) => {
-            const lines = updateConnectionType.buffer.trim().split('\n');
-            const connectivity = lines.pop() // none, limited, full
-            let hasEthernet = false;
-            let hasWifi = false;
-            let wifiStatus = "disconnected";
-            lines.forEach(line => {
-                if (line.includes("ethernet") && line.includes("connected"))
-                    hasEthernet = true;
-                else if (line.includes("wifi:")) {
-                    if (line.includes("disconnected")) {
-                        wifiStatus = "disconnected"
-                    }
-                    else if (line.includes("connected")) {
-                        hasWifi = true;
-                        wifiStatus = "connected"
-
-                        if (connectivity === "limited") {
-                            hasWifi = false;
-                            wifiStatus = "limited"
-                        }
-                    }
-                    else if (line.includes("connecting")) {
-                        wifiStatus = "connecting"
-                    }
-                    else if (line.includes("unavailable")) {
-                        wifiStatus = "disabled"
-                    }
-                }
-            });
-            root.wifiStatus = wifiStatus;
-            root.ethernet = hasEthernet;
-            root.wifi = hasWifi;
-        }
-    }
-
-    Process {
-        id: updateNetworkName
-        command: ["sh", "-c", "nmcli -c no -t -f NAME c show --active | head -1"]
-        running: true
-        stdout: SplitParser {
-            onRead: data => {
-                root.networkName = data;
-            }
-        }
-    }
-
-    Process {
-        id: updateNetworkStrength
-        running: true
-        command: ["sh", "-c", "nmcli -c no -f IN-USE,SIGNAL,SSID device wifi | awk '/^\\*/{if (NR!=1) {print $2}}'"]
-        stdout: SplitParser {
-            onRead: data => {
-                root.networkStrength = parseInt(data);
-            }
-        }
-    }
-
-    Process {
-        id: wifiStatusProcess
-        command: ["nmcli", "-c", "no", "radio", "wifi"]
-        Component.onCompleted: running = true
-        environment: ({
-            LANG: "C",
-            LC_ALL: "C"
-        })
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.wifiEnabled = text.trim() === "enabled";
-            }
-        }
-    }
-
-    Process {
-        id: getNetworks
-        running: true
-        command: ["nmcli", "-c", "no", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w"]
-        environment: ({
-            LANG: "C",
-            LC_ALL: "C"
-        })
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const PLACEHOLDER = "STRINGWHICHHOPEFULLYWONTBEUSED";
-                const rep = new RegExp("\\\\:", "g");
-                const rep2 = new RegExp(PLACEHOLDER, "g");
-
-                const allNetworks = text.trim().split("\n").map(n => {
-                    const net = n.replace(rep, PLACEHOLDER).split(":");
-                    return {
-                        active: net[0] === "yes",
-                        strength: parseInt(net[1]),
-                        frequency: parseInt(net[2]),
-                        ssid: net[3],
-                        bssid: net[4]?.replace(rep2, ":") ?? "",
-                        security: net[5] || ""
-                    };
-                }).filter(n => n.ssid && n.ssid.length > 0);
-
-                // Group networks by SSID and prioritize connected ones
-                const networkMap = new Map();
-                for (const network of allNetworks) {
-                    const existing = networkMap.get(network.ssid);
-                    if (!existing) {
-                        networkMap.set(network.ssid, network);
-                    } else {
-                        // Prioritize active/connected networks
-                        if (network.active && !existing.active) {
-                            networkMap.set(network.ssid, network);
-                        } else if (!network.active && !existing.active) {
-                            // If both are inactive, keep the one with better signal
-                            if (network.strength > existing.strength) {
-                                networkMap.set(network.ssid, network);
-                            }
-                        }
-                        // If existing is active and new is not, keep existing
-                    }
-                }
-
-                const wifiNetworks = Array.from(networkMap.values());
-
-                const rNetworks = root.wifiNetworks;
-
-                const destroyed = rNetworks.filter(rn => !wifiNetworks.find(n => n.frequency === rn.frequency && n.ssid === rn.ssid && n.bssid === rn.bssid));
-                for (const network of destroyed)
-                    rNetworks.splice(rNetworks.indexOf(network), 1).forEach(n => n.destroy());
-
-                for (const network of wifiNetworks) {
-                    const match = rNetworks.find(n => n.frequency === network.frequency && n.ssid === network.ssid && n.bssid === network.bssid);
-                    if (match) {
-                        match.lastIpcObject = network;
-                    } else {
-                        rNetworks.push(apComp.createObject(root, {
-                            lastIpcObject: network
-                        }));
-                    }
-                }
-            }
-        }
-    }
+    Component.onCompleted: ShellServices.subscribe("network")
 
     Component {
         id: apComp

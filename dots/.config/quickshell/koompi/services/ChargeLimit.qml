@@ -1,80 +1,40 @@
 pragma Singleton
 
+import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Services.UPower
+import qs.services
 
 /**
- * UPower's battery charge limit: stop charging at ChargeEndThreshold, resume at
- * ChargeStartThreshold. Keeps a Li-poly pack off a permanent 100% float.
+ * UPower's battery charge limit: stop charging at endThreshold, resume at
+ * startThreshold. Keeps a Li-poly pack off a permanent 100% float.
  *
- * ponytail: busctl through Process is the ceiling. Quickshell 0.2.1 ships no
- * generic D-Bus client and its UPower binding stops short of these properties,
- * so there is nothing to bind to. Replace both Processes with bindings the day
- * upstream exposes them.
- * The polkit action allows an active local session, so no agent and no prompt.
+ * koompi-power reads the four properties over D-Bus and koompi-shelld publishes them,
+ * so the `busctl` fork this file used to carry is gone along with the reason for it:
+ * Quickshell 0.2.1 shipping no generic D-Bus client. The polkit action allows an
+ * active local session, so there is still no agent and no prompt.
  */
 Singleton {
     id: root
 
-    // UPower names the object after the sysfs battery, same one Battery.qml reads.
-    readonly property string devicePath: {
-        const devList = UPower.devices.values;
-        for (let i = 0; i < devList.length; ++i) {
-            const dev = devList[i];
-            if (dev.isLaptopBattery && dev.nativePath !== "") {
-                return `/org/freedesktop/UPower/devices/battery_${dev.nativePath}`;
-            }
-        }
-        return "";
-    }
+    readonly property var threshold: ShellServices.power?.primary?.threshold ?? null
 
-    property bool supported: false
-    property bool enabled: false
-    property int startThreshold: 0
-    property int endThreshold: 0
+    // `supported` false covers both a pack without the feature and a UPower below
+    // 1.90, which has no such properties at all. Nothing here needs to tell them apart.
+    readonly property bool supported: root.threshold?.supported ?? false
+    property bool enabled: root.threshold?.enabled ?? false
+    readonly property int startThreshold: root.threshold?.start ?? 0
+    readonly property int endThreshold: root.threshold?.end ?? 0
 
-    onDevicePathChanged: root.fetch()
-
-    function fetch() {
-        if (root.devicePath === "")
-            return;
-        // Build the command here rather than binding it: UPower populates its
-        // device list after construction, so this handler and a binding on
-        // devicePath wake on the same change in no guaranteed order, and busctl
-        // run with the still-empty path fails with nothing to retry it.
-        fetchProc.command = ["busctl", "--json=short", "get-property", "org.freedesktop.UPower", root.devicePath, "org.freedesktop.UPower.Device", "ChargeThresholdSupported", "ChargeThresholdEnabled", "ChargeStartThreshold", "ChargeEndThreshold"];
-        fetchProc.running = true;
-    }
+    onThresholdChanged: root.enabled = root.threshold?.enabled ?? false
 
     function setEnabled(value) {
-        if (root.devicePath === "" || value === root.enabled)
+        if (!root.supported || value === root.enabled)
             return;
-        root.enabled = value; // answer the switch now, fetch confirms
-        setProc.command = ["busctl", "call", "org.freedesktop.UPower", root.devicePath, "org.freedesktop.UPower.Device", "EnableChargeThreshold", "b", value ? "true" : "false"];
-        setProc.running = true;
+        root.enabled = value; // answer the switch now, the next state confirms
+        ShellServices.command("power", "set_charge_threshold_enabled", {
+            enabled: value
+        });
     }
 
-    Process {
-        id: fetchProc
-        stdout: StdioCollector {
-            id: stateCollector
-            onStreamFinished: {
-                const lines = stateCollector.text.trim().split("\n");
-                if (lines.length < 4) { // UPower below 1.90 has no such properties
-                    root.supported = false;
-                    return;
-                }
-                root.supported = JSON.parse(lines[0]).data;
-                root.enabled = JSON.parse(lines[1]).data;
-                root.startThreshold = JSON.parse(lines[2]).data;
-                root.endThreshold = JSON.parse(lines[3]).data;
-            }
-        }
-    }
-
-    Process {
-        id: setProc
-        onExited: root.fetch()
-    }
+    Component.onCompleted: ShellServices.subscribe("power")
 }

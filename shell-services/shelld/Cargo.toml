@@ -1,0 +1,18 @@
+[package]
+name = "koompi-shelld"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Multiplexes the koompi shell services onto NDJSON over stdio, per PROTOCOL.md"
+
+[[bin]]
+name = "koompi-shelld"
+path = "src/main.rs"
+
+[dependencies]
+koompi-service.workspace = true
+koompi-network.workspace = true
+koompi-power.workspace = true
+tokio.workspace = true
+serde_json.workspace = true

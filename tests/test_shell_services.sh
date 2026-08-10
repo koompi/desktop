@@ -69,12 +69,23 @@ manifest_deps() {
 
 # One shared crate and nothing else. Two crates needing the same type is a signal
 # it belongs in koompi-service, not a reason for them to depend on each other.
+# shelld is the exception the rule is for: it exists to consume the others, and it
+# is the only member allowed to, which is what keeps the dependency edges pointing
+# one way instead of into a mesh.
 while read -r member; do
+    [[ "$member" == shelld ]] && continue
     manifest_deps "$WS/$member/Cargo.toml" | grep '^koompi-' > "$tmp/deps"
     while read -r dep; do
         [[ "$dep" == koompi-service ]] \
             || fail "$member depends on $dep; koompi-service is the only cross-crate dependency allowed"
     done < "$tmp/deps"
+done < "$tmp/present"
+
+# Nothing may depend on the daemon: it is a binary, and a crate reaching for it is
+# a crate that has started routing through the shell's transport.
+while read -r member; do
+    manifest_deps "$WS/$member/Cargo.toml" | grep -qx 'koompi-shelld' \
+        && fail "$member depends on koompi-shelld, which is the daemon rather than a library"
 done < "$tmp/present"
 
 # No UI dependency, ever: no toolkit, no windowing library, no drawing or decoding
@@ -93,7 +104,7 @@ fi
 # or rfkill with a socket or a bus call. Two are exempt and stay named: audio
 # spawns the zig audiod, and brightness keeps ddcutil for external panels, which
 # have no logind path. Adding a third means changing this line.
-subprocess_free=(bluetooth hyprland mpris network notifications power session tray)
+subprocess_free=(bluetooth hyprland mpris network notifications power session shelld tray)
 printf '%s\n' "${subprocess_free[@]}" | sort > "$tmp/free_expected"
 grep -vxE 'service|audio|brightness' "$tmp/present" > "$tmp/free_actual"
 if ! diff -q "$tmp/free_expected" "$tmp/free_actual" > /dev/null; then
@@ -106,13 +117,19 @@ while read -r member; do
         || fail "koompi-$member spawns a subprocess again, and removing one is what the crate was for: $hits"
 done < "$tmp/free_actual"
 
-# koompi-service is the shared shape and reads nothing, so it has no demo. Every
-# crate that talks to the system does.
+# koompi-service is the shared shape and reads nothing, so it has no demo, and
+# shelld is a daemon rather than a library: running it against a real session is
+# what it does. Every crate that talks to the system has one.
 while read -r member; do
-    [[ "$member" == service ]] && continue
+    [[ "$member" == service || "$member" == shelld ]] && continue
     [[ -f "$WS/$member/examples/demo.rs" ]] \
         || fail "koompi-$member has no examples/demo.rs, so nothing shows it against a real session"
 done < "$tmp/present"
+
+# The daemon is the only member the shell actually spawns, so its wire format is a
+# consumer-visible contract in a way the crates' APIs are not.
+[[ -f "$WS/shelld/PROTOCOL.md" ]] \
+    || fail "shelld has no PROTOCOL.md, and the document rather than the Rust is what a consumer implements against"
 
 echo "ok   structure: members, no cross-crate deps, no subprocesses, demos present"
 
@@ -146,6 +163,24 @@ else
         fail "shell-services is not clippy clean at -D warnings"
     fi
     echo "ok   workspace builds, tests and lints clean"
+
+    # The suite is read-only against the seat by construction, stated in its own
+    # docstring, so it is safe to run here. Without a system bus every check fails
+    # for the wrong reason.
+    if [[ ! -S /run/dbus/system_bus_socket ]]; then
+        skip "no system bus; the shelld conformance suite needs NetworkManager and UPower to answer"
+    elif ! command -v python3 > /dev/null; then
+        skip "no python3; the shelld conformance suite did not run"
+    else
+        printf -- '--- shelld conformance\n'
+        (cd "$WS" && cargo build -p koompi-shelld --locked) > "$tmp/shelld-build.log" 2>&1 \
+            || { tail -20 "$tmp/shelld-build.log"; fail "koompi-shelld does not build"; }
+        SHELLD="$WS/target/debug/koompi-shelld" timeout 300 python3 "$WS/shelld/tests/test_shelld.py" \
+            > "$tmp/shelld.log" 2>&1
+        rc=$?
+        tail -1 "$tmp/shelld.log"
+        [[ $rc -eq 0 ]] || { tail -40 "$tmp/shelld.log"; fail "koompi-shelld failed its conformance suite"; }
+    fi
 fi
 
 if [[ ! -f "$ROOT/audiod/build.zig" ]]; then

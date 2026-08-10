@@ -106,6 +106,28 @@ setup_globalmenu_rs() {
     ok "koompi-global-menu-daemon installed"
 }
 
+# The shell's system integration: NetworkManager, UPower and the rest, read over
+# D-Bus and published as NDJSON on stdio. Unlike the global menu there is no second
+# implementation to fall back to, so a machine that cannot build this loses the
+# features outright rather than falling back to a slower path. The warning says so.
+setup_shell_services() {
+    step "Shell services daemon"
+    local src="$REPO_ROOT/shell-services"
+    local build_root="$XDG_CACHE_HOME/koompi/build/shell-services"
+    local binary="$build_root/release/koompi-shelld"
+    [[ -f "$src/Cargo.toml" ]] || { warn "shell-services source not found, skipping"; return 0; }
+    if ! cargo_usable; then
+        warn "cargo ${RUST_MIN} or newer not found; the wifi list and the battery charge"
+        warn "limit will be empty, because nothing else reads them. Install one, then"
+        warn "re-run: ./setup install --only-setups"
+        return 0
+    fi
+    ( cd "$src" && run cargo build --release --locked -p koompi-shelld --target-dir "$build_root" )
+    run install -Dm755 "$binary" "$XDG_BIN_HOME/koompi-shelld"
+    manifest_add "$XDG_BIN_HOME/koompi-shelld"
+    ok "koompi-shelld installed"
+}
+
 # ddcutil needs i2c to talk to external monitors; ydotool and the on-screen
 # keyboard need uinput. Both are group + module questions, not package ones.
 setup_groups_and_modules() {
@@ -346,6 +368,7 @@ setup_system_session() {
 run_setups() {
     setup_koompi_cli
     setup_globalmenu_rs
+    setup_shell_services
     setup_python_venv
     setup_groups_and_modules
     setup_suspend_hook

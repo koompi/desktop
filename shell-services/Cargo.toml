@@ -12,6 +12,7 @@ members = [
     "session",
     "bluetooth",
     "brightness",
+    "shelld",
 ]
 
 [workspace.package]
@@ -26,6 +27,8 @@ license = "GPL-3.0-or-later"
 # list reports it instead of adding it: any edit here re-locks and serialises the panes.
 [workspace.dependencies]
 koompi-service = { path = "service" }
+koompi-network = { path = "network" }
+koompi-power = { path = "power" }
 tokio = { version = "1", features = [
     "rt-multi-thread",
     "macros",
@@ -33,6 +36,8 @@ tokio = { version = "1", features = [
     "time",
     "net",
     "io-util",
+    # shelld reads its own stdin; every other member only touches a child's pipes
+    "io-std",
     "process",
     "fs",
 ] }
