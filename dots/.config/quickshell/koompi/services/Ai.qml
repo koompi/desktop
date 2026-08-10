@@ -166,13 +166,10 @@ Singleton {
 
     /* ---- identity and the system prompt ---- */
 
-    // Stable 6-char session ID - used for episodic log and session fork (#7, #11)
-    readonly property string sessionId: (function() {
-        const c = "abcdefghijklmnopqrstuvwxyz0123456789";
-        let id = "";
-        for (let i = 0; i < 6; i++) id += c[Math.floor(Math.random() * c.length)];
-        return id;
-    })()
+    // The session id belongs to the thread, not to this singleton. Generating it here
+    // gave a new one per shell start, which is how one user's history became 23
+    // sessions in the episodic log.
+    readonly property string sessionId: conversation.sessionId
 
     readonly property string aiName: `${SystemInfo.username} AI`
     readonly property string ownerName: {
