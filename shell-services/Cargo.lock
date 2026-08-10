@@ -354,9 +354,11 @@ dependencies = [
 name = "koompi-shelld"
 version = "0.1.0"
 dependencies = [
+ "koompi-hyprland",
  "koompi-network",
  "koompi-power",
  "koompi-service",
+ "serde",
  "serde_json",
  "tokio",
 ]

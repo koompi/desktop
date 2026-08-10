@@ -9,6 +9,7 @@ mod wire;
 
 use std::time::Duration;
 
+use koompi_hyprland::HyprlandService;
 use koompi_network::NetworkService;
 use koompi_power::PowerService;
 use koompi_service::PollRate;
@@ -18,9 +19,9 @@ use tokio::sync::oneshot;
 use crate::actor::{Job, Jobs};
 use crate::out::Out;
 use crate::proto::{ErrorCode, Failure, Outcome, Request};
-use crate::services::{NetworkCmd, PowerCmd};
+use crate::services::{HyprlandCmd, NetworkCmd, PowerCmd};
 
-const SERVICES: &[&str] = &["network", "power"];
+const SERVICES: &[&str] = &["hyprland", "network", "power"];
 const DEBOUNCE_BASE: Duration = Duration::from_millis(100);
 const DEBOUNCE_ENV: &str = "KOOMPI_SHELLD_DEBOUNCE_MS";
 const MAX_LINE: usize = 256 * 1024;
@@ -29,6 +30,7 @@ struct Shelld {
     out: Out,
     rate: PollRate,
     debounce: Duration,
+    hyprland: Option<Jobs<HyprlandService>>,
     network: Option<Jobs<NetworkService>>,
     power: Option<Jobs<PowerService>>,
 }
@@ -39,6 +41,7 @@ impl Shelld {
             out,
             rate: PollRate::NORMAL,
             debounce: debounce(),
+            hyprland: None,
             network: None,
             power: None,
         }
@@ -79,6 +82,12 @@ impl Shelld {
         let mut ready = Vec::new();
         for name in &names {
             let signal = match name.as_str() {
+                "hyprland" => start::<HyprlandService>(
+                    &mut self.hyprland,
+                    &self.out,
+                    self.rate,
+                    self.debounce,
+                ),
                 "network" => start::<NetworkService>(
                     &mut self.network,
                     &self.out,
@@ -112,6 +121,7 @@ impl Shelld {
         for name in request.str_list("services")? {
             match name.as_str() {
                 // dropping the sender closes the actor's channel, which drops the service
+                "hyprland" => self.hyprland = None,
                 "network" => self.network = None,
                 "power" => self.power = None,
                 other => return Err(Failure::new(ErrorCode::UnknownService, other)),
@@ -124,6 +134,9 @@ impl Shelld {
         let factor = u32::try_from(request.u64("factor")?).unwrap_or(u32::MAX);
         self.rate = PollRate::new(factor);
 
+        if let Some(jobs) = &self.hyprland {
+            let _ = jobs.try_send(Job::SetPollRate(self.rate));
+        }
         if let Some(jobs) = &self.network {
             let _ = jobs.try_send(Job::SetPollRate(self.rate));
         }
@@ -141,6 +154,7 @@ impl Shelld {
         };
 
         let outcome = match service {
+            "hyprland" => job::<HyprlandService>(&self.hyprland, request, HyprlandCmd::parse),
             "network" => job::<NetworkService>(&self.network, request, NetworkCmd::parse),
             "power" => job::<PowerService>(&self.power, request, PowerCmd::parse),
             other => Err(Failure::new(ErrorCode::UnknownService, other)),

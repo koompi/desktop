@@ -2,7 +2,9 @@
 //! how its state reaches the wire, and the commands it takes.
 
 use std::sync::Arc;
+use std::time::Duration;
 
+use koompi_hyprland::{HyprlandService, HyprlandState};
 use koompi_network::{NetworkService, NetworkState};
 use koompi_power::{PowerConfig, PowerService, PowerState, Profile};
 use koompi_service::{PollRate, Service};
@@ -140,6 +142,59 @@ impl Managed for PowerService {
     }
 }
 
+/// The compositor is reachable the moment its socket is, but the state behind it is empty
+/// until the first query lands. `SessionRestore.qml:182` replays a saved session when it
+/// sees no windows, so publishing that empty snapshot would relaunch a desktop that is
+/// already open.
+const FIRST_QUERY: Duration = Duration::from_secs(2);
+
+/// Read-only. Every write the shell makes to Hyprland is a `dispatch`, which
+/// `Quickshell.Hyprland` already owns.
+pub enum HyprlandCmd {}
+
+impl HyprlandCmd {
+    pub fn parse(request: &Request) -> Result<Self, Failure> {
+        Err(Failure::new(ErrorCode::UnknownCommand, request.cmd.clone()))
+    }
+}
+
+impl Managed for HyprlandService {
+    type State = HyprlandState;
+    type Cmd = HyprlandCmd;
+
+    const NAME: &'static str = "hyprland";
+
+    async fn connect(rate: PollRate) -> koompi_service::Result<Self> {
+        let service = HyprlandService::start(rate).await?;
+        tokio::time::timeout(FIRST_QUERY, service.ready())
+            .await
+            .map_err(|_| {
+                koompi_service::Error::Unavailable("hyprland did not answer its socket".into())
+            })?;
+        Ok(service)
+    }
+
+    fn watch(&self) -> watch::Receiver<HyprlandState> {
+        self.subscribe()
+    }
+
+    fn encode(state: &HyprlandState) -> Value {
+        wire::hyprland(state)
+    }
+
+    fn healthy(state: &HyprlandState) -> bool {
+        state.connected
+    }
+
+    fn set_poll_rate(&self, rate: PollRate) {
+        HyprlandService::set_poll_rate(self, rate);
+    }
+
+    async fn apply(self: Arc<Self>, cmd: HyprlandCmd) -> Outcome {
+        match cmd {}
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -183,6 +238,12 @@ mod tests {
     #[test]
     fn a_command_meant_for_another_service_is_unknown_here() {
         let parsed = NetworkCmd::parse(&request(r#"{"cmd":"set_profile","profile":"balanced"}"#));
+        assert_eq!(refused(parsed), ErrorCode::UnknownCommand);
+    }
+
+    #[test]
+    fn hyprland_takes_no_commands_at_all() {
+        let parsed = HyprlandCmd::parse(&request(r#"{"cmd":"dispatch","args":"killactive"}"#));
         assert_eq!(refused(parsed), ErrorCode::UnknownCommand);
     }
 

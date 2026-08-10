@@ -27,6 +27,7 @@ license = "GPL-3.0-or-later"
 # list reports it instead of adding it: any edit here re-locks and serialises the panes.
 [workspace.dependencies]
 koompi-service = { path = "service" }
+koompi-hyprland = { path = "hyprland" }
 koompi-network = { path = "network" }
 koompi-power = { path = "power" }
 tokio = { version = "1", features = [

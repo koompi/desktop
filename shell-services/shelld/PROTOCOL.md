@@ -21,10 +21,11 @@ the protocol can grow without a version bump.
 
 | service | crate | consumers |
 |---|---|---|
+| `hyprland` | `koompi-hyprland` | `HyprlandData.qml`, later `HyprlandKeybinds.qml` and `HyprlandXkb.qml` |
 | `network` | `koompi-network` | `Network.qml` |
 | `power` | `koompi-power` | `ChargeLimit.qml`, later `Battery.qml` and `PowerSaving.qml` |
 
-The other eight crates get a `service` name here as each is wired up. A consumer that asks
+The other seven crates get a `service` name here as each is wired up. A consumer that asks
 for one that is not compiled in gets `unknown_service`, never silence.
 
 ## State is a snapshot, not a diff
@@ -152,9 +153,16 @@ Closing stdin is equivalent to `quit` without the reply.
 `set_poll_rate` is `koompi_service::PollRate`, the one factor `PowerSaving.qml:33` exports
 to every other service's timers. `1` is normal, `2` is the save-on-battery rate. A factor
 below 1 is clamped, not rejected. A service takes it only if it has a rate to take:
-`network` applies it to the window it coalesces signals over, and `power` currently
-derives its own from `save_on_battery` and ignores this. The reply is `ok` either way,
-because whether a given service polls is not the caller's business.
+`network` applies it to the window it coalesces signals over, `hyprland` to the 30 ms it
+waits before querying what an event invalidated, and `power` currently derives its own
+from `save_on_battery` and ignores this. The reply is `ok` either way, because whether a
+given service polls is not the caller's business.
+
+### `hyprland` commands
+
+None. Everything the shell writes to the compositor is a `dispatch`, which
+`Quickshell.Hyprland` already owns; this service is the read side. Any `cmd` other than
+`get_state` answers `unknown_command`.
 
 ### `network` commands
 
@@ -356,3 +364,35 @@ has no such properties at all. That is the `lines.length < 4` branch at
 | `active` | string, optional | `power-saver`, `balanced` or `performance`; null if the daemon names one this build does not model |
 | `available` | array of string | |
 | `degraded` | string, optional | non-empty names the reason, usually `lap-detected` |
+
+## `hyprland` state
+
+| field | type | |
+|---|---|---|
+| `connected` | boolean | the compositor's socket is open and has answered |
+| `windows` | array of client | `hyprctl clients -j`. `HyprlandData.qml:15` |
+| `workspaces` | array of workspace | `hyprctl workspaces -j`, every one of them |
+| `workspaces_numbered` | array of workspace | ids 1 to 100, the view `HyprlandData.qml:18` publishes |
+| `active_workspace` | workspace, optional | `HyprlandData.qml:21` |
+| `active_window` | client, optional | null when nothing is focused. `HyprlandData.qml:22` |
+| `monitors` | array of monitor | `HyprlandData.qml:23` |
+| `layers` | object | monitor name to `{levels: {level: [layer surface]}}`. `HyprlandData.qml:24` |
+
+**The client, workspace, monitor and layer surface objects are Hyprland's own JSON, field
+for field, `initialClass` and `monitorID` and `activeWorkspace` included.** This is the one
+service whose objects are not renamed into this protocol's style, because every consumer
+of them was reading `hyprctl -j` output directly and the port is meant to be invisible to
+it. The compositor's schema is the schema; `hyprland/src/model.rs` is where it is written
+down.
+
+`workspaces` and `workspaces_numbered` are both sent, the way `network` sends both views
+of the access point list. A lock screen parks a workspace at 2147483646 and a scratchpad
+at a negative id; a bar drawing the numbered view wants neither, and something asking
+which monitor a special workspace is on needs the full list.
+
+The maps `HyprlandData.qml` publishes, window by address and workspace by id, are built in
+the QML from these arrays rather than sent. They are the same objects under another key,
+and sending them would put every client on the wire twice on every window event.
+
+`get_state` is the whole command surface, and `active_window` being null is a real answer
+rather than a gap: it is what the compositor reports with nothing focused.

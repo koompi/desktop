@@ -124,8 +124,8 @@ def test_hello_is_first_and_nothing_follows_it_unasked():
         check(hello.get("protocol") == 1, "protocol is 1")
         check(hello.get("daemon") == "koompi-shelld", "daemon names itself")
         check(
-            set(hello.get("services", [])) >= {"network", "power"},
-            "hello advertises network and power",
+            set(hello.get("services", [])) >= {"hyprland", "network", "power"},
+            "hello advertises hyprland, network and power",
         )
 
     time.sleep(2.0)
@@ -372,6 +372,67 @@ def test_the_charge_threshold_write_path_answers_without_moving_the_pack():
     daemon.close()
 
 
+def test_the_hyprland_state_is_the_compositors_own_json():
+    daemon = Daemon()
+    daemon.send(cmd="subscribe", id=90, services=["hyprland"])
+    daemon.reply_to(90, timeout=25)
+    _, message = daemon.wait_for(is_state("hyprland"), timeout=10)
+    if message is None:
+        print("  skip no hyprland state; no compositor on this seat")
+        daemon.close()
+        return
+
+    state = message["state"]
+    for field in (
+        "connected",
+        "windows",
+        "workspaces",
+        "workspaces_numbered",
+        "active_workspace",
+        "active_window",
+        "monitors",
+        "layers",
+    ):
+        check(field in state, "hyprland state carries %s" % field)
+
+    check(state["connected"] is True, "a state is only published once the socket answered")
+
+    numbered = [ws["id"] for ws in state["workspaces_numbered"]]
+    check(
+        all(1 <= i <= 100 for i in numbered),
+        "workspaces_numbered holds only ids the bar draws (got %s)" % numbered,
+    )
+    check(
+        set(numbered) <= {ws["id"] for ws in state["workspaces"]},
+        "the numbered view is a subset of the whole workspace list",
+    )
+
+    # the port is meant to be invisible to a consumer that was reading hyprctl -j
+    if state["windows"]:
+        window = state["windows"][0]
+        for field in ("address", "workspace", "size", "at", "class", "initialClass", "pid"):
+            check(field in window, "a client carries hyprctl's %s" % field)
+        check(
+            isinstance(window["workspace"], dict) and "id" in window["workspace"],
+            "a client's workspace is the {id, name} object hyprctl prints",
+        )
+    else:
+        print("  skip no windows open to check the client shape against")
+
+    if state["monitors"]:
+        monitor = state["monitors"][0]
+        for field in ("name", "activeWorkspace", "refreshRate", "reserved", "transform"):
+            check(field in monitor, "a monitor carries hyprctl's %s" % field)
+
+    daemon.send(cmd="dispatch", id=91, service="hyprland", args="killactive")
+    reply = daemon.reply_to(91, timeout=10)
+    check(
+        reply is not None and reply.get("error") == "unknown_command",
+        "hyprland is read-only: a dispatch is refused rather than run",
+    )
+    daemon.close()
+
+
 def test_unsubscribe_stops_the_service_and_poll_rate_is_taken():
     daemon = Daemon()
     daemon.send(cmd="subscribe", id=70, services=["power"])
@@ -426,6 +487,7 @@ def main():
         test_an_access_point_that_is_not_in_the_snapshot_is_refused,
         test_the_network_state_carries_what_the_qml_binds_to,
         test_the_charge_threshold_write_path_answers_without_moving_the_pack,
+        test_the_hyprland_state_is_the_compositors_own_json,
         test_unsubscribe_stops_the_service_and_poll_rate_is_taken,
         test_quit_replies_before_it_exits,
     ):

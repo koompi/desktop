@@ -3,25 +3,46 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import qs.services
 
 /**
- * Provides access to some Hyprland data not available in Quickshell.Hyprland.
+ * Hyprland data not available in Quickshell.Hyprland, from koompi-shelld.
+ *
+ * The daemon holds one socket2 subscription and queries only what an event invalidated,
+ * where this file respawned all six `hyprctl -j` processes behind a 30 ms timer on every
+ * event. The objects are the compositor's own JSON, field for field, so a consumer reads
+ * them exactly as it read hyprctl's. See shell-services/shelld/PROTOCOL.md, the contract.
  */
 Singleton {
     id: root
-    property var windowList: []
-    property var addresses: []
-    property var windowByAddress: ({})
-    property var workspaces: []
-    property var workspaceIds: []
-    property var workspaceById: ({})
-    property var activeWorkspace: null
-    property var activeWindow: null
-    property var monitors: []
-    property var layers: ({})
+
+    readonly property var state: ShellServices.hyprland
+
+    readonly property var windowList: root.state?.windows ?? []
+    readonly property var addresses: root.windowList.map(win => win.address)
+    readonly property var windowByAddress: {
+        const byAddress = {};
+        for (const win of root.windowList)
+            byAddress[win.address] = win;
+        return byAddress;
+    }
+
+    // The 1..100 subset. A special or lock-screen workspace carries an id outside it and
+    // is not one this file ever published.
+    readonly property var workspaces: root.state?.workspaces_numbered ?? []
+    readonly property var workspaceIds: root.workspaces.map(ws => ws.id)
+    readonly property var workspaceById: {
+        const byId = {};
+        for (const ws of root.workspaces)
+            byId[ws.id] = ws;
+        return byId;
+    }
+    readonly property var activeWorkspace: root.state?.active_workspace ?? null
+
+    readonly property var activeWindow: root.state?.active_window ?? null
+    readonly property var monitors: root.state?.monitors ?? []
+    readonly property var layers: root.state?.layers ?? ({})
 
     // Convenient stuff
 
@@ -45,44 +66,6 @@ Singleton {
         return root.windowByAddress[address];
     }
 
-    // Internals
-
-    function updateWindowList() {
-        getClients.running = true;
-    }
-
-    function updateLayers() {
-        getLayers.running = true;
-    }
-
-    function updateMonitors() {
-        getMonitors.running = true;
-    }
-
-    function updateWorkspaces() {
-        getWorkspaces.running = true;
-        getActiveWorkspace.running = true;
-    }
-
-    function updateActiveWindow() {
-        getActiveWindow.running = true;
-    }
-
-    function updateAll() {
-        updateWindowList();
-        updateMonitors();
-        updateLayers();
-        updateWorkspaces();
-        updateActiveWindow();
-    }
-
-    Timer {
-        id: refreshTimer
-        interval: 30
-        repeat: false
-        onTriggered: root.updateAll()
-    }
-
     function biggestWindowForWorkspace(workspaceId) {
         const windowsInThisWorkspace = HyprlandData.windowList.filter(w => w.workspace.id == workspaceId);
         return windowsInThisWorkspace.reduce((maxWin, win) => {
@@ -92,100 +75,11 @@ Singleton {
         }, null);
     }
 
-    Component.onCompleted: {
-        updateAll();
+    /// The daemon pushes every change already. This is for a caller that cannot wait for
+    /// the next one, such as the login-time "is anything open?" test in SessionRestore.
+    function updateAll(): void {
+        ShellServices.command("hyprland", "get_state");
     }
 
-    Connections {
-        target: Hyprland
-
-        function onRawEvent(event) {
-            // console.log("Hyprland raw event:", event.name);
-            if (["openlayer", "closelayer", "screencast"].includes(event.name)) return;
-            refreshTimer.restart()
-        }
-    }
-
-    Process {
-        id: getClients
-        command: ["hyprctl", "clients", "-j"]
-        stdout: StdioCollector {
-            id: clientsCollector
-            onStreamFinished: {
-                root.windowList = JSON.parse(clientsCollector.text)
-                let tempWinByAddress = {};
-                for (var i = 0; i < root.windowList.length; ++i) {
-                    var win = root.windowList[i];
-                    tempWinByAddress[win.address] = win;
-                }
-                root.windowByAddress = tempWinByAddress;
-                root.addresses = root.windowList.map(win => win.address);
-            }
-        }
-    }
-
-    Process {
-        id: getMonitors
-        command: ["hyprctl", "monitors", "-j"]
-        stdout: StdioCollector {
-            id: monitorsCollector
-            onStreamFinished: {
-                root.monitors = JSON.parse(monitorsCollector.text);
-            }
-        }
-    }
-
-    Process {
-        id: getLayers
-        command: ["hyprctl", "layers", "-j"]
-        stdout: StdioCollector {
-            id: layersCollector
-            onStreamFinished: {
-                root.layers = JSON.parse(layersCollector.text);
-            }
-        }
-    }
-
-    Process {
-        id: getWorkspaces
-        command: ["hyprctl", "workspaces", "-j"]
-        stdout: StdioCollector {
-            id: workspacesCollector
-            onStreamFinished: {
-                var rawWorkspaces = JSON.parse(workspacesCollector.text);
-                // Filter out invalid workspace ids (e.g. lock-screen temp workspace 2147483647 - N)
-                root.workspaces = rawWorkspaces.filter(ws => ws.id >= 1 && ws.id <= 100);
-                let tempWorkspaceById = {};
-                for (var i = 0; i < root.workspaces.length; ++i) {
-                    var ws = root.workspaces[i];
-                    tempWorkspaceById[ws.id] = ws;
-                }
-                root.workspaceById = tempWorkspaceById;
-                root.workspaceIds = root.workspaces.map(ws => ws.id);
-            }
-        }
-    }
-
-    Process {
-        id: getActiveWorkspace
-        command: ["hyprctl", "activeworkspace", "-j"]
-        stdout: StdioCollector {
-            id: activeWorkspaceCollector
-            onStreamFinished: {
-                root.activeWorkspace = JSON.parse(activeWorkspaceCollector.text);
-            }
-        }
-    }
-
-    Process {
-        id: getActiveWindow
-        command: ["hyprctl", "activewindow", "-j"]
-        stdout: StdioCollector {
-            id: activeWindowCollector
-            onStreamFinished: {
-                const text = activeWindowCollector.text.trim();
-                root.activeWindow = text.length > 0 ? JSON.parse(text) : null;
-            }
-        }
-    }
+    Component.onCompleted: ShellServices.subscribe("hyprland")
 }

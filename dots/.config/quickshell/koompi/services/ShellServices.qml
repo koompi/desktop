@@ -32,6 +32,7 @@ Singleton {
     readonly property bool ready: daemon.running && root.protocol > 0
     property int protocol: 0
 
+    property var hyprland: null
     property var network: null
     property var power: null
 
@@ -93,7 +94,9 @@ Singleton {
                 delete root.outages[payload.service];
                 root.outages = root.outages;
             }
-            if (payload.service === "network")
+            if (payload.service === "hyprland")
+                root.hyprland = payload.state;
+            else if (payload.service === "network")
                 root.network = payload.state;
             else if (payload.service === "power")
                 root.power = payload.state;
@@ -139,6 +142,7 @@ Singleton {
             // rather than keeping the last snapshot is deliberate: a bar drawing a
             // network that is no longer being watched is worse than one drawing none.
             root.protocol = 0;
+            root.hyprland = null;
             root.network = null;
             root.power = null;
             restartTimer.start();

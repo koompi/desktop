@@ -3,6 +3,7 @@
 //! Written out by hand rather than derived, so a field rename inside a crate is a
 //! compile error here instead of a silent protocol break at the consumer.
 
+use koompi_hyprland::HyprlandState;
 use koompi_network::{AccessPoint, ActiveConnection, NetworkState, Ssid, WifiState, WiredDevice};
 use koompi_power::{Battery, ChargeThreshold, PowerState, Profiles};
 use serde_json::{json, Value};
@@ -152,9 +153,31 @@ fn profiles(profiles: &Profiles) -> Value {
     })
 }
 
+/// The objects go out as the compositor writes them, field for field, because every
+/// consumer here was reading `hyprctl -j` output an hour ago. Only the top level, which
+/// no `hyprctl` call ever produced, is named here.
+pub fn hyprland(state: &HyprlandState) -> Value {
+    json!({
+        "connected": state.connected,
+        "windows": value(&state.windows),
+        "workspaces": value(&state.workspaces),
+        "workspaces_numbered": value(&state.numbered_workspaces().collect::<Vec<_>>()),
+        "active_workspace": value(&state.active_workspace),
+        "active_window": value(&state.active_window),
+        "monitors": value(&state.monitors),
+        "layers": value(&state.layers),
+    })
+}
+
+/// A float the compositor reported as NaN would otherwise panic the whole daemon.
+fn value<T: serde::Serialize>(item: &T) -> Value {
+    serde_json::to_value(item).unwrap_or(Value::Null)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use koompi_hyprland::{Client, Monitor, Workspace};
     use koompi_network::{Security, WifiStatus};
 
     fn ap(bytes: &[u8], strength: u8) -> AccessPoint {
@@ -218,6 +241,64 @@ mod tests {
         assert_eq!(value["supported"], json!(false));
         assert_eq!(value["start"], json!(0));
         assert_eq!(value["end"], json!(0));
+    }
+
+    /// A rename in the crate is a rename at `OverviewWidget.qml`, which reads these
+    /// objects exactly as `hyprctl -j` printed them.
+    #[test]
+    fn the_hyprland_objects_go_out_under_the_compositors_own_field_names() {
+        let state = HyprlandState {
+            windows: vec![Client {
+                address: "0x1".into(),
+                initial_class: "kitty".into(),
+                size: [800, 600],
+                ..Default::default()
+            }],
+            monitors: vec![Monitor {
+                name: "eDP-1".into(),
+                refresh_rate: 60.0,
+                ..Default::default()
+            }],
+            workspaces: vec![Workspace {
+                id: 1,
+                monitor_id: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let value = hyprland(&state);
+        assert_eq!(value["windows"][0]["initialClass"], json!("kitty"));
+        assert_eq!(value["windows"][0]["size"], json!([800, 600]));
+        assert_eq!(value["windows"][0]["workspace"]["id"], json!(0));
+        assert_eq!(value["monitors"][0]["refreshRate"], json!(60.0));
+        assert_eq!(value["monitors"][0]["activeWorkspace"]["name"], json!(""));
+        assert_eq!(value["workspaces"][0]["monitorID"], json!(0));
+    }
+
+    /// `HyprlandData.qml` never published the lock screen's workspace at 2147483646, and a
+    /// bar that started drawing it would draw it off the end of the row.
+    #[test]
+    fn both_the_whole_workspace_list_and_the_numbered_view_are_sent() {
+        let state = HyprlandState {
+            workspaces: vec![
+                Workspace {
+                    id: 1,
+                    ..Default::default()
+                },
+                Workspace {
+                    id: -98,
+                    name: "special:scratch".into(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+
+        let value = hyprland(&state);
+        assert_eq!(value["workspaces"].as_array().map(Vec::len), Some(2));
+        assert_eq!(value["workspaces_numbered"].as_array().map(Vec::len), Some(1));
+        assert_eq!(value["workspaces_numbered"][0]["id"], json!(1));
     }
 
     #[test]

@@ -1,20 +1,24 @@
 //! The shapes Hyprland's `j/` queries answer with, as the shell consumes them.
+//!
+//! They serialise as well as deserialise, and the field names are the compositor's own on
+//! both sides: `koompi-shelld` hands these straight to a consumer that used to read
+//! `hyprctl -j` output, so a rename here is a rename on the wire.
 
 use std::collections::BTreeMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::binds::Keybind;
 use crate::xkb::Keyboard;
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct WorkspaceRef {
     pub id: i64,
     pub name: String,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Client {
     pub address: String,
@@ -44,7 +48,7 @@ pub struct Client {
     pub inhibiting_idle: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Workspace {
     pub id: i64,
@@ -59,7 +63,7 @@ pub struct Workspace {
     pub ispersistent: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct Monitor {
     pub id: i64,
@@ -92,7 +96,7 @@ pub struct Monitor {
     pub available_modes: Vec<String>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct LayerSurface {
     pub address: String,
@@ -106,7 +110,7 @@ pub struct LayerSurface {
 
 /// One monitor's layer shells, keyed by the `zwlr_layer_shell_v1` level as a string,
 /// which is how the compositor serialises it.
-#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 #[serde(default)]
 pub struct MonitorLayers {
     pub levels: BTreeMap<String, Vec<LayerSurface>>,
