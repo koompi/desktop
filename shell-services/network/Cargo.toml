@@ -1,0 +1,14 @@
+[package]
+name = "koompi-network"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Wifi and connectivity over org.freedesktop.NetworkManager, replacing eleven nmcli invocations"
+
+[dependencies]
+koompi-service.workspace = true
+tokio.workspace = true
+zbus.workspace = true
+zvariant.workspace = true
+futures-util.workspace = true

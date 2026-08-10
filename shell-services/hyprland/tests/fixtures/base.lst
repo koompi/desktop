@@ -1,0 +1,24 @@
+! model
+  pc86            Generic 86-key PC
+  pc101           Generic 101-key PC
+  pc102           Generic 102-key PC
+! layout
+  gb              English (UK)
+  us              English (US)
+  fr              French
+  de              German
+  kh              Khmer (Cambodia)
+  ru              Russian
+! variant
+  plisi           al: Albanian (Plisi)
+  azerty          ara: Arabic (AZERTY)
+  intl            by: Belarusian (intl.)
+  dvorak          dk: Danish (Dvorak)
+  azerty          cm: Cameroon (AZERTY, intl.)
+  dvorak          cm: Cameroon (Dvorak, intl.)
+  intl            gb: English (UK, intl., with dead keys)
+  dvorak          gb: English (UK, Dvorak)
+! option
+  grp                  Switching to another layout
+  grp:switch           Right Alt (while pressed)
+  grp:lswitch          Left Alt (while pressed)

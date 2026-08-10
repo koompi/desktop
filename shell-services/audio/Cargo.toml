@@ -1,0 +1,13 @@
+[package]
+name = "koompi-audio"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Drives the zig audiod over NDJSON on stdio and presents PipeWire state as a Service"
+
+[dependencies]
+koompi-service.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true

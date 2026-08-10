@@ -1,0 +1,49 @@
+[workspace]
+resolver = "2"
+members = [
+    "service",
+    "hyprland",
+    "power",
+    "tray",
+    "audio",
+    "network",
+    "notifications",
+    "mpris",
+    "session",
+    "bluetooth",
+    "brightness",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+# zbus 5 sets this floor, and it is the highest of anything we pull in.
+# sdata/lib/common.sh RUST_MIN must agree; tests/test_distro_recipes.sh asserts it.
+rust-version = "1.87"
+license = "GPL-3.0-or-later"
+
+# Declared once here, for every member. A job that needs something absent from this
+# list reports it instead of adding it: any edit here re-locks and serialises the panes.
+[workspace.dependencies]
+koompi-service = { path = "service" }
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "sync",
+    "time",
+    "net",
+    "io-util",
+    "process",
+    "fs",
+] }
+zbus = { version = "5.18", default-features = false, features = ["tokio"] }
+zvariant = "5"
+futures-util = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[profile.release]
+# Matches the ReleaseSafe the zig components build with: overflow checks stay on.
+overflow-checks = true
+debug-assertions = false

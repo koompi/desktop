@@ -1,0 +1,90 @@
+bindd
+	modmask: 64
+	submap: 
+	key: SUPER_L
+	keycode: 0
+	catchall: false
+	description: Shell: Toggle search
+	dispatcher: __lua
+	arg: 12
+bind
+	modmask: 64
+	submap: 
+	key: SUPER_R
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 14
+bind
+	modmask: 64
+	submap: 
+	key: SUPER_L
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 16
+bind
+	modmask: 64
+	submap: 
+	key: SUPER_R
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 18
+bindd
+	modmask: 73
+	submap: 
+	key: mouse:273
+	keycode: 0
+	catchall: false
+	description: Utilities: Generate AI summary for selected text
+	dispatcher: __lua
+	arg: 23
+bind
+	modmask: 73
+	submap: 
+	key: mouse:273
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 25
+bind
+	modmask: 72
+	submap: virtual-machine
+	key: F1
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 486
+bind
+	modmask: 72
+	submap: virtual-machine
+	key: F1
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 487
+bindl
+	modmask: 65
+	submap: 
+	key: R
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 144
+bindl
+	modmask: 72
+	submap: 
+	key: R
+	keycode: 0
+	catchall: false
+	description: 
+	dispatcher: __lua
+	arg: 147

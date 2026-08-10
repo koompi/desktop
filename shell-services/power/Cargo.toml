@@ -1,0 +1,14 @@
+[package]
+name = "koompi-power"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Battery, charge threshold and power profiles over UPower and power-profiles-daemon"
+
+[dependencies]
+koompi-service.workspace = true
+tokio.workspace = true
+zbus.workspace = true
+zvariant.workspace = true
+futures-util.workspace = true
