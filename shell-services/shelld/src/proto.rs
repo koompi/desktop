@@ -134,6 +134,13 @@ impl Request {
             .ok_or_else(|| Failure::new(ErrorCode::BadRequest, missing(field, "a positive integer")))
     }
 
+    pub fn f64(&self, field: &str) -> Result<f64, Failure> {
+        self.body
+            .get(field)
+            .and_then(Value::as_f64)
+            .ok_or_else(|| Failure::new(ErrorCode::BadRequest, missing(field, "a number")))
+    }
+
     pub fn str_list(&self, field: &str) -> Result<Vec<String>, Failure> {
         let items = self
             .body

@@ -4,6 +4,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use koompi_bluetooth::{BluetoothService, BluetoothState};
+use koompi_brightness::{BrightnessService, BrightnessState};
 use koompi_hyprland::{HyprlandService, HyprlandState};
 use koompi_network::{NetworkService, NetworkState};
 use koompi_power::{PowerConfig, PowerService, PowerState, Profile};
@@ -84,7 +86,8 @@ impl Managed for NetworkService {
                     .find(|ap| ap.path == path)
                     .ok_or_else(|| Failure::new(ErrorCode::UnknownAccessPoint, path))?;
 
-                self.connect_to(&access_point, passphrase.as_deref()).await?;
+                self.connect_to(&access_point, passphrase.as_deref())
+                    .await?;
             }
         }
         Ok(())
@@ -104,9 +107,9 @@ impl PowerCmd {
             }
             "set_profile" => {
                 let name = request.str("profile")?;
-                Profile::parse(name)
-                    .map(Self::SetProfile)
-                    .ok_or_else(|| Failure::new(ErrorCode::BadRequest, format!("no profile {name}")))
+                Profile::parse(name).map(Self::SetProfile).ok_or_else(|| {
+                    Failure::new(ErrorCode::BadRequest, format!("no profile {name}"))
+                })
             }
             other => Err(Failure::new(ErrorCode::UnknownCommand, other)),
         }
@@ -137,6 +140,126 @@ impl Managed for PowerService {
                 self.set_charge_threshold_enabled(enabled).await?
             }
             PowerCmd::SetProfile(profile) => self.set_profile(profile).await?,
+        }
+        Ok(())
+    }
+}
+
+/// The crate also carries `set_multiplier`, and it is deliberately not on the wire. The
+/// anti-flashbang factor is a screen capture the shell takes, so the shell already holds
+/// the requested brightness to return to and sends the product it has always computed.
+pub enum BrightnessCmd {
+    SetBrightness { panel: String, value: f64 },
+}
+
+impl BrightnessCmd {
+    pub fn parse(request: &Request) -> Result<Self, Failure> {
+        match request.cmd.as_str() {
+            "set_brightness" => Ok(Self::SetBrightness {
+                panel: request.str("panel")?.to_owned(),
+                value: request.f64("value")?,
+            }),
+            other => Err(Failure::new(ErrorCode::UnknownCommand, other)),
+        }
+    }
+}
+
+impl Managed for BrightnessService {
+    type State = BrightnessState;
+    type Cmd = BrightnessCmd;
+
+    const NAME: &'static str = "brightness";
+
+    async fn connect(rate: PollRate) -> koompi_service::Result<Self> {
+        BrightnessService::connect(rate).await
+    }
+
+    fn watch(&self) -> watch::Receiver<BrightnessState> {
+        self.subscribe()
+    }
+
+    fn encode(state: &BrightnessState) -> Value {
+        wire::brightness(state)
+    }
+
+    // No `set_poll_rate`: the poll rate is the fallback for a panel whose sysfs file
+    // will not take a `POLLPRI`, and the crate takes it once, at connect.
+
+    async fn apply(self: Arc<Self>, cmd: BrightnessCmd) -> Outcome {
+        match cmd {
+            BrightnessCmd::SetBrightness { panel, value } => self.set(&panel, value)?,
+        }
+        Ok(())
+    }
+}
+
+pub enum BluetoothCmd {
+    SetPowered(bool),
+    SetDiscovering(bool),
+    Connect(String),
+    Disconnect(String),
+    Pair(String),
+    CancelPairing(String),
+    SetTrusted { path: String, trusted: bool },
+    Forget(String),
+}
+
+impl BluetoothCmd {
+    pub fn parse(request: &Request) -> Result<Self, Failure> {
+        let path = || request.str("device").map(str::to_owned);
+        match request.cmd.as_str() {
+            "set_powered" => Ok(Self::SetPowered(request.bool("powered")?)),
+            "set_discovering" => Ok(Self::SetDiscovering(request.bool("discovering")?)),
+            "connect" => Ok(Self::Connect(path()?)),
+            "disconnect" => Ok(Self::Disconnect(path()?)),
+            "pair" => Ok(Self::Pair(path()?)),
+            "cancel_pairing" => Ok(Self::CancelPairing(path()?)),
+            "set_trusted" => Ok(Self::SetTrusted {
+                path: path()?,
+                trusted: request.bool("trusted")?,
+            }),
+            "forget" => Ok(Self::Forget(path()?)),
+            other => Err(Failure::new(ErrorCode::UnknownCommand, other)),
+        }
+    }
+}
+
+impl Managed for BluetoothService {
+    type State = BluetoothState;
+    type Cmd = BluetoothCmd;
+
+    const NAME: &'static str = "bluetooth";
+
+    async fn connect(_rate: PollRate) -> koompi_service::Result<Self> {
+        BluetoothService::connect().await
+    }
+
+    fn watch(&self) -> watch::Receiver<BluetoothState> {
+        self.subscribe()
+    }
+
+    fn encode(state: &BluetoothState) -> Value {
+        wire::bluetooth(state)
+    }
+
+    // No `healthy`: a seat with no adapter publishes `available: false` and is a working
+    // seat. Losing BlueZ itself closes the object manager's signal streams, which ends the
+    // crate's task and drops the watch sender, and that is what the actor reconnects on.
+
+    // No `set_poll_rate`: nothing here polls. Objects arrive on the bus and rfkill on a
+    // readable `/dev/rfkill`.
+
+    async fn apply(self: Arc<Self>, cmd: BluetoothCmd) -> Outcome {
+        match cmd {
+            BluetoothCmd::SetPowered(powered) => self.set_powered(powered).await?,
+            BluetoothCmd::SetDiscovering(true) => self.start_discovery().await?,
+            BluetoothCmd::SetDiscovering(false) => self.stop_discovery().await?,
+            BluetoothCmd::Connect(path) => self.connect_device(&path).await?,
+            BluetoothCmd::Disconnect(path) => self.disconnect_device(&path).await?,
+            BluetoothCmd::Pair(path) => self.pair(&path).await?,
+            BluetoothCmd::CancelPairing(path) => self.cancel_pairing(&path).await?,
+            BluetoothCmd::SetTrusted { path, trusted } => self.set_trusted(&path, trusted).await?,
+            BluetoothCmd::Forget(path) => self.remove_device(&path).await?,
         }
         Ok(())
     }
@@ -247,11 +370,35 @@ mod tests {
         assert_eq!(refused(parsed), ErrorCode::UnknownCommand);
     }
 
+    /// `network` names its object `path` and `bluetooth` names its `device`, so the one
+    /// mistake worth catching is a device command sent with the other service's field.
+    #[test]
+    fn a_device_command_without_a_device_is_bad_request() {
+        for cmd in ["connect", "disconnect", "pair", "cancel_pairing", "forget"] {
+            let line = format!(r#"{{"cmd":"{cmd}","path":"/org/bluez/hci0/dev_A"}}"#);
+            let parsed = BluetoothCmd::parse(&request(&line));
+            assert_eq!(refused(parsed), ErrorCode::BadRequest, "{cmd}");
+        }
+    }
+
+    /// One command with a boolean rather than a `start_discovery`/`stop_discovery` pair,
+    /// because every call site is a `Switch` writing what it is now.
+    #[test]
+    fn discovery_is_one_command_carrying_the_state_to_reach() {
+        let on = BluetoothCmd::parse(&request(r#"{"cmd":"set_discovering","discovering":true}"#));
+        assert!(matches!(on, Ok(BluetoothCmd::SetDiscovering(true))));
+
+        let missing = BluetoothCmd::parse(&request(r#"{"cmd":"set_discovering"}"#));
+        assert_eq!(refused(missing), ErrorCode::BadRequest);
+    }
+
     #[test]
     fn an_unmodelled_profile_name_is_refused_rather_than_sent_on() {
         let parsed = PowerCmd::parse(&request(r#"{"cmd":"set_profile","profile":"turbo"}"#));
         assert_eq!(refused(parsed), ErrorCode::BadRequest);
 
-        assert!(PowerCmd::parse(&request(r#"{"cmd":"set_profile","profile":"power-saver"}"#)).is_ok());
+        assert!(
+            PowerCmd::parse(&request(r#"{"cmd":"set_profile","profile":"power-saver"}"#)).is_ok()
+        );
     }
 }

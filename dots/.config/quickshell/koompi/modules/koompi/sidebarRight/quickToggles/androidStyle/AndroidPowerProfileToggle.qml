@@ -5,7 +5,6 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import Quickshell
-import Quickshell.Services.UPower
 
 AndroidQuickToggleButton {
     toggleModel: PowerProfilesToggle {}

@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 // From https://github.com/caelestia-dots/shell with modifications.
 // License: GPLv3
 
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import Quickshell
@@ -12,13 +13,21 @@ import Quickshell.Hyprland
 import QtQuick
 
 /**
- * For managing brightness of monitors. Supports both brightnessctl and ddcutil.
+ * For managing brightness of monitors, internal and external.
+ *
+ * koompi-brightness holds both backends: logind `SetBrightness` for the internal panel,
+ * which is why there is no udev rule to install, and `ddcutil` for external ones. The
+ * `ddcutil detect` at startup and the `brightnessctl` fork per animation frame are gone;
+ * a frame is now a line on the daemon's stdin, which is what the crate's zero debounce on
+ * the internal panel is for.
+ *
+ * The anti-flashbang capture stays here: the multiplier is a screen grab the shell takes,
+ * so the shell keeps the requested brightness and sends the product.
  */
 Singleton {
     id: root
     signal brightnessChanged()
 
-    property var ddcMonitors: []
     readonly property list<BrightnessMonitor> monitors: Quickshell.screens.map(screen => monitorComp.createObject(root, {
         screen
     }))
@@ -53,56 +62,67 @@ Singleton {
 
     reloadableId: "brightness"
 
-    onMonitorsChanged: {
-        ddcMonitors = [];
-        ddcProc.running = true;
-    }
-
-    function initializeMonitor(i: int): void {
-        if (i >= monitors.length)
-            return;
-        monitors[i].initialize();
-    }
-
-    function ddcDetectFinished(): void {
-        initializeMonitor(0);
-    }
-
-    Process {
-        id: ddcProc
-
-        command: ["ddcutil", "detect", "--brief"]
-        stdout: SplitParser {
-            splitMarker: "\n\n"
-            onRead: data => {
-                if (data.startsWith("Display ")) {
-                    const lines = data.split("\n").map(l => l.trim());
-                    root.ddcMonitors.push({
-                        name: lines.find(l => l.startsWith("DRM connector:")).split("-").slice(1).join('-'),
-                        busNum: lines.find(l => l.startsWith("I2C bus:")).split("/dev/i2c-")[1]
-                    });
-                }
-            }
-        }
-        onExited: root.ddcDetectFinished()
-    }
-
-    Process {
-        id: setProc
-    }
-
     component BrightnessMonitor: QtObject {
         id: monitor
 
         required property ShellScreen screen
-        property bool isDdc
-        property string busNum
-        property int rawMaxBrightness: 100
+
+        readonly property var panel: ShellServices.brightnessPanel(monitor.screen.name)
+        readonly property bool ready: monitor.panel !== null
+        readonly property bool isDdc: monitor.panel?.backend === "ddc"
+        readonly property int rawMaxBrightness: monitor.panel?.raw_max ?? 100
+
         property real brightness
         property real brightnessMultiplier: 1.0
         property real multipliedBrightness: Math.max(0, Math.min(1, brightness * (Config.options.light.antiFlashbang.enable ? brightnessMultiplier : 1)))
-        property bool ready: false
-        property bool animateChanges: !monitor.isDdc
+        readonly property bool animateChanges: !monitor.isDdc
+
+        // A brightness key pressed outside the shell moves the panel too and the daemon
+        // follows sysfs, so a reading can disagree with what was last asked for. Two ways
+        // it disagrees without anyone else touching it: our own writes echo back rounded,
+        // logind floors to whole percent, and during a ramp the echo lags the frame being
+        // drawn. Adopting either would walk the value down or fight the animation.
+        property bool synced: false
+        property double lastWrite: 0
+        // A value taken from the panel is not a value to send back to it, and it must not
+        // ramp there from wherever this object started. `raw -> fraction -> raw` is lossy:
+        // 52363 of 174545 reads as 0.29999, which writes back as 29%, so a shell that
+        // seeded itself through the ramp walked the panel down a percent every launch.
+        property bool seeding: false
+
+        function adopt(): void {
+            if (!monitor.ready) {
+                monitor.synced = false;
+                return;
+            }
+            const reported = monitor.panel.brightness;
+            if (monitor.synced) {
+                if (Date.now() - monitor.lastWrite < 500)
+                    return;
+                if (Math.abs(reported - monitor.multipliedBrightness) <= 0.01)
+                    return;
+            }
+            const factor = Config.options.light.antiFlashbang.enable ? Math.max(0.01, monitor.brightnessMultiplier) : 1;
+            monitor.seeding = true;
+            monitor.brightness = Math.max(0, Math.min(1, reported / factor));
+            monitor.seeding = false;
+            monitor.synced = true;
+        }
+
+        // The daemon's state, not `panel`. Nothing observes that binding until something
+        // reads it, so QML leaves it dirty and its change signal arrives whenever the
+        // first read happens to be, which is far too late to seed a value from.
+        readonly property Connections published: Connections {
+            target: ShellServices
+            function onBrightnessChanged() {
+                monitor.adopt();
+            }
+        }
+
+        // The daemon sends one state per change, and a panel nobody is moving changes
+        // never. A monitor created after that first snapshot would sit at zero forever,
+        // waiting for a signal that has already been and gone.
+        Component.onCompleted: monitor.adopt()
 
         onBrightnessChanged: {
             if (!monitor.ready) return;
@@ -110,60 +130,28 @@ Singleton {
         }
 
         Behavior on multipliedBrightness {
-            enabled: monitor.animateChanges
+            enabled: monitor.animateChanges && !monitor.seeding
             NumberAnimation {
                 duration: Appearance.animationDuration.fast
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Appearance.animationCurves.expressiveEffects
             }
         }
-        // Always through the timer. The Behavior below ticks ~60x/s, and a
-        // brightnessctl fork per animation frame is not worth the smoothness.
-        onMultipliedBrightnessChanged: setTimer.restart()
-
-        function initialize() {
-            monitor.ready = false;
-            const match = root.ddcMonitors.find(m => m.name === screen.name && !root.monitors.slice(0, root.monitors.indexOf(this)).some(mon => mon.busNum === m.busNum));
-            isDdc = !!match;
-            busNum = match?.busNum ?? "";
-            initProc.command = isDdc ? ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"] : ["sh", "-c", `echo "a b c $(brightnessctl g) $(brightnessctl m)"`];
-            initProc.running = true;
-        }
-
-        readonly property Process initProc: Process {
-            stdout: SplitParser {
-                onRead: data => {
-                    const [, , , current, max] = data.split(" ");
-                    monitor.rawMaxBrightness = parseInt(max);
-                    monitor.brightness = parseInt(current) / monitor.rawMaxBrightness;
-                    monitor.ready = true;
-                }
-            }
-            onExited: (exitCode, exitStatus) => {
-                initializeMonitor(root.monitors.indexOf(monitor) + 1);
-            }
-        }
-
-        // We need a delay for DDC monitors because they can be quite slow and might act weird with rapid changes
-        property var setTimer: Timer {
-            id: setTimer
-            interval: monitor.isDdc ? 300 : 0
-            onTriggered: {
-                syncBrightness();
-            }
-        }
-
-        function syncBrightness() {
-            const brightnessValue = Math.max(monitor.multipliedBrightness, 0);
-            if (isDdc) {
-                const rawValueRounded = Math.max(Math.floor(brightnessValue * monitor.rawMaxBrightness), 1);
-                setProc.exec(["ddcutil", "-b", busNum, "setvcp", "10", rawValueRounded]);
-            } else {
-                const valuePercentNumber = Math.floor(brightnessValue * 100);
-                let valuePercent = `${valuePercentNumber}%`;
-                if (valuePercentNumber == 0) valuePercent = "1"; // Prevent fully black
-                setProc.exec(["brightnessctl", "--class", "backlight", "s", valuePercent, "--quiet"])
-            }
+        // Every frame of the ramp above. The daemon debounces per backend - 300 ms for
+        // DDC, nothing for the internal panel - so the rate limiting the timer here used
+        // to do belongs on the side that knows which backend it is talking to.
+        onMultipliedBrightnessChanged: {
+            if (!monitor.ready)
+                return;
+            // What the panel already reports, to the bit: this frame came from the daemon
+            // rather than from anyone asking for it.
+            if (monitor.panel.brightness === monitor.multipliedBrightness)
+                return;
+            monitor.lastWrite = Date.now();
+            ShellServices.command("brightness", "set_brightness", {
+                panel: monitor.panel.id,
+                value: monitor.multipliedBrightness
+            });
         }
 
         function setBrightness(value: real): void {
@@ -274,4 +262,6 @@ Singleton {
         description: "Decrease brightness"
         onPressed: root.decreaseBrightness()
     }
+
+    Component.onCompleted: ShellServices.subscribe("brightness")
 }

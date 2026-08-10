@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Bluetooth
 import qs
 import qs.services
 import qs.services.network
@@ -13,7 +12,7 @@ import qs.modules.waffle.actionCenter
 
 ExpandableChoiceButton {
     id: root
-    required property BluetoothDevice device
+    required property var device
 
     contentItem: RowLayout {
         id: contentItem
@@ -40,7 +39,7 @@ ExpandableChoiceButton {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.pixelSize: Looks.font.pixelSize.large
-                text: root.device?.name || Translation.tr("Unknown device")
+                text: root.device?.alias || Translation.tr("Unknown device")
                 textFormat: Text.PlainText
             }
             WText { // Status
@@ -57,9 +56,9 @@ ExpandableChoiceButton {
                     if (!root.device?.paired)
                         return Translation.tr("Not connected");
                     let statusText = root.device?.connected ? Translation.tr("Connected") : Translation.tr("Paired");
-                    if (!root.device?.batteryAvailable)
+                    if (root.device?.battery == null)
                         return statusText;
-                    statusText += ` • ${Math.round(root.device?.battery * 100)}%`;
+                    statusText += ` • ${root.device.battery}%`;
                     return statusText;
                 }
             }
@@ -78,9 +77,9 @@ ExpandableChoiceButton {
 
                 onClicked: {
                     if (root.device?.connected) {
-                        root.device.disconnect();
+                        BluetoothStatus.disconnectDevice(root.device);
                     } else {
-                        root.device.connect();
+                        BluetoothStatus.connectDevice(root.device);
                     }
                 }
             }

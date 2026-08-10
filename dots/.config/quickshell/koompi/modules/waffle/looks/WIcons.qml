@@ -1,7 +1,6 @@
 pragma Singleton
 import QtQuick
 import Quickshell
-import Quickshell.Services.UPower
 import qs.services
 
 Singleton {
@@ -76,12 +75,12 @@ Singleton {
     property string notificationsIcon: Notifications.silent ? "alert-snooze" : "alert"
 
     property string powerProfileIcon: {
-        switch (PowerProfiles.profile) {
-        case PowerProfile.PowerSaver:
+        switch (PowerSaving.profile) {
+        case "power-saver":
             return "leaf-two";
-        case PowerProfile.Balanced:
+        case "balanced":
             return "flash-on";
-        case PowerProfile.Performance:
+        case "performance":
             return "fire";
         }
     }

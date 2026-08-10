@@ -14,6 +14,17 @@ pub enum PowerState {
 }
 
 impl PowerState {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::On => "on",
+            Self::Off => "off",
+            Self::OffEnabling => "off-enabling",
+            Self::OnDisabling => "on-disabling",
+            Self::OffBlocked => "off-blocked",
+            Self::Unknown => "unknown",
+        }
+    }
+
     fn parse(value: Option<&str>) -> Self {
         match value {
             Some("on") => Self::On,

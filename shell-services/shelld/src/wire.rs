@@ -3,6 +3,8 @@
 //! Written out by hand rather than derived, so a field rename inside a crate is a
 //! compile error here instead of a silent protocol break at the consumer.
 
+use koompi_bluetooth::{Adapter, BluetoothState, Device, RfkillEntry, RfkillState};
+use koompi_brightness::{BrightnessState, Panel};
 use koompi_hyprland::HyprlandState;
 use koompi_network::{AccessPoint, ActiveConnection, NetworkState, Ssid, WifiState, WiredDevice};
 use koompi_power::{Battery, ChargeThreshold, PowerState, Profiles};
@@ -153,6 +155,93 @@ fn profiles(profiles: &Profiles) -> Value {
     })
 }
 
+/// `brightness` is the fraction every consumer binds to; `raw` and `raw_max` are beside it
+/// because a `set_brightness` of the same fraction can land on a different raw value, and
+/// a consumer showing a step count needs the panel's own resolution to say how many.
+pub fn brightness(state: &BrightnessState) -> Value {
+    json!({
+        "panels": state.panels.iter().map(panel).collect::<Vec<_>>(),
+    })
+}
+
+fn panel(panel: &Panel) -> Value {
+    json!({
+        "id": panel.id,
+        "connector": panel.connector,
+        "backend": panel.backend.as_str(),
+        "brightness": panel.fraction(),
+        "raw": panel.raw,
+        "raw_max": panel.raw_max,
+        "bus": panel.bus,
+    })
+}
+
+/// `powered` and `connected` are the two the bar binds to, and both were a `.values`
+/// scan in JavaScript over a model Quickshell rebuilt on every BlueZ signal.
+pub fn bluetooth(state: &BluetoothState) -> Value {
+    json!({
+        "available": state.available(),
+        "powered": state.powered(),
+        "discovering": state.discovering(),
+        "connected": state.connected().next().is_some(),
+        "connected_count": state.connected().count(),
+        "adapter": state.default_adapter().map(adapter),
+        "adapters": state.adapters.iter().map(adapter).collect::<Vec<_>>(),
+        "devices": state.devices.iter().map(device).collect::<Vec<_>>(),
+        "rfkill": rfkill(&state.rfkill),
+    })
+}
+
+fn adapter(adapter: &Adapter) -> Value {
+    json!({
+        "path": adapter.path,
+        "id": adapter.id,
+        "address": adapter.address,
+        "name": adapter.name,
+        "alias": adapter.alias,
+        "powered": adapter.powered,
+        "power_state": adapter.power_state.as_str(),
+        "discoverable": adapter.discoverable,
+        "discovering": adapter.discovering,
+        "pairable": adapter.pairable,
+    })
+}
+
+fn device(device: &Device) -> Value {
+    json!({
+        "path": device.path,
+        "adapter": device.adapter,
+        "address": device.address,
+        "name": device.name,
+        "alias": device.alias,
+        "paired": device.paired,
+        "trusted": device.trusted,
+        "connected": device.connected,
+        "blocked": device.blocked,
+        "icon": device.icon,
+        "rssi": device.rssi,
+        "battery": device.battery,
+    })
+}
+
+fn rfkill(state: &RfkillState) -> Value {
+    json!({
+        "soft_blocked": state.soft_blocked(),
+        "hard_blocked": state.hard_blocked(),
+        "entries": state.entries.iter().map(rfkill_entry).collect::<Vec<_>>(),
+    })
+}
+
+fn rfkill_entry(entry: &RfkillEntry) -> Value {
+    json!({
+        "index": entry.index,
+        "kind": entry.kind.as_str(),
+        "name": entry.name,
+        "soft_blocked": entry.soft_blocked,
+        "hard_blocked": entry.hard_blocked,
+    })
+}
+
 /// The objects go out as the compositor writes them, field for field, because every
 /// consumer here was reading `hyprctl -j` output an hour ago. Only the top level, which
 /// no `hyprctl` call ever produced, is named here.
@@ -297,8 +386,64 @@ mod tests {
 
         let value = hyprland(&state);
         assert_eq!(value["workspaces"].as_array().map(Vec::len), Some(2));
-        assert_eq!(value["workspaces_numbered"].as_array().map(Vec::len), Some(1));
+        assert_eq!(
+            value["workspaces_numbered"].as_array().map(Vec::len),
+            Some(1)
+        );
         assert_eq!(value["workspaces_numbered"][0]["id"], json!(1));
+    }
+
+    fn headset(connected: bool, battery: Option<u8>) -> Device {
+        Device {
+            path: "/org/bluez/hci0/dev_AC_80_0A_11_22_33".into(),
+            adapter: "/org/bluez/hci0".into(),
+            address: "AC:80:0A:11:22:33".into(),
+            name: None,
+            alias: "AC-80-0A-11-22-33".into(),
+            paired: true,
+            trusted: false,
+            connected,
+            blocked: false,
+            icon: Some("audio-headset".into()),
+            rssi: Some(-54),
+            battery,
+        }
+    }
+
+    /// `BluetoothStatus.qml` sorted on `name` and got the dashed address for a device
+    /// BlueZ never learned one for. Keeping both fields is what lets the consumer show
+    /// `alias` and still know the name is missing.
+    #[test]
+    fn a_nameless_device_sends_a_null_name_beside_the_alias_that_stands_in_for_it() {
+        let value = device(&headset(true, None));
+
+        assert_eq!(value["name"], json!(null));
+        assert_eq!(value["alias"], json!("AC-80-0A-11-22-33"));
+        assert_eq!(value["battery"], json!(null));
+    }
+
+    /// A percentage, not the 0..1 fraction `Quickshell.Bluetooth` published, which every
+    /// consumer multiplied back up by 100.
+    #[test]
+    fn a_battery_goes_out_as_the_percentage_bluez_reports() {
+        assert_eq!(device(&headset(true, Some(80)))["battery"], json!(80));
+    }
+
+    /// The `.values.some(...)` scans at `BluetoothStatus.qml:34` and `:47`.
+    #[test]
+    fn the_connected_flags_the_bar_binds_to_are_counted_here_not_in_javascript() {
+        let state = BluetoothState {
+            devices: vec![headset(true, None), headset(false, None)],
+            ..Default::default()
+        };
+
+        let value = bluetooth(&state);
+        assert_eq!(value["connected"], json!(true));
+        assert_eq!(value["connected_count"], json!(1));
+        // no adapter on this seat, and that is a working seat rather than an outage
+        assert_eq!(value["available"], json!(false));
+        assert_eq!(value["powered"], json!(false));
+        assert_eq!(value["adapter"], json!(null));
     }
 
     #[test]

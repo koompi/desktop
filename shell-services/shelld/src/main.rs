@@ -9,6 +9,8 @@ mod wire;
 
 use std::time::Duration;
 
+use koompi_bluetooth::BluetoothService;
+use koompi_brightness::BrightnessService;
 use koompi_hyprland::HyprlandService;
 use koompi_network::NetworkService;
 use koompi_power::PowerService;
@@ -19,9 +21,9 @@ use tokio::sync::oneshot;
 use crate::actor::{Job, Jobs};
 use crate::out::Out;
 use crate::proto::{ErrorCode, Failure, Outcome, Request};
-use crate::services::{HyprlandCmd, NetworkCmd, PowerCmd};
+use crate::services::{BluetoothCmd, BrightnessCmd, HyprlandCmd, NetworkCmd, PowerCmd};
 
-const SERVICES: &[&str] = &["hyprland", "network", "power"];
+const SERVICES: &[&str] = &["hyprland", "network", "power", "brightness", "bluetooth"];
 const DEBOUNCE_BASE: Duration = Duration::from_millis(100);
 const DEBOUNCE_ENV: &str = "KOOMPI_SHELLD_DEBOUNCE_MS";
 const MAX_LINE: usize = 256 * 1024;
@@ -33,6 +35,8 @@ struct Shelld {
     hyprland: Option<Jobs<HyprlandService>>,
     network: Option<Jobs<NetworkService>>,
     power: Option<Jobs<PowerService>>,
+    brightness: Option<Jobs<BrightnessService>>,
+    bluetooth: Option<Jobs<BluetoothService>>,
 }
 
 impl Shelld {
@@ -44,6 +48,8 @@ impl Shelld {
             hyprland: None,
             network: None,
             power: None,
+            brightness: None,
+            bluetooth: None,
         }
     }
 
@@ -88,15 +94,24 @@ impl Shelld {
                     self.rate,
                     self.debounce,
                 ),
-                "network" => start::<NetworkService>(
-                    &mut self.network,
+                "network" => {
+                    start::<NetworkService>(&mut self.network, &self.out, self.rate, self.debounce)
+                }
+                "power" => {
+                    start::<PowerService>(&mut self.power, &self.out, self.rate, self.debounce)
+                }
+                "brightness" => start::<BrightnessService>(
+                    &mut self.brightness,
                     &self.out,
                     self.rate,
                     self.debounce,
                 ),
-                "power" => {
-                    start::<PowerService>(&mut self.power, &self.out, self.rate, self.debounce)
-                }
+                "bluetooth" => start::<BluetoothService>(
+                    &mut self.bluetooth,
+                    &self.out,
+                    self.rate,
+                    self.debounce,
+                ),
                 other => {
                     let failure = Failure::new(ErrorCode::UnknownService, other);
                     return self.out.send(proto::reply(request.id, Err(failure)));
@@ -124,6 +139,8 @@ impl Shelld {
                 "hyprland" => self.hyprland = None,
                 "network" => self.network = None,
                 "power" => self.power = None,
+                "brightness" => self.brightness = None,
+                "bluetooth" => self.bluetooth = None,
                 other => return Err(Failure::new(ErrorCode::UnknownService, other)),
             }
         }
@@ -143,6 +160,12 @@ impl Shelld {
         if let Some(jobs) = &self.power {
             let _ = jobs.try_send(Job::SetPollRate(self.rate));
         }
+        if let Some(jobs) = &self.brightness {
+            let _ = jobs.try_send(Job::SetPollRate(self.rate));
+        }
+        if let Some(jobs) = &self.bluetooth {
+            let _ = jobs.try_send(Job::SetPollRate(self.rate));
+        }
         Ok(())
     }
 
@@ -157,6 +180,10 @@ impl Shelld {
             "hyprland" => job::<HyprlandService>(&self.hyprland, request, HyprlandCmd::parse),
             "network" => job::<NetworkService>(&self.network, request, NetworkCmd::parse),
             "power" => job::<PowerService>(&self.power, request, PowerCmd::parse),
+            "brightness" => {
+                job::<BrightnessService>(&self.brightness, request, BrightnessCmd::parse)
+            }
+            "bluetooth" => job::<BluetoothService>(&self.bluetooth, request, BluetoothCmd::parse),
             other => Err(Failure::new(ErrorCode::UnknownService, other)),
         };
 

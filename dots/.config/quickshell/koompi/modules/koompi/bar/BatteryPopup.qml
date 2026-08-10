@@ -22,7 +22,7 @@ StyledPopup {
             visible: {
                 let timeValue = Battery.isCharging ? Battery.timeToFull : Battery.timeToEmpty;
                 let power = Battery.energyRate;
-                return !(Battery.chargeState == 4 || timeValue <= 0 || power <= 0.01);
+                return !(Battery.chargeState === "fully-charged" || timeValue <= 0 || power <= 0.01);
             }
             icon: "schedule"
             label: Battery.isCharging ? Translation.tr("Time to full:") : Translation.tr("Time to empty:")
@@ -43,19 +43,19 @@ StyledPopup {
         }
 
         StyledPopupValueRow {
-            visible:  !(Battery.chargeState != 4 && Battery.energyRate == 0)
+            visible:  !(Battery.chargeState !== "fully-charged" && Battery.energyRate == 0)
             icon: "bolt"
             label: {
-                if (Battery.chargeState == 4) {
+                if (Battery.chargeState === "fully-charged") {
                     return Translation.tr("Fully charged");
-                } else if (Battery.chargeState == 1) {
+                } else if (Battery.isCharging) {
                     return Translation.tr("Charging:");
                 } else {
                     return Translation.tr("Discharging:");
                 }
             }
             value: {
-                if (Battery.chargeState == 4) {
+                if (Battery.chargeState === "fully-charged") {
                     return "";
                 } else {
                     return `${Battery.energyRate.toFixed(2)}W`;

@@ -3,7 +3,6 @@ import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Bluetooth
 
 import qs.modules.koompi.sidebarRight.quickToggles.classicStyle
 

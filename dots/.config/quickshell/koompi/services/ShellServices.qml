@@ -35,6 +35,8 @@ Singleton {
     property var hyprland: null
     property var network: null
     property var power: null
+    property var brightness: null
+    property var bluetooth: null
 
     // A service the daemon could not reach. Absent from this map means healthy;
     // present means the reason it named.
@@ -74,6 +76,11 @@ Singleton {
         return root.send(message);
     }
 
+    /// The panel driving a screen, by the connector name `Quickshell.screens` uses.
+    function brightnessPanel(connector) {
+        return root.brightness?.panels?.find(panel => panel.connector === connector) ?? null;
+    }
+
     function outageOf(service) {
         return root.outages[service] ?? "";
     }
@@ -100,6 +107,10 @@ Singleton {
                 root.network = payload.state;
             else if (payload.service === "power")
                 root.power = payload.state;
+            else if (payload.service === "brightness")
+                root.brightness = payload.state;
+            else if (payload.service === "bluetooth")
+                root.bluetooth = payload.state;
             break;
         case "unavailable":
             root.outages[payload.service] = payload.reason;
@@ -145,6 +156,8 @@ Singleton {
             root.hyprland = null;
             root.network = null;
             root.power = null;
+            root.brightness = null;
+            root.bluetooth = null;
             restartTimer.start();
         }
     }

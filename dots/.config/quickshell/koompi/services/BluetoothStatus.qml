@@ -1,55 +1,91 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import qs.services
 import Quickshell
-import Quickshell.Bluetooth
-import Quickshell.Io
 import QtQuick
 
+/**
+ * Adapters and devices, from koompi-shelld's `bluetooth` service.
+ *
+ * The delta over `Quickshell.Bluetooth` is the rfkill step. A ThinkPad radio switch can
+ * soft-block bluetooth, and BlueZ then answers a `Powered = true` with success and leaves
+ * the adapter off: the toggle looked dead. The daemon clears the block first, as an 8-byte
+ * write to `/dev/rfkill` rather than the `rfkill unblock bluetooth` fork this file used to
+ * run before every power-on, and it can tell a soft block from a hardware switch.
+ *
+ * Devices are plain objects off the wire, so an action is a call here rather than a method
+ * on the device. Ordering them is presentation and stays here; the daemon publishes the
+ * fields to order by.
+ */
 Singleton {
     id: root
 
-    readonly property bool available: Bluetooth.adapters.values.length > 0
+    readonly property var snapshot: ShellServices.bluetooth
+    readonly property var adapter: root.snapshot?.adapter ?? null
 
-    // The ThinkPad radio kill switch (and anything else) can soft-block
-    // bluetooth in rfkill, and then powering the adapter via BlueZ silently
-    // fails: the toggle looks dead. Unblock first, then power on.
+    readonly property bool available: root.snapshot?.available ?? false
+    readonly property bool enabled: root.snapshot?.powered ?? false
+    readonly property bool discovering: root.snapshot?.discovering ?? false
+    readonly property bool connected: root.snapshot?.connected ?? false
+
+    readonly property var devices: root.snapshot?.devices ?? []
+    readonly property int activeDeviceCount: root.snapshot?.connected_count ?? 0
+    readonly property var firstActiveDevice: root.devices.find(device => device.connected) ?? null
+
     function setEnabled(on) {
-        if (on) {
-            enableProc.running = true;
-        } else if (Bluetooth.defaultAdapter) {
-            Bluetooth.defaultAdapter.enabled = false;
-        }
+        ShellServices.command("bluetooth", "set_powered", {
+            powered: on
+        });
     }
-    Process {
-        id: enableProc
-        command: ["rfkill", "unblock", "bluetooth"]
-        onExited: (code, status) => {
-            if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.enabled = true;
-        }
+
+    function setDiscovering(on) {
+        ShellServices.command("bluetooth", "set_discovering", {
+            discovering: on
+        });
     }
-    readonly property bool enabled: Bluetooth.defaultAdapter?.enabled ?? false
-    readonly property BluetoothDevice firstActiveDevice: Bluetooth.defaultAdapter?.devices.values.find(device => device.connected) ?? null
-    readonly property int activeDeviceCount: Bluetooth.defaultAdapter?.devices.values.filter(device => device.connected).length ?? 0
-    readonly property bool connected: Bluetooth.devices.values.some(d => d.connected)
+
+    function connectDevice(device) {
+        root._device("connect", device);
+    }
+
+    function disconnectDevice(device) {
+        root._device("disconnect", device);
+    }
+
+    function pair(device) {
+        root._device("pair", device);
+    }
+
+    function forget(device) {
+        root._device("forget", device);
+    }
+
+    function _device(cmd, device) {
+        if (!device?.path)
+            return;
+        ShellServices.command("bluetooth", cmd, {
+            device: device.path
+        });
+    }
 
     function sortFunction(a, b) {
-        // Ones with meaningful names before MAC addresses
-        const macRegex = /^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$/;
-        const aIsMac = macRegex.test(a.name);
-        const bIsMac = macRegex.test(b.name);
-        if (aIsMac !== bIsMac)
-            return aIsMac ? 1 : -1;
+        // Ones with meaningful names before MAC addresses. `alias` falls back to the
+        // dashed address precisely when BlueZ never learned a name, so the absent `name`
+        // is the test rather than the shape of the string.
+        if (!a.name !== !b.name)
+            return a.name ? -1 : 1;
 
-        // Alphabetical by name
-        return a.name.localeCompare(b.name);
+        return a.alias.localeCompare(b.alias);
     }
-    property list<var> connectedDevices: Bluetooth.devices.values.filter(d => d.connected).sort(sortFunction)
-    property list<var> pairedButNotConnectedDevices: Bluetooth.devices.values.filter(d => d.paired && !d.connected).sort(sortFunction)
-    property list<var> unpairedDevices: Bluetooth.devices.values.filter(d => !d.paired && !d.connected).sort(sortFunction)
-    property list<var> friendlyDeviceList: [
-        ...connectedDevices,
-        ...pairedButNotConnectedDevices,
-        ...unpairedDevices
+    readonly property var connectedDevices: root.devices.filter(d => d.connected).sort(root.sortFunction)
+    readonly property var pairedButNotConnectedDevices: root.devices.filter(d => d.paired && !d.connected).sort(root.sortFunction)
+    readonly property var unpairedDevices: root.devices.filter(d => !d.paired && !d.connected).sort(root.sortFunction)
+    readonly property var friendlyDeviceList: [
+        ...root.connectedDevices,
+        ...root.pairedButNotConnectedDevices,
+        ...root.unpairedDevices
     ]
+
+    Component.onCompleted: ShellServices.subscribe("bluetooth")
 }

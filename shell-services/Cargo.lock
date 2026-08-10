@@ -354,6 +354,8 @@ dependencies = [
 name = "koompi-shelld"
 version = "0.1.0"
 dependencies = [
+ "koompi-bluetooth",
+ "koompi-brightness",
  "koompi-hyprland",
  "koompi-network",
  "koompi-power",

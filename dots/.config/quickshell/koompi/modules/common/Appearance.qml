@@ -445,6 +445,10 @@ Singleton {
         property real osdWidth: 180
         property real searchWidthCollapsed: 210
         property real searchWidth: 360
+        // Fractions of the screen the sidebar sits on. The px values below are only
+        // the fallback for a window that has no screen assigned yet.
+        property real sidebarWidthFraction: 0.5
+        property real sidebarWidthExtendedFraction: 0.6
         property real sidebarWidth: 690
         property real sidebarWidthExtended: 750
         // The right sidebar holds fixed-size controls, not a chat transcript,

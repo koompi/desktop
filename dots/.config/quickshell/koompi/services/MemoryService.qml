@@ -143,6 +143,11 @@ Singleton {
             root.provider = msg.provider ?? "";
             root.dim = msg.dim ?? 0;
             console.log(`[MemoryService] ready: provider=${root.provider} dim=${root.dim}`);
+            // Drain whatever the last run left behind. `_eventCount` is per shell run,
+            // so a login that never reaches 20 events consolidated nothing - which is
+            // how 59 events sat unpromoted and the assistant learned nothing at all.
+            // Bulk lane, so it cannot delay the first recall.
+            root.consolidate(200, null);
             return;
         }
         const entry = root.pending[msg.id];

@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
-import Quickshell.Bluetooth
 import qs
 import qs.services
 import qs.services.network
@@ -17,10 +16,10 @@ Item {
     id: root
 
     Component.onCompleted: {
-        if (Bluetooth.defaultAdapter.enabled) Bluetooth.defaultAdapter.discovering = true;
+        if (BluetoothStatus.enabled) BluetoothStatus.setDiscovering(true);
     }
     Component.onDestruction: {
-        Bluetooth.defaultAdapter.discovering = false;
+        BluetoothStatus.setDiscovering(false);
     }
 
     WPanelPageColumn {
@@ -50,16 +49,10 @@ Item {
                         WSwitch {
                             id: toggleSwitch
                             Layout.rightMargin: 12
-                            checked: Bluetooth.defaultAdapter?.enabled ?? false
+                            checked: BluetoothStatus.enabled
                             onCheckedChanged: {
-                                if (Bluetooth.defaultAdapter) {
-                                    BluetoothStatus.setEnabled(checked);
-                                    if (checked) {
-                                        Bluetooth.defaultAdapter.discovering = true;
-                                    } else {
-                                        Bluetooth.defaultAdapter.discovering = false;
-                                    }
-                                }
+                                BluetoothStatus.setEnabled(checked);
+                                BluetoothStatus.setDiscovering(checked);
                             }
                         }
                     }
@@ -67,7 +60,7 @@ Item {
                         Layout.leftMargin: -4
                         Layout.rightMargin: -4
                         Layout.fillWidth: true
-                        shown: Bluetooth.defaultAdapter?.discovering ?? false
+                        shown: BluetoothStatus.discovering
                         visible: true
                         sourceComponent: WIndeterminateProgressBar {}
                     }
@@ -88,7 +81,7 @@ Item {
                         values: BluetoothStatus.friendlyDeviceList
                     }
                     delegate: BluetoothDeviceItem {
-                        required property BluetoothDevice modelData
+                        required property var modelData
                         device: modelData
                         width: ListView.view.width
                     }
@@ -114,10 +107,10 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
                 anchors.rightMargin: 12
-                enabled: !Bluetooth.defaultAdapter?.discovering && Bluetooth.defaultAdapter?.enabled
+                enabled: !BluetoothStatus.discovering && BluetoothStatus.enabled
 
                 onClicked: {
-                    Bluetooth.defaultAdapter.discovering = true;
+                    BluetoothStatus.setDiscovering(true);
                 }
 
                 contentItem: FluentIcon {

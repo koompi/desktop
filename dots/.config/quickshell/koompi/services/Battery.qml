@@ -3,76 +3,55 @@ pragma Singleton
 import qs.services
 import qs.modules.common
 import Quickshell
-import Quickshell.Services.UPower
 import QtQuick
-import Quickshell.Io
 
+/**
+ * The battery as koompi-power reads it, published by koompi-shelld.
+ *
+ * The thresholds stay here rather than being taken from the wire: the crate
+ * scores low/critical/full against its own defaults, `Config.options.battery` is
+ * what the user edits, and `suspend` has no counterpart in the crate at all.
+ */
 Singleton {
     id: root
-    property bool available: UPower.displayDevice.isLaptopBattery
-    property var chargeState: UPower.displayDevice.state
-    property bool isCharging: chargeState == UPowerDeviceState.Charging
-    property bool isPluggedIn: isCharging || chargeState == UPowerDeviceState.PendingCharge
-    property real percentage: UPower.displayDevice?.percentage ?? 1
+
+    // UPower's aggregate device, absent on a seat with no laptop battery.
+    readonly property var device: ShellServices.power?.display ?? null
+    // The first real pack: health and cycle count are per-pack, the aggregate has neither.
+    readonly property var pack: ShellServices.power?.primary ?? null
+
+    readonly property bool available: root.device !== null
+    readonly property string chargeState: root.device?.state ?? "unknown"
+    readonly property bool isCharging: root.chargeState === "charging"
+    // UPower's own AC line, right at 100% where a charge state of "fully-charged" is not.
+    readonly property bool isPluggedIn: ShellServices.power?.plugged_in ?? false
+    readonly property real percentage: (root.device?.percentage ?? 100) / 100
     readonly property bool allowAutomaticSuspend: Config.options.battery.automaticSuspend
     readonly property bool soundEnabled: Config.options.sounds.battery
 
-    property bool isLow: available && (percentage <= Config.options.battery.low / 100)
-    property bool isCritical: available && (percentage <= Config.options.battery.critical / 100)
-    property bool isSuspending: available && (percentage <= Config.options.battery.suspend / 100)
-    property bool isFull: available && (percentage >= Config.options.battery.full / 100)
+    readonly property bool isLow: available && (percentage <= Config.options.battery.low / 100)
+    readonly property bool isCritical: available && (percentage <= Config.options.battery.critical / 100)
+    readonly property bool isSuspending: available && (percentage <= Config.options.battery.suspend / 100)
+    readonly property bool isFull: available && (percentage >= Config.options.battery.full / 100)
 
-    property bool isLowAndNotCharging: isLow && !isCharging
-    property bool isCriticalAndNotCharging: isCritical && !isCharging
-    property bool isSuspendingAndNotCharging: allowAutomaticSuspend && isSuspending && !isCharging
-    property bool isFullAndCharging: isFull && isCharging
+    readonly property bool isLowAndNotCharging: isLow && !isCharging
+    readonly property bool isCriticalAndNotCharging: isCritical && !isCharging
+    readonly property bool isSuspendingAndNotCharging: allowAutomaticSuspend && isSuspending && !isCharging
+    readonly property bool isFullAndCharging: isFull && isCharging
 
-    property real energyRate: UPower.displayDevice.changeRate
-    property real timeToEmpty: UPower.displayDevice.timeToEmpty
-    property real timeToFull: UPower.displayDevice.timeToFull
+    readonly property real energyRate: root.device?.energy_rate ?? 0
+    readonly property real timeToEmpty: root.device?.time_to_empty ?? 0
+    readonly property real timeToFull: root.device?.time_to_full ?? 0
 
-    property real health: (function() {
-        const devList = UPower.devices.values;
-        for (let i = 0; i < devList.length; ++i) {
-            const dev = devList[i];
-            if (dev.isLaptopBattery && dev.healthSupported) {
-                const health = dev.healthPercentage;
-                if (health === 0) {
-                    return 0.01;
-                } else if (health < 1) {
-                    return health * 100;
-                } else {
-                    return health;
-                }
-            }
-        }
-        return 0;
-    })()
-
-    // UPower exposes no cycle count, sysfs is the only source.
-    property int cycleCount: parseInt(cycleCountFile.text()) || 0
-
-    FileView {
-        id: cycleCountFile
-        path: {
-            const devList = UPower.devices.values;
-            for (let i = 0; i < devList.length; ++i) {
-                const dev = devList[i];
-                if (dev.isLaptopBattery && dev.nativePath !== "") {
-                    return `/sys/class/power_supply/${dev.nativePath}/cycle_count`;
-                }
-            }
-            return "";
-        }
-        printErrors: false // some batteries have no cycle_count
-    }
+    readonly property real health: root.pack?.health ?? 0
+    readonly property int cycleCount: root.pack?.cycle_count ?? 0
 
     onIsLowAndNotChargingChanged: {
         if (!root.available || !isLowAndNotCharging) return;
         Quickshell.execDetached([
-            "notify-send", 
-            Translation.tr("Low battery"), 
-            Translation.tr("Consider plugging in your device"), 
+            "notify-send",
+            Translation.tr("Low battery"),
+            Translation.tr("Consider plugging in your device"),
             "-u", "critical",
             "-a", "Shell",
             "--hint=int:transient:1",
@@ -84,9 +63,9 @@ Singleton {
     onIsCriticalAndNotChargingChanged: {
         if (!root.available || !isCriticalAndNotCharging) return;
         Quickshell.execDetached([
-            "notify-send", 
-            Translation.tr("Critically low battery"), 
-            Translation.tr("Please charge!\nAutomatic suspend triggers at %1%").arg(Config.options.battery.suspend), 
+            "notify-send",
+            Translation.tr("Critically low battery"),
+            Translation.tr("Please charge!\nAutomatic suspend triggers at %1%").arg(Config.options.battery.suspend),
             "-u", "critical",
             "-a", "Shell",
             "--hint=int:transient:1",
@@ -114,12 +93,22 @@ Singleton {
         if (root.soundEnabled) Audio.playSystemSound("complete");
     }
 
-    onIsPluggedInChanged: {
-        if (!root.available || !root.soundEnabled) return;
-        if (isPluggedIn) {
-            Audio.playSystemSound("power-plug")
-        } else {
-            Audio.playSystemSound("power-unplug")
+    // Chime on a transition between two snapshots, never on the first one. The daemon's
+    // first snapshot lands after startup, so plugged_in flips false -> true on every
+    // login on AC, which UPower read straight from the singleton never did.
+    property var lastPlugged: null
+
+    Connections {
+        target: ShellServices
+        function onPowerChanged() {
+            const now = ShellServices.power?.plugged_in ?? null;
+            const was = root.lastPlugged;
+            root.lastPlugged = now;
+            if (was === null || now === null || was === now) return;
+            if (!root.available || !root.soundEnabled) return;
+            Audio.playSystemSound(now ? "power-plug" : "power-unplug");
         }
     }
+
+    Component.onCompleted: ShellServices.subscribe("power")
 }

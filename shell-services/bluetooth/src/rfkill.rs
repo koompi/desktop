@@ -47,6 +47,21 @@ pub enum RfkillKind {
 }
 
 impl RfkillKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::All => "all",
+            Self::Wlan => "wlan",
+            Self::Bluetooth => "bluetooth",
+            Self::Uwb => "uwb",
+            Self::Wimax => "wimax",
+            Self::Wwan => "wwan",
+            Self::Gps => "gps",
+            Self::Fm => "fm",
+            Self::Nfc => "nfc",
+            Self::Other(_) => "other",
+        }
+    }
+
     fn from_raw(raw: u8) -> Self {
         match raw {
             0 => Self::All,

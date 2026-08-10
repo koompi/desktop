@@ -14,7 +14,10 @@ seat by construction:
   - the one write it makes is the charge threshold set to the value the daemon has just
     reported for it, so the write path is exercised and the pack is left as it was,
   - `connect` is only ever sent to an object path that cannot exist, to prove the
-    refusal, and is refused before NetworkManager is asked anything.
+    refusal, and is refused before NetworkManager is asked anything. The same holds for
+    the bluetooth device commands,
+  - it never moves a panel and never powers a radio: `set_brightness` is only sent to a
+    panel id no backend answers to.
 
 Run: SHELLD=./target/debug/koompi-shelld python3 shelld/tests/test_shelld.py
 """
@@ -124,7 +127,7 @@ def test_hello_is_first_and_nothing_follows_it_unasked():
         check(hello.get("protocol") == 1, "protocol is 1")
         check(hello.get("daemon") == "koompi-shelld", "daemon names itself")
         check(
-            set(hello.get("services", [])) >= {"hyprland", "network", "power"},
+            set(hello.get("services", [])) >= {"hyprland", "network", "power", "brightness", "bluetooth"},
             "hello advertises hyprland, network and power",
         )
 
@@ -433,6 +436,146 @@ def test_the_hyprland_state_is_the_compositors_own_json():
     daemon.close()
 
 
+def test_the_brightness_state_is_a_fraction_of_the_panels_own_units():
+    daemon = Daemon()
+    daemon.send(cmd="subscribe", id=100, services=["brightness"])
+    daemon.reply_to(100, timeout=25)
+    _, message = daemon.wait_for(is_state("brightness"), timeout=5)
+    if message is None:
+        print("  skip no brightness state")
+        daemon.close()
+        return
+
+    panels = message["state"]["panels"]
+    check("panels" in message["state"], "brightness state carries panels")
+    for panel in panels:
+        for field in ("id", "connector", "backend", "brightness", "raw", "raw_max"):
+            check(field in panel, "panel %s carries %s" % (panel.get("id"), field))
+        check(
+            panel["backend"] in ("logind", "ddc"),
+            "panel %s names a backend the document lists" % panel["id"],
+        )
+        check(
+            panel["raw_max"] > 0,
+            "panel %s reports a max no fraction can be taken against" % panel["id"],
+        )
+        check(
+            abs(panel["brightness"] - panel["raw"] / panel["raw_max"]) < 1e-6,
+            "panel %s: brightness is raw over raw_max" % panel["id"],
+        )
+
+    # Refused on the id, so nothing reaches a backlight. A panel that does exist would
+    # be moved by this, which is the one thing this suite will not do.
+    daemon.send(
+        cmd="set_brightness",
+        service="brightness",
+        id=101,
+        panel="no-such-panel",
+        value=0.5,
+    )
+    reply = daemon.reply_to(101, timeout=10)
+    check(
+        reply is not None and reply.get("ok") is False,
+        "a set_brightness for an unknown panel is refused rather than applied elsewhere",
+    )
+
+    daemon.send(cmd="set_brightness", service="brightness", id=102, panel="eDP-1")
+    reply = daemon.reply_to(102, timeout=10)
+    check(
+        reply is not None and reply.get("error") == "bad_request",
+        "a set_brightness with no value is bad_request",
+    )
+    daemon.close()
+
+
+def test_the_bluetooth_state_derives_what_the_qml_used_to_scan_for():
+    daemon = Daemon()
+    daemon.send(cmd="subscribe", id=110, services=["bluetooth"])
+    daemon.reply_to(110, timeout=25)
+    _, message = daemon.wait_for(is_state("bluetooth"), timeout=5)
+    if message is None:
+        print("  skip no bluetooth state; bluez did not answer")
+        daemon.close()
+        return
+
+    state = message["state"]
+    for field in ("available", "powered", "discovering", "connected", "connected_count"):
+        check(field in state, "bluetooth state carries %s" % field)
+
+    check(
+        state["available"] == (len(state["adapters"]) > 0),
+        "available agrees with the adapter list",
+    )
+    connected = [d for d in state["devices"] if d["connected"]]
+    check(state["connected"] == bool(connected), "connected agrees with the device list")
+    check(
+        state["connected_count"] == len(connected),
+        "connected_count agrees with the device list",
+    )
+    if state["adapter"] is not None:
+        check(
+            state["powered"] == state["adapter"]["powered"],
+            "powered is the default adapter's",
+        )
+        check(
+            state["adapter"]["power_state"]
+            in ("on", "off", "off-enabling", "on-disabling", "off-blocked", "unknown"),
+            "power_state is one the document names",
+        )
+
+    for device in state["devices"]:
+        check(device["alias"] != "", "device %s always has an alias" % device["path"])
+        check(
+            device["battery"] is None or 0 <= device["battery"] <= 100,
+            "device %s reports a percentage, not a fraction" % device["path"],
+        )
+
+    rfkill = state["rfkill"]
+    bluetooth = [e for e in rfkill["entries"] if e["kind"] == "bluetooth"]
+    check(
+        rfkill["soft_blocked"] == any(e["soft_blocked"] for e in bluetooth),
+        "rfkill.soft_blocked is the bluetooth switches only",
+    )
+    check(
+        rfkill["hard_blocked"] == any(e["hard_blocked"] for e in bluetooth),
+        "rfkill.hard_blocked is the bluetooth switches only",
+    )
+    daemon.close()
+
+
+def test_a_bluetooth_command_naming_no_device_is_refused_before_bluez_is_asked():
+    daemon = Daemon()
+    daemon.send(cmd="subscribe", id=120, services=["bluetooth"])
+    daemon.reply_to(120, timeout=25)
+
+    for request_id, request, expected in (
+        (121, dict(cmd="connect", service="bluetooth"), "bad_request"),
+        (122, dict(cmd="set_powered", service="bluetooth"), "bad_request"),
+        (123, dict(cmd="unpair", service="bluetooth"), "unknown_command"),
+    ):
+        daemon.send(id=request_id, **request)
+        reply = daemon.reply_to(request_id, timeout=10)
+        check(
+            reply is not None and reply.get("error") == expected,
+            "%s answers %s" % (request["cmd"], expected),
+        )
+
+    # A path shaped like BlueZ's but belonging to no object: refused, and nothing on the
+    # seat is connected or disconnected on the way to finding that out.
+    daemon.send(
+        cmd="disconnect",
+        service="bluetooth",
+        id=124,
+        device="/org/bluez/hci0/dev_00_00_00_00_00_00",
+    )
+    reply = daemon.reply_to(124, timeout=15)
+    check(
+        reply is not None and reply.get("ok") is False,
+        "a command for a device that does not exist is refused",
+    )
+    daemon.close()
+
+
 def test_unsubscribe_stops_the_service_and_poll_rate_is_taken():
     daemon = Daemon()
     daemon.send(cmd="subscribe", id=70, services=["power"])
@@ -488,6 +631,9 @@ def main():
         test_the_network_state_carries_what_the_qml_binds_to,
         test_the_charge_threshold_write_path_answers_without_moving_the_pack,
         test_the_hyprland_state_is_the_compositors_own_json,
+        test_the_brightness_state_is_a_fraction_of_the_panels_own_units,
+        test_the_bluetooth_state_derives_what_the_qml_used_to_scan_for,
+        test_a_bluetooth_command_naming_no_device_is_refused_before_bluez_is_asked,
         test_unsubscribe_stops_the_service_and_poll_rate_is_taken,
         test_quit_replies_before_it_exits,
     ):

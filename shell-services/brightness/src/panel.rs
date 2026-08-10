@@ -9,6 +9,15 @@ pub enum Backend {
     Ddc,
 }
 
+impl Backend {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Logind => "logind",
+            Self::Ddc => "ddc",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Panel {
     /// The sysfs device name for a logind panel, the DRM connector for a DDC one.

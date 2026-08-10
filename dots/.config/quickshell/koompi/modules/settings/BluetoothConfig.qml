@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Bluetooth
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -23,23 +22,23 @@ ContentPage {
             visible: BluetoothStatus.available
             buttonIcon: "bluetooth"
             text: Translation.tr("Enable Bluetooth")
-            checked: Bluetooth.defaultAdapter?.enabled ?? false
+            checked: BluetoothStatus.enabled
             onCheckedChanged: {
                 BluetoothStatus.setEnabled(checked);
             }
         }
         ConfigSwitch {
             visible: BluetoothStatus.available
-            enabled: Bluetooth.defaultAdapter?.enabled ?? false
+            enabled: BluetoothStatus.enabled
             buttonIcon: "search"
             text: Translation.tr("Scan for devices")
-            checked: Bluetooth.defaultAdapter?.discovering ?? false
+            checked: BluetoothStatus.discovering
             onCheckedChanged: {
-                if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.discovering = checked;
+                BluetoothStatus.setDiscovering(checked);
             }
         }
         StyledIndeterminateProgressBar {
-            visible: Bluetooth.defaultAdapter?.discovering ?? false
+            visible: BluetoothStatus.discovering
             Layout.fillWidth: true
         }
     }
@@ -76,7 +75,7 @@ ContentPage {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                         textFormat: Text.PlainText
-                        text: deviceRow.device?.name || Translation.tr("Unknown device")
+                        text: deviceRow.device?.alias || Translation.tr("Unknown device")
                     }
                     StyledText {
                         visible: deviceRow.device?.paired ?? false
@@ -84,8 +83,8 @@ ContentPage {
                         color: Appearance.colors.colSubtext
                         text: {
                             let statusText = deviceRow.device?.connected ? Translation.tr("Connected") : Translation.tr("Paired");
-                            if (deviceRow.device?.batteryAvailable)
-                                statusText += ` • ${Math.round(deviceRow.device.battery * 100)}%`;
+                            if (deviceRow.device?.battery != null)
+                                statusText += ` • ${deviceRow.device.battery}%`;
                             return statusText;
                         }
                     }
@@ -95,8 +94,8 @@ ContentPage {
                     mainText: deviceRow.device?.connected ? Translation.tr("Disconnect") : Translation.tr("Connect")
                     buttonRadius: Appearance.rounding.small
                     onClicked: {
-                        if (deviceRow.device?.connected) deviceRow.device.disconnect();
-                        else deviceRow.device?.connect();
+                        if (deviceRow.device?.connected) BluetoothStatus.disconnectDevice(deviceRow.device);
+                        else BluetoothStatus.connectDevice(deviceRow.device);
                     }
                 }
                 RippleButtonWithIcon {
@@ -104,8 +103,8 @@ ContentPage {
                     mainText: deviceRow.device?.paired ? Translation.tr("Forget") : Translation.tr("Pair")
                     buttonRadius: Appearance.rounding.small
                     onClicked: {
-                        if (deviceRow.device?.paired) deviceRow.device.forget();
-                        else deviceRow.device?.pair();
+                        if (deviceRow.device?.paired) BluetoothStatus.forget(deviceRow.device);
+                        else BluetoothStatus.pair(deviceRow.device);
                     }
                 }
             }

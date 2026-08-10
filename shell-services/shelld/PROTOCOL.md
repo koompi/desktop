@@ -23,9 +23,11 @@ the protocol can grow without a version bump.
 |---|---|---|
 | `hyprland` | `koompi-hyprland` | `HyprlandData.qml`, later `HyprlandKeybinds.qml` and `HyprlandXkb.qml` |
 | `network` | `koompi-network` | `Network.qml` |
-| `power` | `koompi-power` | `ChargeLimit.qml`, later `Battery.qml` and `PowerSaving.qml` |
+| `power` | `koompi-power` | `ChargeLimit.qml`, `Battery.qml`, `PowerSaving.qml` |
+| `brightness` | `koompi-brightness` | `Brightness.qml` |
+| `bluetooth` | `koompi-bluetooth` | `BluetoothStatus.qml` |
 
-The other seven crates get a `service` name here as each is wired up. A consumer that asks
+The other five crates get a `service` name here as each is wired up. A consumer that asks
 for one that is not compiled in gets `unknown_service`, never silence.
 
 ## State is a snapshot, not a diff
@@ -150,7 +152,7 @@ Unknown extra fields are ignored.
 
 Closing stdin is equivalent to `quit` without the reply.
 
-`set_poll_rate` is `koompi_service::PollRate`, the one factor `PowerSaving.qml:33` exports
+`set_poll_rate` is `koompi_service::PollRate`, the one factor `PowerSaving.qml:35` exports
 to every other service's timers. `1` is normal, `2` is the save-on-battery rate. A factor
 below 1 is clamped, not rejected. A service takes it only if it has a rate to take:
 `network` applies it to the window it coalesces signals over, `hyprland` to the 30 ms it
@@ -187,12 +189,69 @@ A `connect` that needs a passphrase and was given none, or was given a wrong one
 with `rejected`; the QML's cue for this was the string `Secrets were required` on nmcli's
 stderr at `Network.qml:119`.
 
+### `brightness` commands
+
+| cmd | arguments | maps to |
+|---|---|---|
+| `set_brightness` | `panel` string, `value` number | `Brightness.qml` `brightnessctl s N%` and `ddcutil setvcp 10` |
+
+`panel` is the `id` from `state`, not the connector: two outputs can share a connector
+name across cards, and a logind panel is named for its sysfs device rather than its
+screen. An id no panel answers to is `unavailable`.
+
+`value` is 0..1, the fraction the shell has always worked in, and is clamped rather than
+refused. The raw value it lands on is the backend's business: whole-percent steps with a
+floor of one raw unit for logind, the fraction scaled onto the reported max for DDC.
+**No path writes 0.** A laptop with no external monitor cannot tell a dark panel from a
+hang, which is why `Brightness.qml:164` sent the literal `1` instead of `0%`.
+
+The crate carries a second write, `set_multiplier`, and it is deliberately not offered
+here. The anti-flashbang factor is a screen capture the shell takes, so the shell already
+holds the user's requested brightness to return to and sends the product it has always
+computed. `value` is therefore what lands on the panel, not what the slider reads.
+
+Writes are debounced per panel: 300 ms for DDC, which is slow and misbehaves under rapid
+change, and nothing at all for logind. A `set_brightness` per animation frame is therefore
+fine on the internal panel, and was not when it was a `brightnessctl` fork.
+
+### `bluetooth` commands
+
+| cmd | arguments | maps to |
+|---|---|---|
+| `set_powered` | `powered` boolean | `BluetoothStatus.qml:17-30` `rfkill unblock bluetooth` then `Adapter1.Powered` |
+| `set_discovering` | `discovering` boolean | `Adapter1.StartDiscovery` / `StopDiscovery` |
+| `connect` | `device` string | `Device1.Connect` |
+| `disconnect` | `device` string | `Device1.Disconnect` |
+| `pair` | `device` string | `Device1.Pair` |
+| `cancel_pairing` | `device` string | `Device1.CancelPairing` |
+| `set_trusted` | `device` string, `trusted` boolean | `Device1.Trusted` |
+| `forget` | `device` string | `Adapter1.RemoveDevice`, the adapter taken from the device's own path |
+
+`device` is the BlueZ object path from the last `state`, not an address. It is named
+`device` rather than `network`'s `path` because a bluetooth command can address either an
+adapter or a device, and only these name the second.
+
+`set_powered` on the default adapter, which is the first one BlueZ lists. Powering on
+clears the rfkill soft block first, because BlueZ answers a `Powered = true` on a
+soft-blocked adapter with success and then does nothing - the bug that made
+`BluetoothStatus.qml` fork `rfkill` before every power-on. That fork is now an 8-byte
+write to `/dev/rfkill`, and it buys the one thing the fork never returned: a radio held
+off by a hardware switch answers `unavailable` instead of silently failing.
+
+Discovery is one command carrying the state to reach rather than a start/stop pair,
+because every call site is a switch writing what it is now.
+
 ### `power` commands
 
 | cmd | arguments | maps to |
 |---|---|---|
 | `set_charge_threshold_enabled` | `enabled` boolean | `ChargeLimit.qml:54` `busctl call ... EnableChargeThreshold` |
-| `set_profile` | `profile` string | `PowerSaving.qml`, one of `power-saver`, `balanced`, `performance` |
+| `set_profile` | `profile` string | `PowerSaving.qml:47`, one of `power-saver`, `balanced`, `performance` |
+
+`set_profile` is the shell's only writer of power-profiles-daemon. The quick toggle, the
+waffle icon and the settings page all read `profiles.active` and write through
+`PowerSaving.setProfile`, because a second client of the daemon makes the toggle's write
+invisible to the automatic swap that has to undo it on AC.
 
 ## `network` state
 
@@ -314,16 +373,16 @@ label.
 
 | field | type | |
 |---|---|---|
-| `on_battery` | boolean | UPower's own, right at 100% on AC where `Battery.qml:15` cannot be |
+| `on_battery` | boolean | UPower's own, right at 100% on AC where a charge state cannot be |
 | `plugged_in` | boolean | |
-| `display` | battery, optional | UPower's aggregate device, the one `Battery.qml` binds to |
+| `display` | battery, optional | UPower's aggregate device, the one `Battery.qml:19` binds to. Null on a seat with no laptop battery, which is how `Battery.available` is answered |
 | `batteries` | array of battery | the real packs |
 | `primary` | battery, optional | the first real pack, else `display` |
 | `profiles` | object, optional | null when power-profiles-daemon is off or absent |
 
-`ChargeLimit.qml` needs only `primary.threshold`. The rest is sent because `Battery.qml`
-and `PowerSaving.qml` are the next two consumers and the crate reads it all in one pass
-regardless.
+`ChargeLimit.qml` needs only `primary.threshold`, `PowerSaving.qml` only `on_battery` and
+`profiles`, `Battery.qml` most of the rest. The crate reads it all in one pass regardless,
+so all three share the one subscription.
 
 ### battery object
 
@@ -333,13 +392,13 @@ regardless.
 | `present` | boolean | |
 | `state` | string | `unknown`, `charging`, `discharging`, `empty`, `fully-charged`, `pending-charge`, `pending-discharge` |
 | `charging` | boolean | |
-| `percentage` | number | 0-100, UPower's units. `Battery.qml:16` normalises to 0..1 itself |
-| `low`, `critical`, `full` | boolean | against the `Config.options.battery` thresholds |
+| `percentage` | number | 0-100, UPower's units. `Battery.qml:28` normalises to 0..1 itself |
+| `low`, `critical`, `full` | boolean | against this crate's `PowerConfig`, not the shell's. `Battery.qml` scores its own, because `Config.options.battery` is what the user edits and `suspend` has no counterpart here |
 | `energy`, `energy_full`, `energy_full_design` | number | watt-hours |
 | `energy_rate` | number | watts |
 | `time_to_empty`, `time_to_full` | integer | seconds, 0 when unknown |
-| `health` | number, optional | percent of design capacity |
-| `cycle_count` | integer, optional | |
+| `health` | number, optional | percent of design capacity. Per-pack: the aggregate `display` device reports neither this nor `cycle_count`, so `Battery.qml` reads both off `primary` |
+| `cycle_count` | integer, optional | sysfs first, `ChargeCycles` after; absent rather than 0 |
 | `warning` | string | `unknown`, `none`, `discharging`, `low`, `critical`, `action` |
 | `icon_name` | string | UPower's icon name |
 | `threshold` | object | below |
@@ -364,6 +423,121 @@ has no such properties at all. That is the `lines.length < 4` branch at
 | `active` | string, optional | `power-saver`, `balanced` or `performance`; null if the daemon names one this build does not model |
 | `available` | array of string | |
 | `degraded` | string, optional | non-empty names the reason, usually `lap-detected` |
+
+## `brightness` state
+
+| field | type | |
+|---|---|---|
+| `panels` | array of panel | empty on a seat with no backlight and no DDC monitor, which is a real answer rather than an outage |
+
+### panel object
+
+| field | type | |
+|---|---|---|
+| `id` | string | the sysfs device for a logind panel, the DRM connector for a DDC one. What a command names |
+| `connector` | string, optional | `eDP-1`, `DP-1`. What `Quickshell.screens` calls the same output |
+| `backend` | string | `logind` or `ddc` |
+| `brightness` | number | 0..1, `raw / raw_max`. What every consumer binds to |
+| `raw` | integer | the panel's own units |
+| `raw_max` | integer | |
+| `bus` | integer, optional | `/dev/i2c-N`, DDC panels only |
+
+`connector` is optional because a backlight whose sysfs `device` link does not name a DRM
+connector cannot be matched to a screen; it is still controllable by `id`.
+
+A brightness key pressed outside the shell moves the panel too, so the state follows
+sysfs through `POLLPRI` on `actual_brightness` rather than only the writes this daemon
+made. Where that cannot be opened it falls back to a 2 s poll, and that is the only place
+`set_poll_rate` would apply - the crate takes the rate once, at connect, and ignores it
+after.
+
+## `bluetooth` state
+
+| field | type | |
+|---|---|---|
+| `available` | boolean | derived: any adapter at all. A seat with none is a working seat |
+| `powered` | boolean | derived: the default adapter's `powered`. `BluetoothStatus.qml:31` |
+| `discovering` | boolean | derived: the default adapter's `discovering` |
+| `connected` | boolean | derived: any device connected, on any adapter. `BluetoothStatus.qml:34` |
+| `connected_count` | integer | derived, for the `+2` a toggle draws beside the first device's name |
+| `adapter` | adapter, optional | the default one, the first BlueZ lists. Null on a seat with none |
+| `adapters` | array of adapter | |
+| `devices` | array of device | every device on every adapter, paired or merely seen |
+| `rfkill` | object | below |
+
+Ordering the device list is presentation and stays with the consumer; the fields to order
+by are all here.
+
+### adapter object
+
+| field | type | |
+|---|---|---|
+| `path` | string | `/org/bluez/hci0` |
+| `id` | string | `hci0`, the name `rfkill list` and `bluetoothctl` print |
+| `address` | string | |
+| `name` | string | |
+| `alias` | string | the writable one, what the seat calls itself to other devices |
+| `powered` | boolean | |
+| `power_state` | string | `on`, `off`, `off-enabling`, `on-disabling`, `off-blocked`, `unknown` |
+| `discoverable` | boolean | |
+| `discovering` | boolean | |
+| `pairable` | boolean | |
+
+`power_state` is `Adapter1.PowerState`, and `powered` alone cannot stand in for it: a
+controller that refuses the mgmt command leaves `powered` true and this at `off`, which is
+exactly how a wedged Intel controller reads. `off-blocked` is the rfkill case arriving
+from BlueZ's side rather than the kernel's.
+
+### device object
+
+| field | type | |
+|---|---|---|
+| `path` | string | what a command names |
+| `adapter` | string | the adapter's object path, so a consumer can group without re-reading it |
+| `address` | string | |
+| `name` | string, optional | absent where BlueZ never learned one |
+| `alias` | string | always set, falling back to the address with dashes |
+| `paired` | boolean | |
+| `trusted` | boolean | |
+| `connected` | boolean | |
+| `blocked` | boolean | |
+| `icon` | string, optional | the freedesktop name, `audio-headset`, `input-keyboard` |
+| `rssi` | integer, optional | dBm, only while the device is in range of a scan |
+| `battery` | integer, optional | `org.bluez.Battery1.Percentage`, 0..100 |
+
+`name` and `alias` are both sent because a consumer needs to show one and test the other:
+`BluetoothStatus.qml:38` sorts MAC-shaped names last, and that shape is what `alias` falls
+back to precisely when `name` is absent.
+
+`battery` is a percentage. `Quickshell.Bluetooth` published a 0..1 fraction that every
+consumer multiplied back up by 100.
+
+### rfkill object
+
+| field | type | |
+|---|---|---|
+| `soft_blocked` | boolean | any bluetooth switch soft-blocking. Clearable in software |
+| `hard_blocked` | boolean | any bluetooth switch hard-blocking. A physical kill switch |
+| `entries` | array of rfkill entry | every switch, of every kind |
+
+### rfkill entry object
+
+| field | type | |
+|---|---|---|
+| `index` | integer | `/sys/class/rfkill/rfkillN` |
+| `kind` | string | `all`, `wlan`, `bluetooth`, `uwb`, `wimax`, `wwan`, `gps`, `fm`, `nfc`, `other` |
+| `name` | string, optional | `tpacpi_bluetooth_sw`, `hci0`, `phy0`. From sysfs, absent if the switch vanished |
+| `soft_blocked` | boolean | |
+| `hard_blocked` | boolean | |
+
+The wifi switches are in `entries` too, because the kernel replays every switch when
+`/dev/rfkill` is opened and dropping the ones this service does not act on would be
+inventing a filter. `soft_blocked` and `hard_blocked` at the top are the bluetooth ones
+only, which is the same type-wide test `rfkill unblock bluetooth` makes.
+
+A seat where `/dev/rfkill` cannot be opened publishes an empty `entries` and both flags
+false. That is a bluetooth toggle that cannot be trusted rather than a service that failed
+to start, so it is a `state` and not an `unavailable`.
 
 ## `hyprland` state
 

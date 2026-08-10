@@ -30,6 +30,8 @@ koompi-service = { path = "service" }
 koompi-hyprland = { path = "hyprland" }
 koompi-network = { path = "network" }
 koompi-power = { path = "power" }
+koompi-brightness = { path = "brightness" }
+koompi-bluetooth = { path = "bluetooth" }
 tokio = { version = "1", features = [
     "rt-multi-thread",
     "macros",

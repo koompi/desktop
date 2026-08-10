@@ -40,6 +40,17 @@ impl BluetoothState {
             .is_some_and(|adapter| adapter.powered)
     }
 
+    pub fn discovering(&self) -> bool {
+        self.default_adapter()
+            .is_some_and(|adapter| adapter.discovering)
+    }
+
+    /// Across every adapter, not just the default one: a headset paired to a second
+    /// controller is still a headset the bar has to draw as connected.
+    pub fn connected(&self) -> impl Iterator<Item = &Device> {
+        self.devices.iter().filter(|device| device.connected)
+    }
+
     pub fn device(&self, path: &str) -> Option<&Device> {
         self.devices.iter().find(|device| device.path == path)
     }
