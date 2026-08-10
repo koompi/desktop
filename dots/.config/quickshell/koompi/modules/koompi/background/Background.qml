@@ -337,21 +337,28 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    // Not StyledImage: its sourceSize follows the layout size, and the magick zoom scale
-                    // arrives a few frames into a switch, so the picture reloaded mid-slide and faded
-                    // towards transparent - the dark blink. Own-size decode also stays in Qt's cache.
+                    // Not StyledImage: its sourceSize follows the layout size. The magick zoom scale
+                    // arrives a few frames into a switch and re-decodes at the corrected size, so
+                    // opacity holds through a reload of the source already shown - dropping it there
+                    // is the dark blink. retainWhileLoading keeps that frame up meanwhile.
                     Image {
                         id: cellAImage
-                        onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
+                        property url readySource
+                        onStatusChanged: if (status === Image.Ready) {
+                            readySource = source;
+                            bgRoot.wallpaperArrived = true;
+                        }
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
                         height: bgRoot.scaledWallpaperHeight
+                        sourceSize.width: Math.ceil(bgRoot.scaledWallpaperWidth)
+                        sourceSize.height: Math.ceil(bgRoot.scaledWallpaperHeight)
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         retainWhileLoading: true
                         visible: opacity > 0
-                        opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
+                        opacity: ((status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
                 }
 
@@ -365,16 +372,22 @@ Variants {
                     // Not StyledImage, same reason as the outgoing cell above.
                     Image {
                         id: cellBImage
-                        onStatusChanged: if (status === Image.Ready) bgRoot.wallpaperArrived = true
+                        property url readySource
+                        onStatusChanged: if (status === Image.Ready) {
+                            readySource = source;
+                            bgRoot.wallpaperArrived = true;
+                        }
                         x: bgRoot.wallpaperImageX
                         y: bgRoot.wallpaperImageY
                         width: bgRoot.scaledWallpaperWidth
                         height: bgRoot.scaledWallpaperHeight
+                        sourceSize.width: Math.ceil(bgRoot.scaledWallpaperWidth)
+                        sourceSize.height: Math.ceil(bgRoot.scaledWallpaperHeight)
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
                         retainWhileLoading: true
                         visible: opacity > 0
-                        opacity: (status === Image.Ready && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
+                        opacity: ((status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
                 }
             }
