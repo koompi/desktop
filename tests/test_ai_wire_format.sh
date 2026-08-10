@@ -42,18 +42,27 @@ for j in range(i, len(src)):
             end = j + 1
             break
 block = src[i:end]
-names = re.findall(r'"name": "(\w+)",\s*\n\s*"risk": "([a-z-]+)",\s*\n\s*"approval": "(never|once|always)"', block)
-declared = re.findall(r'^\s{12}"name": "(\w+)",', block, re.M)
+# One slice per entry, so the fields may sit in any order within it.
+starts = [m.start() for m in re.finditer(r'^\s{12}"name": "\w+",', block, re.M)]
 RISKS = {"safe", "reads-system", "writes-system", "leaves-machine"}
-ok = True
-if len(names) != len(declared):
-    print(f"FAIL: {len(declared)} tools declared, {len(names)} carry risk+approval", file=sys.stderr); ok = False
-for n, risk, approval in names:
-    if risk not in RISKS:
-        print(f"FAIL: {n} has risk {risk!r}", file=sys.stderr); ok = False
-by = dict((n, (r, a)) for n, r, a in names)
+ok = bool(starts)
+if not starts:
+    print("FAIL: no tool entries found", file=sys.stderr)
+by = {}
+for i, s in enumerate(starts):
+    chunk = block[s:starts[i + 1] if i + 1 < len(starts) else len(block)]
+    name = re.search(r'"name": "(\w+)"', chunk).group(1)
+    risk = re.search(r'"risk": "([a-z-]+)"', chunk)
+    approval = re.search(r'"approval": "(never|once|always)"', chunk)
+    priority = re.search(r'"priority": (\d+)', chunk)
+    if not (risk and approval and priority):
+        print(f"FAIL: {name} is missing risk, approval or priority", file=sys.stderr); ok = False
+        continue
+    if risk.group(1) not in RISKS:
+        print(f"FAIL: {name} has risk {risk.group(1)!r}", file=sys.stderr); ok = False
+    by[name] = risk.group(1)
 for n, want in (("ask_agent", "leaves-machine"), ("run_shell_command", "writes-system")):
-    if by.get(n, ("", ""))[0] != want:
+    if by.get(n) != want:
         print(f"FAIL: {n} risk is {by.get(n)}, expected {want}", file=sys.stderr); ok = False
 sys.exit(0 if ok else 1)
 PY
@@ -173,6 +182,11 @@ const raw = JSON.stringify(body);
 check("no [[ Function: ]] prose on the wire", !raw.includes("[[ Function"), raw.slice(0, 200));
 check("no [[ Output of ]] prose on the wire", !raw.includes("[[ Output of"), raw.slice(0, 200));
 check("an empty tool list is omitted, not sent as []", body.tools === undefined, JSON.stringify(body.tools));
+
+// Without this LiteRT-LM streams no usage object at all and tokenCount stays -1
+// forever, so compaction can never fire. Verified honoured against 127.0.0.1:9379.
+check("usage is requested on the stream", body.stream_options?.include_usage === true,
+    JSON.stringify(body.stream_options));
 
 const withTools = buildRequestData(local, conversation, "sys", 0, [{ type: "function", function: { name: "recall" } }], "");
 check("a non-empty tool list is sent", withTools.tools?.length === 1);

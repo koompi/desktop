@@ -76,6 +76,8 @@ Singleton {
         "none": Translation.tr("Disable tools")
     }
     readonly property string toolStatusLabel: toolRunner.toolStatusLabel
+    function riskOf(name) { return toolRegistry.riskOf(name); }
+    function approvalOf(name) { return toolRegistry.approvalOf(name); }
 
     function setTool(tool) {
         if (!root.tools[root.models[root.currentModelId]?.api_format] || !(tool in root.tools[root.models[root.currentModelId]?.api_format])) {

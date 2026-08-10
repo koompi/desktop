@@ -100,19 +100,32 @@ QtObject {
         }
     }
 
+    function lastUserText(messages): string {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i]?.role === "user") return messages[i].rawContent ?? messages[i].content ?? "";
+        }
+        return "";
+    }
+
     // Measured, not guessed: gemma4-e4b on LiteRT-LM relays numbers correctly with up
     // to 1461 bytes of compact tool JSON and starts dropping digits at 1965, at
-    // temperature 0. The turn that reads a tool result back to the user is the one
-    // where numbers matter and the one that does not need to call anything, so when
-    // the declarations are over the model's measured ceiling it goes out bare.
+    // temperature 0. Every turn is held under that ceiling, not only the turn that
+    // reads a tool result back — the system prompt carries the battery percentage and
+    // the kernel version, and those are numbers the model gets wrong too. The turn
+    // answering a tool result still goes out bare: it does not need to call anything,
+    // and it is the turn where relayed numbers matter most.
     function toolsForTurn(model, messages) {
-        const declared = root.engine.tools[model.api_format][root.engine.currentTool];
+        const format = model.api_format;
+        const declared = root.engine.tools[format][root.engine.currentTool];
         const limit = model?.toolBlockByteLimit ?? 0;
         if (limit <= 0) return declared;
+
         const last = messages[messages.length - 1];
         const answeringATool = (last?.toolCallId ?? "").length > 0 || (last?.functionName ?? "").length > 0;
-        if (!answeringATool) return declared;
-        return JSON.stringify(declared).length > limit ? [] : declared;
+        if (answeringATool) return JSON.stringify(declared).length > limit ? [] : declared;
+
+        if (root.engine.currentTool !== "functions") return declared;
+        return root.engine.toolRegistry.subsetForTurn(format, limit, root.lastUserText(messages));
     }
 
     function makeRequest() {

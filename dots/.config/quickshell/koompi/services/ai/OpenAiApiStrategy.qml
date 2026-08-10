@@ -78,6 +78,11 @@ ApiStrategy {
                 ...messages.map(message => wireMessage(message)),
             ],
             "stream": true,
+            // Without this a streamed reply carries no usage object at all, so
+            // tokenCount stays at -1 and compaction can never fire at any threshold.
+            // LiteRT-LM honours it: the chunk before [DONE] comes back with an empty
+            // choices array and real counts.
+            "stream_options": { "include_usage": true },
             "temperature": temperature,
         };
         if (tools && tools.length > 0) baseData.tools = tools;
