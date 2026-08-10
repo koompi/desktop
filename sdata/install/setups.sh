@@ -216,18 +216,23 @@ setup_portals() {
     return 0
 }
 
-# The cursor theme KOOMPI ships, kept in one place because it has to be stated
-# in five: hyprland/env.lua (XCURSOR_THEME), hyprland/execs.lua (hyprctl
-# setcursor), gsettings for GTK, wezterm's xcursor_theme for X11 clients, and
-# the default-cursors fallback below. Change it here and in the two lua files.
-readonly KOOMPI_CURSOR_THEME='Bibata-Modern-Classic'
+# The cursor theme KOOMPI ships. It has to be stated in four places that cannot
+# read each other: hyprland/env.lua (XCURSOR_THEME), hyprland/execs.lua (hyprctl
+# setcursor), gsettings for GTK, and the default-cursors fallback below. Change
+# it here and in the two lua files; tests/test_cursor_theme.sh fails if they drift.
+readonly KOOMPI_CURSOR_THEME='Adwaita'
 readonly KOOMPI_CURSOR_SIZE=24
 
-# The cursor of last resort. An X11 client that names no theme follows the `default`
-# icon theme: ~/.icons/default, then /usr/share/icons/default. The system copy is
-# owned by default-cursors and inherits Adwaita, so on stock Arch every explicit
-# setting says Bibata while the fallback says Adwaita and the session shows two
-# pointers. The user-level copy fixes it without fighting pacman over a packaged file.
+# The cursor of last resort, and it is reached far more often than "clients that
+# set no theme". libXcursor resolves each requested name through the theme's
+# Inherits chain and then through the `default` theme, so a name the session
+# theme happens not to carry lands on whatever `default` points at. Adwaita ships
+# 63 names and drops the legacy aliases; Qt/xcb clients ask for `pointing_hand`
+# first, which Adwaita lacks. With `default` inheriting a second theme, that one
+# request resolves there and Qt never falls through to the `hand2` Adwaita does
+# have - so a single shape comes back in the wrong theme mid-session. Point it at
+# the theme we ship. The system copy under /usr/share/icons/default belongs to
+# default-cursors, so this user-level one wins without fighting pacman.
 setup_cursor_default() {
     local theme_dir="$HOME/.icons/default"
     local index="$theme_dir/index.theme"
