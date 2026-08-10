@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# LiteRT-LM's executor can wedge mid-session: the process keeps serving, but
+# every request from then on returns
+#
+#   INTERNAL: ERROR: [.../llm_litert_compiled_model_executor.cc]
+#   └ ERROR: [.../convert_tensor_buffer.h]
+#
+# and it stays that way until the engine is re-initialised. systemd's Restart=
+# cannot see it, because nothing exits. Restarting clears it every time.
+#
+# The fault is upstream and has not been reproduced deliberately, so this
+# watches for the signature rather than pretending to prevent it.
+set -uo pipefail
+
+readonly UNIT=litert-lm.service
+readonly SIGNATURE=llm_litert_compiled_model_executor
+readonly COOLDOWN=120
+
+last_restart=0
+
+journalctl --user -u "$UNIT" --follow --lines=0 --output=cat |
+    while IFS= read -r line; do
+        [[ "$line" == *"$SIGNATURE"* ]] || continue
+
+        now=$EPOCHSECONDS
+        # One wedged engine logs the signature once per failed request. Without a
+        # cooldown a burst of queued requests would restart it once each.
+        (( now - last_restart < COOLDOWN )) && continue
+        last_restart=$now
+
+        echo "executor wedged; restarting $UNIT"
+        systemctl --user restart "$UNIT"
+    done

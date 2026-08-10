@@ -29,12 +29,64 @@ Item {
 
     property list<var> messageBlocks: []
 
+    // A think or code block shrink-wraps its own header rather than its body, so
+    // letting it drive the bubble width squeezes the text into a narrow column.
+    readonly property bool hasFullWidthBlock: messageBlocks.some(b => b.type === "think" || b.type === "code")
+
+    // Nothing but the spinner yet, so the bubble would be a coloured box around it
+    readonly property bool loadingOnly: (messageBlocks.length < 1) && !(messageData?.done ?? false)
+
     anchors.left: parent?.left
     anchors.right: parent?.right
     implicitHeight: outerColumn.implicitHeight
 
+    component MessageBlock: QtObject {
+        property string type: "text"
+        property string content: ""
+        property string lang: ""
+        property bool completed: false
+    }
+
+    Component {
+        id: messageBlockComponent
+        MessageBlock {}
+    }
+
+    // Streaming reparses the whole message on every chunk. Handing ScriptModel a
+    // fresh array each time destroyed every delegate and restarted the text
+    // fade-in from zero, which is what read as flicker. Mutate the blocks that
+    // are still the same kind and only rebuild the list when its shape changes.
     function recomputeBlocks() {
-        messageBlocks = StringUtils.splitMarkdownBlocks(root.messageData?.content)
+        const parsed = StringUtils.splitMarkdownBlocks(root.messageData?.content) ?? []
+        const blocks = root.messageBlocks.slice()
+        let shapeChanged = blocks.length !== parsed.length
+
+        for (let i = 0; i < parsed.length; i++) {
+            const source = parsed[i]
+            const values = {
+                type: source.type,
+                content: source.content ?? "",
+                lang: source.lang ?? "",
+                completed: source.completed ?? false
+            }
+            // A block that changed kind needs its delegate swapped, so give the
+            // row a new object rather than mutating the old one.
+            if (i < blocks.length && blocks[i].type === values.type) {
+                const block = blocks[i]
+                if (block.content !== values.content) block.content = values.content
+                if (block.lang !== values.lang) block.lang = values.lang
+                if (block.completed !== values.completed) block.completed = values.completed
+                continue
+            }
+            if (i < blocks.length) blocks[i].destroy()
+            blocks[i] = messageBlockComponent.createObject(root, values)
+            shapeChanged = true
+        }
+
+        for (let i = parsed.length; i < blocks.length; i++) blocks[i].destroy()
+        blocks.length = parsed.length
+
+        if (shapeChanged) root.messageBlocks = blocks
     }
 
     onMessageDataChanged: recomputeBlocks()
@@ -130,13 +182,20 @@ Item {
                 }
 
                 CustomIcon { // Assistant avatar: KOOMPI logo
-                    visible: root.isAssistant
+                    visible: root.isAssistant && !root.loadingOnly
                     anchors.centerIn: parent
                     width: root.avatarSize * 0.7
                     height: root.avatarSize * 0.7
                     source: "koompi-symbolic.svg"
                     colorize: true
                     color: Appearance.colors.colOnLayer1
+                }
+
+                MaterialLoadingIndicator { // takes the logo's place while the turn works
+                    visible: root.isAssistant && root.loadingOnly
+                    anchors.centerIn: parent
+                    implicitSize: root.avatarSize
+                    loading: visible
                 }
             }
 
@@ -146,11 +205,17 @@ Item {
                 x: root.isUser ? (parent.width - width - root.avatarSpace) : root.avatarSpace
                 radius: Appearance.rounding.normal
                 color: root.isUser ? Appearance.colors.colLayer2
-                    : root.isInterface ? "transparent"
+                    : (root.isInterface || root.loadingOnly) ? "transparent"
                     : Appearance.colors.colLayer1
                 implicitHeight: contentColumn.implicitHeight + root.messagePadding * 2
-                width: Math.min(contentColumn.implicitWidth + root.messagePadding * 2,
-                    (parent.width - root.avatarSpace) * (root.isUser ? 0.82 : root.isInterface ? 1.0 : 0.92))
+                readonly property real maxWidth: (parent.width - root.avatarSpace)
+                    * (root.isUser ? 0.88 : root.isInterface ? 1.0 : 0.96)
+                // A wrapped TextArea reports an implicitWidth derived from the width the
+                // layout just gave it, so shrink-wrapping a markdown reply collapses it to
+                // one word per line. Only the user's own short bubbles shrink to fit.
+                width: (root.hasFullWidthBlock || (!root.isUser && !root.loadingOnly))
+                    ? maxWidth
+                    : Math.min(contentColumn.implicitWidth + root.messagePadding * 2, maxWidth)
 
                 ColumnLayout {
                     id: contentColumn
@@ -174,24 +239,6 @@ Item {
                         Layout.fillWidth: true
                         spacing: 0
 
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: loadingIndicatorLoader.shown ? loadingIndicatorLoader.implicitHeight : 0
-                            implicitWidth: loadingIndicatorLoader.implicitWidth
-                            visible: implicitHeight > 0
-
-                            Behavior on implicitHeight {
-                                animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
-                            }
-                            FadeLoader {
-                                id: loadingIndicatorLoader
-                                anchors.centerIn: parent
-                                shown: (root.messageBlocks.length < 1) && (!root.messageData.done)
-                                sourceComponent: MaterialLoadingIndicator {
-                                    loading: true
-                                }
-                            }
-                        }
                         Repeater {
                             model: ScriptModel {
                                 values: root.messageBlocks

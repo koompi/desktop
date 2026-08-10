@@ -906,7 +906,9 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                         wrapMode: TextArea.Wrap
                         padding: 10
                         color: activeFocus ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3onSurfaceVariant
-                        placeholderText: Translation.tr('Message the model... "%1" for commands').arg(root.commandPrefix)
+                        placeholderText: Ai.toolStatusLabel.length > 0
+                            ? Ai.toolStatusLabel
+                            : Translation.tr('Message the model... "%1" for commands').arg(root.commandPrefix)
 
                         background: null
 

@@ -142,9 +142,8 @@ ApiStrategy {
                 message.functionCall = functionCall.name;
                 // Preserve the thought signature so it can be replayed on the follow-up turn.
                 message.thoughtSignature = fcPart.thoughtSignature ?? "";
-                const newContent = `\n\n[[ Function: ${functionCall.name}(${JSON.stringify(functionCall.args, null, 2)}) ]]\n`
-                message.rawContent += newContent;
-                message.content += newContent;
+                // rawContent only, so the plumbing stays out of the chat
+                message.rawContent += `\n\n[[ Function: ${functionCall.name}(${JSON.stringify(functionCall.args, null, 2)}) ]]\n`;
                 return { functionCall: { name: functionCall.name, args: functionCall.args }, finished: finished };
             }
 

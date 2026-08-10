@@ -19,8 +19,13 @@ ColumnLayout {
     property var segmentContent: ({})
     property var segmentLang: "txt"
     property var messageData: {}
-    property bool isCommandRequest: segmentLang === "command"
-    property var displayLang: (isCommandRequest ? "bash" : segmentLang)
+    // fence languages the model never writes: the tool layer emits them to ask for approval
+    property bool isApprovalRequest: segmentLang === "command" || segmentLang === "agent"
+    property var displayLang: {
+        if (segmentLang === "command") return "bash";
+        if (segmentLang === "agent") return "plaintext";
+        return segmentLang;
+    }
 
     property real codeBlockBackgroundRounding: Appearance.rounding.small
     property real codeBlockHeaderPadding: 3
@@ -248,7 +253,7 @@ ColumnLayout {
                     }
                 }
                 Loader {
-                    active: root.isCommandRequest && root.messageData.functionPending
+                    active: root.isApprovalRequest && root.messageData.functionPending
                     visible: active
                     Layout.fillWidth: true
                     Layout.margins: 6
@@ -265,13 +270,26 @@ ColumnLayout {
                                 onClicked: Ai.rejectCommand(root.messageData)
                             }
                             GroupButton {
+                                contentItem: StyledText {
+                                    text: Translation.tr("Always")
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    color: Appearance.colors.colOnLayer2
+                                }
+                                onClicked: Ai.approveCommand(root.messageData, true)
+                                StyledToolTip {
+                                    text: root.segmentLang === "agent"
+                                        ? Translation.tr("Let the agent run without asking, from now on")
+                                        : Translation.tr("Run `%1` without asking, from now on").arg(Ai.commandRule(String(root.segmentContent)))
+                                }
+                            }
+                            GroupButton {
                                 toggled: true
                                 contentItem: StyledText {
-                                    text: Translation.tr("Approve")
+                                    text: Translation.tr("Once")
                                     font.pixelSize: Appearance.font.pixelSize.small
                                     color: Appearance.colors.colOnPrimary
                                 }
-                                onClicked: Ai.approveCommand(root.messageData)
+                                onClicked: Ai.approveCommand(root.messageData, false)
                             }
                         }
                     }

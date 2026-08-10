@@ -18,7 +18,7 @@ ColumnLayout {
     property bool renderMarkdown: true
     property bool enableMouseSelection: false
     property var segmentContent: ({})
-    property var messageData: {}
+    property var messageData: null
     property bool done: true
     property bool forceDisableChunkSplitting: false
 
@@ -84,7 +84,10 @@ ColumnLayout {
     onSegmentContentChanged: {
         // console.log("Segment content changed: " + segmentContent);
         renderedSegmentContent = segmentContent;
-        if (!root.editing && segmentContent) {
+        // Not mid-stream: renderLatex queues a callLater per match over the whole
+        // message, so running it on every chunk floods LatexRenderer. onDoneChanged
+        // covers the finished message.
+        if (!root.editing && segmentContent && root.done) {
             root.renderLatex();
         }
     }
@@ -108,43 +111,29 @@ ColumnLayout {
         }
     }
 
+    // Split by either double newlines or single newlines in a list
+    readonly property var lines: root.fadeChunkSplitting
+        ? root.shownText.split(/\n\n(?= {0,2})|\n(?= {0,2}[-\*])/g).filter(line => line.trim() !== "")
+        : [root.shownText]
+
     spacing: 0
     Repeater {
         id: textLinesRepeater
-        property list<real> textLineOpacities: []
-        model: ScriptModel {
-            // Split by either double newlines or single newlines in a list
-            values: root.fadeChunkSplitting ? root.shownText.split(/\n\n(?= {0,2})|\n(?= {0,2}[-\*])/g).filter(line => line.trim() !== "") : [root.shownText]
-            onValuesChanged: {
-                while (textLinesRepeater.textLineOpacities.length < values.length) {
-                    textLinesRepeater.textLineOpacities.push(root.messageData.done ? 1 : 0);
-                }
-            }
-        }
+        // Counted, not keyed on the strings themselves. A ScriptModel over the split
+        // text diffs by value, so every streamed chunk mutated the last string and
+        // Qt tore that delegate down and built a new one, restarting its fade from
+        // zero - the flicker. On a count the delegates survive and only `text` updates.
+        model: root.lines.length
         delegate: TextArea {
             id: textArea
             required property int index
-            required property string modelData
 
-            // Fade in animation
+            // Each line fades once, when it first appears. Growing text inside a line
+            // is not a new line, so it must not re-trigger this.
+            readonly property bool shouldFade: root.fadeChunkSplitting && !(root.messageData?.done ?? false)
             visible: opacity > 0
-            opacity: fadeChunkSplitting ? (textLinesRepeater.textLineOpacities[index] ?? (root.messageData.done ? 1 : 0)) : 1
-            Connections {
-                target: root.messageData
-                function onDoneChanged() {
-                    if (root.messageData.done) {
-                        textLinesRepeater.textLineOpacities[textArea.index] = 1
-                    }
-                }
-            }
-            Connections {
-                target: textLinesRepeater.model
-                function onValuesChanged() {
-                    if (textLinesRepeater.model.values.length > textArea.index + 1) {
-                        textLinesRepeater.textLineOpacities[textArea.index] = 1
-                    }
-                }
-            }
+            opacity: shouldFade ? 0 : 1
+            Component.onCompleted: if (shouldFade) opacity = 1
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
             }
@@ -161,7 +150,7 @@ ColumnLayout {
             wrapMode: TextEdit.Wrap
             color: root.messageData?.thinking ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
             textFormat: renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText
-            text: modelData
+            text: root.lines[index] ?? ""
 
             onTextChanged: {
                 if (!root.editing) return

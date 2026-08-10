@@ -1,0 +1,18 @@
+[Unit]
+Description=LiteRT-LM local inference server for the KOOMPI AI sidebar
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/litert-lm serve --host 127.0.0.1 --port 9379
+# the engine loads on first request; warm it so the sidebar's first message is
+# an answer rather than an 8s model init
+ExecStartPost=-/usr/bin/curl -sS -o /dev/null --retry 30 --retry-delay 1 --retry-connrefused -m 300 -X POST http://127.0.0.1:9379/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"gemma4-e2b","messages":[{"role":"user","content":"hi"}],"stream":false}'
+TimeoutStartSec=360
+Restart=on-failure
+RestartSec=5
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target
