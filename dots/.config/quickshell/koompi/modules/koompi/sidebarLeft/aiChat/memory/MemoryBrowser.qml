@@ -66,6 +66,7 @@ Item {
             root.status = Translation.tr("Memory is switched off in settings.");
             return;
         }
+        root.status = "";
         root.loading = true;
         MemoryService.list(500, (response, error) => {
             root.loading = false;
@@ -74,7 +75,6 @@ Item {
                 return;
             }
             root.entries = response.results ?? [];
-            root.status = "";
         });
         MemoryService.stats((response, error) => {
             if (!response) return;
@@ -107,6 +107,25 @@ Item {
             root.searchResults = results;
             root.status = "";
         }, "browse");
+    }
+
+    // Owned by the browser, not by the dialog that asks for them: a dialog's
+    // Loader unloads on the same click, taking its callbacks with it.
+    function archiveTranscript() {
+        MemoryService.prune(false, (response, error) => {
+            root.searchResults = null;
+            root.refresh();
+            root.status = response ? Translation.tr("Archived %1 entries.").arg(response.archived) : error;
+        });
+    }
+
+    function deleteEverything() {
+        root.status = Translation.tr("Deleting\u2026");
+        MemoryService.clearAll((count, error) => {
+            root.searchResults = null;
+            root.refresh();
+            root.status = count === null ? error : Translation.tr("Deleted %1 memories.").arg(count);
+        });
     }
 
     onActiveChanged: if (root.active) root.refresh()
@@ -157,7 +176,7 @@ Item {
 
                         StyledText {
                             Layout.fillWidth: true
-                            text: Translation.tr("AI Memory — %1 entries").arg(root.shownCount)
+                            text: root.shownCount === 1 ? Translation.tr("AI Memory — 1 entry") : Translation.tr("AI Memory — %1 entries").arg(root.shownCount)
                             font.pixelSize: Appearance.font.pixelSize.large
                             font.weight: Font.DemiBold
                             color: Appearance.colors.colOnLayer2
@@ -183,8 +202,8 @@ Item {
                                         return;
                                     }
                                     const added = response.added ?? [];
-                                    root.status = added.length > 0 ? Translation.tr("Learned: %1").arg(added.join(" · ")) : Translation.tr("Read %1 event(s), nothing worth keeping.").arg(response.marked ?? 0);
                                     root.refresh();
+                                    root.status = added.length > 0 ? Translation.tr("Learned: %1").arg(added.join(" · ")) : Translation.tr("Read %1 event(s), nothing worth keeping.").arg(response.marked ?? 0);
                                 });
                             }
                             StyledToolTip { text: Translation.tr("Consolidate the event log now") }
@@ -291,16 +310,16 @@ Item {
                             score: delegateRoot.modelData.score
                             onDeleteRequested: {
                                 MemoryService.forget(entry.id, (response, error) => {
-                                    root.status = response ? Translation.tr("Deleted memory %1.").arg(entry.id) : error;
                                     root.searchResults = null;
                                     root.refresh();
+                                    root.status = response ? Translation.tr("Deleted memory %1.").arg(entry.id) : error;
                                 });
                             }
                             onEditAccepted: text => {
                                 MemoryService.edit(entry.id, text, entry.mtype, entry.tags ?? [], "user:edit", (response, error) => {
-                                    root.status = response ? Translation.tr("Rewrote memory %1 as %2.").arg(entry.id).arg(response.memory_id) : error;
                                     root.searchResults = null;
                                     root.refresh();
+                                    root.status = response ? Translation.tr("Rewrote memory %1 as %2.").arg(entry.id).arg(response.memory_id) : error;
                                 });
                             }
                         }
@@ -392,11 +411,13 @@ Item {
             backgroundHeight: 240
 
             WindowDialogTitle {
+                Layout.fillWidth: true
                 text: Translation.tr("Delete every memory?")
             }
 
             WindowDialogParagraph {
-                text: Translation.tr("All %1 entries go, including anything you told the assistant about yourself. This cannot be undone.").arg(root.entries.length)
+                Layout.fillWidth: true
+                text: root.entries.length === 1 ? Translation.tr("The one entry goes, including anything you told the assistant about yourself. This cannot be undone.") : Translation.tr("All %1 entries go, including anything you told the assistant about yourself. This cannot be undone.").arg(root.entries.length)
             }
 
             WindowDialogButtonRow {
@@ -414,12 +435,7 @@ Item {
                     colText: Appearance.colors.colError
                     onClicked: {
                         clearDialog.shown = false;
-                        root.status = Translation.tr("Deleting\u2026");
-                        MemoryService.clearAll((count, error) => {
-                            root.status = count === null ? error : Translation.tr("Deleted %1 memories.").arg(count);
-                            root.searchResults = null;
-                            root.refresh();
-                        });
+                        root.deleteEverything();
                     }
                 }
             }
@@ -433,22 +449,26 @@ Item {
             backgroundHeight: 520
 
             WindowDialogTitle {
+                Layout.fillWidth: true
                 text: Translation.tr("Retire imported transcript?")
             }
 
             WindowDialogParagraph {
+                Layout.fillWidth: true
                 text: Translation.tr("%1 entries were copied out of the chat log by the old consolidator, so the assistant is being fed its own replies as facts. Archiving hides them from recall; the rows stay on disk.").arg(root.pruneCandidates.length)
             }
 
             StyledFlickable {
+                id: candidateFlickable
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                contentWidth: width
                 contentHeight: candidateColumn.implicitHeight
                 clip: true
 
                 ColumnLayout {
                     id: candidateColumn
-                    width: parent.width
+                    width: candidateFlickable.width
                     spacing: Appearance.spacing.small
 
                     Repeater {
@@ -496,11 +516,7 @@ Item {
                     colText: Appearance.colors.colError
                     onClicked: {
                         pruneDialog.shown = false;
-                        MemoryService.prune(false, (response, error) => {
-                            root.status = response ? Translation.tr("Archived %1 entries.").arg(response.archived) : error;
-                            root.searchResults = null;
-                            root.refresh();
-                        });
+                        root.archiveTranscript();
                     }
                 }
             }

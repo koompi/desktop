@@ -132,14 +132,16 @@ Rectangle {
             // The whole text has to be reachable without the 4 KB rows pushing
             // every other entry off the screen.
             StyledFlickable {
+                id: editorFlickable
                 Layout.fillWidth: true
                 implicitHeight: Math.min(editor.implicitHeight, 220)
+                contentWidth: width
                 contentHeight: editor.implicitHeight
                 clip: true
 
                 StyledTextArea {
                     id: editor
-                    width: parent.width
+                    width: editorFlickable.width
                     wrapMode: TextArea.Wrap
                     background: Rectangle {
                         radius: Appearance.rounding.verysmall

@@ -29,22 +29,26 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    MouseArea { // click outside to close
+    // Closes on a click beside the card. The test is on the position rather than
+    // on a swallowing MouseArea under the card: anything in the card that is not
+    // itself interactive falls through to here, and a click on the panel's own
+    // background must not close it.
+    MouseArea {
         anchors.fill: parent
-        onClicked: MemoryService.closeBrowser()
+        onClicked: event => {
+            const local = card.mapFromItem(null, event.x, event.y);
+            if (local.x < 0 || local.y < 0 || local.x > card.width || local.y > card.height) MemoryService.closeBrowser();
+        }
     }
 
     Item {
+        id: card
         anchors.centerIn: parent
         implicitWidth: Math.min(720, window.width - Appearance.sizes.elevationMargin * 8)
         implicitHeight: Math.min(820, window.height - Appearance.sizes.elevationMargin * 8)
 
         focus: true
         Keys.onEscapePressed: MemoryService.closeBrowser()
-
-        MouseArea { // the card swallows its own clicks
-            anchors.fill: parent
-        }
 
         MemoryBrowser {
             anchors.fill: parent
