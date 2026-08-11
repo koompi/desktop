@@ -25,6 +25,11 @@ QtObject {
     property var threads: []
     property string currentThreadId: ""
     property bool loaded: false
+    property bool indexLoaded: false
+
+    // Which thread was open when the shell last ran. `lastSession` is an alias
+    // for "the active thread", so a restart has to be able to resolve it to one.
+    property string lastActiveId: ""
 
     signal refreshed()
 
@@ -118,11 +123,15 @@ QtObject {
     }
 
     function writeThread(id, messages, meta) {
+        root.ensureIndexLoaded();
         const record = root.threadFor(id);
         const payload = {
             "version": 2,
             "id": id,
             "title": (meta && meta.title) || (record ? record.title : "") || "",
+            // Carried in the file as well as the index, so a lost index costs a
+            // generated title and never a typed one.
+            "titleLocked": Boolean(record && record.titleLocked),
             "sessionId": (meta && meta.sessionId) || (record ? record.sessionId : "") || "",
             "createdAt": (record ? record.createdAt : 0) || Date.now(),
             "updatedAt": Date.now(),
@@ -133,9 +142,34 @@ QtObject {
         return payload;
     }
 
+    /**
+     * The index, read synchronously the first time anything touches the store.
+     *
+     * The directory scan is a Process, so it answers a turn of the event loop
+     * later — and the shell restores `lastSession` before that. Reading the
+     * index only inside the scan callback meant every startup ran its first
+     * save against an empty thread list and wrote that emptiness over the file,
+     * which is how a hand-typed title disappeared on restart. The scan finds
+     * files the index does not know about; it is not how the index is read.
+     */
+    function ensureIndexLoaded() {
+        if (root.indexLoaded || !root.active) return;
+        root.indexLoaded = true;
+        const stored = root._readJson(root.indexFile, root.indexFile.path);
+        const known = (stored && Array.isArray(stored.threads)) ? stored.threads : [];
+        if (known.length > 0) root.threads = known;
+        if (stored && stored.current) root.lastActiveId = stored.current;
+    }
+
     function writeIndex() {
         if (!root.active) return;
-        root.indexFile.setText(JSON.stringify({ "version": 1, "threads": root.threads }));
+        // Never write a list built before the stored one was read.
+        if (!root.indexLoaded) return;
+        root.indexFile.setText(JSON.stringify({
+            "version": 1,
+            "current": root.currentThreadId || root.lastActiveId,
+            "threads": root.threads,
+        }));
     }
 
     // --- listing --------------------------------------------------------
@@ -166,13 +200,17 @@ QtObject {
     }
 
     function _reconcile(names) {
+        root.ensureIndexLoaded();
         const onDisk = names.filter(n => n !== root.indexName && n.length > 0);
         const stored = root._readJson(root.indexFile, root.indexFile.path);
         const known = (stored && Array.isArray(stored.threads)) ? stored.threads : [];
 
+        // Memory wins: it already holds the index plus everything that happened
+        // while the scan was in flight. The file is only consulted for records
+        // this instance never loaded.
         const byId = ({});
-        root.threads.forEach(t => { if (t && t.id) byId[t.id] = t; });
         known.forEach(t => { if (t && t.id) byId[t.id] = t; });
+        root.threads.forEach(t => { if (t && t.id) byId[t.id] = t; });
 
         // The active thread stays listed even before its first save lands.
         const ids = onDisk.slice();
@@ -197,26 +235,32 @@ QtObject {
         const data = root.readThread(id);
         const meta = data ? data.meta : {};
         const messages = data ? data.messages : [];
-        let title = meta.title ?? "";
+        let title = meta.title || "";
         if (title.length === 0) {
             const first = messages.find(m => m && m.role === "user" && (m.rawContent ?? "").length > 0);
             title = first ? root.titleFrom(first.rawContent) : "";
         }
         if (title.length === 0) title = id === root.autosaveAlias ? "Previous conversation" : id;
+        const first = messages.length > 0 ? messages[0].timestamp : 0;
+        const last = messages.length > 0 ? messages[messages.length - 1].timestamp : 0;
+        // `||`, not `??`: a stored `updatedAt: 0` or `sessionId: ""` is a gap to
+        // fill, not a value to keep, and a thread row that reads "never saved"
+        // is what keeping it looks like.
         return {
             "id": id,
             "title": title,
-            "sessionId": meta.sessionId ?? root.newSessionId(),
-            "createdAt": meta.createdAt ?? (messages.length > 0 ? (messages[0].timestamp ?? Date.now()) : Date.now()),
-            "updatedAt": meta.updatedAt ?? (messages.length > 0 ? (messages[messages.length - 1].timestamp ?? Date.now()) : Date.now()),
+            "sessionId": meta.sessionId || root.newSessionId(),
+            "createdAt": meta.createdAt || first || Date.now(),
+            "updatedAt": meta.updatedAt || last || Date.now(),
             "messageCount": messages.length,
-            "titleLocked": false,
+            "titleLocked": Boolean(meta.titleLocked),
         };
     }
 
     // --- mutation -------------------------------------------------------
 
     function createThread(title) {
+        root.ensureIndexLoaded();
         const id = root.newThreadId();
         const now = Date.now();
         root.threads = [{
@@ -236,6 +280,7 @@ QtObject {
 
     /** The thread saves land in, created on demand so a save can never go nowhere. */
     function ensureCurrentThread() {
+        root.ensureIndexLoaded();
         if (root.threadFor(root.currentThreadId)) return root.currentThreadId;
         if (root.currentThreadId.length > 0) {
             root._register(root.currentThreadId);
@@ -245,6 +290,7 @@ QtObject {
     }
 
     function _register(id) {
+        root.ensureIndexLoaded();
         if (root.threadFor(id)) return;
         const now = Date.now();
         root.threads = [{
@@ -261,6 +307,19 @@ QtObject {
     function selectThread(id) {
         root._register(id);
         root.currentThreadId = id;
+        root.lastActiveId = id;
+    }
+
+    /**
+     * The thread a name refers to. `lastSession` is the alias every autosave
+     * still writes under, so on the way back in it means the thread that was
+     * open — not a file that happens to be called that.
+     */
+    function resolve(name) {
+        const id = (name ?? "").trim();
+        if (id !== root.autosaveAlias) return id;
+        if (root.threadFor(id)) return id;
+        return root.lastActiveId.length > 0 ? root.lastActiveId : id;
     }
 
     function renameThread(id, title) {
@@ -319,5 +378,9 @@ QtObject {
         return true;
     }
 
-    Component.onCompleted: if (root.active) root.refresh()
+    Component.onCompleted: {
+        if (!root.active) return;
+        root.ensureIndexLoaded();
+        root.refresh();
+    }
 }

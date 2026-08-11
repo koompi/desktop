@@ -124,28 +124,45 @@ QtObject {
         return root._toJson(root.messageIDs, root.messageByID);
     }
 
+    /**
+     * Every field of `AiMessageData` that still means something after a restart,
+     * written and read back through this one list so the two directions cannot
+     * drift apart. A field missing from a stored message keeps the type's own
+     * default, which is what makes older files load unchanged.
+     *
+     * `thinking`, `done` and `functionPending` are deliberately absent: they are
+     * the state of a turn in flight, and a stored message is finished by
+     * definition. Restoring `functionPending` would resume a spinner that has
+     * nothing left to wait for.
+     */
+    readonly property var persistedFields: [
+        "role", "rawContent", "fileMimeType", "fileUri", "localFilePath", "model",
+        "annotations", "annotationSources", "searchQueries",
+        "functionName", "functionCall", "functionResponse",
+        "toolCalls", "toolCallId", "sources",
+        "thoughtSignature", "visibleToUser", "timestamp",
+    ]
+
     function _toJson(ids, byID) {
         return ids.map(id => {
-            const message = byID[id]
-            return ({
-                "role": message.role,
-                "rawContent": message.rawContent,
-                "fileMimeType": message.fileMimeType,
-                "fileUri": message.fileUri,
-                "localFilePath": message.localFilePath,
-                "model": message.model,
-                "thinking": false,
-                "done": true,
-                "annotations": message.annotations,
-                "annotationSources": message.annotationSources,
-                "functionName": message.functionName,
-                "functionCall": message.functionCall,
-                "thoughtSignature": message.thoughtSignature,
-                "functionResponse": message.functionResponse,
-                "visibleToUser": message.visibleToUser,
-                "timestamp": message.timestamp,
-            })
-        })
+            const message = byID[id];
+            const stored = { "thinking": false, "done": true };
+            for (let i = 0; i < root.persistedFields.length; i++) {
+                const field = root.persistedFields[i];
+                stored[field] = root._plain(message[field]);
+            }
+            return stored;
+        });
+    }
+
+    // `list<string>` properties read back as a QML list, which JSON.stringify
+    // renders as a string rather than an array.
+    function _plain(value) {
+        if (value === undefined || value === null) return value;
+        if (Array.isArray(value)) return value;
+        if (typeof value === "object" && typeof value.length === "number")
+            return Array.prototype.slice.call(value);
+        return value;
     }
 
     // --- threads --------------------------------------------------------
@@ -215,7 +232,8 @@ QtObject {
      * the current conversation alone — an unreadable file is not an empty chat.
      */
     function loadChat(chatName) {
-        const id = (chatName ?? "").trim();
+        root.threadStore.ensureIndexLoaded();
+        const id = root.threadStore.resolve(chatName);
         if (id.length === 0) return false;
         const stored = root.threadStore.readThread(id);
         if (!stored) {
@@ -224,30 +242,26 @@ QtObject {
             return false;
         }
         root.clearMessages(false);
+        const repaired = root._repairToolPairing(stored.messages);
+        if (repaired > 0)
+            console.log("[AI] rebuilt", repaired, "tool call pairing(s) in", id);
         const ids = [];
         const byID = ({});
         for (let i = 0; i < stored.messages.length; i++) {
             const message = stored.messages[i];
             const messageId = `${id}:${i}`;
-            byID[messageId] = root.engine.aiMessageComponent.createObject(root, {
-                "role": message.role,
-                "rawContent": message.rawContent,
-                "content": message.rawContent,
-                "fileMimeType": message.fileMimeType,
-                "fileUri": message.fileUri,
-                "localFilePath": message.localFilePath,
-                "model": message.model,
-                "thinking": message.thinking,
-                "done": message.done,
-                "annotations": message.annotations,
-                "annotationSources": message.annotationSources,
-                "functionName": message.functionName,
-                "functionCall": message.functionCall,
-                "thoughtSignature": message.thoughtSignature ?? "",
-                "functionResponse": message.functionResponse,
-                "visibleToUser": message.visibleToUser,
-                "timestamp": message.timestamp ?? 0,
-            });
+            const props = {
+                "content": message.rawContent ?? "",
+                "thinking": false,
+                "done": true,
+                "functionPending": false,
+            };
+            for (let f = 0; f < root.persistedFields.length; f++) {
+                const field = root.persistedFields[f];
+                if (message[field] !== undefined && message[field] !== null)
+                    props[field] = message[field];
+            }
+            byID[messageId] = root.engine.aiMessageComponent.createObject(root, props);
             ids.push(messageId);
         }
         root.messageByID = byID;
@@ -257,6 +271,51 @@ QtObject {
         root.threadStore.noteLoaded(id, ids.length);
         root.engine.refreshSavedChats();
         return true;
+    }
+
+    /**
+     * Every thread saved before the tool wiring was persisted comes back with a
+     * role "tool" message whose call id was dropped on the way to disk, so the
+     * Activity pane has nothing to match on and the result cannot find the turn
+     * that asked for it. The pairing is still recoverable — the assistant turn
+     * above names the function it called — so it is rebuilt on load rather than
+     * left broken, and the next save writes it back properly.
+     *
+     * Nothing is invented: a message that already carries an id is untouched,
+     * and a result with no assistant turn naming the same function is left
+     * alone rather than guessed at.
+     * @returns how many pairs were rebuilt
+     */
+    function _repairToolPairing(messages) {
+        let repaired = 0;
+        for (let i = 0; i < messages.length; i++) {
+            const result = messages[i];
+            const isResult = result.role === "tool"
+                || (result.functionResponse ?? "").length > 0;
+            const name = result.functionName ?? "";
+            if (!isResult || name.length === 0) continue;
+            if ((result.toolCallId ?? "").length > 0) continue;
+
+            let caller = null;
+            for (let j = i - 1; j >= 0; j--) {
+                if (messages[j].role !== "assistant") continue;
+                caller = messages[j];
+                break;
+            }
+            if (!caller || (caller.toolCalls ?? []).length > 0) continue;
+            if ((caller.functionName ?? "") !== name) continue;
+
+            const id = `restored-${i}-${name}`;
+            const call = caller.functionCall;
+            caller.toolCalls = [{
+                "id": id,
+                "name": name,
+                "arguments": JSON.stringify((call && call.args) ? call.args : (call ?? {})),
+            }];
+            result.toolCallId = id;
+            repaired++;
+        }
+        return repaired;
     }
 
     // Inject a hidden context pair into message history (#11)

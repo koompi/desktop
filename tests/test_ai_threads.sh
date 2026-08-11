@@ -85,6 +85,7 @@ ShellRoot {
     property var reader: null
     property var ids: []
     property var sessionIds: []
+    property string toolThreadId: ""
 
     Component.onCompleted: {
         probe.writer = probe.conversationComponent.createObject(probe);
@@ -93,8 +94,9 @@ ShellRoot {
 
     function write() {
         const store = probe.writer.threadStore;
-        probe.check("empty store starts empty", store.threads.length === 0,
-            "threads=" + store.threads.length);
+        probe.check("a fresh store lists only what is on disk",
+            store.threads.length === 1 && store.threads[0].id === "legacy-tool",
+            JSON.stringify(store.threads.map(t => t.id)));
 
         for (let i = 1; i <= 3; i++) {
             const id = probe.writer.newThread();
@@ -110,8 +112,8 @@ ShellRoot {
         probe.check("three distinct session ids",
             new Set(probe.sessionIds).size === 3, JSON.stringify(probe.sessionIds));
         probe.check("titles came from the first exchange",
-            store.threads.every(t => t.title.indexOf("question ") === 0),
-            JSON.stringify(store.threads.map(t => t.title)));
+            probe.ids.every(id => (store.threadFor(id).title ?? "").indexOf("question ") === 0),
+            JSON.stringify(probe.ids.map(id => store.threadFor(id).title)));
 
         // The save/load flush race: read back what was just written, same tick.
         const justSaved = store.readThread(probe.ids[2]);
@@ -128,11 +130,97 @@ ShellRoot {
 
         probe.writer.renameThread(probe.ids[0], "renamed by hand");
         probe.subtask();
+        probe.toolTurn();
 
         // Throw the store away and rebuild it from the files on disk.
         probe.writer.destroy();
         probe.reader = probe.conversationComponent.createObject(probe);
         probe.reader.threadStore.refreshed.connect(probe.verify);
+
+        // The startup order, exactly: the shell restores lastSession and saves
+        // it before the directory scan has answered. This used to write an empty
+        // index over the good one and take every hand-typed title with it.
+        probe.reader.loadChat(probe.ids[0]);
+        probe.reader.saveChat("lastSession");
+    }
+
+    // D22 after a restart: a tool result is a role "tool" message with the id of
+    // the call it answers, and the answer above it carries its sources.
+    function toolTurn() {
+        const conv = probe.writer;
+        probe.toolThreadId = conv.newThread();
+
+        conv.appendMessage(fakeEngine.aiMessageComponent.createObject(conv, {
+            "role": "user", "rawContent": "ask the agent to summarise the repo",
+            "content": "ask the agent to summarise the repo", "done": true,
+        }));
+        conv.appendMessage(fakeEngine.aiMessageComponent.createObject(conv, {
+            "role": "assistant", "rawContent": "", "content": "",
+            "toolCalls": [{ "id": "call_7fa1", "name": "ask_agent",
+                "arguments": "{\"task\":\"summarise the repo\"}" }],
+            "searchQueries": ["koompi shell repo layout"],
+            "done": true,
+        }));
+        conv.appendMessage(fakeEngine.aiMessageComponent.createObject(conv, {
+            "role": "tool", "functionName": "ask_agent",
+            "toolCallId": "call_7fa1",
+            "rawContent": "[[ Output of ask_agent ]]",
+            "content": "[[ Output of ask_agent ]]",
+            "functionResponse": "The repo is a Quickshell config plus packaging.",
+            "functionPending": true,
+            "visibleToUser": false,
+            "done": true,
+        }));
+        conv.appendMessage(fakeEngine.aiMessageComponent.createObject(conv, {
+            "role": "assistant",
+            "rawContent": "It is a Quickshell config plus packaging.",
+            "content": "It is a Quickshell config plus packaging.",
+            "sources": [
+                { "type": "agent", "name": "ask_agent", "detail": "summarise the repo",
+                  "score": 0.92, "url": "" },
+                { "type": "web", "name": "quickshell.org", "detail": "docs",
+                  "score": 0.7314, "url": "https://quickshell.org/docs" },
+            ],
+            "done": true,
+        }));
+        conv.saveChat("lastSession");
+    }
+
+    function verifyToolTurn() {
+        const conv = probe.reader;
+        probe.check("the ask_agent thread loads", conv.loadChat(probe.toolThreadId) === true, "");
+        const messages = conv.messageIDs.map(id => conv.messageByID[id]);
+        probe.check("four messages came back", messages.length === 4,
+            "messages=" + messages.length);
+
+        const call = messages[1];
+        probe.check("the assistant's toolCalls survived",
+            call.toolCalls.length === 1 && call.toolCalls[0].id === "call_7fa1"
+                && call.toolCalls[0].name === "ask_agent",
+            JSON.stringify(call.toolCalls));
+        probe.check("searchQueries survived",
+            call.searchQueries.length === 1
+                && call.searchQueries[0] === "koompi shell repo layout",
+            JSON.stringify(Array.prototype.slice.call(call.searchQueries)));
+
+        const result = messages[2];
+        probe.check("the tool result came back as role tool with its call id",
+            result.role === "tool" && result.toolCallId === "call_7fa1"
+                && result.functionName === "ask_agent",
+            "role=" + result.role + " toolCallId=" + result.toolCallId);
+        probe.check("the tool result kept its output and stayed hidden",
+            result.functionResponse.indexOf("Quickshell config") >= 0
+                && result.visibleToUser === false,
+            "visibleToUser=" + result.visibleToUser);
+        probe.check("a stored tool call is not still pending",
+            result.functionPending === false, "functionPending=" + result.functionPending);
+
+        const answer = messages[3];
+        probe.check("sources survived with their scores",
+            answer.sources.length === 2 && answer.sources[0].score === 0.92
+                && answer.sources[1].score === 0.7314
+                && answer.sources[1].url === "https://quickshell.org/docs",
+            JSON.stringify(answer.sources));
     }
 
     // D37: a subtask runs in its own Conversation, and a save while it runs
@@ -173,13 +261,65 @@ ShellRoot {
             sub.messageIDs.length === 2, "subtaskMessages=" + sub.messageIDs.length);
     }
 
+    // A thread saved by the lossy writer: role "tool" survived, the call id did
+    // not. The pairing has to be rebuilt on load or the Activity pane stays empty
+    // for every conversation that already exists on disk.
+    function verifyLegacyRepair() {
+        const conv = probe.reader;
+        probe.check("the legacy tool thread loads",
+            conv.loadChat("legacy-tool") === true, "");
+        const messages = conv.messageIDs.map(id => conv.messageByID[id]);
+        const call = messages[1];
+        const result = messages[2];
+        probe.check("a dropped call id is rebuilt from the turn above it",
+            call.toolCalls.length === 1 && call.toolCalls[0].name === "search_web"
+                && result.toolCallId === call.toolCalls[0].id
+                && result.toolCallId.length > 0,
+            "toolCalls=" + JSON.stringify(call.toolCalls) + " toolCallId=" + result.toolCallId);
+        probe.check("the repair survives the next save",
+            (() => {
+                conv.saveChat("legacy-tool");
+                const again = conv.threadStore.readThread("legacy-tool");
+                return again !== null
+                    && (again.messages[2].toolCallId ?? "").length > 0
+                    && (again.messages[1].toolCalls ?? []).length === 1;
+            })(), "");
+    }
+
+    // What the shell asks for at startup. With threads, "lastSession" is the
+    // name of an alias, not of a file: it has to come back as the thread that
+    // was open, or a restart reopens nothing.
+    function verifyRestore() {
+        const conv = probe.reader;
+        const store = conv.threadStore;
+        const wanted = store.currentThreadId;
+        probe.check("the store remembers which thread was open",
+            store.lastActiveId.length > 0, store.lastActiveId);
+        probe.check("lastSession resolves to the thread that was open",
+            conv.loadChat("lastSession") === true
+                && store.currentThreadId === wanted,
+            store.currentThreadId + " wanted " + wanted);
+    }
+
     function verify() {
         const store = probe.reader.threadStore;
-        probe.check("all three threads survived the reload",
-            store.threads.length === 3, "threads=" + store.threads.length);
-        probe.check("the hand-typed title survived",
+        probe.check("all four threads plus the legacy fixture survived the reload",
+            store.threads.length === 5, "threads=" + store.threads.length);
+        probe.check("the hand-typed title survived a restore-then-save startup",
             store.threads.some(t => t.title === "renamed by hand"),
             JSON.stringify(store.threads.map(t => t.title)));
+        probe.check("the rename is still locked against a generated title",
+            (store.threadFor(probe.ids[0]) ?? {}).titleLocked === true,
+            JSON.stringify(store.threadFor(probe.ids[0])));
+        const reread = store.readThread(probe.ids[0]);
+        probe.check("the thread file carries the typed title too",
+            reread !== null && reread.meta.title === "renamed by hand"
+                && reread.meta.titleLocked === true,
+            JSON.stringify(reread ? reread.meta : null));
+
+        probe.verifyToolTurn();
+        probe.verifyLegacyRepair();
+        probe.verifyRestore();
 
         for (let i = 0; i < 3; i++) {
             const id = probe.ids[i];
@@ -197,8 +337,8 @@ ShellRoot {
 
         // Nothing crossed: every stored thread holds exactly its own topic.
         let crossed = 0;
-        store.threads.forEach(t => {
-            const data = store.readThread(t.id);
+        probe.ids.forEach(id => {
+            const data = store.readThread(id);
             const topics = new Set((data ? data.messages : []).map(
                 m => (m.rawContent.match(/topic \d/) ?? ["?"])[0]));
             if (topics.size !== 1) crossed++;
@@ -212,6 +352,20 @@ ShellRoot {
 }
 QML
 
+# A thread as the lossy writer left it on disk: the tool result kept its role and
+# its output, the call id and the assistant's toolCalls were dropped. Every
+# conversation saved before today looks like this.
+cat > "$WORK/chats/legacy-tool.json" <<'JSON'
+{"version":2,"id":"legacy-tool","title":"what is hyprland","sessionId":"lg7c2a",
+ "createdAt":1786300000000,"updatedAt":1786300000000,"messages":[
+  {"role":"user","rawContent":"use search_web to find what hyprland is","done":true},
+  {"role":"assistant","rawContent":"","functionName":"search_web",
+   "functionCall":{"name":"search_web","args":{"query":"what is hyprland"}},"done":true},
+  {"role":"tool","functionName":"search_web","rawContent":"[[ Output of search_web ]]",
+   "functionResponse":"1. Hyprland\n   https://hypr.land/","visibleToUser":false,"done":true},
+  {"role":"assistant","rawContent":"Hyprland is a Wayland compositor.","done":true}]}
+JSON
+
 out="$(J03_CHATS_DIR="$WORK/chats" timeout 120 qs -p "$WORK/shell/threads_probe.qml" 2>&1)"
 echo "$out" | sed -n 's/.*qml\x1b\[0m: //p;s/^ DEBUG qml: //p' | grep -E '^(PASS|FAIL|PROBE)' || true
 
@@ -223,7 +377,7 @@ fi
 
 files="$(ls -1 "$WORK/chats" | sort | tr '\n' ' ')"
 count="$(ls -1 "$WORK/chats"/*.json 2>/dev/null | wc -l)"
-(( count == 4 )) || { echo "expected 3 threads + index.json, got: $files" >&2; exit 1; }
+(( count == 6 )) || { echo "expected 4 threads + the legacy fixture + index.json, got: $files" >&2; exit 1; }
 [[ -f "$WORK/chats/index.json" ]] || { echo "no index.json written" >&2; exit 1; }
 
 echo "ok: 3 threads created, reloaded from disk and read back without crossing"
