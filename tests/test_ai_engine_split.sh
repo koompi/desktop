@@ -36,13 +36,26 @@ fi
 
 # The split itself: the engine is four modules plus the model layer, and Ai.qml is
 # the only thing modules/ is allowed to know about.
+#
+# Match the reach, not the word. "Conversation" is ordinary English and appears in
+# settings labels; "ToolRegistry" appears in comments explaining where a value came
+# from. Neither is a coupling. What couples is going through the facade into a
+# module (`Ai.toolRegistry.riskOf`) or importing the engine package directly.
 for module in ToolRegistry ToolRunner Conversation Requester ModelRegistry; do
     [[ -f "$SHELL_ROOT/services/ai/$module.qml" ]] || {
         echo "missing services/ai/$module.qml" >&2; exit 1; }
-    if grep -rq "\\b$module\\b" "$MODULES"; then
-        echo "modules/ reaches past the facade into $module" >&2; exit 1
+    prop="$(tr '[:upper:]' '[:lower:]' <<< "${module:0:1}")${module:1}"
+    if grep -rqE "Ai\.$prop\b" "$MODULES"; then
+        echo "modules/ reaches past the facade into $module (Ai.$prop)" >&2
+        grep -rnE "Ai\.$prop\b" "$MODULES" >&2
+        exit 1
     fi
 done
+if grep -rqE '^[[:space:]]*import[[:space:]]+qs\.services\.ai\b' "$MODULES"; then
+    echo "modules/ imports the engine package directly" >&2
+    grep -rnE '^[[:space:]]*import[[:space:]]+qs\.services\.ai\b' "$MODULES" >&2
+    exit 1
+fi
 
 # One declaration per tool. Three copies is what the split removed.
 for tool in get_shell_config set_shell_config run_shell_command set_owner_name remember recall; do
