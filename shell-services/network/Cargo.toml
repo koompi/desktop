@@ -12,3 +12,7 @@ tokio.workspace = true
 zbus.workspace = true
 zvariant.workspace = true
 futures-util.workspace = true
+
+[dev-dependencies]
+# a socket pair standing in for NetworkManager, so the backpressure test needs no bus
+zbus = { workspace = true, features = ["p2p"] }
