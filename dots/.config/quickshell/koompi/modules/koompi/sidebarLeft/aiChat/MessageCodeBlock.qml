@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.services
 import qs.modules.common
+import qs.modules.koompi.sidebarLeft.aiChat.approval
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
@@ -21,6 +22,8 @@ ColumnLayout {
     property var messageData: {}
     // fence languages the model never writes: the tool layer emits them to ask for approval
     property bool isApprovalRequest: segmentLang === "command" || segmentLang === "agent"
+    // a decision the user has not made yet is a card, not a fence
+    readonly property bool approvalPending: root.isApprovalRequest && (root.messageData?.functionPending ?? false)
     property var displayLang: {
         if (segmentLang === "command") return "bash";
         if (segmentLang === "agent") return "plaintext";
@@ -33,7 +36,19 @@ ColumnLayout {
 
     spacing: codeBlockComponentSpacing
 
+    Loader {
+        Layout.fillWidth: true
+        active: root.approvalPending
+        visible: active
+        sourceComponent: ApprovalCard {
+            messageData: root.messageData
+            fallbackTarget: String(root.segmentContent)
+            fallbackToolName: root.segmentLang === "agent" ? "ask_agent" : "run_shell_command"
+        }
+    }
+
     Rectangle { // Code background
+        visible: !root.approvalPending
         Layout.fillWidth: true
         topLeftRadius: codeBlockBackgroundRounding
         topRightRadius: codeBlockBackgroundRounding
@@ -127,6 +142,7 @@ ColumnLayout {
     }
 
     RowLayout { // Line numbers and code
+        visible: !root.approvalPending
         spacing: codeBlockComponentSpacing
 
         Rectangle { // Line numbers
@@ -249,48 +265,6 @@ ColumnLayout {
                             repository: Repository
                             definition: Repository.definitionForName(root.displayLang || "plaintext")
                             theme: Appearance.syntaxHighlightingTheme
-                        }
-                    }
-                }
-                Loader {
-                    active: root.isApprovalRequest && root.messageData.functionPending
-                    visible: active
-                    Layout.fillWidth: true
-                    Layout.margins: 6
-                    Layout.topMargin: 0
-                    sourceComponent: RowLayout {
-                        Item { Layout.fillWidth: true }
-                        ButtonGroup {
-                            GroupButton {
-                                contentItem: StyledText {
-                                    text: Translation.tr("Reject")
-                                    font.pixelSize: Appearance.font.pixelSize.small
-                                    color: Appearance.colors.colOnLayer2
-                                }
-                                onClicked: Ai.rejectCommand(root.messageData)
-                            }
-                            GroupButton {
-                                contentItem: StyledText {
-                                    text: Translation.tr("Always")
-                                    font.pixelSize: Appearance.font.pixelSize.small
-                                    color: Appearance.colors.colOnLayer2
-                                }
-                                onClicked: Ai.approveCommand(root.messageData, true)
-                                StyledToolTip {
-                                    text: root.segmentLang === "agent"
-                                        ? Translation.tr("Let the agent run without asking, from now on")
-                                        : Translation.tr("Run `%1` without asking, from now on").arg(Ai.commandRule(String(root.segmentContent)))
-                                }
-                            }
-                            GroupButton {
-                                toggled: true
-                                contentItem: StyledText {
-                                    text: Translation.tr("Once")
-                                    font.pixelSize: Appearance.font.pixelSize.small
-                                    color: Appearance.colors.colOnPrimary
-                                }
-                                onClicked: Ai.approveCommand(root.messageData, false)
-                            }
                         }
                     }
                 }
