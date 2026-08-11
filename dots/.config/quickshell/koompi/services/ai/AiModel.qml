@@ -13,6 +13,7 @@ import QtQuick;
  * - key_get_description: Description of pricing and how to get an API key
  * - api_format: The API format of the model. Can be "openai" or "gemini". Default is "openai".
  * - extraParams: Extra parameters to be passed to the model. This is a JSON object.
+ * - toolBlockByteLimit: measured ceiling on the serialised tool array, 0 for none.
  */
 
 QtObject {
@@ -29,4 +30,8 @@ QtObject {
     property string api_format: "openai"
     property var tools
     property var extraParams: ({})
+    // gemma4-e4b on LiteRT-LM drops and transposes digits in its own reply once the
+    // tool array passes ~1.5 KB of compact JSON: clean at 1461 B, first losses at
+    // 1965 B, every number wrong at 3900 B, at temperature 0. See .work/J02-report.md.
+    property int toolBlockByteLimit: 0
 }

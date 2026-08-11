@@ -13,32 +13,49 @@ ApiStrategy {
             "model": model.model,
             "messages": [
                 {role: "system", content: systemPrompt},
-                ...messages.map(message => {
-                    const hasFunctionCall = message.functionCall != undefined && message.functionName.length > 0
-                    let messageData = {
-                        "role": message.role,
-                        "content": message.rawContent,
-                    }
-                    if (hasFunctionCall) {
-                        if (message.functionResponse?.length > 0) {
-                            messageData.name = message.functionName; // Does the func call also need this name? or just the func output?
-                            messageData.role = "tool";
-                            messageData.content = message.functionResponse;
-                            messageData.tool_call_id = message.functionCall.id
-                        }
-                    }
-                    return messageData
-                }),
+                ...messages.map(message => wireMessage(message)),
             ],
             "stream": true,
             "temperature": temperature,
-            "tools": tools,
         };
+        if (tools && tools.length > 0) baseData.tools = tools;
         // console.log("[AI] Request data: ", JSON.stringify(baseData, null, 2));
         return model.extraParams ? Object.assign({}, baseData, model.extraParams) : baseData;
     }
 
-    function buildAuthorizationHeader(apiKeyEnvVarName: string): string {
+    // Same protocol as OpenAI: the call rides on the assistant turn, the result is
+    // its own message keyed by the id of the call it answers.
+    function wireMessage(message) {
+        if (message.toolCallId && message.toolCallId.length > 0) {
+            return {
+                "role": "tool",
+                "name": message.functionName,
+                "tool_call_id": message.toolCallId,
+                "content": message.functionResponse ?? ""
+            };
+        }
+        const calls = message.toolCalls ?? [];
+        if (calls.length > 0) {
+            return {
+                "role": "assistant",
+                "content": message.rawContent ?? "",
+                "tool_calls": calls.map(c => ({
+                    "id": c.id,
+                    "type": "function",
+                    "function": { "name": c.name, "arguments": c.arguments ?? "{}" }
+                }))
+            };
+        }
+        // saved before the protocol landed: no id to match, so it cannot be a tool turn
+        if (message.role === "tool") {
+            const legacy = (message.functionResponse ?? "").length > 0 ? message.functionResponse : message.rawContent;
+            return { "role": "user", "content": legacy };
+        }
+        return { "role": message.role, "content": message.rawContent };
+    }
+
+    function buildAuthorizationHeader(apiKeyEnvVarName: string, model: AiModel): string {
+        if (!model?.requires_key) return "";
         return `-H "Authorization: Bearer \$\{${apiKeyEnvVarName}\}"`;
     }
 
@@ -72,17 +89,25 @@ ApiStrategy {
             const responseContent = dataJson.choices[0]?.delta?.content || dataJson.message?.content;
             const responseReasoning = dataJson.choices[0]?.delta?.reasoning || dataJson.choices[0]?.delta?.reasoning_content;
 
-            // Function call
+            // Function calls
             if (dataJson.choices[0]?.delta?.tool_calls) {
-                const functionCall = dataJson.choices[0].delta.tool_calls[0];
-                const functionName = functionCall.function.name;
-                const functionArgs = JSON.parse(functionCall.function.arguments) || {}; // Args are given as string???
-                const functionId = functionCall.id;
-                // rawContent only, so the plumbing stays out of the chat
-                message.rawContent += `\n\n[[ Function: ${functionName}(${JSON.stringify(functionArgs, null, 2)}) ]]\n`;
-                message.functionName = functionName;
-                message.functionCall = functionName; 
-                return { functionCall: { name: functionName, args: functionArgs, id: functionId } };
+                const calls = [];
+                const wire = [];
+                for (let k = 0; k < dataJson.choices[0].delta.tool_calls.length; k++) {
+                    const tc = dataJson.choices[0].delta.tool_calls[k];
+                    let functionArgs = {};
+                    try { functionArgs = JSON.parse(tc.function.arguments) || {}; } // Args are given as string???
+                    catch (e) { console.log("[AI] Mistral: Could not parse tool call arguments: ", e); }
+                    const id = tc.id ?? `call_${k}`;
+                    calls.push({ name: tc.function.name, args: functionArgs, id: id });
+                    wire.push({ "id": id, "name": tc.function.name, "arguments": tc.function.arguments ?? "{}" });
+                }
+                if (calls.length > 0) {
+                    message.functionName = calls[0].name;
+                    message.functionCall = calls[0];
+                    message.toolCalls = wire;
+                    return { functionCall: calls[0], functionCalls: calls };
+                }
             }
 
             // Thinking?

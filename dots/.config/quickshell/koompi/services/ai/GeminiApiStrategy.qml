@@ -18,7 +18,9 @@ ApiStrategy {
     function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>, filePath: string) {
         let contents = messages.map(message => {
             // console.log("[AI] Building request data for message:", JSON.stringify(message, null, 2));
-            const geminiApiRoleName = (message.role === "assistant") ? "model" : message.role;
+            // gemini has two roles: a functionResponse part is carried by "user"
+            const geminiApiRoleName = (message.role === "assistant") ? "model"
+                : (message.role === "tool") ? "user" : message.role;
             const usingSearch = tools[0]?.google_search !== undefined
             if (!usingSearch && message.functionCall != undefined && message.functionName.length > 0) {
                 const args = (message.functionCall && typeof message.functionCall === "object")
@@ -85,7 +87,7 @@ ApiStrategy {
         return model.extraParams ? Object.assign({}, baseData, model.extraParams) : baseData;
     }
 
-    function buildAuthorizationHeader(apiKeyEnvVarName: string): string {
+    function buildAuthorizationHeader(apiKeyEnvVarName: string, model: AiModel): string {
         // Gemini doesn't use Authorization header, key is in URL
         return "";
     }
@@ -142,9 +144,10 @@ ApiStrategy {
                 message.functionCall = functionCall.name;
                 // Preserve the thought signature so it can be replayed on the follow-up turn.
                 message.thoughtSignature = fcPart.thoughtSignature ?? "";
-                // rawContent only, so the plumbing stays out of the chat
-                message.rawContent += `\n\n[[ Function: ${functionCall.name}(${JSON.stringify(functionCall.args, null, 2)}) ]]\n`;
-                return { functionCall: { name: functionCall.name, args: functionCall.args }, finished: finished };
+                // gemini names no id, so the one the result is keyed by is ours
+                const id = `call_${Date.now().toString(36)}_0`;
+                message.toolCalls = [{ "id": id, "name": functionCall.name, "arguments": JSON.stringify(functionCall.args ?? {}) }];
+                return { functionCall: { name: functionCall.name, args: functionCall.args, id: id }, finished: finished };
             }
 
             // Normal text response
@@ -216,8 +219,12 @@ ApiStrategy {
         content += `IMAGE_PATH='${CF.StringUtils.shellSingleQuoteEscape(trimmedFilePath)}'\n`;
         content += `${fileMimeTypeVarName}=$(file -b --mime-type "$IMAGE_PATH")\n`;
         content += 'NUM_BYTES=$(wc -c < "${IMAGE_PATH}")\n';
-        content += 'tmp_header_file="/tmp/quickshell/ai/upload-header.tmp"\n';
-        content += 'tmp_file_info_file="/tmp/quickshell/ai/file-info.json.tmp"\n';
+        // own runtime dir, not shared /tmp: the upload URL is a bearer of its own, and
+        // nothing creates /tmp/quickshell/ai any more now the request body has moved
+        content += 'tmp_dir="${XDG_RUNTIME_DIR:-$HOME/.cache}/quickshell/ai"\n';
+        content += 'mkdir -p -m 700 "$tmp_dir"\n';
+        content += 'tmp_header_file="$tmp_dir/upload-header.tmp"\n';
+        content += 'tmp_file_info_file="$tmp_dir/file-info.json.tmp"\n';
 
         // Initial resumable request defining metadata.
         // The upload url is in the response headers dump them to a file.

@@ -10,6 +10,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import "grounding.js" as Grounding
 
 ColumnLayout {
     id: root
@@ -21,6 +22,17 @@ ColumnLayout {
     property var messageData: null
     property bool done: true
     property bool forceDisableChunkSplitting: false
+
+    // Provenance. A span traced to one of these carries a solid underline in the
+    // theme accent and clicks back to the source; a span the model produced
+    // unaided drops a step in emphasis instead of being dressed up as evidence.
+    property var sources: []
+    signal sourceActivated(int index)
+
+    readonly property bool annotateProvenance: root.renderMarkdown && !root.editing
+        && (root.sources?.length ?? 0) > 0 && (root.messageData?.done ?? false)
+    readonly property string colRecorded: Appearance.colors.colPrimary.toString()
+    readonly property string colInferred: Appearance.colors.colSubtext.toString()
 
     property list<string> renderedLatexHashes: []
     property string renderedSegmentContent: ""
@@ -150,7 +162,12 @@ ColumnLayout {
             wrapMode: TextEdit.Wrap
             color: root.messageData?.thinking ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
             textFormat: renderMarkdown ? TextEdit.MarkdownText : TextEdit.PlainText
-            text: root.lines[index] ?? ""
+            text: {
+                const line = root.lines[index] ?? "";
+                return root.annotateProvenance
+                    ? Grounding.annotateLine(line, root.sources, root.colRecorded, root.colInferred)
+                    : line;
+            }
 
             onTextChanged: {
                 if (!root.editing) return
@@ -158,6 +175,10 @@ ColumnLayout {
             }
 
             onLinkActivated: (link) => {
+                if (link.startsWith("koompi-source:")) {
+                    root.sourceActivated(parseInt(link.slice("koompi-source:".length)))
+                    return
+                }
                 Qt.openUrlExternally(link)
                 GlobalStates.sidebarLeftOpen = false
             }

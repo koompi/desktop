@@ -46,6 +46,14 @@ Singleton {
     property string userAiPrompts: FileUtils.trimFileProtocol(`${Directories.shellConfig}/ai/prompts`)
     property string userActions: FileUtils.trimFileProtocol(`${Directories.shellConfig}/actions`)
     property string aiChats: FileUtils.trimFileProtocol(`${Directories.state}/user/ai/chats`)
+    // A screenshot the user attaches is theirs, so it goes in their own runtime
+    // directory rather than shared /tmp, same as the request body.
+    property string aiAttach: {
+        const runtime = Quickshell.env("XDG_RUNTIME_DIR") ?? "";
+        return runtime.length > 0
+            ? `${runtime}/quickshell/ai/attach`
+            : FileUtils.trimFileProtocol(`${Directories.cache}/ai/attach`);
+    }
     property string aiTranslationScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/ai/gemini-translate.sh`)
     property string recordScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/videos/record.sh`)
     property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${SystemInfo.username}`)
@@ -59,6 +67,7 @@ Singleton {
         Quickshell.execDetached(["bash", "-c", `rm -rf '${latexOutput}'; mkdir -p '${latexOutput}'`])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
         Quickshell.execDetached(["mkdir", "-p", `${aiChats}`])
+        Quickshell.execDetached(["mkdir", "-p", "-m", "700", `${aiAttach}`])
         Quickshell.execDetached(["mkdir", "-p", `${userActions}`])
         Quickshell.execDetached(["rm", "-rf", `${tempImages}`])
     }
