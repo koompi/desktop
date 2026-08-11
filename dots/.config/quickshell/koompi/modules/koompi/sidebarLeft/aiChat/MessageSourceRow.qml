@@ -42,7 +42,7 @@ RippleButton {
     Layout.fillWidth: true
     implicitHeight: rowLayout.implicitHeight + 12
     buttonRadius: Appearance.rounding.small
-    colBackground: root.flashing ? Appearance.colors.colLayer2Active : Appearance.colors.colLayer2
+    colBackground: root.flashing ? Appearance.colors.colSecondaryContainer : Appearance.colors.colLayer2
     colBackgroundHover: Appearance.colors.colLayer2Hover
     colRipple: Appearance.colors.colLayer2Active
     pointingHandCursor: root.openable

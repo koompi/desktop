@@ -1,5 +1,6 @@
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import QtQuick
 
@@ -15,22 +16,18 @@ GroupButton {
     colBackgroundHover: Appearance.colors.colSecondaryContainerHover
     colBackgroundActive: Appearance.colors.colSecondaryContainerActive
 
-    // Tab reaches it, Space and Return fire it, and the ring says where you are.
+    // Tab reaches it, Space and Return fire it, and the focused one wears the
+    // state layer so the keyboard can see where it is.
     focusPolicy: Qt.StrongFocus
     activeFocusOnTab: true
+    colBackground: button.activeFocus
+        ? Appearance.colors.colSecondaryContainerActive
+        : ColorUtils.transparentize(Appearance.colors.colSecondaryContainerHover, 1)
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Space || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
             button.clicked()
             event.accepted = true
         }
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        radius: button.buttonRadius
-        color: "transparent"
-        border.width: button.activeFocus ? 2 : 0
-        border.color: Appearance.colors.colPrimary
     }
 
     contentItem: MaterialSymbol {

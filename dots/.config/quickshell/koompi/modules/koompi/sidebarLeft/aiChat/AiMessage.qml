@@ -454,9 +454,11 @@ Item {
 
         // Revealed on hover, and on keyboard focus: a control that only a mouse
         // can find is a control half the users do not have. D29.
-        Item {
+        // A FocusScope, because `activeFocus` on a plain Item is only true when
+        // that exact item holds focus, never when one of its buttons does.
+        FocusScope {
             id: controlsContainer
-            readonly property bool revealed: messageHover.hovered || controlsRow.activeFocus || root.activeFocus
+            readonly property bool revealed: messageHover.hovered || controlsContainer.activeFocus || root.activeFocus
             implicitHeight: controlsRow.implicitHeight
             opacity: revealed ? 1 : 0
 

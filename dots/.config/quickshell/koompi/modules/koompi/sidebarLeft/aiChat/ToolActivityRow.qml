@@ -7,9 +7,9 @@ import qs.modules.common.functions
 import QtQuick
 import QtQuick.Layouts
 
-// Tool work is not conversation. It renders as one row in the transcript - what
-// ran, how long it took, what came back - and never as a chat bubble, whatever
-// a visibility flag on the message says.
+// Tool work is not dialogue. It renders as one row in the transcript - what ran,
+// how long it took, what came back - and never as a chat bubble, whatever a
+// visibility flag on the message says.
 Item {
     id: root
     property string functionName: ""
