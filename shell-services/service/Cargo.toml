@@ -10,3 +10,11 @@ description = "The shape every shell service crate presents: state over watch, e
 tokio.workspace = true
 zbus.workspace = true
 thiserror.workspace = true
+futures-util.workspace = true
+
+[features]
+# a socket pair standing in for a busy sender, so the backpressure tests need no bus
+test-support = ["zbus/p2p"]
+
+[dev-dependencies]
+koompi-service = { workspace = true, features = ["test-support"] }

@@ -332,6 +332,8 @@ dependencies = [
 name = "koompi-service"
 version = "0.1.0"
 dependencies = [
+ "futures-util",
+ "koompi-service",
  "thiserror",
  "tokio",
  "zbus",

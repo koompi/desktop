@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use futures_util::StreamExt;
-use koompi_service::{Backoff, Error, PollRate, Result, Service};
-use tokio::sync::{broadcast, mpsc, watch};
+use koompi_service::{drain, Backoff, Error, PollRate, Result, Service};
+use tokio::sync::{broadcast, watch};
 use tokio::task::JoinHandle;
 use tokio::time::Instant;
 use zbus::fdo::PropertiesProxy;
@@ -295,7 +295,10 @@ impl Worker {
             .sender(NM)?
             .build();
         let signals = MessageStream::for_match_rule(rule, &self.ctx.conn, Some(64)).await?;
-        let (mut signals, _drain) = drain(signals);
+        let mut signals = drain(signals, |message| {
+            let (refresh, path) = classify(&message);
+            (!refresh.is_empty()).then_some((refresh, path))
+        });
 
         let mut state = self.tx.borrow().clone();
         apply(&self.ctx, &mut state, Refresh::ALL, &[]).await?;
@@ -307,7 +310,7 @@ impl Worker {
 
         loop {
             tokio::select! {
-                signal = signals.recv() => {
+                signal = signals.next() => {
                     let Some((refresh, path)) = signal else { return Ok(()) };
                     pending.merge(refresh);
                     if refresh.access_point {
@@ -352,41 +355,6 @@ impl Worker {
             true
         });
     }
-}
-
-/// Aborts the drain when the session that started it ends, the way `NetworkService`
-/// drops its worker.
-struct Drain(JoinHandle<()>);
-
-impl Drop for Drain {
-    fn drop(&mut self) {
-        self.0.abort();
-    }
-}
-
-/// zbus hands a signal to a stream with `broadcast_direct`, which waits for room rather
-/// than dropping, and one task per connection reads the socket for both signals and
-/// method replies. A loop that polls the stream only between `apply` calls therefore
-/// deadlocks its own connection the first time a burst fills the stream while `apply` is
-/// awaiting a reply: the reply is behind the blocked reader, `apply` never returns, and
-/// nothing drains the stream. Associating with a new access point is such a burst.
-///
-/// Nothing here awaits the connection, so the reader is never the thing left waiting.
-fn drain(mut signals: MessageStream) -> (mpsc::UnboundedReceiver<(Refresh, Option<String>)>, Drain) {
-    let (tx, rx) = mpsc::unbounded_channel();
-    let task = tokio::spawn(async move {
-        while let Some(message) = signals.next().await {
-            let Ok(message) = message else { continue };
-            let classified = classify(&message);
-            if classified.0.is_empty() {
-                continue;
-            }
-            if tx.send(classified).is_err() {
-                return;
-            }
-        }
-    });
-    (rx, Drain(task))
 }
 
 /// What the message invalidated, and the object it came from when that object is a
@@ -1021,100 +989,60 @@ mod tests {
         );
     }
 
-    /// A peer that floods signals and answers one method call, which is NetworkManager
-    /// during an association: every access point in range reports a strength while the
-    /// device walks its states.
-    async fn peers() -> (Connection, Connection) {
-        let (theirs, ours) = tokio::net::UnixStream::pair().unwrap();
-        let guid = zbus::Guid::generate();
-        let them = tokio::spawn(async move {
-            zbus::connection::Builder::unix_stream(theirs)
-                .server(guid)
-                .unwrap()
-                .p2p()
-                .auth_mechanism(zbus::AuthMechanism::Anonymous)
-                .build()
-                .await
-                .unwrap()
-        });
-        let ours = zbus::connection::Builder::unix_stream(ours)
-            .p2p()
-            .auth_mechanism(zbus::AuthMechanism::Anonymous)
-            .build()
-            .await
-            .unwrap();
-        (them.await.unwrap(), ours)
-    }
-
-    async fn flood(conn: &Connection, count: usize) {
-        let changed: HashMap<&str, Value<'_>> = HashMap::from([("Strength", Value::U8(42))]);
-        let invalidated: Vec<&str> = Vec::new();
-        for index in 0..count {
-            conn.emit_signal(
-                None::<()>,
-                format!("/org/freedesktop/NetworkManager/AccessPoint/{index}"),
-                "org.freedesktop.DBus.Properties",
-                "PropertiesChanged",
-                &(AP_IFACE, &changed, &invalidated),
-            )
-            .await
-            .unwrap();
-        }
-    }
-
     /// The deadlock this seat shipped: connect to an access point, and the bar keeps
-    /// drawing the state from before it, with no error to retry on. zbus reads signals
-    /// and method replies on one task per connection and waits rather than drops when a
-    /// stream's queue is full, so a burst arriving while `apply` is awaiting a reply
-    /// wedges the connection for good. What the reply is waiting behind is a queue only
-    /// the loop that is stuck in `apply` would have drained.
+    /// drawing the state from before it, with no error to retry on. The burst is every
+    /// access point in range reporting a strength while the device walks its states, and
+    /// `apply` is awaiting a `GetAll` reply that the same burst is sitting in front of.
     #[tokio::test]
     async fn a_burst_of_signals_does_not_wedge_the_method_call_apply_is_waiting_on() {
-        let (them, ours) = peers().await;
+        let (them, ours) = koompi_service::testing::peers().await;
 
         let rule = MatchRule::builder()
             .msg_type(zbus::message::Type::Signal)
             .interface("org.freedesktop.DBus.Properties")
             .unwrap()
             .build();
-        let signals = MessageStream::for_match_rule(rule, &ours, Some(64)).await.unwrap();
-        let (mut signals, _drain) = drain(signals);
+        let signals = MessageStream::for_match_rule(rule, &ours, Some(64))
+            .await
+            .unwrap();
+        let mut signals = drain(signals, |message| {
+            let (refresh, path) = classify(&message);
+            (!refresh.is_empty()).then_some((refresh, path))
+        });
 
-        let answering = tokio::spawn(async move {
-            let mut incoming = MessageStream::from(them.clone());
-            flood(&them, 512).await;
-            while let Some(Ok(message)) = incoming.next().await {
-                if message.header().message_type() == zbus::message::Type::MethodCall {
-                    them.reply(&message.header(), &"pong").await.unwrap();
-                    return;
-                }
+        let peer = tokio::spawn(async move {
+            let peer = koompi_service::testing::listen(them).await;
+            let changed: HashMap<&str, Value<'_>> = HashMap::from([("Strength", Value::U8(42))]);
+            let invalidated: Vec<&str> = Vec::new();
+            for index in 0..512 {
+                peer.conn()
+                    .emit_signal(
+                        None::<()>,
+                        format!("/org/freedesktop/NetworkManager/AccessPoint/{index}"),
+                        "org.freedesktop.DBus.Properties",
+                        "PropertiesChanged",
+                        &(AP_IFACE, &changed, &invalidated),
+                    )
+                    .await
+                    .unwrap();
             }
+            peer.answer_one_call().await;
         });
 
         // the loop is inside `apply` here: it is not touching the stream, and the reply
         // it wants has every one of those signals in front of it
-        tokio::time::sleep(Duration::from_millis(200)).await;
-        let reply = tokio::time::timeout(
-            Duration::from_secs(5),
-            ours.call_method(
-                None::<()>,
-                "/probe",
-                Some("org.freedesktop.DBus.Peer"),
-                "Ping",
-                &(),
-            ),
-        )
-        .await
-        .expect("the connection wedged: a method reply never arrived past the signal burst")
-        .unwrap();
-        assert_eq!(reply.body().deserialize::<String>().unwrap(), "pong");
-
-        answering.await.unwrap();
+        koompi_service::testing::ping(&ours).await;
+        peer.await.unwrap();
 
         let mut delivered = 0;
-        while signals.try_recv().is_ok() {
+        while let Some((refresh, path)) = signals.next().await {
+            assert!(refresh.access_point, "a strength woke more than its own object");
+            assert!(path.is_some());
             delivered += 1;
+            if delivered == 512 {
+                break;
+            }
         }
-        assert!(delivered > 64, "the burst was dropped, not drained: {delivered}");
+        assert_eq!(delivered, 512, "the burst was dropped, not drained");
     }
 }

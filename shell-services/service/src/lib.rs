@@ -9,6 +9,9 @@
 
 use std::time::Duration;
 
+#[cfg(feature = "test-support")]
+pub mod testing;
+
 /// A source of state that a consumer can read now or follow.
 ///
 /// Commands stay as inherent async methods on the concrete service. Muting an audio sink
@@ -40,6 +43,63 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+/// A match rule stream that is read as fast as the bus delivers, whatever the loop
+/// consuming it is doing. See [`drain`].
+pub struct Drained<T> {
+    rx: tokio::sync::mpsc::UnboundedReceiver<T>,
+    task: tokio::task::JoinHandle<()>,
+}
+
+impl<T> Drop for Drained<T> {
+    fn drop(&mut self) {
+        self.task.abort();
+    }
+}
+
+impl<T> futures_util::Stream for Drained<T> {
+    type Item = T;
+
+    fn poll_next(
+        self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Option<T>> {
+        self.get_mut().rx.poll_recv(cx)
+    }
+}
+
+/// zbus reads signals and method replies on one task per [`zbus::Connection`], and hands
+/// a message to a match rule stream with `broadcast_direct`, which waits for room rather
+/// than dropping it. A loop that polls its stream only between reads on that same
+/// connection therefore deadlocks the first time a burst fills the queue while a read is
+/// in flight: the reply is behind the blocked reader, and the queue behind the blocked
+/// read. Nothing errors, so no [`Backoff`] and no [`Error::Unavailable`] ever fire, and
+/// the consumer keeps the last state it was sent for as long as the daemon lives.
+///
+/// This reads the stream on a task of its own, which never awaits the connection, so the
+/// reader is never what is left waiting. A larger queue only widens the window.
+///
+/// `classify` runs on that task and must not await the bus for the same reason. Returning
+/// `None` drops the message before it costs the consumer a wake.
+pub fn drain<T, F>(mut stream: zbus::MessageStream, mut classify: F) -> Drained<T>
+where
+    T: Send + 'static,
+    F: FnMut(zbus::Message) -> Option<T> + Send + 'static,
+{
+    use futures_util::StreamExt;
+
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    let task = tokio::spawn(async move {
+        while let Some(message) = stream.next().await {
+            let Ok(message) = message else { continue };
+            let Some(item) = classify(message) else { continue };
+            if tx.send(item).is_err() {
+                return;
+            }
+        }
+    });
+    Drained { rx, task }
+}
 
 /// Capped exponential delay for reconnecting to a bus name or a socket that went away.
 #[derive(Debug, Clone)]
@@ -168,5 +228,73 @@ mod tests {
         assert_eq!(PollRate::default().interval(base), base);
         assert_eq!(PollRate::SAVING.interval(base), Duration::from_secs(10));
         assert_eq!(PollRate::new(0), PollRate::NORMAL);
+    }
+
+    /// The deadlock every service that reads a match rule stream is one burst away from.
+    /// The loop is inside a read here, which is what not touching the stream stands for,
+    /// and the reply it wants has 512 signals in front of it.
+    #[tokio::test]
+    async fn a_burst_does_not_wedge_the_method_call_the_loop_is_waiting_on() {
+        use futures_util::StreamExt;
+
+        let (them, ours) = testing::peers().await;
+
+        let rule = zbus::MatchRule::builder()
+            .msg_type(zbus::message::Type::Signal)
+            .member("Tick")
+            .expect("member")
+            .build();
+        let stream = zbus::MessageStream::for_match_rule(rule, &ours, Some(64))
+            .await
+            .expect("stream");
+        let mut drained = drain(stream, |message| {
+            message.body().deserialize::<u32>().ok()
+        });
+
+        let peer = tokio::spawn(async move {
+            let peer = testing::listen(them).await;
+            for index in 0..512u32 {
+                peer.conn()
+                    .emit_signal(None::<()>, "/probe", "koompi.Test", "Tick", &index)
+                    .await
+                    .expect("emit");
+            }
+            peer.answer_one_call().await;
+        });
+
+        testing::ping(&ours).await;
+        peer.await.expect("peer task");
+
+        let mut delivered = 0;
+        while drained.next().await.is_some() {
+            delivered += 1;
+            if delivered == 512 {
+                break;
+            }
+        }
+        assert_eq!(delivered, 512, "the burst was dropped, not drained");
+    }
+
+    /// The task goes with the stream. A service that reconnects in a loop would otherwise
+    /// leave one behind per attempt, each holding a match rule.
+    #[tokio::test]
+    async fn dropping_the_stream_stops_the_task_reading_it() {
+        let (them, ours) = testing::peers().await;
+        let rule = zbus::MatchRule::builder()
+            .msg_type(zbus::message::Type::Signal)
+            .member("Tick")
+            .expect("member")
+            .build();
+        let stream = zbus::MessageStream::for_match_rule(rule, &ours, Some(8))
+            .await
+            .expect("stream");
+
+        let drained = drain(stream, |_| Some(()));
+        let task = drained.task.abort_handle();
+        drop(drained);
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert!(task.is_finished());
+        drop(them);
     }
 }

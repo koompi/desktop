@@ -15,4 +15,4 @@ futures-util.workspace = true
 
 [dev-dependencies]
 # a socket pair standing in for NetworkManager, so the backpressure test needs no bus
-zbus = { workspace = true, features = ["p2p"] }
+koompi-service = { workspace = true, features = ["test-support"] }
