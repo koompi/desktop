@@ -2,7 +2,6 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
-import qs.modules.koompi.sidebarLeft.aiChat.memory
 import qs.services
 import Quickshell
 import Quickshell.Io
@@ -354,10 +353,8 @@ Singleton {
     function closeBrowser() { root.browserOpen = false; }
     function toggleBrowser() { root.browserOpen = !root.browserOpen; }
 
-    LazyLoader {
-        active: root.browserOpen
-        component: MemoryBrowserWindow {}
-    }
+    // Loaded by the panel family. A service that imports a UI package makes the
+    // two circular, and QML reports the service as not being a type.
 
     IpcHandler {
         target: "memory"

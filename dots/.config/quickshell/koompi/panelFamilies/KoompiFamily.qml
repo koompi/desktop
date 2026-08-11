@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 
 import qs.modules.common
+import qs.services
 import qs.modules.koompi.background
 import qs.modules.koompi.bar
 import qs.modules.koompi.cheatsheet
@@ -20,6 +21,8 @@ import qs.modules.koompi.screenCorners
 import qs.modules.koompi.screenTranslator
 import qs.modules.koompi.sessionScreen
 import qs.modules.koompi.sidebarLeft
+import qs.modules.koompi.sidebarLeft.aiChat.feedback
+import qs.modules.koompi.sidebarLeft.aiChat.memory
 import qs.modules.koompi.sidebarRight
 import qs.modules.koompi.snapPreview
 import qs.modules.koompi.tour
@@ -34,6 +37,9 @@ Scope {
     PanelLoader { component: Cheatsheet {} }
     PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
     PanelLoader { component: Intelligence {} }
+    PanelLoader { extraCondition: Ai.feedback.panelOpen; component: FeedbackWindow { service: Ai.feedback } }
+    PanelLoader { extraCondition: Ai.feedback.correctionOpen; component: CorrectionWindow { service: Ai.feedback } }
+    PanelLoader { extraCondition: MemoryService.browserOpen; component: MemoryBrowserWindow {} }
     PanelLoader { component: Launchpad {} }
     PanelLoader { component: Lock {} }
     PanelLoader { component: MediaControls {} }

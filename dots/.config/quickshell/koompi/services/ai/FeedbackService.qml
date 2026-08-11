@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import qs.modules.common
 import qs.modules.common.functions as CF
-import qs.modules.koompi.sidebarLeft.aiChat.feedback
 import qs.services
 import "../../modules/koompi/sidebarLeft/aiChat/grounding.js" as Grounding
 import Quickshell
@@ -1080,15 +1079,9 @@ QtObject {
     function closePanel() { root.panelOpen = false; }
     function togglePanel() { root.panelOpen = !root.panelOpen; }
 
-    readonly property LazyLoader panelLoader: LazyLoader {
-        active: root.panelOpen
-        component: FeedbackWindow { service: root }
-    }
-
-    readonly property LazyLoader correctionLoader: LazyLoader {
-        active: root.correctionOpen
-        component: CorrectionWindow { service: root }
-    }
+    // The windows themselves are loaded by the panel family, not from here. A
+    // service that imports a UI package makes the two circular, and QML resolves
+    // that by reporting FeedbackService as not a type at all.
 
     readonly property IpcHandler ipc: IpcHandler {
         target: "aifeedback"
