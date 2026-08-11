@@ -18,6 +18,72 @@ Singleton {
     // was rewritten in place - a wallpaper re-roll keeps the same filename.
     signal reloaded()
 
+    /* ---- the system prompt, assembled from files ---- */
+
+    // Ordered. Each name is a file under defaults/ai/prompts/system/ in the
+    // installed shell tree, so a section can be read, diffed and edited per
+    // install instead of living inside a 4 KB string literal.
+    readonly property list<string> promptSectionFiles: [
+        "00-identity.md",
+        "10-machine.md",
+        "20-memory.md",
+        "30-tools.md",
+        "40-style.md"
+    ]
+    readonly property string promptSectionDir: `${Directories.defaultAiPrompts}/system`
+
+    // The sections joined. `options.ai.systemPrompt` binds to this, so a
+    // config.json carrying its own systemPrompt breaks the binding and wins -
+    // silently, which is why Settings > AI names the source it is reading.
+    property string composedSystemPrompt: ""
+    readonly property bool systemPromptOverridden: root.composedSystemPrompt.length > 0
+        && root.options.ai.systemPrompt !== root.composedSystemPrompt
+    readonly property string systemPromptSource: root.systemPromptOverridden
+        ? root.filePath
+        : root.promptSectionDir
+
+    // Keyed by file name, not by delegate index: an Instantiator's count and
+    // objectAt() are only complete after the last delegate is built, so composing
+    // from them leaves the prompt one section short.
+    property var promptSectionBodies: ({})
+
+    function recomposeSystemPrompt() {
+        const parts = [];
+        for (const name of root.promptSectionFiles) {
+            const body = (root.promptSectionBodies[name] ?? "").trim();
+            if (body.length > 0)
+                parts.push(body);
+        }
+        if (parts.length === 0) {
+            console.warn(`[Config] no system prompt sections under ${root.promptSectionDir}`);
+            return;
+        }
+        root.composedSystemPrompt = parts.join("\n\n") + "\n";
+    }
+
+    Instantiator {
+        model: root.promptSectionFiles
+        delegate: QtObject {
+            id: promptSection
+            required property string modelData
+            readonly property FileView view: FileView {
+                path: `${root.promptSectionDir}/${promptSection.modelData}`
+                // blockAllReads, not blockLoading: blockLoading leaves the first
+                // text() returning "" and the prompt composed without it.
+                blockAllReads: true
+                onLoaded: {
+                    root.promptSectionBodies[promptSection.modelData] = text();
+                    root.recomposeSystemPrompt();
+                }
+                onLoadFailed: console.warn(`[Config] system prompt section unreadable: ${path}`)
+            }
+            Component.onCompleted: {
+                root.promptSectionBodies[promptSection.modelData] = promptSection.view.text();
+                root.recomposeSystemPrompt();
+            }
+        }
+    }
+
     function setNestedValue(nestedKey, value) {
         let keys = nestedKey.split(".");
         let obj = root.options;
@@ -97,10 +163,16 @@ Singleton {
             }
 
             property JsonObject ai: JsonObject {
-                property string systemPrompt: "## Identity\n- Your name is **{AINAME}**. This is your only name. You are a personal AI assistant living on this user's KOOMPI computer.\n- If asked who you are or what your name is, answer **{AINAME}** — never identify yourself as Gemini, GPT, Claude, a Google/OpenAI model, or 'a large language model'. The underlying model is just an engine; your identity is {AINAME}.\n- Your owner is **{OWNER}**. If the owner is 'unknown', it means you don't know their name yet: at the start of the conversation, warmly introduce yourself as {AINAME} and ask what you should call them. As soon as they tell you, call the `set_owner_name` function to remember it. If function calling isn't available, tell them they can register their name with `/owner THEIR_NAME`.\n- Once you know the owner's name, address them by it occasionally and treat them as the owner of this machine.\n\n## Style\n- Use casual tone, don't be formal!\n- Always be brief and to the point, unless asked otherwise\n- Don't repeat the user's question\n- Be approachable: Avoid using overly complicated, domain-specific terms and provide analogies when asked to explain a concept\n\n## System context (ignore when irrelevant)\n- Owner: {OWNER} (login user: {USERNAME})\n- Machine hostname: {HOSTNAME}\n- OS: {DISTRO} (kernel {KERNEL})\n- Desktop environment: {DE}\n- Current date & time: {DATETIME}\n- Focused app: {WINDOWCLASS}\n- Power: {BATTERY}\n- Network: {NETWORK}\n- You can read and change desktop shell settings, run shell commands, search the web, and hand a whole task to `ask_agent` - use them to genuinely help with this machine when asked.\n{MEMORY}\n## Agent Behavior\n- **BIAS TOWARD ACTION**: When you have the tools to do something, do it — don't just describe what you could do.\n- **DECLARE DONE**: When a task is complete, say so explicitly. Don't keep elaborating or offering more help unless asked.\n- **RETRY ON FAILURE**: If a tool call fails or a command errors, adjust your approach and try again. State what went wrong and what you are trying instead.\n- **LOOK IT UP, NEVER GUESS**: `recall` searches only your private memory of this user. It is not a search of the world, and 'no relevant memories found' tells you nothing about whether a thing exists. When the user names a website or gives a link, call `fetch_url` on it. For anything else you are not certain of (a company, a person, a product, a price, news, a library, an unfamiliar error) call `search_web`. Never reply that you have no information about something, and never ask the user to describe it for you, until you have looked. After a lookup, answer in your own words from what it returned and name the source.\n- **THIS MACHINE, NEVER FROM MEMORY**: Anything about this specific computer - its hardware, laptop model, CPU, RAM, GPU, disk, battery, drivers, installed packages, running services, logs, or why something on it is broken - is something you do not know. Your training data describes KOOMPI and Linux in general, never the box you are running on, so answering from it is a wrong answer. Call `ask_agent` to go and look at the real system, then report what it found. Use `ask_agent` too for anything that needs several steps of research or a real audit.\n\n## Presentation\n- Do NOT use emoji. No emoji in headers, bullets, or anywhere in your response. If you need a visual marker, rely on Markdown structure (headers, bold, bullets) instead of emoji or emoticons.\n- Use Markdown features in your response:\n  - **Bold** text to **highlight keywords** in your response\n  - **Split long information into small sections** with plain h2 headers (for example `## Linux`). Bullet points are preferred over long paragraphs, unless you're offering writing support or instructed otherwise by the user.\n- Asked to compare different options? You should firstly use a table to compare the main aspects, then elaborate or include relevant comments from online forums *after* the table. Make sure to provide a final recommendation for the user's use case!\n- Use LaTeX formatting for mathematical and scientific notations whenever appropriate. Enclose all LaTeX '$$' delimiters. NEVER generate LaTeX code in a latex block unless the user explicitly asks for it. DO NOT use LaTeX for regular documents (resumes, letters, essays, CVs, etc.).\n\nThanks!\n"
+                // Composed from defaults/ai/prompts/system/. A value written here
+                // by config.json wins and the binding dies with it, which is why
+                // Settings > AI prints which of the two is live.
+                property string systemPrompt: root.composedSystemPrompt
                 property string tool: "functions" // search, functions, or none
                 property bool webSearch: true // search_web / fetch_url tools, backed by the local SearXNG at :8888
                 property bool agentTool: true // ask_agent tool, backed by the pi CLI agent
+                property int requestTimeoutSec: 180 // curl --max-time and the shell's own deadline; floored at 10
+                property bool restoreSession: true // reopen the last conversation at login
+                property bool debugCommands: false // show the developer slash commands in the composer
                 property list<var> extraModels: [
                     {
                         "api_format": "openai", // Most of the time you want "openai". Use "gemini" for Google's models
@@ -122,8 +194,15 @@ Singleton {
                     property string provider: "local" // local | gemini | openai (embedding backend)
                     property string keyId: "" // keyring id for the embedding key when provider != local
                     property string binary: "" // empty => ~/.local/bin/koompi-agent-memd
+                    property int recallBudgetMs: 800 // how long a turn waits for recall before going without it
                     property int compactionThreshold: 30000 // auto-compact when total tokens exceed this
+                    property real compactionFraction: 0.6 // of the derived context window; clamped 0.1-0.95
                     property int contextWindow: 128000       // context window size for token HUD fill-bar
+                    property int litertPort: 9379 // an endpoint on this port is read as LiteRT-LM
+                }
+                property JsonObject research: JsonObject {
+                    property int maxIterations: 5
+                    property int toolBudget: 3 // tool calls per iteration; x maxIterations is the hard cap
                 }
                 // What the user has told the assistant it may run without asking again.
                 // Edit or empty these by hand to revoke; nothing else writes them.

@@ -83,6 +83,11 @@ Singleton {
             component: "modules/settings/AccountConfig.qml"
         },
         {
+            name: Translation.tr("AI"),
+            icon: "neurology",
+            component: "modules/settings/AiConfig.qml"
+        },
+        {
             name: Translation.tr("Services"),
             icon: "settings",
             component: "modules/settings/ServicesConfig.qml"
