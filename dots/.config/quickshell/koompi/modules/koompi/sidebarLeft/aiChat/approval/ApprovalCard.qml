@@ -38,8 +38,6 @@ Rectangle {
     // keys on the program name survives an argument being appended to it.
     readonly property bool ruleIsWholeCommand: Ai.commandRule(`${root.rule} x`) !== root.rule
 
-    property bool rulesOpen: false
-
     // The model's own words, taken from what it wrote before the tool layer
     // appended its request. No reason is better than an invented one.
     readonly property string reason: {
@@ -227,9 +225,13 @@ Rectangle {
                 buttonText: Translation.tr("Allowed rules")
                 colEnabled: Appearance.colors.colSubtext
                 activeFocusOnTab: true
-                onClicked: root.rulesOpen = true
+                onClicked: {
+                    const page = SettingsPages.list.find(entry => entry.component.endsWith("AiConfig.qml"));
+                    if (page)
+                        SettingsPages.open(page);
+                }
                 StyledToolTip {
-                    text: Translation.tr("Everything you have allowed without asking, and a way to take it back")
+                    text: Translation.tr("Opens Settings > AI: everything you have allowed without asking, and a way to take it back")
                 }
             }
 
@@ -261,10 +263,4 @@ Rectangle {
         }
     }
 
-    LazyLoader {
-        active: root.rulesOpen
-        component: ApprovalRulesWindow {
-            onDismissed: root.rulesOpen = false
-        }
-    }
 }
