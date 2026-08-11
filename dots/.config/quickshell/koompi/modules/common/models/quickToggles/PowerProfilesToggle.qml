@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Services.UPower
 import qs
 import qs.services
 import qs.modules.common
@@ -9,30 +8,30 @@ import qs.modules.common.widgets
 
 QuickToggleModel {
     name: Translation.tr("Power Profile")
-    toggled: PowerProfiles.profile !== PowerProfile.Balanced
-    icon: switch(PowerProfiles.profile) {
-        case PowerProfile.PowerSaver: return "energy_savings_leaf"
-        case PowerProfile.Balanced: return "airwave"
-        case PowerProfile.Performance: return "local_fire_department"
+    toggled: PowerSaving.profile !== "balanced"
+    icon: switch(PowerSaving.profile) {
+        case "power-saver": return "energy_savings_leaf"
+        case "balanced": return "airwave"
+        case "performance": return "local_fire_department"
     }
-    statusText: switch(PowerProfiles.profile) {
-        case PowerProfile.PowerSaver: return "Power Saver"
-        case PowerProfile.Balanced: return "Balanced"
-        case PowerProfile.Performance: return "Performance"
+    statusText: switch(PowerSaving.profile) {
+        case "power-saver": return "Power Saver"
+        case "balanced": return "Balanced"
+        case "performance": return "Performance"
     }
-    
+
     mainAction: () => {
-        if (PowerProfiles.hasPerformanceProfile) {
-            switch(PowerProfiles.profile) {
-                case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced
+        if (PowerSaving.hasPerformanceProfile) {
+            switch(PowerSaving.profile) {
+                case "power-saver": PowerSaving.setProfile("balanced")
                 break;
-                case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance
+                case "balanced": PowerSaving.setProfile("performance")
                 break;
-                case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver
+                case "performance": PowerSaving.setProfile("power-saver")
                 break;
             }
         } else {
-            PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced
+            PowerSaving.setProfile(PowerSaving.profile === "balanced" ? "power-saver" : "balanced")
         }
     }
     tooltipText: Translation.tr("Click to cycle through power profiles")

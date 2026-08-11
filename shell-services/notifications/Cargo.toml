@@ -1,0 +1,16 @@
+[package]
+name = "koompi-notifications"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The org.freedesktop.Notifications server, with atomic on-disk persistence of the history"
+
+[dependencies]
+koompi-service.workspace = true
+tokio.workspace = true
+zbus.workspace = true
+zvariant.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true

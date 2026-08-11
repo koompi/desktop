@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Services.UPower
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -25,7 +24,7 @@ ContentPage {
         StyledText {
             visible: Battery.available
             text: {
-                if (Battery.chargeState == UPowerDeviceState.FullyCharged)
+                if (Battery.chargeState === "fully-charged")
                     return Translation.tr("State: Fully charged");
                 if (Battery.isCharging)
                     return Translation.tr("State: Charging");
@@ -89,28 +88,28 @@ ContentPage {
         title: Translation.tr("Power profile")
 
         ConfigSelectionArray {
-            currentValue: PowerProfiles.profile
+            currentValue: PowerSaving.profile
             onSelected: newValue => {
-                PowerProfiles.profile = newValue;
+                PowerSaving.setProfile(newValue);
             }
             options: {
                 const opts = [
                     {
                         displayName: Translation.tr("Power saver"),
                         icon: "energy_savings_leaf",
-                        value: PowerProfile.PowerSaver
+                        value: "power-saver"
                     },
                     {
                         displayName: Translation.tr("Balanced"),
                         icon: "airwave",
-                        value: PowerProfile.Balanced
+                        value: "balanced"
                     },
                 ];
-                if (PowerProfiles.hasPerformanceProfile) {
+                if (PowerSaving.hasPerformanceProfile) {
                     opts.push({
                         displayName: Translation.tr("Performance"),
                         icon: "local_fire_department",
-                        value: PowerProfile.Performance
+                        value: "performance"
                     });
                 }
                 return opts;

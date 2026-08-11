@@ -5,7 +5,6 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 import QtQuick
 import Quickshell
-import Quickshell.Bluetooth
 
 AndroidQuickToggleButton {
     id: root

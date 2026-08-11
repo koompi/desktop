@@ -5,7 +5,6 @@ import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
 import Quickshell
-import Quickshell.Bluetooth
 import Quickshell.Io
 import Quickshell.Hyprland
 
@@ -15,7 +14,7 @@ QuickToggleButton {
     toggled: BluetoothStatus.enabled
     buttonIcon: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
     onClicked: {
-        BluetoothStatus.setEnabled(!Bluetooth.defaultAdapter?.enabled)
+        BluetoothStatus.setEnabled(!BluetoothStatus.enabled)
     }
     altAction: () => {
         Quickshell.execDetached(["bash", "-c", `${Config.options.apps.bluetooth}`])
@@ -23,7 +22,7 @@ QuickToggleButton {
     }
     StyledToolTip {
         text: Translation.tr("%1 | Right-click to configure").arg(
-            (BluetoothStatus.firstActiveDevice?.name ?? Translation.tr("Bluetooth"))
+            (BluetoothStatus.firstActiveDevice?.alias ?? Translation.tr("Bluetooth"))
             + (BluetoothStatus.activeDeviceCount > 1 ? ` +${BluetoothStatus.activeDeviceCount - 1}` : "")
             )
     }

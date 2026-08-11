@@ -65,8 +65,8 @@ Singleton {
                 property string remoteModel: "gemini-2.5-flash"
                 property string remoteEndpoint: ""
                 property string remoteFormat: ""
-                property string localModel: ""
-                property string localEndpoint: "http://localhost:11434/v1/chat/completions"
+                property string localModel: "gemma4-e2b"
+                property string localEndpoint: "http://127.0.0.1:9379/v1/chat/completions"
             }
 
             property JsonObject cheatsheet: JsonObject {

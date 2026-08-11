@@ -1,0 +1,12 @@
+[package]
+name = "koompi-service"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The shape every shell service crate presents: state over watch, errors, reconnect backoff, poll rate"
+
+[dependencies]
+tokio.workspace = true
+zbus.workspace = true
+thiserror.workspace = true

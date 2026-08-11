@@ -1,0 +1,13 @@
+[package]
+name = "koompi-hyprland"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Hyprland workspaces, clients, keybinds and keyboard layout, read over the compositor's own sockets"
+
+[dependencies]
+koompi-service.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true

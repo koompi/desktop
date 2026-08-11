@@ -1,0 +1,35 @@
+{
+"eDP-1": {
+    "levels": {
+
+        "0": [
+],
+        "1": [
+                {
+                    "address": "0x559469bf45a0",
+                    "x": 0,
+                    "y": 1080,
+                    "w": 1920,
+                    "h": 1200,
+                    "alpha": 1,
+                    "namespace": "quickshell:background",
+                    "pid": 1572
+                }
+        ],
+        "2": [
+                {
+                    "address": "0x55946b1b9470",
+                    "x": 0,
+                    "y": 1080,
+                    "w": 1920,
+                    "h": 63,
+                    "alpha": 1,
+                    "namespace": "quickshell:bar",
+                    "pid": 1572
+                }
+        ],
+        "3": [
+]
+    }
+}
+}

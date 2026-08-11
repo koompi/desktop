@@ -1,0 +1,155 @@
+{
+"mice": [
+    {
+        "address": "0x55946aac7aa0",
+        "name": "snsl0028:00-2c2f:0028-mouse",
+        "defaultSpeed": 0.00000,
+        "scrollFactor": -1.00
+    },    {
+        "address": "0x559469d7ae90",
+        "name": "snsl0028:00-2c2f:0028-touchpad",
+        "defaultSpeed": 0.00000,
+        "scrollFactor": -1.00
+    },    {
+        "address": "0x55946ac06b90",
+        "name": "tpps/2-elan-trackpoint",
+        "defaultSpeed": 0.00000,
+        "scrollFactor": -1.00
+    },    {
+        "address": "0x55946acad390",
+        "name": "ydotoold-virtual-device-1",
+        "defaultSpeed": 0.00000,
+        "scrollFactor": -1.00
+    },    {
+        "address": "0x55946b1977e0",
+        "name": "touch-gestures-wheel",
+        "defaultSpeed": 0.00000,
+        "scrollFactor": -1.00
+    }
+],
+"keyboards": [
+    {
+        "address": "0x55946a8e1810",
+        "name": "sof-soundwire-headset-jack",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946aad3f00",
+        "name": "video-bus",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946ab1ba00",
+        "name": "intel-hid-events",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946ab3cd90",
+        "name": "power-button",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946ab9c6b0",
+        "name": "sleep-button",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946abe00f0",
+        "name": "at-translated-set-2-keyboard",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": true
+    },    {
+        "address": "0x55946ac09e30",
+        "name": "thinkpad-extra-buttons",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    },    {
+        "address": "0x55946ac64f40",
+        "name": "ydotoold-virtual-device",
+        "rules": "",
+        "model": "",
+        "layout": "us,kh",
+        "variant": "",
+        "options": "",
+        "active_layout_index": 0,
+        "active_keymap": "English (US)",
+        "capsLock": false,
+        "numLock": true,
+        "main": false
+    }
+],
+"tablets": [
+
+],
+"touch": [
+    {
+        "address": "0x559469d77980",
+        "name": "quicki2c-hid-04f3:43b6"
+    },    {
+        "address": "0x55946aab21e0",
+        "name": "touch-gestures-touchscreen"
+    }
+],
+"switches": [
+    {
+        "address": "0x559469dc33f0",
+        "name": "Lid Switch"
+    }
+]
+}

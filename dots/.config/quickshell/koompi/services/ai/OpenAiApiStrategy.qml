@@ -19,9 +19,14 @@ ApiStrategy {
             console.log("[AI] OpenAI: Could not parse tool call arguments: ", e);
         }
         message.functionName = call.name;
-        const newContent = `\n\n[[ Function: ${call.name}(${call.arguments || "{}"}) ]]\n`;
-        message.rawContent += newContent;
-        message.content += newContent;
+        // rawContent only: the model needs to see its own call in the next request,
+        // the user does not need the plumbing in the chat
+        message.rawContent += `\n\n[[ Function: ${call.name}(${call.arguments || "{}"}) ]]\n`;
+        // one call runs per turn, so name what was skipped instead of losing it silently
+        if (indices.length > 1) {
+            const skipped = indices.slice(1).map(i => pendingToolCalls[i].name).filter(n => n.length > 0).join(", ");
+            if (skipped.length > 0) message.rawContent += `[[ Not run this turn, call again if still needed: ${skipped} ]]\n`;
+        }
         return { name: call.name, args: args };
     }
 
@@ -114,7 +119,12 @@ ApiStrategy {
             const toolCallDeltas = dataJson.choices[0]?.delta?.tool_calls;
             if (toolCallDeltas) {
                 for (const tc of toolCallDeltas) {
-                    const idx = tc.index ?? 0;
+                    let idx = tc.index ?? 0;
+                    // LiteRT-LM stamps every call in a turn with index 0 and the same
+                    // id, so a name landing on a bucket that has one is a second call,
+                    // not a continuation. Without this they concatenate.
+                    if (tc.function?.name && pendingToolCalls[idx]?.name)
+                        idx = Object.keys(pendingToolCalls).length;
                     if (!pendingToolCalls[idx]) pendingToolCalls[idx] = { name: "", arguments: "" };
                     if (tc.function?.name) pendingToolCalls[idx].name += tc.function.name;
                     if (tc.function?.arguments) pendingToolCalls[idx].arguments += tc.function.arguments;

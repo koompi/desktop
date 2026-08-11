@@ -4,7 +4,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import Qt5Compat.GraphicalEffects
-import Quickshell.Services.UPower
 import qs
 import qs.services
 import qs.modules.common

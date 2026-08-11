@@ -6,7 +6,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Bluetooth
 import Quickshell.Hyprland
 
 import qs.modules.koompi.bar
@@ -322,10 +321,10 @@ Item {
         dialog: BluetoothDialog {}
         onShownChanged: {
             if (!shown) {
-                Bluetooth.defaultAdapter.discovering = false;
+                BluetoothStatus.setDiscovering(false);
             } else {
                 BluetoothStatus.setEnabled(true);
-                Bluetooth.defaultAdapter.discovering = true;
+                BluetoothStatus.setDiscovering(true);
             }
         }
     }

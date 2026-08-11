@@ -78,9 +78,8 @@ ApiStrategy {
                 const functionName = functionCall.function.name;
                 const functionArgs = JSON.parse(functionCall.function.arguments) || {}; // Args are given as string???
                 const functionId = functionCall.id;
-                const newContent = `\n\n[[ Function: ${functionName}(${JSON.stringify(functionArgs, null, 2)}) ]]\n`;
-                message.rawContent += newContent;
-                message.content += newContent;
+                // rawContent only, so the plumbing stays out of the chat
+                message.rawContent += `\n\n[[ Function: ${functionName}(${JSON.stringify(functionArgs, null, 2)}) ]]\n`;
                 message.functionName = functionName;
                 message.functionCall = functionName; 
                 return { functionCall: { name: functionName, args: functionArgs, id: functionId } };

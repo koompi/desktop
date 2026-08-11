@@ -5,7 +5,6 @@ import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Bluetooth
 import qs.modules.koompi.overlay.crosshair
 import qs.modules.koompi.overlay.volumeMixer
 import qs.modules.koompi.overlay.floatingImage

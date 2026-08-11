@@ -8,7 +8,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell.Io
-import Quickshell.Bluetooth
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -21,10 +20,10 @@ WindowDialog {
         text: Translation.tr("Bluetooth devices")
     }
     WindowDialogSeparator {
-        visible: !(Bluetooth.defaultAdapter?.discovering ?? false)
+        visible: !BluetoothStatus.discovering
     }
     StyledIndeterminateProgressBar {
-        visible: Bluetooth.defaultAdapter?.discovering ?? false
+        visible: BluetoothStatus.discovering
         Layout.fillWidth: true
         Layout.topMargin: -8
         Layout.bottomMargin: -8
@@ -47,7 +46,7 @@ WindowDialog {
             values: BluetoothStatus.friendlyDeviceList
         }
         delegate: BluetoothDeviceItem {
-            required property BluetoothDevice modelData
+            required property var modelData
             device: modelData
             anchors {
                 left: parent?.left

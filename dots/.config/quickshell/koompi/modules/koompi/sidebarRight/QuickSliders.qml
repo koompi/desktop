@@ -7,7 +7,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Services.UPower
 
 Rectangle {
     id: root

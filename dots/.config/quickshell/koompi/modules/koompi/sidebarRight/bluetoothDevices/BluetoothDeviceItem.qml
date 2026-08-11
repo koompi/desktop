@@ -47,7 +47,7 @@ DialogListItem {
                     Layout.fillWidth: true
                     color: Appearance.colors.colOnSurfaceVariant
                     elide: Text.ElideRight
-                    text: root.device?.name || Translation.tr("Unknown device")
+                    text: root.device?.alias || Translation.tr("Unknown device")
                     textFormat: Text.PlainText
                 }
                 StyledText {
@@ -59,8 +59,8 @@ DialogListItem {
                     text: {
                         if (!root.device?.paired) return "";
                         let statusText = root.device?.connected ? Translation.tr("Connected") : Translation.tr("Paired");
-                        if (!root.device?.batteryAvailable) return statusText;
-                        statusText += ` • ${Math.round(root.device?.battery * 100)}%`;
+                        if (root.device?.battery == null) return statusText;
+                        statusText += ` • ${root.device.battery}%`;
                         return statusText;
                     }
                 }
@@ -93,9 +93,9 @@ DialogListItem {
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {
                     if (root.device?.paired) {
-                        root.device?.forget();
+                        BluetoothStatus.forget(root.device);
                     } else {
-                        root.device?.pair();
+                        BluetoothStatus.pair(root.device);
                     }
                 }
             }
@@ -104,9 +104,9 @@ DialogListItem {
 
                 onClicked: {
                     if (root.device?.connected) {
-                        root.device.disconnect();
+                        BluetoothStatus.disconnectDevice(root.device);
                     } else {
-                        root.device.connect();
+                        BluetoothStatus.connectDevice(root.device);
                     }
                 }
             }
