@@ -25,7 +25,15 @@ Singleton {
     property string scriptPath: Quickshell.shellPath("scripts")
     property string favicons: FileUtils.trimFileProtocol(`${Directories.cache}/media/favicons`)
     property string coverArt: FileUtils.trimFileProtocol(`${Directories.cache}/media/coverart`)
-    property string tempImages: "/tmp/quickshell/media/images"
+    // A screen grab and a clipboard decode are as much the user's as the request
+    // body is, so they follow it out of shared /tmp into the runtime directory.
+    readonly property string runtimeMedia: {
+        const runtime = Quickshell.env("XDG_RUNTIME_DIR") ?? "";
+        return runtime.length > 0
+            ? `${runtime}/quickshell/media`
+            : FileUtils.trimFileProtocol(`${Directories.cache}/media/temp`);
+    }
+    property string tempImages: `${Directories.runtimeMedia}/images`
     property string latexOutput: FileUtils.trimFileProtocol(`${Directories.cache}/media/latex`)
     property string shellConfig: FileUtils.trimFileProtocol(`${Directories.config}/koompi`)
     property string shellConfigName: "config.json"
@@ -36,8 +44,8 @@ Singleton {
     property string notificationsPath: FileUtils.trimFileProtocol(`${Directories.cache}/notifications/notifications.json`)
     property string generatedMaterialThemePath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/colors.json`)
     property string generatedWallpaperCategoryPath: FileUtils.trimFileProtocol(`${Directories.state}/user/generated/wallpaper/category.txt`)
-    property string cliphistDecode: FileUtils.trimFileProtocol(`/tmp/quickshell/media/cliphist`)
-    property string screenshotTemp: "/tmp/quickshell/media/screenshot"
+    property string cliphistDecode: `${Directories.runtimeMedia}/cliphist`
+    property string screenshotTemp: `${Directories.runtimeMedia}/screenshot`
     property string wallpaperSwitchScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/colors/switchwall.sh`)
     // Routes a chosen image to the active workspace when workspace wallpapers are
     // on, and to the global wallpaper plus theme regen when they are off.
@@ -65,7 +73,7 @@ Singleton {
         Quickshell.execDetached(["mkdir", "-p", `${favicons}`])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${coverArt}'; mkdir -p '${coverArt}'`])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${latexOutput}'; mkdir -p '${latexOutput}'`])
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
+        Quickshell.execDetached(["bash", "-c", `umask 077; rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
         Quickshell.execDetached(["mkdir", "-p", `${aiChats}`])
         Quickshell.execDetached(["mkdir", "-p", "-m", "700", `${aiAttach}`])
         Quickshell.execDetached(["mkdir", "-p", `${userActions}`])
