@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use futures_util::stream::{BoxStream, SelectAll, StreamExt};
-use koompi_service::{Backoff, Error, PollRate, Result, Service};
+use koompi_service::{drain, Backoff, Error, PollRate, Result, Service};
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 use zbus::fdo::PropertiesProxy;
@@ -238,7 +238,7 @@ fn poll_rate_for(config: &PowerConfig, on_battery: bool) -> PollRate {
 }
 
 async fn run(ctx: Arc<Ctx>, tx: watch::Sender<PowerState>) {
-    let Ok(mut wake) = wake_stream(&ctx).await else {
+    let Ok(mut wake) = wake_stream(&ctx.conn, ctx.ppd.is_some()).await else {
         return;
     };
     let mut backoff = Backoff::default();
@@ -272,9 +272,13 @@ async fn run(ctx: Arc<Ctx>, tx: watch::Sender<PowerState>) {
 
 /// One rule per sender rather than one per object: a battery hot-added after start,
 /// or a USB-C supply appearing, wakes us without a subscription of its own.
-async fn wake_stream(ctx: &Ctx) -> Result<SelectAll<BoxStream<'static, ()>>> {
+///
+/// Each stream is drained on its own task. `read` awaits UPower on this same connection,
+/// and a stream polled only between reads is one burst away from wedging it: see
+/// [`koompi_service::drain`].
+async fn wake_stream(conn: &Connection, profiles: bool) -> Result<SelectAll<BoxStream<'static, ()>>> {
     let mut senders = vec![UPOWER];
-    if ctx.ppd.is_some() {
+    if profiles {
         senders.push(PPD);
     }
 
@@ -284,8 +288,8 @@ async fn wake_stream(ctx: &Ctx) -> Result<SelectAll<BoxStream<'static, ()>>> {
             .msg_type(zbus::message::Type::Signal)
             .sender(sender)?
             .build();
-        let stream = MessageStream::for_match_rule(rule, &ctx.conn, Some(16)).await?;
-        streams.push(stream.map(|_| ()).boxed());
+        let stream = MessageStream::for_match_rule(rule, conn, Some(16)).await?;
+        streams.push(drain(stream, |_| Some(())).boxed());
     }
 
     Ok(futures_util::stream::select_all(streams))
@@ -334,5 +338,47 @@ mod tests {
         assert_eq!(header.member().unwrap(), "EnableChargeThreshold");
         assert_eq!(message.body().signature().to_string(), "b");
         assert!(message.body().deserialize::<bool>().unwrap());
+    }
+
+    /// `run` awaits `read`, which is one `GetAll` per battery on the same connection the
+    /// wake stream is on. UPower is quieter than NetworkManager, but a supply flapping or
+    /// a dock announcing its devices is still a burst, and 16 is a low ceiling to clear.
+    /// The wedge is silent: `read` never returns, so `Backoff` never runs.
+    #[tokio::test]
+    async fn a_burst_from_upower_does_not_wedge_the_read_the_loop_is_waiting_on() {
+        let (them, ours) = koompi_service::testing::peers().await;
+        let mut wake = wake_stream(&ours, false).await.unwrap();
+
+        // `wake_stream` rules on the sender, which only a bus daemon can resolve, so
+        // every signal on the connection reaches the stream here
+        let peer = tokio::spawn(async move {
+            let peer = koompi_service::testing::listen(them).await;
+            for _ in 0..512 {
+                peer.conn()
+                    .emit_signal(
+                        None::<()>,
+                        "/org/freedesktop/UPower/devices/battery_BAT0",
+                        DEVICE_IFACE.as_str(),
+                        "Changed",
+                        &(),
+                    )
+                    .await
+                    .unwrap();
+            }
+            peer.answer_one_call().await;
+        });
+
+        // the loop is inside `read` here, not touching its wake stream
+        koompi_service::testing::ping(&ours).await;
+        peer.await.unwrap();
+
+        let mut woken = 0;
+        while wake.next().await.is_some() {
+            woken += 1;
+            if woken == 512 {
+                break;
+            }
+        }
+        assert_eq!(woken, 512, "the burst was dropped, not drained");
     }
 }

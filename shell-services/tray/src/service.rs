@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::stream::{BoxStream, SelectAll, StreamExt};
-use koompi_service::{Backoff, Error, Result, Service};
+use koompi_service::{drain, Backoff, Error, Result, Service};
 use tokio::sync::{broadcast, watch};
 use tokio::task::JoinHandle;
 use zbus::fdo::{DBusProxy, PropertiesProxy};
@@ -526,36 +526,44 @@ async fn wake_stream(ctx: &Ctx) -> Result<SelectAll<BoxStream<'static, Wake>>> {
     };
 
     let streams: Vec<BoxStream<'static, Wake>> = vec![
-        stream(ctx, watcher).await?.map(|_| Wake::Items).boxed(),
-        stream(ctx, items)
-            .await?
-            .map(move |message| Wake::Item(sender_of(&message)))
-            .boxed(),
-        stream(ctx, item_props)
-            .await?
-            .map(move |message| Wake::Item(sender_of(&message)))
-            .boxed(),
-        stream(ctx, menus).await?.map(Wake::Menu).boxed(),
-        stream(ctx, owner)
-            .await?
-            .map(|message| {
-                let taken = message
-                    .body()
-                    .deserialize::<(String, String, String)>()
-                    .map(|(_, _, new_owner)| !new_owner.is_empty())
-                    .unwrap_or(false);
-                Wake::WatcherOwner(taken)
-            })
-            .boxed(),
+        stream(ctx, watcher, |_| Some(Wake::Items)).await?,
+        stream(ctx, items, move |message| {
+            Some(Wake::Item(sender_of(&message)))
+        })
+        .await?,
+        stream(ctx, item_props, move |message| {
+            Some(Wake::Item(sender_of(&message)))
+        })
+        .await?,
+        stream(ctx, menus, |message| Some(Wake::Menu(message))).await?,
+        stream(ctx, owner, |message| {
+            let taken = message
+                .body()
+                .deserialize::<(String, String, String)>()
+                .map(|(_, _, new_owner)| !new_owner.is_empty())
+                .unwrap_or(false);
+            Some(Wake::WatcherOwner(taken))
+        })
+        .await?,
     ];
 
     Ok(futures_util::stream::select_all(streams))
 }
 
-async fn stream(ctx: &Ctx, rule: MatchRule<'static>) -> Result<impl StreamExt<Item = Message>> {
-    Ok(MessageStream::for_match_rule(rule, &ctx.conn, Some(32))
-        .await?
-        .filter_map(|message| async move { message.ok() }))
+/// Drained on a task of its own. The loop awaits `read_items` and `refresh_item` on this
+/// same connection, and a desktop coming up registers every tray item it has at once:
+/// see [`koompi_service::drain`].
+async fn stream<T, F>(
+    ctx: &Ctx,
+    rule: MatchRule<'static>,
+    classify: F,
+) -> Result<BoxStream<'static, T>>
+where
+    T: Send + 'static,
+    F: FnMut(Message) -> Option<T> + Send + 'static,
+{
+    let stream = MessageStream::for_match_rule(rule, &ctx.conn, Some(32)).await?;
+    Ok(drain(stream, classify).boxed())
 }
 
 #[cfg(test)]
@@ -563,6 +571,46 @@ mod tests {
     use super::*;
     use crate::item::Props;
     use zvariant::{OwnedValue, Value};
+
+    /// The loop awaits `read_items`, which is a `GetAll` per item on the connection the
+    /// wake streams are on. A desktop session coming up registers every tray item it has
+    /// at once, and each one then announces its icon. The wedge is silent: `read_items`
+    /// never returns, so the tray stops at whatever it had and nothing retries.
+    #[tokio::test]
+    async fn a_burst_from_the_items_does_not_wedge_the_read_the_loop_is_waiting_on() {
+        let (them, ours) = koompi_service::testing::peers().await;
+        let ctx = Ctx {
+            conn: ours.clone(),
+            config: TrayConfig::default(),
+        };
+        let mut wake = wake_stream(&ctx).await.unwrap();
+
+        let peer = tokio::spawn(async move {
+            let peer = koompi_service::testing::listen(them).await;
+            for _ in 0..512 {
+                peer.conn()
+                    .emit_signal(None::<()>, "/StatusNotifierItem", ITEM, "NewIcon", &())
+                    .await
+                    .unwrap();
+            }
+            peer.answer_one_call().await;
+        });
+
+        // the loop is inside `read_items` here, not touching its wake streams
+        koompi_service::testing::ping(&ours).await;
+        peer.await.unwrap();
+
+        // one per signal off the item rule, and one more off the watcher rule, whose
+        // sender only a bus daemon can resolve
+        let mut woken = 0;
+        while wake.next().await.is_some() {
+            woken += 1;
+            if woken == 1024 {
+                break;
+            }
+        }
+        assert_eq!(woken, 1024, "the burst was dropped, not drained");
+    }
 
     fn item(service: &str, id: &str) -> TrayItem {
         let props: Props = [("Id", Value::from(id))]

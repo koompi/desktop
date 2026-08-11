@@ -13,3 +13,7 @@ zbus.workspace = true
 zvariant.workspace = true
 futures-util.workspace = true
 serde.workspace = true
+
+[dev-dependencies]
+# a socket pair standing in for the tray applications, so the test needs no bus
+koompi-service = { workspace = true, features = ["test-support"] }

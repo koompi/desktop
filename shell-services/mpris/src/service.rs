@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use futures_util::stream::{BoxStream, SelectAll, StreamExt};
-use koompi_service::{Backoff, Error, Result, Service};
+use koompi_service::{drain, Backoff, Error, Result, Service};
 use tokio::sync::{broadcast, watch, Mutex};
 use tokio::task::JoinHandle;
 use zbus::fdo::{DBusProxy, PropertiesProxy};
@@ -668,49 +668,96 @@ async fn wake_stream(ctx: &Ctx) -> Result<SelectAll<BoxStream<'static, Wake>>> {
     };
 
     let streams: Vec<BoxStream<'static, Wake>> = vec![
-        stream(ctx, owners)
-            .await?
-            .filter_map(|message| async move {
-                let (name, _old, new): (String, String, String) =
-                    message.body().deserialize().ok()?;
-                name.starts_with(PREFIX).then_some(Wake::Owner(name, new))
-            })
-            .boxed(),
-        stream(ctx, props)
-            .await?
-            .filter_map(move |message| {
-                let sender = sender_of(&message);
-                async move {
-                    let (interface, changed, invalidated): (String, Props, Vec<String>) =
-                        message.body().deserialize().ok()?;
-                    Some(Wake::Properties(sender, interface, changed, invalidated))
-                }
-            })
-            .boxed(),
-        stream(ctx, seeked)
-            .await?
-            .filter_map(move |message| {
-                let sender = sender_of(&message);
-                async move {
-                    let position: i64 = message.body().deserialize().ok()?;
-                    Some(Wake::Seeked(sender, position))
-                }
-            })
-            .boxed(),
+        stream(&ctx.conn, owners, |message| {
+            let (name, _old, new): (String, String, String) = message.body().deserialize().ok()?;
+            name.starts_with(PREFIX).then_some(Wake::Owner(name, new))
+        })
+        .await?,
+        stream(&ctx.conn, props, move |message| {
+            let sender = sender_of(&message);
+            let (interface, changed, invalidated): (String, Props, Vec<String>) =
+                message.body().deserialize().ok()?;
+            Some(Wake::Properties(sender, interface, changed, invalidated))
+        })
+        .await?,
+        stream(&ctx.conn, seeked, move |message| {
+            let sender = sender_of(&message);
+            let position: i64 = message.body().deserialize().ok()?;
+            Some(Wake::Seeked(sender, position))
+        })
+        .await?,
     ];
 
     Ok(futures_util::stream::select_all(streams))
 }
 
-async fn stream(ctx: &Ctx, rule: MatchRule<'static>) -> Result<impl StreamExt<Item = Message>> {
-    Ok(MessageStream::for_match_rule(rule, &ctx.conn, Some(32))
-        .await?
-        .filter_map(|message| async move { message.ok() }))
+/// Drained on a task of its own. `run` awaits the player on this same connection for
+/// every property it reads back, and a player that starts a track emits a burst of
+/// `PropertiesChanged`: see [`koompi_service::drain`].
+async fn stream<T, F>(
+    conn: &Connection,
+    rule: MatchRule<'static>,
+    classify: F,
+) -> Result<BoxStream<'static, T>>
+where
+    T: Send + 'static,
+    F: FnMut(Message) -> Option<T> + Send + 'static,
+{
+    let stream = MessageStream::for_match_rule(rule, conn, Some(32)).await?;
+    Ok(drain(stream, classify).boxed())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `run` awaits the player for every property it reads back, on the connection the
+    /// wake stream is on. A player starting a track emits `PropertiesChanged` per key,
+    /// and a few players at once clear 32 without trying. The wedge is silent: the read
+    /// never returns, so the state stops moving and nothing retries.
+    #[tokio::test]
+    async fn a_burst_from_a_player_does_not_wedge_the_read_the_loop_is_waiting_on() {
+        let (them, ours) = koompi_service::testing::peers().await;
+        let ctx = Ctx {
+            conn: ours.clone(),
+            config: MprisConfig::default(),
+            pinned: Mutex::new(None),
+        };
+        let mut wake = wake_stream(&ctx).await.unwrap();
+
+        let peer = tokio::spawn(async move {
+            let peer = koompi_service::testing::listen(them).await;
+            let changed = Props::new();
+            let invalidated: Vec<String> = Vec::new();
+            for _ in 0..512 {
+                peer.conn()
+                    .emit_signal(
+                        None::<()>,
+                        PATH,
+                        "org.freedesktop.DBus.Properties",
+                        "PropertiesChanged",
+                        &(PLAYER_IFACE, &changed, &invalidated),
+                    )
+                    .await
+                    .unwrap();
+            }
+            peer.answer_one_call().await;
+        });
+
+        // the loop is inside `read_player` here, not touching its wake stream
+        koompi_service::testing::ping(&ours).await;
+        peer.await.unwrap();
+
+        let mut woken = 0;
+        while let Some(wake) = wake.next().await {
+            assert!(matches!(wake, Wake::Properties(..)));
+            woken += 1;
+            if woken == 512 {
+                break;
+            }
+        }
+        assert_eq!(woken, 512, "the burst was dropped, not drained");
+    }
 
     #[test]
     fn a_pause_freezes_the_interpolated_position_even_when_the_player_will_not_answer() {

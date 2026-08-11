@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use futures_util::StreamExt;
-use koompi_service::{Error, Result};
+use koompi_service::{drain, Error, Result};
 use zbus::fdo::{RequestNameFlags, RequestNameReply};
 use zbus::object_server::SignalEmitter;
 use zbus::{Connection, MatchRule, MessageStream};
@@ -219,17 +219,18 @@ async fn follow_the_bus(conn: Connection, owns_name: Arc<AtomicBool>) {
         .and_then(|rule| rule.member("NameOwnerChanged"))
         .map(|rule| rule.build());
     let Ok(rule) = rule else { return };
-    let Ok(mut changes) = MessageStream::for_match_rule(rule, &conn, Some(32)).await else {
+    let Ok(changes) = MessageStream::for_match_rule(rule, &conn, Some(32)).await else {
         return;
     };
+    // `forget` below awaits this same connection, and a desktop session ending hands
+    // every name back at once: see `koompi_service::drain`.
+    let mut changes = drain(changes, |message| {
+        message.body().deserialize::<(String, String, String)>().ok()
+    });
 
     let me = conn.unique_name().map(|name| name.to_string());
 
-    while let Some(Ok(message)) = changes.next().await {
-        let Ok((name, _old, new_owner)) = message.body().deserialize::<(String, String, String)>()
-        else {
-            continue;
-        };
+    while let Some((name, _old, new_owner)) = changes.next().await {
 
         if name == WATCHER_NAME {
             let ours = !new_owner.is_empty() && Some(&new_owner) == me.as_ref();
