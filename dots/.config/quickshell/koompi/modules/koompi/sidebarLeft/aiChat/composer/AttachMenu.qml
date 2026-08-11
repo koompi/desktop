@@ -21,7 +21,7 @@ FlowButtonGroup {
     signal filePathRequested()
 
     property bool modelReadsImages: (Ai.getModel()?.api_format ?? "") === "gemini"
-    property string shotPath: `/tmp/quickshell/ai/attach/region-${Math.floor(Date.now())}.png`
+    property string shotPath: `${Directories.aiAttach}/region-${Math.floor(Date.now())}.png`
 
     // The sidebar takes keyboard focus, so the window the user means is the last
     // one that had it, not whatever is active while this menu is open.
@@ -100,7 +100,7 @@ FlowButtonGroup {
         buttonText: Translation.tr("Screenshot")
         Accessible.name: Translation.tr("Attach a screenshot of a region")
         onClicked: {
-            root.shotPath = `/tmp/quickshell/ai/attach/region-${Math.floor(Date.now())}.png`;
+            root.shotPath = `${Directories.aiAttach}/region-${Math.floor(Date.now())}.png`;
             regionShotProc.running = true;
         }
         StyledToolTip {

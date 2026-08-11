@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Everything the assistant hands to a shell carries the conversation: the request
+# body, the summariser's script, an attached screenshot. All three used to land in
+# /tmp/quickshell/ai, which on a default umask is world-readable, and a 36 KB
+# compact.sh holding a real conversation was found there at 0644 while this was
+# being written. They belong in the user's own runtime directory.
+set -uo pipefail
+
+REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+SHELL_ROOT="$REPO_ROOT/dots/.config/quickshell/koompi"
+
+fail() { echo "$1" >&2; exit 1; }
+
+[[ -d "$SHELL_ROOT" ]] || fail "missing $SHELL_ROOT"
+
+# Nothing on the assistant's path writes into shared /tmp. The wallpaper thumbnail
+# under the same prefix is a public image and is written by a script, not the shell.
+offenders="$(grep -rn '/tmp/quickshell/ai' \
+    "$SHELL_ROOT/services" "$SHELL_ROOT/modules" 2>/dev/null \
+    | grep -v '^[^:]*:[[:space:]]*//' \
+    | grep -v '// nothing creates')"
+if [[ -n "$offenders" ]]; then
+    echo "the assistant writes into shared /tmp:" >&2
+    echo "$offenders" >&2
+    exit 1
+fi
+
+# The two script paths derive from XDG_RUNTIME_DIR, which systemd creates at 0700.
+grep -q 'Quickshell.env("XDG_RUNTIME_DIR")' "$SHELL_ROOT/services/ai/Requester.qml" \
+    || fail "Requester.qml no longer derives its script directory from XDG_RUNTIME_DIR"
+grep -q 'requester.scriptDirPath' "$SHELL_ROOT/services/ai/Conversation.qml" \
+    || fail "the compactor script no longer sits beside the request body"
+grep -q 'Quickshell.env("XDG_RUNTIME_DIR")' "$SHELL_ROOT/modules/common/Directories.qml" \
+    || fail "Directories.aiAttach no longer derives from XDG_RUNTIME_DIR"
+
+# curl reads the script through a wrapper that narrows it first, because the file
+# exists between setText and exec whatever the directory permits.
+for file in services/ai/Requester.qml services/ai/Conversation.qml; do
+    grep -q 'chmod 600' "$SHELL_ROOT/$file" \
+        || fail "$file runs its script without chmodding it to 0600 first"
+done
+
+# The directories are created narrow rather than left to umask.
+grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/services/ai/Requester.qml" \
+    || fail "the request script directory is no longer created at 0700"
+grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/modules/common/Directories.qml" \
+    || fail "the attachment directory is no longer created at 0700"
+
+# The API key rides in the environment; a key written into the script file would
+# survive on disk for anything that can read it.
+literal="$(grep -rn 'Authorization: Bearer' "$SHELL_ROOT/services/ai/" | grep -v 'apiKeyEnvVarName')"
+if [[ -n "$literal" ]]; then
+    echo "an API key is written into the request script rather than read from the environment:" >&2
+    echo "$literal" >&2
+    exit 1
+fi
+
+echo "ok: request body, compactor and attachments stay in the user's runtime directory"

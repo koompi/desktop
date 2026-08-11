@@ -516,7 +516,7 @@ QtObject {
         Math.max(512, Math.floor(root.contextWindow * root.compactionFraction))
 
     // A configured threshold may lower the bar, never raise it past what the
-    // server accepts: the shipped 30000 is nearly twice a 16384-token window.
+    // server accepts: a number typed here outlives the model it was typed for.
     readonly property int compactionThreshold: {
         const configured = Config.options?.ai?.memory?.compactionThreshold ?? 0;
         return configured > 0
@@ -614,7 +614,7 @@ QtObject {
             "thinking": false, "done": false
         });
         if (compactorScriptFile.path === "")
-            compactorScriptFile.path = "/tmp/quickshell/ai/compact.sh";
+            compactorScriptFile.path = root.compactorScriptPath;
         compactorScriptFile.setText(scriptContent);
         compactor.running = true;
     }
@@ -699,8 +699,13 @@ QtObject {
         watchChanges: false
     }
 
+    // The summariser's script carries the whole conversation, exactly like the
+    // request body does, so it lives beside it in the user's own runtime
+    // directory and is chmodded before bash reads it.
+    readonly property string compactorScriptPath: `${root.engine.requester.scriptDirPath}/compact.sh`
+
     readonly property Process compactor: Process {
-        command: ["bash", "/tmp/quickshell/ai/compact.sh"]
+        command: ["bash", "-c", 'chmod 600 "$1" 2>/dev/null; exec bash "$1"', "--", root.compactorScriptPath]
         property var _msg: null
         stdinEnabled: false
 

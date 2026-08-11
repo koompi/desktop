@@ -125,7 +125,6 @@ Singleton {
     /* ---- requests ---- */
 
     readonly property bool requestActive: requester.running
-    property string requestScriptFilePath: "/tmp/quickshell/ai/request.sh"
     property string pendingFilePath: ""
     property real temperature: Persistent.states?.ai?.temperature ?? 0.5
 
