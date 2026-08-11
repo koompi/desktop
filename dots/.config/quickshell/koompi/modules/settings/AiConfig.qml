@@ -399,7 +399,7 @@ ContentPage {
                 uniform: true
                 ConfigSpinBox {
                     icon: "width_wide"
-                    text: Translation.tr("Context window")
+                    text: Translation.tr("Context window (0 = ask the server)")
                     value: Config.options.ai.memory.contextWindow
                     from: 0
                     to: 1000000
@@ -410,7 +410,7 @@ ContentPage {
                 }
                 ConfigSpinBox {
                     icon: "compress"
-                    text: Translation.tr("Summarise past")
+                    text: Translation.tr("Summarise past (0 = derive)")
                     value: Config.options.ai.memory.compactionThreshold
                     from: 0
                     to: 1000000

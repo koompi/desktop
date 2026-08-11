@@ -195,9 +195,9 @@ Singleton {
                     property string keyId: "" // keyring id for the embedding key when provider != local
                     property string binary: "" // empty => ~/.local/bin/koompi-agent-memd
                     property int recallBudgetMs: 800 // how long a turn waits for recall before going without it
-                    property int compactionThreshold: 30000 // auto-compact when total tokens exceed this
+                    property int compactionThreshold: 0 // 0 => derive from the window the server reports
                     property real compactionFraction: 0.6 // of the derived context window; clamped 0.1-0.95
-                    property int contextWindow: 128000       // context window size for token HUD fill-bar
+                    property int contextWindow: 0 // 0 => ask the server; a guess here outlives every model change
                     property int litertPort: 9379 // an endpoint on this port is read as LiteRT-LM
                 }
                 property JsonObject research: JsonObject {
