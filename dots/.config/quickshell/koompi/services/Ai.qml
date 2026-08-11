@@ -167,6 +167,18 @@ Singleton {
         root.addMessage(Translation.tr("Temperature: %1").arg(root.temperature), root.interfaceRole);
     }
 
+    /* ---- threads ---- */
+
+    readonly property var threads: conversation.threadStore.threads
+    readonly property string threadId: conversation.threadId
+    readonly property string threadTitle: conversation.threadTitle
+
+    function newThread() { return conversation.newThread(); }
+    function openThread(id) { return conversation.openThread(id); }
+    function renameThread(id, title) { return conversation.renameThread(id, title); }
+    function deleteThread(id) { return conversation.deleteThread(id); }
+    function refreshThreads() { conversation.threadStore.refresh(); }
+
     /* ---- feedback and corrections ---- */
 
     readonly property FeedbackService feedback: FeedbackService { engine: root }
