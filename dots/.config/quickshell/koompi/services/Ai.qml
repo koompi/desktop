@@ -102,6 +102,7 @@ Singleton {
     readonly property bool canUndoClear: conversation.canUndoClear
     readonly property bool compacting: conversation.compacting
     readonly property int compactionThreshold: conversation.compactionThreshold
+    readonly property int contextWindow: conversation.contextWindow
     property QtObject tokenCount: QtObject {
         property int input: -1
         property int output: -1
@@ -166,6 +167,32 @@ Singleton {
         root.addMessage(Translation.tr("Temperature: %1").arg(root.temperature), root.interfaceRole);
     }
 
+    /* ---- feedback and corrections ---- */
+
+    readonly property FeedbackService feedback: FeedbackService { engine: root }
+
+    readonly property var corrections: feedback.corrections
+    readonly property var openConflicts: feedback.openConflicts
+    readonly property var activeSuppressions: feedback.activeSuppressions
+    readonly property var trustReport: feedback.trustReport
+    readonly property bool recallPaused: feedback.recallPaused
+
+    function openCorrection(target) { feedback.openCorrection(target); }
+    function closeCorrection() { feedback.closeCorrection(); }
+    function correctionDraft(text, claim) { return feedback.draftFrom(text, claim); }
+    function correctionProvenance(record) { return feedback.provenanceOf(record); }
+    function applyCorrection(record, callback) { return feedback.applyCorrection(record, callback); }
+    function sourceKey(source) { return feedback.sourceKey(source); }
+    function suppressSource(source) { feedback.suppressSource(source); }
+    function unsuppressSource(key) { feedback.unsuppressSource(key); }
+    function isSourceSuppressed(source) { return feedback.isSourceSuppressed(source); }
+    function resolveConflict(key, dropIncoming) { feedback.resolveConflict(key, dropIncoming); }
+    function recalibrate() { feedback.recalibrate(); }
+    function pauseRecall(days) { feedback.pauseRecall(days); }
+    function resumeRecall() { feedback.resumeRecall(); }
+    function saveHallucinationReport(note) { return feedback.saveHallucinationReport(note); }
+    function openFeedbackPanel() { feedback.openPanel(); }
+
     /* ---- identity and the system prompt ---- */
 
     // The session id belongs to the thread, not to this singleton. Generating it here
@@ -197,8 +224,11 @@ Singleton {
     // Empty string when nothing relevant, so the prompt stays clean.
     property string recalledMemories: ""
     function formatMemories(results) {
-        if (!results || results.length === 0) return "";
-        const lines = results.map(r => `- ${r.text}`).join("\n");
+        // A suppressed source is excluded from retrieval, not deleted, and a
+        // paused recall gives the model nothing at all.
+        const kept = root.feedback.filterRecall(results);
+        if (!kept || kept.length === 0) return "";
+        const lines = kept.map(r => `- ${r.text}`).join("\n");
         return `\n## What you remember\n${lines}\n`;
     }
 

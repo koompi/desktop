@@ -483,6 +483,19 @@ Item {
                 }
 
                 AiMessageControlButton {
+                    id: wrongButton
+                    accessibleName: Translation.tr("This is wrong")
+                    buttonIcon: "flag"
+                    visible: root.isAssistant
+                    onClicked: Ai.openCorrection({
+                        "claim": (root.messageData?.content ?? "").split("\n")[0],
+                        "messageId": Ai.idForMessage(root.messageData),
+                        "source": null
+                    })
+                    StyledToolTip { text: Translation.tr("Tell me the right fact") }
+                }
+
+                AiMessageControlButton {
                     id: copyButton
                     accessibleName: root.isToolResult ? Translation.tr("Copy tool output") : Translation.tr("Copy message")
                     buttonIcon: activated ? "inventory" : "content_copy"

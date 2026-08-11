@@ -264,15 +264,19 @@ QtObject {
                 return;
             }
             const callId = root._currentCallId;
+            // the recall tool bypassed suppression: a source the user had rejected came
+            // straight back through the model's own lookup. purpose "tool" also keeps
+            // this out of lastRecall, which belongs to the turn.
             MemoryService.recall(args.query.trim(), undefined, results => {
                 root._currentCallId = callId;
-                if (results && results.length > 0) {
-                    root.addToolResult("recall", results.map(r => `- ${r.text}`).join("\n"), false);
+                const kept = root.engine.feedback.filterRecall(results);
+                if (kept && kept.length > 0) {
+                    root.addToolResult("recall", kept.map(r => `- ${r.text}`).join("\n"), false);
                 } else {
                     root.addToolResult("recall", Translation.tr("No relevant memories found."), false);
                 }
                 root.runNextCall();
-            });
+            }, "tool");
         },
 
         "search_web": (args, message) => root.runWebTool("search_web", args, message),

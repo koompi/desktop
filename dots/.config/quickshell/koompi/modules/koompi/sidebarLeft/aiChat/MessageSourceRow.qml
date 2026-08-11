@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import qs
 import qs.services
 import qs.modules.common
+import qs.modules.koompi.sidebarLeft.aiChat.feedback
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
@@ -116,12 +117,21 @@ RippleButton {
             }
         }
 
-        // J09 hangs the per-source "This is wrong" control here.
         Item {
             objectName: "correctionSlot"
             Layout.alignment: Qt.AlignVCenter
-            implicitWidth: 0
-            implicitHeight: 0
+            implicitWidth: correction.implicitWidth
+            implicitHeight: correction.implicitHeight
+
+            CorrectionAffordance {
+                id: correction
+                anchors.centerIn: parent
+                claim: root.name
+                source: ({
+                    "type": root.sourceType, "name": root.name, "detail": root.detail,
+                    "score": root.score, "url": root.url
+                })
+            }
         }
 
         MaterialSymbol {
