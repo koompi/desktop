@@ -42,6 +42,10 @@ hl.bind("SUPER + V", hl.dsp.global("quickshell:overviewClipboardToggle"))
 hl.bind("SUPER + Period", hl.dsp.global("quickshell:overviewEmojiToggle"))
 hl.bind("SUPER + A", hl.dsp.global("quickshell:sidebarLeftToggle"), { description = "Shell: Toggle left sidebar" })
 hl.bind("SUPER + ALT + A", hl.dsp.global("quickshell:sidebarLeftToggleDetach"))
+-- The full window grabs the keyboard exclusively, so without a chord that closes
+-- it the only way out is a button the surface has to be rendering for you to find.
+hl.bind("SUPER + SHIFT + I", hl.dsp.global("quickshell:intelligenceToggle"),
+    { description = "Shell: Toggle the full assistant window" })
 hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("brave"), { description = "App: Brave browser" })
 -- Okular has no plugin API, so enrolment cannot live in its menus; a global
 -- bind is the nearest thing that works while a PDF is focused.

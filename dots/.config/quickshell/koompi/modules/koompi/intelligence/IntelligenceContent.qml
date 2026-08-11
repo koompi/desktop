@@ -160,6 +160,31 @@ FocusScope {
                     implicitWidth: 35
                     implicitHeight: 35
                     buttonRadius: Appearance.rounding.full
+                    // The inverse of the sidebar's open_in_full. Both surfaces
+                    // drive the same engine, so the thread is already there.
+                    onClicked: {
+                        GlobalStates.intelligenceOpen = false;
+                        GlobalStates.sidebarLeftOpen = true;
+                    }
+                    Accessible.name: Translation.tr("Back to the sidebar")
+
+                    contentItem: MaterialSymbol {
+                        anchors.centerIn: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "close_fullscreen"
+                        iconSize: 20
+                        color: Appearance.colors.colOnLayer0
+                    }
+
+                    StyledToolTip {
+                        text: Translation.tr("Back to the sidebar")
+                    }
+                }
+
+                RippleButton {
+                    implicitWidth: 35
+                    implicitHeight: 35
+                    buttonRadius: Appearance.rounding.full
                     onClicked: GlobalStates.intelligenceOpen = false
                     Accessible.name: Translation.tr("Close")
 
