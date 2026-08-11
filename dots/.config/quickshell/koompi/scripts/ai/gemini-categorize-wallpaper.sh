@@ -11,9 +11,12 @@ SOURCE_IMG_PATH="$1"
 MODEL="${2:-${GEMINI_WALLPAPER_MODEL:-gemini-2.5-flash}}" # We use the flash variant so it's fast
 WALLPAPER_NAME="$(basename "$SOURCE_IMG_PATH")"
 PROMPT="${3:-${GEMINI_WALLPAPER_PROMPT:-Categorize the wallpaper. Its file name is $WALLPAPER_NAME}}"
-RESIZED_IMG_PATH="/tmp/quickshell/ai/wallpaper.jpg"
+# The thumbnail is public, but creating /tmp/quickshell/ai here is what handed the
+# shell a world-readable directory under a name it also writes secrets to.
+RESIZED_IMG_PATH="${XDG_RUNTIME_DIR:-$HOME/.cache}/quickshell/ai/wallpaper.jpg"
 
 # Resize image for speed
+umask 077
 mkdir -p "$(dirname "$RESIZED_IMG_PATH")"
 magick "$SOURCE_IMG_PATH" -resize 200x -quality 50 "$RESIZED_IMG_PATH"
 

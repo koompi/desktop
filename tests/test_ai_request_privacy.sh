@@ -3,7 +3,9 @@
 # body, the summariser's script, an attached screenshot. All three used to land in
 # /tmp/quickshell/ai, which on a default umask is world-readable, and a 36 KB
 # compact.sh holding a real conversation was found there at 0644 while this was
-# being written. They belong in the user's own runtime directory.
+# being written. A screen grab and a clipboard decode are no less private, and
+# they were still in /tmp/quickshell/media a leak later. Nothing the shell writes
+# belongs under a prefix another uid can read, or squat before the shell boots.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,14 +15,13 @@ fail() { echo "$1" >&2; exit 1; }
 
 [[ -d "$SHELL_ROOT" ]] || fail "missing $SHELL_ROOT"
 
-# Nothing on the assistant's path writes into shared /tmp. The wallpaper thumbnail
-# under the same prefix is a public image and is written by a script, not the shell.
-offenders="$(grep -rn '/tmp/quickshell/ai' \
-    "$SHELL_ROOT/services" "$SHELL_ROOT/modules" 2>/dev/null \
-    | grep -v '^[^:]*:[[:space:]]*//' \
-    | grep -v '// nothing creates')"
+# No path under the shell's own /tmp prefix, anywhere. A comment naming it is how
+# the two fixes explain themselves, so only code counts.
+offenders="$(grep -rn '/tmp/quickshell' "$SHELL_ROOT" 2>/dev/null \
+    | grep -v '^[^:]*:[0-9]*:[[:space:]]*//' \
+    | grep -v '^[^:]*:[0-9]*:[[:space:]]*#')"
 if [[ -n "$offenders" ]]; then
-    echo "the assistant writes into shared /tmp:" >&2
+    echo "the shell writes into shared /tmp:" >&2
     echo "$offenders" >&2
     exit 1
 fi
@@ -46,6 +47,26 @@ grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/services/ai/Requester.qml" \
 grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/modules/common/Directories.qml" \
     || fail "the attachment directory is no longer created at 0700"
 
+# Screen grabs, clipboard decodes and downloaded images share one runtime root, so
+# one binding decides whether any of them can be read by another uid.
+grep -q 'runtimeMedia' "$SHELL_ROOT/modules/common/Directories.qml" \
+    || fail "Directories no longer routes its media temp dirs through runtimeMedia"
+for prop in tempImages cliphistDecode screenshotTemp; do
+    grep -qE "property string $prop: \`\\\$\{Directories.runtimeMedia\}" \
+        "$SHELL_ROOT/modules/common/Directories.qml" \
+        || fail "Directories.$prop no longer derives from runtimeMedia"
+done
+
+# mkdir -p -m applies the mode to the leaf only, so the creators that can win the
+# race to make the shared parent set a umask instead.
+for file in modules/common/utils/TempScreenshotProcess.qml \
+            modules/common/models/gCloud/GCloudVision.qml \
+            modules/common/Directories.qml \
+            scripts/ai/gemini-categorize-wallpaper.sh; do
+    grep -q 'umask 077' "$SHELL_ROOT/$file" \
+        || fail "$file creates a media directory without narrowing the umask first"
+done
+
 # The API key rides in the environment; a key written into the script file would
 # survive on disk for anything that can read it.
 literal="$(grep -rn 'Authorization: Bearer' "$SHELL_ROOT/services/ai/" | grep -v 'apiKeyEnvVarName')"
@@ -55,4 +76,4 @@ if [[ -n "$literal" ]]; then
     exit 1
 fi
 
-echo "ok: request body, compactor and attachments stay in the user's runtime directory"
+echo "ok: request body, compactor, attachments, screen grabs and clipboard decodes stay in the user's runtime directory"

@@ -28,7 +28,7 @@ GCloudApi {
 
         const niceFilePath = StringUtils.shellSingleQuoteEscape(FileUtils.trimFileProtocol(imageUri))
         seq = [ //
-            ["bash", "-c", `mkdir -p '${Directories.screenshotTemp}'; base64 '${niceFilePath}' -w 0 > '${imageBase64FilePath}'`], //
+            ["bash", "-c", `umask 077; mkdir -p '${Directories.screenshotTemp}'; base64 '${niceFilePath}' -w 0 > '${imageBase64FilePath}'`], //
             (out) => { //
                 root.onlineImageReady = true; //
             }
