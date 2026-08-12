@@ -41,11 +41,14 @@ for file in services/ai/Requester.qml services/ai/Conversation.qml; do
         || fail "$file runs its script without chmodding it to 0600 first"
 done
 
-# The directories are created narrow rather than left to umask.
+# The directories are created narrow rather than left to the login umask.
 grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/services/ai/Requester.qml" \
     || fail "the request script directory is no longer created at 0700"
-grep -q '"mkdir", "-p", "-m", "700"' "$SHELL_ROOT/modules/common/Directories.qml" \
-    || fail "the attachment directory is no longer created at 0700"
+# attach sits under the shared ai dir, so its parent is the one that has to be
+# narrow: -m would mode the leaf and leave the parent at 755.
+grep -q "umask 077; mkdir -p '\${aiAttach}' && chmod 700 '\${aiRuntime}'" \
+    "$SHELL_ROOT/modules/common/Directories.qml" \
+    || fail "the attachment directory's parent is no longer created and repaired at 0700"
 
 # Screen grabs, clipboard decodes and downloaded images share one runtime root, so
 # one binding decides whether any of them can be read by another uid.
