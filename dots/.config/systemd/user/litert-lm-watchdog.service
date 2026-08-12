@@ -2,6 +2,10 @@
 Description=Restart LiteRT-LM when its executor wedges
 PartOf=graphical-session.target
 After=litert-lm.service
+# PartOf, not BindsTo: the journal follow should die with the server, but
+# BindsTo would also make the server BoundBy this unit, and StopWhenUnneeded
+# then never fires because something still needs it.
+PartOf=litert-lm.service
 
 [Service]
 Type=simple
@@ -9,6 +13,3 @@ ExecStart=%h/.local/bin/koompi-litert-lm-watchdog
 Restart=on-failure
 RestartSec=10
 Slice=session.slice
-
-[Install]
-WantedBy=graphical-session.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Idle-exit proxy fronting LiteRT-LM on its activation socket
+Requires=litert-lm.service
+After=litert-lm.service
+
+[Service]
+Type=notify
+# litert-lm cannot take a socket from systemd, so the socket lands here and the
+# proxy forwards to the real port. Exiting on idle is what releases the ~1.6 GB
+# engine: StopWhenUnneeded on litert-lm.service follows this unit down.
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=5min 127.0.0.1:9380
+Slice=session.slice

@@ -254,9 +254,15 @@ setup_local_ai() {
     fi
 
     if ! systemd_user_running; then
-        warn "no user systemd manager here; enable litert-lm after your next login"
+        warn "no user systemd manager here; enable litert-lm.socket after your next login"
     else
-        run systemctl --user enable litert-lm litert-lm-watchdog
+        # the socket only: litert-lm and its watchdog are pulled in on the first
+        # request and released again once the sidebar has been shut for 5min
+        run systemctl --user enable litert-lm.socket
+        # an install from before the socket wanted these off
+        # graphical-session.target, which pins the engine for the whole session
+        # and leaves StopWhenUnneeded nothing to act on
+        run systemctl --user disable litert-lm.service litert-lm-watchdog.service
     fi
 
     setup_local_search

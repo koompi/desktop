@@ -202,8 +202,14 @@ QtObject {
         }
     }
 
+    // not at startup: the server is socket-activated, so the list is discovered
+    // when the sidebar opens and wakes it
+    function refreshLitertLmModels() {
+        root.getLitertLmModels.running = true;
+    }
+
     readonly property Process getLitertLmModels: Process {
-        running: true
+        running: false
         command: ["bash", "-c", `${Directories.scriptPath}/ai/show-installed-litert-lm-models.sh`.replace(/file:\/\//, "")]
         stdout: SplitParser {
             onRead: data => {
@@ -224,11 +230,36 @@ QtObject {
                         })
                     });
                     root.modelList = Object.keys(root.models);
+                    root.warmLitertLm();
                 } catch (e) {
                     console.log("Could not fetch LiteRT-LM models:", e);
                 }
             }
         }
+    }
+
+    // engine init is ~7s and runs on the first completion, not on /v1/models, so
+    // spend it while the user is still typing. Runs after discovery because the
+    // model has to be known: warming the wrong one forces a re-init.
+    function warmLitertLm() {
+        const model = root.getModel();
+        if (!model || (model.endpoint ?? "").indexOf("127.0.0.1:9379") < 0) return;
+        if (root.warmLitertLmProc.running || root.engine.requestActive) return;
+        root.warmLitertLmProc.command = [
+            "curl", "-sf", "-o", "/dev/null", "-m", "120", "-X", "POST", model.endpoint,
+            "-H", "Content-Type: application/json",
+            "-d", JSON.stringify({
+                "model": model.model,
+                "messages": [{"role": "user", "content": "hi"}],
+                "stream": false,
+                "max_tokens": 1,
+            }),
+        ];
+        root.warmLitertLmProc.running = true;
+    }
+
+    readonly property Process warmLitertLmProc: Process {
+        running: false
     }
 
     function addApiKeyAdvice(model) {

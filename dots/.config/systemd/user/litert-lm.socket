@@ -1,0 +1,14 @@
+[Unit]
+Description=Activation socket for the KOOMPI AI sidebar's LiteRT-LM server
+# deliberately not PartOf=graphical-session.target: a shell restart would close
+# the socket and nothing in sockets.target would re-open it. The server under it
+# is the session-scoped half. A listening fd costs nothing.
+
+[Socket]
+ListenStream=127.0.0.1:9379
+# without this the socket would activate the same-named litert-lm.service, which
+# cannot accept a passed fd
+Service=litert-lm-proxy.service
+
+[Install]
+WantedBy=sockets.target

@@ -2,17 +2,22 @@
 Description=LiteRT-LM local inference server for the KOOMPI AI sidebar
 PartOf=graphical-session.target
 After=graphical-session.target
+Wants=litert-lm-watchdog.service
+# follows litert-lm-proxy down when it exits on idle, releasing the engine
+StopWhenUnneeded=yes
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/litert-lm serve --host 127.0.0.1 --port 9379
-# the engine loads on first request; warm it so the sidebar's first message is
-# an answer rather than an 8s model init
-ExecStartPost=-/usr/bin/curl -sS -o /dev/null --retry 30 --retry-delay 1 --retry-connrefused -m 300 -X POST http://127.0.0.1:9379/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"gemma4-e2b","messages":[{"role":"user","content":"hi"}],"stream":false}'
-TimeoutStartSec=360
+# 9380, not 9379: litert-lm.socket holds 9379 and litert-lm-proxy forwards here.
+# No warm-up here on purpose. Type=simple stays activating until ExecStartPost
+# returns, and the proxy waits for active, so an engine load in ExecStartPost
+# would sit in front of every cold wake. The sidebar warms it on open instead.
+ExecStart=%h/.local/bin/litert-lm serve --host 127.0.0.1 --port 9380
+# Type=simple calls the unit active the moment it forks, ~160ms before python
+# binds, and the proxy does not retry a refused connection. Hold activating
+# until the port answers. /v1/models does not touch the engine, so this stays
+# cheap - it must not be a completion.
+ExecStartPost=/usr/bin/curl -sf --retry 60 --retry-delay 0 --retry-connrefused -m 15 -o /dev/null http://127.0.0.1:9380/v1/models
 Restart=on-failure
 RestartSec=5
 Slice=session.slice
-
-[Install]
-WantedBy=graphical-session.target

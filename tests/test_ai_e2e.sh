@@ -29,6 +29,31 @@ MEMD="$HOME/${MEMD:-.local/bin/koompi-agent-memd}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+# ------------------------------------------------------------- the activation chain
+
+# Three files have to agree on two ports or the sidebar reaches a port nothing is
+# listening on, and the failure looks like "no local models" rather than like a
+# unit file. The socket holds the port the shell knows; the server is moved off it
+# so the proxy can front it and exit on idle.
+UNITS="$REPO_ROOT/dots/.config/systemd/user"
+socket_port="$(sed -n 's/^ListenStream=127\.0\.0\.1:\([0-9]*\).*/\1/p' "$UNITS/litert-lm.socket")"
+[[ "$socket_port" == "$PORT" ]] \
+    || fail "litert-lm.socket listens on ${socket_port:-nothing}, the shell talks to $PORT"
+
+grep -q '^Service=litert-lm-proxy\.service$' "$UNITS/litert-lm.socket" \
+    || fail "litert-lm.socket activates the server directly; it cannot accept a passed fd"
+
+serve_port="$(sed -n 's/^ExecStart=.*litert-lm serve .*--port \([0-9]*\).*/\1/p' "$UNITS/litert-lm.service")"
+proxy_port="$(sed -n 's/^ExecStart=.*systemd-socket-proxyd .*127\.0\.0\.1:\([0-9]*\).*/\1/p' "$UNITS/litert-lm-proxy.service")"
+[[ -n "$serve_port" && "$serve_port" == "$proxy_port" ]] \
+    || fail "the proxy forwards to ${proxy_port:-nothing}, the server serves ${serve_port:-nothing}"
+[[ "$serve_port" != "$PORT" ]] \
+    || fail "the server and the socket both claim $PORT; one of them will fail to bind"
+
+grep -q '^StopWhenUnneeded=yes$' "$UNITS/litert-lm.service" \
+    || fail "litert-lm.service does not follow the proxy down, so the engine is never released"
+ok "socket $socket_port -> proxy -> server $serve_port, released when unneeded"
+
 # ---------------------------------------------------------------- the backend
 
 backend_up=0

@@ -30,6 +30,9 @@ Scope { // Scope
             // Releases Ai's memoryPromptBlock, which cannot read MemoryService
             // until something has decided the daemon should exist.
             Ai.memoryWarmed = true;
+            // Every open, not once: litert-lm.socket unloads the engine after
+            // 5min idle, so the list and the warm both have to be re-done.
+            Ai.refreshLitertLmModels();
         }
     }
 

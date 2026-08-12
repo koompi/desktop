@@ -59,6 +59,7 @@ Singleton {
     function getModel() { return modelRegistry.getModel(); }
     function setModel(modelId, feedback = true, setPersistentState = true) { modelRegistry.setModel(modelId, feedback, setPersistentState); }
     function setEndpoint(url) { modelRegistry.setEndpoint(url); }
+    function refreshLitertLmModels() { modelRegistry.refreshLitertLmModels(); }
     function addApiKeyAdvice(model) { modelRegistry.addApiKeyAdvice(model); }
     function setApiKey(key) { modelRegistry.setApiKey(key); }
     function printApiKey() { modelRegistry.printApiKey(); }
