@@ -11,6 +11,7 @@ use koompi_service::{Error, Result};
 use zvariant::{Array, OwnedValue, Str};
 
 use crate::ap::{Security, Ssid};
+use crate::props;
 use crate::proxy::ConnectionSettings;
 
 pub const WIRELESS: &str = "802-11-wireless";
@@ -50,9 +51,10 @@ pub fn key_mgmt(security: Security) -> Option<&'static str> {
 /// What `nmcli dev wifi connect <ssid>` at `Network.qml:76` builds before handing it to
 /// `AddAndActivateConnection`. NetworkManager fills in the UUID.
 ///
-/// A `None` passphrase leaves the security setting out entirely, so NM asks the secret
-/// agent instead of failing. That is the path `Network.qml:119` recognises by grepping
-/// stderr for "Secrets were required".
+/// A `None` passphrase leaves the security setting out entirely, which sends NM to a
+/// secret agent. A seat running this shell has no agent, so that is a refusal, not a
+/// prompt: `NetworkService::connect_to` reuses a saved profile where there is one and
+/// otherwise reports the refusal so the consumer can ask for the passphrase itself.
 pub fn wifi_profile(
     ssid: &Ssid,
     security: Security,
@@ -87,6 +89,24 @@ pub fn wifi_profile(
     }
 
     Ok(profile)
+}
+
+/// The SSID a saved profile is for, as bytes. Matching on the profile's `id` instead
+/// would miss every network renamed in another tool and collide across the two profiles
+/// a byte-identical name can produce.
+pub fn profile_ssid(saved: &ConnectionSettings) -> Option<Ssid> {
+    props::bytes(saved.get(WIRELESS)?, "ssid").map(Ssid::new)
+}
+
+/// When NetworkManager last brought this profile up, which is 0 for one it never has.
+/// Duplicates for a single SSID are ordinary - this seat carries eleven for one network -
+/// so the one that has worked before is the one to reuse.
+pub fn profile_last_used(saved: &ConnectionSettings) -> u64 {
+    saved
+        .get(CONNECTION)
+        .and_then(|keys| keys.get("timestamp"))
+        .and_then(|value| value.downcast_ref::<u64>().ok())
+        .unwrap_or(0)
 }
 
 /// `Network.qml:96`, `nmcli connection modify "$SSID" wifi-sec.psk "$PASSWORD"`: read the
@@ -177,10 +197,50 @@ mod tests {
         assert_eq!(string_at(&profile, CONNECTION, "id"), "K\u{fffd}O");
     }
 
+    /// Which on an agentless seat is what NetworkManager refuses with `no-secrets`, and
+    /// is why the connect path has to hear the refusal rather than assume a prompt.
     #[test]
-    fn no_passphrase_leaves_the_security_setting_out_so_nm_asks_the_agent() {
+    fn no_passphrase_leaves_the_security_setting_out() {
         let profile = wifi_profile(&Ssid::new(b"B28".to_vec()), toursanak(), None).unwrap();
         assert!(!profile.contains_key(WIRELESS_SECURITY));
+    }
+
+    /// The saved profile is found by these bytes. An SSID the router broadcasts as
+    /// non-UTF-8 renders identically to every other one that also fails to decode, so a
+    /// match on the label would hand back somebody else's network.
+    #[test]
+    fn a_saved_profile_is_matched_on_the_ssid_bytes_not_on_its_label() {
+        let raw = vec![b'K', 0xff, b'O'];
+        let saved = wifi_profile(&Ssid::new(raw.clone()), toursanak(), Some("hunter2")).unwrap();
+
+        assert_eq!(profile_ssid(&saved), Some(Ssid::new(raw)));
+        assert_ne!(profile_ssid(&saved), Some(Ssid::new(vec![b'K', 0xfe, b'O'])));
+    }
+
+    /// Eleven profiles for one SSID is what this seat actually holds. Ten never
+    /// connected; reusing one of those asks for a passphrase that is already on disk in
+    /// the eleventh.
+    #[test]
+    fn a_profile_that_has_never_connected_sorts_below_one_that_has() {
+        let mut fresh = wifi_profile(&Ssid::new(b"Kraya Angkor".to_vec()), toursanak(), None)
+            .unwrap();
+        assert_eq!(profile_last_used(&fresh), 0);
+
+        fresh
+            .get_mut(CONNECTION)
+            .unwrap()
+            .insert("timestamp".to_owned(), OwnedValue::from(1786527965u64));
+        assert_eq!(profile_last_used(&fresh), 1786527965);
+    }
+
+    #[test]
+    fn a_profile_that_is_not_wireless_has_no_ssid_to_match() {
+        let mut wired = ConnectionSettings::new();
+        wired.insert(
+            CONNECTION.to_owned(),
+            HashMap::from([("type".to_owned(), text("802-3-ethernet"))]),
+        );
+        assert_eq!(profile_ssid(&wired), None);
     }
 
     #[test]

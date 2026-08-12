@@ -189,6 +189,21 @@ A `connect` that needs a passphrase and was given none, or was given a wrong one
 with `rejected`; the QML's cue for this was the string `Secrets were required` on nmcli's
 stderr at `Network.qml:119`.
 
+**The reply is NetworkManager's verdict, not the call's.** `AddAndActivateConnection`
+returns as soon as an activation has *started*, seconds before the network has accepted or
+refused anything, so `connect` waits for the activation to reach activated or failed before
+it answers. Expect it to take as long as joining a network takes; the `state` stream
+carries `wifi.connecting` meanwhile. Two things follow from getting this wrong, and both
+were live on a KOOMPI seat: every attempt was reported as a success, so the consumer never
+knew to ask for the passphrase, and every attempt left its half-built profile behind,
+eleven of them for one network.
+
+`connect` with no `passphrase` reuses the saved profile for that SSID when there is one,
+picking the one NetworkManager last brought up. A profile only holds a passphrase after
+NetworkManager has accepted it, so this is what makes a network the user has already
+joined connect without asking again. With a `passphrase`, a new profile is always built,
+and it is deleted again if the activation fails.
+
 ### `brightness` commands
 
 | cmd | arguments | maps to |

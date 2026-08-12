@@ -4,8 +4,19 @@
 //! `nmcli -c no -g ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY d w`, the command at
 //! `Network.qml:267`, so the two can be diffed directly.
 //!
-//! `--scan` fires `RequestScan` first. That is the only write this binary makes, and the
-//! shell already fires it from a button.
+//! `--scan` fires `RequestScan` first. That is the only write this binary makes without
+//! being asked, and the shell already fires it from a button.
+//!
+//! `--connect <ssid> [passphrase]` takes the radio off whatever it is on, so it is opt-in
+//! and never runs from `tests/run.sh`. It is the only way to exercise the connect path:
+//! `AddAndActivateConnection` returns while the attempt is still in flight, so the thing
+//! worth checking is that the verdict printed here is NetworkManager's and not the call's.
+//! With a wrong passphrase it must refuse and leave no profile behind:
+//!
+//! ```text
+//! cargo run -p koompi-network --example demo -- --connect "Some Cafe" wrong-on-purpose
+//! nmcli -t -f NAME connection show | grep -c '^Some Cafe$'   # unchanged
+//! ```
 
 use std::time::Instant;
 
@@ -18,8 +29,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let terse = args.iter().any(|a| a == "--nmcli");
     let scan = args.iter().any(|a| a == "--scan");
     let trace = args.iter().any(|a| a == "--trace");
+    let connect = args.iter().position(|a| a == "--connect");
 
     let network = NetworkService::connect(PollRate::NORMAL).await?;
+
+    if let Some(at) = connect {
+        let ssid = args.get(at + 1).ok_or("--connect needs an ssid")?;
+        let passphrase = args.get(at + 2).map(String::as_str);
+        return probe_connect(&network, ssid, passphrase).await;
+    }
 
     if terse {
         for line in nmcli_lines(&network.state()) {
@@ -75,6 +93,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             state.wifi.connecting,
             state.wifi.bitrate,
         );
+    }
+    Ok(())
+}
+
+/// The elapsed time is the point. A connect that answers instantly answered before
+/// NetworkManager had authenticated, which is the bug this path was written for.
+async fn probe_connect(
+    network: &NetworkService,
+    ssid: &str,
+    passphrase: Option<&str>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let state = network.state();
+    let ap = state
+        .wifi
+        .networks
+        .iter()
+        .find(|ap| ap.ssid.to_lossy() == ssid)
+        .ok_or_else(|| format!("{ssid} is not in range"))?;
+
+    println!(
+        "connecting to {ssid} ({}) {}",
+        ap.security.label(),
+        match passphrase {
+            Some(_) => "with a passphrase",
+            None => "with no passphrase: a saved profile or nothing",
+        }
+    );
+
+    let started = Instant::now();
+    let outcome = network.connect_to(ap, passphrase).await;
+    let elapsed = started.elapsed().as_secs_f64();
+
+    match outcome {
+        Ok(active) => println!("  activated after {elapsed:.1}s: {active}"),
+        Err(error) => println!("  refused after {elapsed:.1}s: {error}"),
     }
     Ok(())
 }

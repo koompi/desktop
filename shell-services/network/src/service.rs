@@ -15,18 +15,21 @@ use zbus::fdo::PropertiesProxy;
 use zbus::names::InterfaceName;
 use zbus::proxy::CacheProperties;
 use zbus::{Connection, MatchRule, MessageStream};
-use zvariant::{ObjectPath, OwnedValue, Value};
+use zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Value};
 
 use crate::ap::{AccessPoint, Ssid};
-use crate::enums::{ActiveState, Connectivity, DeviceState, DeviceType, NmState, WifiStatus};
+use crate::enums::{
+    ActivationReason, ActiveState, Connectivity, DeviceState, DeviceType, NmState, WifiStatus,
+};
 use crate::model::{ActiveConnection, Device, NetworkState, WiredDevice};
 use crate::props::{self, Props};
 use crate::proxy::{
-    ConnectionSettings, DeviceWirelessProxy, NetworkManagerProxy, SettingsConnectionProxy,
-    ACTIVE_IFACE, AP_IFACE, DEVICE_IFACE, MANAGER_IFACE, NM, NM_PATH, WIRED_IFACE, WIRELESS_IFACE,
+    ActiveConnectionEventsProxy, ActiveConnectionProxy, ConnectionSettings, DeviceWirelessProxy,
+    NetworkManagerProxy, SettingsConnectionProxy, SettingsProxy, ACTIVE_IFACE, AP_IFACE,
+    DEVICE_IFACE, MANAGER_IFACE, NM, NM_PATH, WIRED_IFACE, WIRELESS_IFACE,
 };
 use crate::refresh::{refresh_for_properties, refresh_for_signal, Refresh};
-use crate::settings::{profile_with_psk, wifi_profile};
+use crate::settings::{profile_last_used, profile_ssid, profile_with_psk, wifi_profile};
 
 /// NetworkManager emits several signals per state change, and a scan landing adds every
 /// access point in range one at a time. The QML has no equivalent: `Network.qml:174`
@@ -35,6 +38,11 @@ const DEBOUNCE_BASE: Duration = Duration::from_millis(100);
 
 /// A `RequestScan` that has produced no new `LastScan` by then is not still running.
 const SCAN_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// NetworkManager gives a wifi activation about 45 s before it gives up on it. This sits
+/// above that on purpose: it is the backstop for a verdict that never arrives at all,
+/// not a second opinion on how long a router may take.
+const ACTIVATION_TIMEOUT: Duration = Duration::from_secs(60);
 
 const REFRESH_CAPACITY: usize = 64;
 
@@ -165,24 +173,152 @@ impl NetworkService {
     }
 
     /// `Network.qml:76`, `nmcli dev wifi connect <ssid>`, which the QML's own comment
-    /// notes is chosen because it creates the profile as well. Never called against
-    /// this seat.
+    /// notes is chosen because it creates the profile as well.
     pub async fn connect_to(
         &self,
         access_point: &AccessPoint,
         passphrase: Option<&str>,
     ) -> Result<String> {
         let (device_path, _) = self.wireless_paths()?;
-        let profile = wifi_profile(&access_point.ssid, access_point.security, passphrase)?;
-
         let device = object_path(&device_path)?;
         let specific = object_path(&access_point.path)?;
-        let (_, active) = self
-            .ctx
-            .manager
-            .add_and_activate_connection(&profile, &device, &specific)
+
+        // A network the user has joined before already holds its passphrase on disk.
+        // Adding a second profile for it sends NetworkManager looking for a secret agent
+        // instead, and this seat has none.
+        let saved = match passphrase {
+            Some(_) => None,
+            None => self.saved_wifi_profile(&access_point.ssid).await?,
+        };
+
+        let (added, active) = match &saved {
+            Some(path) => {
+                let connection = object_path(path)?;
+                let active = self
+                    .ctx
+                    .manager
+                    .activate_connection(&connection, &device, &specific)
+                    .await?;
+                (None, active)
+            }
+            None => {
+                let profile = wifi_profile(&access_point.ssid, access_point.security, passphrase)?;
+                let (settings, active) = self
+                    .ctx
+                    .manager
+                    .add_and_activate_connection(&profile, &device, &specific)
+                    .await?;
+                (Some(settings), active)
+            }
+        };
+
+        // Both calls return once activation has *started*. Everything that can go wrong
+        // happens after that, so returning here reported a failed connection as a
+        // success and the consumer never got to ask for a passphrase.
+        match self.settle(&active).await {
+            Ok(()) => Ok(active.as_str().to_owned()),
+            Err(refused) => {
+                // AddAndActivateConnection persists the profile before NetworkManager
+                // authenticates with it, so a failed attempt leaves one behind that can
+                // never work. Eight of them accumulated for one network on this seat.
+                if let Some(settings) = added {
+                    let _ = self.forget(&settings).await;
+                }
+                Err(refused)
+            }
+        }
+    }
+
+    /// NetworkManager's verdict on an activation that has just started.
+    async fn settle(&self, active: &OwnedObjectPath) -> Result<()> {
+        let events = ActiveConnectionEventsProxy::builder(&self.ctx.conn)
+            .destination(NM)?
+            .path(active.clone())?
+            .build()
             .await?;
-        Ok(active.as_str().to_owned())
+        // subscribed before the first read: a network that fails for want of a
+        // passphrase has already failed by the time a poll comes round
+        let mut changes = events.receive_state_changed().await?;
+
+        let proxy = ActiveConnectionProxy::builder(&self.ctx.conn)
+            .destination(NM)?
+            .path(active.clone())?
+            .cache_properties(CacheProperties::No)
+            .build()
+            .await?;
+
+        // NM drops the object once it has given up, so a path that no longer answers is
+        // a verdict rather than a bus problem.
+        let Ok(state) = proxy.state().await else {
+            return Err(vanished());
+        };
+        let state = ActiveState::from_u32(state);
+        if state.settled() {
+            return verdict(state, ActivationReason::None);
+        }
+
+        let deadline = Instant::now() + ACTIVATION_TIMEOUT;
+        loop {
+            let signal = tokio::time::timeout_at(deadline, changes.next())
+                .await
+                .map_err(|_| {
+                    Error::Protocol("NetworkManager never finished the connection".into())
+                })?;
+            let Some(signal) = signal else {
+                return Err(vanished());
+            };
+            let Ok(args) = signal.args() else { continue };
+            let state = ActiveState::from_u32(args.state);
+            if state.settled() {
+                return verdict(state, ActivationReason::from_u32(args.reason));
+            }
+        }
+    }
+
+    /// The profile NetworkManager would reuse for this SSID. Matched on the SSID bytes
+    /// rather than the profile id, which is a lossy rendering of them and is whatever
+    /// the tool that created the profile chose to write.
+    ///
+    /// The most recently used one wins, because a seat accumulates duplicates: this one
+    /// holds eleven profiles for one network, ten of them left by connect attempts that
+    /// were reported as successes and never worked.
+    async fn saved_wifi_profile(&self, ssid: &Ssid) -> Result<Option<String>> {
+        let settings = SettingsProxy::builder(&self.ctx.conn)
+            .destination(NM)?
+            .build()
+            .await?;
+
+        let mut best: Option<(u64, String)> = None;
+        for path in settings.list_connections().await? {
+            let connection = SettingsConnectionProxy::builder(&self.ctx.conn)
+                .destination(NM)?
+                .path(path.clone())?
+                .cache_properties(CacheProperties::No)
+                .build()
+                .await?;
+            let Ok(saved) = connection.get_settings().await else {
+                continue;
+            };
+            if profile_ssid(&saved).as_ref() != Some(ssid) {
+                continue;
+            }
+            let used = profile_last_used(&saved);
+            if best.as_ref().is_none_or(|(seen, _)| used > *seen) {
+                best = Some((used, path.as_str().to_owned()));
+            }
+        }
+        Ok(best.map(|(_, path)| path))
+    }
+
+    async fn forget(&self, settings: &OwnedObjectPath) -> Result<()> {
+        let connection = SettingsConnectionProxy::builder(&self.ctx.conn)
+            .destination(NM)?
+            .path(settings.clone())?
+            .cache_properties(CacheProperties::No)
+            .build()
+            .await?;
+        connection.delete().await?;
+        Ok(())
     }
 
     /// `Network.qml:81`, `nmcli connection down <ssid>`. Never called against this seat.
@@ -408,6 +544,20 @@ async fn get_all(conn: &Connection, path: &str, interface: &str) -> zbus::Result
 /// bus, not a fault: an access point drops out of range mid-refresh all the time.
 async fn try_get_all(conn: &Connection, path: &str, interface: &str) -> Option<Props> {
     get_all(conn, path, interface).await.ok()
+}
+
+/// Activated is the only outcome that is not a refusal. The reason is the message
+/// because the protocol has one code for all of them, and "the network did not accept
+/// that passphrase" is the difference between a user retyping it and giving up.
+fn verdict(state: ActiveState, reason: ActivationReason) -> Result<()> {
+    match state {
+        ActiveState::Activated => Ok(()),
+        _ => Err(Error::Protocol(reason.as_str().into_owned())),
+    }
+}
+
+fn vanished() -> Error {
+    Error::Protocol("the connection attempt ended before NetworkManager said why".into())
 }
 
 fn object_path(path: &str) -> Result<ObjectPath<'static>> {

@@ -3,6 +3,8 @@
 //! substring-matching `nmcli`'s localised-looking words, which is why it cannot tell a
 //! captive portal from a working link.
 
+use std::borrow::Cow;
+
 /// `NM_STATE`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum NmState {
@@ -200,6 +202,54 @@ impl ActiveState {
             Self::Deactivated => "deactivated",
         }
     }
+
+    /// Nothing further is coming for these two.
+    pub fn settled(&self) -> bool {
+        matches!(self, Self::Activated | Self::Deactivated)
+    }
+}
+
+/// `NM_ACTIVE_CONNECTION_STATE_REASON`, the second argument of `StateChanged`. Only the
+/// values a wifi connect can end on are named; the rest is the number, because a reason
+/// this crate cannot explain is still worth putting in front of the user.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActivationReason {
+    None,
+    UserDisconnected,
+    DeviceDisconnected,
+    ConnectTimeout,
+    NoSecrets,
+    LoginFailed,
+    DependencyFailed,
+    Other(u32),
+}
+
+impl ActivationReason {
+    pub fn from_u32(value: u32) -> Self {
+        match value {
+            1 => Self::None,
+            2 => Self::UserDisconnected,
+            3 => Self::DeviceDisconnected,
+            6 => Self::ConnectTimeout,
+            9 => Self::NoSecrets,
+            10 => Self::LoginFailed,
+            12 => Self::DependencyFailed,
+            other => Self::Other(other),
+        }
+    }
+
+    pub fn as_str(&self) -> Cow<'static, str> {
+        match self {
+            Self::None => "no reason given".into(),
+            Self::UserDisconnected => "disconnected by the user".into(),
+            Self::DeviceDisconnected => "the device disconnected".into(),
+            Self::ConnectTimeout => "the network did not answer in time".into(),
+            Self::NoSecrets => "the network needs a passphrase".into(),
+            Self::LoginFailed => "the network did not accept that passphrase".into(),
+            Self::DependencyFailed => "a connection it depends on failed".into(),
+            Self::Other(value) => format!("NetworkManager reason {value}").into(),
+        }
+    }
 }
 
 /// `Network.qml:33`, verbatim: the five strings the shell already branches on.
@@ -297,5 +347,37 @@ mod tests {
         assert_eq!(DeviceState::from_u32(100), DeviceState::Activated);
         assert_eq!(ActiveState::from_u32(2), ActiveState::Activated);
         assert_eq!(DeviceType::from_u32(32), DeviceType::Other(32));
+    }
+
+    /// 9 is the number this seat's journal carried under `no secrets: No agents were
+    /// available for this request`, eight times over, while the shell reported every one
+    /// of those attempts to the user as a success.
+    #[test]
+    fn the_reason_a_seat_with_no_secret_agent_fails_with_is_named() {
+        assert_eq!(ActivationReason::from_u32(9), ActivationReason::NoSecrets);
+        assert_eq!(ActivationReason::from_u32(10), ActivationReason::LoginFailed);
+        assert_eq!(
+            ActivationReason::NoSecrets.as_str(),
+            "the network needs a passphrase"
+        );
+        assert_eq!(
+            ActivationReason::from_u32(255),
+            ActivationReason::Other(255)
+        );
+        assert_eq!(
+            ActivationReason::Other(255).as_str(),
+            "NetworkManager reason 255"
+        );
+    }
+
+    /// Activating and Deactivating both have something still to come; waiting on either
+    /// as if it were a verdict is what returned success from a failing connection.
+    #[test]
+    fn only_activated_and_deactivated_end_an_activation() {
+        assert!(ActiveState::Activated.settled());
+        assert!(ActiveState::Deactivated.settled());
+        assert!(!ActiveState::Activating.settled());
+        assert!(!ActiveState::Deactivating.settled());
+        assert!(!ActiveState::Unknown.settled());
     }
 }
