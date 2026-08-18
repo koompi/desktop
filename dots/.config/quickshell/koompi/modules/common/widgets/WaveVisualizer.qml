@@ -36,7 +36,10 @@ Canvas { // Visualizer
 
         // Smoothing: simple moving average (optional)
         var smoothWindow = root.smoothing; // adjust for more/less smoothing
-        root.smoothPoints = [];
+        // Reuse the array across frames instead of allocating a new one every
+        // paint - cava's bar count is fixed in practice, so this is almost
+        // always a write into the same backing storage, not a fresh push loop.
+        if (root.smoothPoints.length !== n) root.smoothPoints = new Array(n);
         for (var i = 0; i < n; ++i) {
             var sum = 0, count = 0;
             for (var j = -smoothWindow; j <= smoothWindow; ++j) {
@@ -44,7 +47,7 @@ Canvas { // Visualizer
                 sum += points[idx];
                 count++;
             }
-            root.smoothPoints.push(sum / count);
+            root.smoothPoints[i] = sum / count;
         }
         if (!root.live) root.smoothPoints.fill(0); // If not playing, show no points
 

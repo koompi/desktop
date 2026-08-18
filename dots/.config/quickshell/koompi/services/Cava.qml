@@ -18,11 +18,15 @@ Singleton {
     id: root
 
     // The bar's media strip is on screen for the whole of any playback and draws
-    // the spectrum behind itself, so cava now runs for the whole of it too. That
+    // the spectrum behind itself, so cava runs for the whole of it too. That
     // is the cost of a live visualiser on the bar; the alternative is a strip
     // whose background only moves while a panel happens to be open.
+    //
+    // Gated on Playing, not merely "has a player" - a paused player already
+    // renders as a flat line (WaveVisualizer.live), so running the process and
+    // repainting every consumer's Canvas while paused had no visible effect.
     readonly property bool wanted: GlobalStates.mediaControlsOpen
-        || MprisController.hasActiveMedia
+        || MprisController.isPlaying
 
     property list<real> points: []
 
