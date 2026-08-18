@@ -1,0 +1,8204 @@
+{
+  "domain": "apps",
+  "size": "stress",
+  "entryCount": 1630,
+  "seed": 1492052582,
+  "entries": [
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-0.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1.desktop"
+    },
+    {
+      "name": "Chat Hub",
+      "icon": "chat-hub",
+      "id": "app-2.desktop"
+    },
+    {
+      "name": "System Code",
+      "icon": "system-code",
+      "id": "app-3.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-4.desktop"
+    },
+    {
+      "name": "Web Photo",
+      "icon": "web-photo",
+      "id": "app-5.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-6.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-7.desktop"
+    },
+    {
+      "name": "Manager System",
+      "icon": "manager-system",
+      "id": "app-8.desktop"
+    },
+    {
+      "name": "Suite Browser",
+      "icon": "suite-browser",
+      "id": "app-9.desktop"
+    },
+    {
+      "name": "Draw Viewer",
+      "icon": "draw-viewer",
+      "id": "app-10.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-11.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-12.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-13.desktop"
+    },
+    {
+      "name": "Disk Suite",
+      "icon": "disk-suite",
+      "id": "app-14.desktop"
+    },
+    {
+      "name": "Calendar System",
+      "icon": "calendar-system",
+      "id": "app-15.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-16.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-17.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-18.desktop"
+    },
+    {
+      "name": "Note Lite",
+      "icon": "note-lite",
+      "id": "app-19.desktop"
+    },
+    {
+      "name": "Suite Video",
+      "icon": "suite-video",
+      "id": "app-20.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-21.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-22.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-23.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-24.desktop"
+    },
+    {
+      "name": "Voice Draw",
+      "icon": "voice-draw",
+      "id": "app-25.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-26.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-27.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-28.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-29.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-30.desktop"
+    },
+    {
+      "name": "Suite Lite",
+      "icon": "suite-lite",
+      "id": "app-31.desktop"
+    },
+    {
+      "name": "Hub Manager",
+      "icon": "hub-manager",
+      "id": "app-32.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-33.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-34.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-35.desktop"
+    },
+    {
+      "name": "Settings Web",
+      "icon": "settings-web",
+      "id": "app-36.desktop"
+    },
+    {
+      "name": "Studio Video",
+      "icon": "studio-video",
+      "id": "app-37.desktop"
+    },
+    {
+      "name": "Manager Disk",
+      "icon": "manager-disk",
+      "id": "app-38.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-39.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-40.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-41.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-42.desktop"
+    },
+    {
+      "name": "Text Hub",
+      "icon": "text-hub",
+      "id": "app-43.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-44.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-45.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-46.desktop"
+    },
+    {
+      "name": "Archive Photo",
+      "icon": "archive-photo",
+      "id": "app-47.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-48.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-49.desktop"
+    },
+    {
+      "name": "Reader Note",
+      "icon": "reader-note",
+      "id": "app-50.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-51.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-52.desktop"
+    },
+    {
+      "name": "Calendar Photo",
+      "icon": "calendar-photo",
+      "id": "app-53.desktop"
+    },
+    {
+      "name": "Disk Paint",
+      "icon": "disk-paint",
+      "id": "app-54.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-55.desktop"
+    },
+    {
+      "name": "Lite Manager",
+      "icon": "lite-manager",
+      "id": "app-56.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-57.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-58.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-59.desktop"
+    },
+    {
+      "name": "Video Manager",
+      "icon": "video-manager",
+      "id": "app-60.desktop"
+    },
+    {
+      "name": "Editor Archive",
+      "icon": "editor-archive",
+      "id": "app-61.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-62.desktop"
+    },
+    {
+      "name": "Chat Chat",
+      "icon": "chat-chat",
+      "id": "app-63.desktop"
+    },
+    {
+      "name": "Viewer Archive",
+      "icon": "viewer-archive",
+      "id": "app-64.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-65.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-66.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-67.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-68.desktop"
+    },
+    {
+      "name": "System Editor",
+      "icon": "system-editor",
+      "id": "app-69.desktop"
+    },
+    {
+      "name": "Reader Voice",
+      "icon": "reader-voice",
+      "id": "app-70.desktop"
+    },
+    {
+      "name": "Network Web",
+      "icon": "network-web",
+      "id": "app-71.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-72.desktop"
+    },
+    {
+      "name": "Chat File",
+      "icon": "chat-file",
+      "id": "app-73.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-74.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-75.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-76.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-77.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-78.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-79.desktop"
+    },
+    {
+      "name": "Photo Voice",
+      "icon": "photo-voice",
+      "id": "app-80.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-81.desktop"
+    },
+    {
+      "name": "File Draw",
+      "icon": "file-draw",
+      "id": "app-82.desktop"
+    },
+    {
+      "name": "Studio Studio",
+      "icon": "studio-studio",
+      "id": "app-83.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-84.desktop"
+    },
+    {
+      "name": "Viewer Settings",
+      "icon": "viewer-settings",
+      "id": "app-85.desktop"
+    },
+    {
+      "name": "Code Note",
+      "icon": "code-note",
+      "id": "app-86.desktop"
+    },
+    {
+      "name": "Pro Archive",
+      "icon": "pro-archive",
+      "id": "app-87.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-88.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-89.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-90.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-91.desktop"
+    },
+    {
+      "name": "Draw Chat",
+      "icon": "draw-chat",
+      "id": "app-92.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-93.desktop"
+    },
+    {
+      "name": "Task Calendar",
+      "icon": "task-calendar",
+      "id": "app-94.desktop"
+    },
+    {
+      "name": "File Pro",
+      "icon": "file-pro",
+      "id": "app-95.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-96.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-97.desktop"
+    },
+    {
+      "name": "Video Music",
+      "icon": "video-music",
+      "id": "app-98.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-99.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-100.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-101.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-102.desktop"
+    },
+    {
+      "name": "Lite Web",
+      "icon": "lite-web",
+      "id": "app-103.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-104.desktop"
+    },
+    {
+      "name": "Mail System",
+      "icon": "mail-system",
+      "id": "app-105.desktop"
+    },
+    {
+      "name": "Disk Note",
+      "icon": "disk-note",
+      "id": "app-106.desktop"
+    },
+    {
+      "name": "Mail Mail",
+      "icon": "mail-mail",
+      "id": "app-107.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-108.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-109.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-110.desktop"
+    },
+    {
+      "name": "Task Reader",
+      "icon": "task-reader",
+      "id": "app-111.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-112.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-113.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-114.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-115.desktop"
+    },
+    {
+      "name": "Hub Pro",
+      "icon": "hub-pro",
+      "id": "app-116.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-117.desktop"
+    },
+    {
+      "name": "Archive Mail",
+      "icon": "archive-mail",
+      "id": "app-118.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-119.desktop"
+    },
+    {
+      "name": "Settings Text",
+      "icon": "settings-text",
+      "id": "app-120.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-121.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-122.desktop"
+    },
+    {
+      "name": "Writer Manager",
+      "icon": "writer-manager",
+      "id": "app-123.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-124.desktop"
+    },
+    {
+      "name": "Viewer Viewer",
+      "icon": "viewer-viewer",
+      "id": "app-125.desktop"
+    },
+    {
+      "name": "Studio Task",
+      "icon": "studio-task",
+      "id": "app-126.desktop"
+    },
+    {
+      "name": "Voice Photo",
+      "icon": "voice-photo",
+      "id": "app-127.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-128.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-129.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-130.desktop"
+    },
+    {
+      "name": "Mail Browser",
+      "icon": "mail-browser",
+      "id": "app-131.desktop"
+    },
+    {
+      "name": "បាយ",
+      "icon": "បាយ",
+      "id": "app-132.desktop"
+    },
+    {
+      "name": "Settings File",
+      "icon": "settings-file",
+      "id": "app-133.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-134.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-135.desktop"
+    },
+    {
+      "name": "Network Disk",
+      "icon": "network-disk",
+      "id": "app-136.desktop"
+    },
+    {
+      "name": "Editor Archive",
+      "icon": "editor-archive",
+      "id": "app-137.desktop"
+    },
+    {
+      "name": "Browser Web",
+      "icon": "browser-web",
+      "id": "app-138.desktop"
+    },
+    {
+      "name": "Browser Browser",
+      "icon": "browser-browser",
+      "id": "app-139.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-140.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-141.desktop"
+    },
+    {
+      "name": "Browser Note",
+      "icon": "browser-note",
+      "id": "app-142.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-143.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-144.desktop"
+    },
+    {
+      "name": "System Writer",
+      "icon": "system-writer",
+      "id": "app-145.desktop"
+    },
+    {
+      "name": "Manager Lite",
+      "icon": "manager-lite",
+      "id": "app-146.desktop"
+    },
+    {
+      "name": "Player Manager",
+      "icon": "player-manager",
+      "id": "app-147.desktop"
+    },
+    {
+      "name": "Pro Player",
+      "icon": "pro-player",
+      "id": "app-148.desktop"
+    },
+    {
+      "name": "Hub Manager",
+      "icon": "hub-manager",
+      "id": "app-149.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-150.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-151.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-152.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-153.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-154.desktop"
+    },
+    {
+      "name": "Hub Task",
+      "icon": "hub-task",
+      "id": "app-155.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-156.desktop"
+    },
+    {
+      "name": "Web Lite",
+      "icon": "web-lite",
+      "id": "app-157.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-158.desktop"
+    },
+    {
+      "name": "Camera File",
+      "icon": "camera-file",
+      "id": "app-159.desktop"
+    },
+    {
+      "name": "Network Terminal",
+      "icon": "network-terminal",
+      "id": "app-160.desktop"
+    },
+    {
+      "name": "Viewer Task",
+      "icon": "viewer-task",
+      "id": "app-161.desktop"
+    },
+    {
+      "name": "Mail Web",
+      "icon": "mail-web",
+      "id": "app-162.desktop"
+    },
+    {
+      "name": "Music System",
+      "icon": "music-system",
+      "id": "app-163.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-164.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-165.desktop"
+    },
+    {
+      "name": "Camera Calendar",
+      "icon": "camera-calendar",
+      "id": "app-166.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-167.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-168.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-169.desktop"
+    },
+    {
+      "name": "Suite Player",
+      "icon": "suite-player",
+      "id": "app-170.desktop"
+    },
+    {
+      "name": "Mail Music",
+      "icon": "mail-music",
+      "id": "app-171.desktop"
+    },
+    {
+      "name": "Viewer Terminal",
+      "icon": "viewer-terminal",
+      "id": "app-172.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-173.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-174.desktop"
+    },
+    {
+      "name": "Web Lite",
+      "icon": "web-lite",
+      "id": "app-175.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-176.desktop"
+    },
+    {
+      "name": "Suite Lite",
+      "icon": "suite-lite",
+      "id": "app-177.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-178.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-179.desktop"
+    },
+    {
+      "name": "Player Photo",
+      "icon": "player-photo",
+      "id": "app-180.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-181.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-182.desktop"
+    },
+    {
+      "name": "Chat Hub",
+      "icon": "chat-hub",
+      "id": "app-183.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-184.desktop"
+    },
+    {
+      "name": "Lite Photo",
+      "icon": "lite-photo",
+      "id": "app-185.desktop"
+    },
+    {
+      "name": "Writer Network",
+      "icon": "writer-network",
+      "id": "app-186.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-187.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-188.desktop"
+    },
+    {
+      "name": "Code Video",
+      "icon": "code-video",
+      "id": "app-189.desktop"
+    },
+    {
+      "name": "Terminal Mail",
+      "icon": "terminal-mail",
+      "id": "app-190.desktop"
+    },
+    {
+      "name": "Music Calendar",
+      "icon": "music-calendar",
+      "id": "app-191.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-192.desktop"
+    },
+    {
+      "name": "Camera System",
+      "icon": "camera-system",
+      "id": "app-193.desktop"
+    },
+    {
+      "name": "Settings Calendar",
+      "icon": "settings-calendar",
+      "id": "app-194.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-195.desktop"
+    },
+    {
+      "name": "Editor Pro",
+      "icon": "editor-pro",
+      "id": "app-196.desktop"
+    },
+    {
+      "name": "File Voice",
+      "icon": "file-voice",
+      "id": "app-197.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-198.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-199.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-200.desktop"
+    },
+    {
+      "name": "Browser Editor",
+      "icon": "browser-editor",
+      "id": "app-201.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-202.desktop"
+    },
+    {
+      "name": "Browser Manager",
+      "icon": "browser-manager",
+      "id": "app-203.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-204.desktop"
+    },
+    {
+      "name": "Browser Studio",
+      "icon": "browser-studio",
+      "id": "app-205.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-206.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-207.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-208.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-209.desktop"
+    },
+    {
+      "name": "Draw Network",
+      "icon": "draw-network",
+      "id": "app-210.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-211.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-212.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-213.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-214.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-215.desktop"
+    },
+    {
+      "name": "File Task",
+      "icon": "file-task",
+      "id": "app-216.desktop"
+    },
+    {
+      "name": "Chat Network",
+      "icon": "chat-network",
+      "id": "app-217.desktop"
+    },
+    {
+      "name": "Draw Photo",
+      "icon": "draw-photo",
+      "id": "app-218.desktop"
+    },
+    {
+      "name": "Reader Settings",
+      "icon": "reader-settings",
+      "id": "app-219.desktop"
+    },
+    {
+      "name": "អរគុណ",
+      "icon": "អរគុណ",
+      "id": "app-220.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-221.desktop"
+    },
+    {
+      "name": "Chat Viewer",
+      "icon": "chat-viewer",
+      "id": "app-222.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-223.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-224.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-225.desktop"
+    },
+    {
+      "name": "Archive Reader",
+      "icon": "archive-reader",
+      "id": "app-226.desktop"
+    },
+    {
+      "name": "Settings Network",
+      "icon": "settings-network",
+      "id": "app-227.desktop"
+    },
+    {
+      "name": "System Lite",
+      "icon": "system-lite",
+      "id": "app-228.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-229.desktop"
+    },
+    {
+      "name": "Draw Voice",
+      "icon": "draw-voice",
+      "id": "app-230.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-231.desktop"
+    },
+    {
+      "name": "Viewer Writer",
+      "icon": "viewer-writer",
+      "id": "app-232.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-233.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-234.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-235.desktop"
+    },
+    {
+      "name": "Reader Reader",
+      "icon": "reader-reader",
+      "id": "app-236.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-237.desktop"
+    },
+    {
+      "name": "Lite Calendar",
+      "icon": "lite-calendar",
+      "id": "app-238.desktop"
+    },
+    {
+      "name": "Pro File",
+      "icon": "pro-file",
+      "id": "app-239.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-240.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-241.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-242.desktop"
+    },
+    {
+      "name": "Pro Calendar",
+      "icon": "pro-calendar",
+      "id": "app-243.desktop"
+    },
+    {
+      "name": "Draw Task",
+      "icon": "draw-task",
+      "id": "app-244.desktop"
+    },
+    {
+      "name": "Web File",
+      "icon": "web-file",
+      "id": "app-245.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-246.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-247.desktop"
+    },
+    {
+      "name": "Network Terminal",
+      "icon": "network-terminal",
+      "id": "app-248.desktop"
+    },
+    {
+      "name": "Disk Manager",
+      "icon": "disk-manager",
+      "id": "app-249.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-250.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-251.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-252.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-253.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-254.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-255.desktop"
+    },
+    {
+      "name": "Video Reader",
+      "icon": "video-reader",
+      "id": "app-256.desktop"
+    },
+    {
+      "name": "Hub Reader",
+      "icon": "hub-reader",
+      "id": "app-257.desktop"
+    },
+    {
+      "name": "Mail Manager",
+      "icon": "mail-manager",
+      "id": "app-258.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-259.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-260.desktop"
+    },
+    {
+      "name": "Terminal Viewer",
+      "icon": "terminal-viewer",
+      "id": "app-261.desktop"
+    },
+    {
+      "name": "Video Studio",
+      "icon": "video-studio",
+      "id": "app-262.desktop"
+    },
+    {
+      "name": "Camera Draw",
+      "icon": "camera-draw",
+      "id": "app-263.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-264.desktop"
+    },
+    {
+      "name": "Lite Task",
+      "icon": "lite-task",
+      "id": "app-265.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-266.desktop"
+    },
+    {
+      "name": "Paint Suite",
+      "icon": "paint-suite",
+      "id": "app-267.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-268.desktop"
+    },
+    {
+      "name": "Hub Writer",
+      "icon": "hub-writer",
+      "id": "app-269.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-270.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-271.desktop"
+    },
+    {
+      "name": "Writer Note",
+      "icon": "writer-note",
+      "id": "app-272.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-273.desktop"
+    },
+    {
+      "name": "Video Paint",
+      "icon": "video-paint",
+      "id": "app-274.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-275.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-276.desktop"
+    },
+    {
+      "name": "Calendar Video",
+      "icon": "calendar-video",
+      "id": "app-277.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-278.desktop"
+    },
+    {
+      "name": "Disk Network",
+      "icon": "disk-network",
+      "id": "app-279.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-280.desktop"
+    },
+    {
+      "name": "Studio Lite",
+      "icon": "studio-lite",
+      "id": "app-281.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-282.desktop"
+    },
+    {
+      "name": "Music File",
+      "icon": "music-file",
+      "id": "app-283.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-284.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-285.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-286.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-287.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-288.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-289.desktop"
+    },
+    {
+      "name": "Suite File",
+      "icon": "suite-file",
+      "id": "app-290.desktop"
+    },
+    {
+      "name": "Task Editor",
+      "icon": "task-editor",
+      "id": "app-291.desktop"
+    },
+    {
+      "name": "Archive Chat",
+      "icon": "archive-chat",
+      "id": "app-292.desktop"
+    },
+    {
+      "name": "Settings Disk",
+      "icon": "settings-disk",
+      "id": "app-293.desktop"
+    },
+    {
+      "name": "Suite System",
+      "icon": "suite-system",
+      "id": "app-294.desktop"
+    },
+    {
+      "name": "Archive Note",
+      "icon": "archive-note",
+      "id": "app-295.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-296.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-297.desktop"
+    },
+    {
+      "name": "Terminal Terminal",
+      "icon": "terminal-terminal",
+      "id": "app-298.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-299.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-300.desktop"
+    },
+    {
+      "name": "Lite Voice",
+      "icon": "lite-voice",
+      "id": "app-301.desktop"
+    },
+    {
+      "name": "Pro Browser",
+      "icon": "pro-browser",
+      "id": "app-302.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-303.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-304.desktop"
+    },
+    {
+      "name": "Terminal Web",
+      "icon": "terminal-web",
+      "id": "app-305.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-306.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-307.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-308.desktop"
+    },
+    {
+      "name": "Terminal Hub",
+      "icon": "terminal-hub",
+      "id": "app-309.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-310.desktop"
+    },
+    {
+      "name": "Text Web",
+      "icon": "text-web",
+      "id": "app-311.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-312.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-313.desktop"
+    },
+    {
+      "name": "Archive Music",
+      "icon": "archive-music",
+      "id": "app-314.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-315.desktop"
+    },
+    {
+      "name": "Video Editor",
+      "icon": "video-editor",
+      "id": "app-316.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-317.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-318.desktop"
+    },
+    {
+      "name": "ភ្លៀង",
+      "icon": "ភ្លៀង",
+      "id": "app-319.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-320.desktop"
+    },
+    {
+      "name": "Writer Chat",
+      "icon": "writer-chat",
+      "id": "app-321.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-322.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-323.desktop"
+    },
+    {
+      "name": "Code Pro",
+      "icon": "code-pro",
+      "id": "app-324.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-325.desktop"
+    },
+    {
+      "name": "Text Editor",
+      "icon": "text-editor",
+      "id": "app-326.desktop"
+    },
+    {
+      "name": "Player Suite",
+      "icon": "player-suite",
+      "id": "app-327.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-328.desktop"
+    },
+    {
+      "name": "Reader Calendar",
+      "icon": "reader-calendar",
+      "id": "app-329.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-330.desktop"
+    },
+    {
+      "name": "Web Note",
+      "icon": "web-note",
+      "id": "app-331.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-332.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-333.desktop"
+    },
+    {
+      "name": "Pro Studio",
+      "icon": "pro-studio",
+      "id": "app-334.desktop"
+    },
+    {
+      "name": "Text Reader",
+      "icon": "text-reader",
+      "id": "app-335.desktop"
+    },
+    {
+      "name": "Mail Music",
+      "icon": "mail-music",
+      "id": "app-336.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-337.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-338.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-339.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-340.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-341.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-342.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-343.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-344.desktop"
+    },
+    {
+      "name": "Disk Reader",
+      "icon": "disk-reader",
+      "id": "app-345.desktop"
+    },
+    {
+      "name": "File Archive",
+      "icon": "file-archive",
+      "id": "app-346.desktop"
+    },
+    {
+      "name": "Note Network",
+      "icon": "note-network",
+      "id": "app-347.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-348.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-349.desktop"
+    },
+    {
+      "name": "Browser Player",
+      "icon": "browser-player",
+      "id": "app-350.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-351.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-352.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-353.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-354.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-355.desktop"
+    },
+    {
+      "name": "Settings Terminal",
+      "icon": "settings-terminal",
+      "id": "app-356.desktop"
+    },
+    {
+      "name": "Browser Writer",
+      "icon": "browser-writer",
+      "id": "app-357.desktop"
+    },
+    {
+      "name": "Settings Note",
+      "icon": "settings-note",
+      "id": "app-358.desktop"
+    },
+    {
+      "name": "Music Browser",
+      "icon": "music-browser",
+      "id": "app-359.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-360.desktop"
+    },
+    {
+      "name": "Text Text",
+      "icon": "text-text",
+      "id": "app-361.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-362.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-363.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-364.desktop"
+    },
+    {
+      "name": "File Text",
+      "icon": "file-text",
+      "id": "app-365.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-366.desktop"
+    },
+    {
+      "name": "Music Camera",
+      "icon": "music-camera",
+      "id": "app-367.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-368.desktop"
+    },
+    {
+      "name": "Music Camera",
+      "icon": "music-camera",
+      "id": "app-369.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-370.desktop"
+    },
+    {
+      "name": "File Settings",
+      "icon": "file-settings",
+      "id": "app-371.desktop"
+    },
+    {
+      "name": "Writer Settings",
+      "icon": "writer-settings",
+      "id": "app-372.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-373.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-374.desktop"
+    },
+    {
+      "name": "Voice Suite",
+      "icon": "voice-suite",
+      "id": "app-375.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-376.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-377.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-378.desktop"
+    },
+    {
+      "name": "Studio Voice",
+      "icon": "studio-voice",
+      "id": "app-379.desktop"
+    },
+    {
+      "name": "Mail Browser",
+      "icon": "mail-browser",
+      "id": "app-380.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-381.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-382.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-383.desktop"
+    },
+    {
+      "name": "Settings Music",
+      "icon": "settings-music",
+      "id": "app-384.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-385.desktop"
+    },
+    {
+      "name": "Music Lite",
+      "icon": "music-lite",
+      "id": "app-386.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-387.desktop"
+    },
+    {
+      "name": "Text Disk",
+      "icon": "text-disk",
+      "id": "app-388.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-389.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-390.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-391.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-392.desktop"
+    },
+    {
+      "name": "Browser Camera",
+      "icon": "browser-camera",
+      "id": "app-393.desktop"
+    },
+    {
+      "name": "Terminal Pro",
+      "icon": "terminal-pro",
+      "id": "app-394.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-395.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-396.desktop"
+    },
+    {
+      "name": "Reader Music",
+      "icon": "reader-music",
+      "id": "app-397.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-398.desktop"
+    },
+    {
+      "name": "System Web",
+      "icon": "system-web",
+      "id": "app-399.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-400.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-401.desktop"
+    },
+    {
+      "name": "Disk Browser",
+      "icon": "disk-browser",
+      "id": "app-402.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-403.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-404.desktop"
+    },
+    {
+      "name": "Settings File",
+      "icon": "settings-file",
+      "id": "app-405.desktop"
+    },
+    {
+      "name": "Network Lite",
+      "icon": "network-lite",
+      "id": "app-406.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-407.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-408.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-409.desktop"
+    },
+    {
+      "name": "Paint Viewer",
+      "icon": "paint-viewer",
+      "id": "app-410.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-411.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-412.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-413.desktop"
+    },
+    {
+      "name": "Studio Lite",
+      "icon": "studio-lite",
+      "id": "app-414.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-415.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-416.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-417.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-418.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-419.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-420.desktop"
+    },
+    {
+      "name": "System Music",
+      "icon": "system-music",
+      "id": "app-421.desktop"
+    },
+    {
+      "name": "Reader Video",
+      "icon": "reader-video",
+      "id": "app-422.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-423.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-424.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-425.desktop"
+    },
+    {
+      "name": "Code Text",
+      "icon": "code-text",
+      "id": "app-426.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-427.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-428.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-429.desktop"
+    },
+    {
+      "name": "Writer Player",
+      "icon": "writer-player",
+      "id": "app-430.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-431.desktop"
+    },
+    {
+      "name": "Text Text",
+      "icon": "text-text",
+      "id": "app-432.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-433.desktop"
+    },
+    {
+      "name": "Code Mail",
+      "icon": "code-mail",
+      "id": "app-434.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-435.desktop"
+    },
+    {
+      "name": "Editor Browser",
+      "icon": "editor-browser",
+      "id": "app-436.desktop"
+    },
+    {
+      "name": "Chat Player",
+      "icon": "chat-player",
+      "id": "app-437.desktop"
+    },
+    {
+      "name": "Browser Pro",
+      "icon": "browser-pro",
+      "id": "app-438.desktop"
+    },
+    {
+      "name": "Disk Task",
+      "icon": "disk-task",
+      "id": "app-439.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-440.desktop"
+    },
+    {
+      "name": "Note Suite",
+      "icon": "note-suite",
+      "id": "app-441.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-442.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-443.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-444.desktop"
+    },
+    {
+      "name": "Paint Hub",
+      "icon": "paint-hub",
+      "id": "app-445.desktop"
+    },
+    {
+      "name": "System Text",
+      "icon": "system-text",
+      "id": "app-446.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-447.desktop"
+    },
+    {
+      "name": "Pro Calendar",
+      "icon": "pro-calendar",
+      "id": "app-448.desktop"
+    },
+    {
+      "name": "Reader Writer",
+      "icon": "reader-writer",
+      "id": "app-449.desktop"
+    },
+    {
+      "name": "Chat Disk",
+      "icon": "chat-disk",
+      "id": "app-450.desktop"
+    },
+    {
+      "name": "អរគុណ",
+      "icon": "អរគុណ",
+      "id": "app-451.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-452.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-453.desktop"
+    },
+    {
+      "name": "Web Hub",
+      "icon": "web-hub",
+      "id": "app-454.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-455.desktop"
+    },
+    {
+      "name": "Music Camera",
+      "icon": "music-camera",
+      "id": "app-456.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-457.desktop"
+    },
+    {
+      "name": "Lite Editor",
+      "icon": "lite-editor",
+      "id": "app-458.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-459.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-460.desktop"
+    },
+    {
+      "name": "Web Lite",
+      "icon": "web-lite",
+      "id": "app-461.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-462.desktop"
+    },
+    {
+      "name": "Studio Code",
+      "icon": "studio-code",
+      "id": "app-463.desktop"
+    },
+    {
+      "name": "Voice Draw",
+      "icon": "voice-draw",
+      "id": "app-464.desktop"
+    },
+    {
+      "name": "Writer Viewer",
+      "icon": "writer-viewer",
+      "id": "app-465.desktop"
+    },
+    {
+      "name": "Code Camera",
+      "icon": "code-camera",
+      "id": "app-466.desktop"
+    },
+    {
+      "name": "Manager System",
+      "icon": "manager-system",
+      "id": "app-467.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-468.desktop"
+    },
+    {
+      "name": "Chat File",
+      "icon": "chat-file",
+      "id": "app-469.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-470.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-471.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-472.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-473.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-474.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-475.desktop"
+    },
+    {
+      "name": "Hub System",
+      "icon": "hub-system",
+      "id": "app-476.desktop"
+    },
+    {
+      "name": "Archive Suite",
+      "icon": "archive-suite",
+      "id": "app-477.desktop"
+    },
+    {
+      "name": "File Network",
+      "icon": "file-network",
+      "id": "app-478.desktop"
+    },
+    {
+      "name": "Task Music",
+      "icon": "task-music",
+      "id": "app-479.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-480.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-481.desktop"
+    },
+    {
+      "name": "Voice Reader",
+      "icon": "voice-reader",
+      "id": "app-482.desktop"
+    },
+    {
+      "name": "Terminal Terminal",
+      "icon": "terminal-terminal",
+      "id": "app-483.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-484.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-485.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-486.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-487.desktop"
+    },
+    {
+      "name": "Network Manager",
+      "icon": "network-manager",
+      "id": "app-488.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-489.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-490.desktop"
+    },
+    {
+      "name": "Photo Chat",
+      "icon": "photo-chat",
+      "id": "app-491.desktop"
+    },
+    {
+      "name": "Viewer Disk",
+      "icon": "viewer-disk",
+      "id": "app-492.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-493.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-494.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-495.desktop"
+    },
+    {
+      "name": "Browser Voice",
+      "icon": "browser-voice",
+      "id": "app-496.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-497.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-498.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-499.desktop"
+    },
+    {
+      "name": "Browser Viewer",
+      "icon": "browser-viewer",
+      "id": "app-500.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-501.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-502.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-503.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-504.desktop"
+    },
+    {
+      "name": "Draw Archive",
+      "icon": "draw-archive",
+      "id": "app-505.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-506.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-507.desktop"
+    },
+    {
+      "name": "Browser Terminal",
+      "icon": "browser-terminal",
+      "id": "app-508.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-509.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-510.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-511.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-512.desktop"
+    },
+    {
+      "name": "Manager Music",
+      "icon": "manager-music",
+      "id": "app-513.desktop"
+    },
+    {
+      "name": "Suite Note",
+      "icon": "suite-note",
+      "id": "app-514.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-515.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-516.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-517.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-518.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-519.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-520.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-521.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-522.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-523.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-524.desktop"
+    },
+    {
+      "name": "Writer Settings",
+      "icon": "writer-settings",
+      "id": "app-525.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-526.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-527.desktop"
+    },
+    {
+      "name": "ភ្លៀង",
+      "icon": "ភ្លៀង",
+      "id": "app-528.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-529.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-530.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-531.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-532.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-533.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-534.desktop"
+    },
+    {
+      "name": "Manager Writer",
+      "icon": "manager-writer",
+      "id": "app-535.desktop"
+    },
+    {
+      "name": "Hub Text",
+      "icon": "hub-text",
+      "id": "app-536.desktop"
+    },
+    {
+      "name": "Paint Terminal",
+      "icon": "paint-terminal",
+      "id": "app-537.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-538.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-539.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-540.desktop"
+    },
+    {
+      "name": "Archive Suite",
+      "icon": "archive-suite",
+      "id": "app-541.desktop"
+    },
+    {
+      "name": "Archive Draw",
+      "icon": "archive-draw",
+      "id": "app-542.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-543.desktop"
+    },
+    {
+      "name": "Archive Video",
+      "icon": "archive-video",
+      "id": "app-544.desktop"
+    },
+    {
+      "name": "Hub Paint",
+      "icon": "hub-paint",
+      "id": "app-545.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-546.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-547.desktop"
+    },
+    {
+      "name": "Settings Camera",
+      "icon": "settings-camera",
+      "id": "app-548.desktop"
+    },
+    {
+      "name": "Voice Calendar",
+      "icon": "voice-calendar",
+      "id": "app-549.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-550.desktop"
+    },
+    {
+      "name": "Browser Voice",
+      "icon": "browser-voice",
+      "id": "app-551.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-552.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-553.desktop"
+    },
+    {
+      "name": "Browser Note",
+      "icon": "browser-note",
+      "id": "app-554.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-555.desktop"
+    },
+    {
+      "name": "Terminal Archive",
+      "icon": "terminal-archive",
+      "id": "app-556.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-557.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-558.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-559.desktop"
+    },
+    {
+      "name": "Draw Calendar",
+      "icon": "draw-calendar",
+      "id": "app-560.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-561.desktop"
+    },
+    {
+      "name": "Paint Suite",
+      "icon": "paint-suite",
+      "id": "app-562.desktop"
+    },
+    {
+      "name": "Terminal Network",
+      "icon": "terminal-network",
+      "id": "app-563.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-564.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-565.desktop"
+    },
+    {
+      "name": "File Calendar",
+      "icon": "file-calendar",
+      "id": "app-566.desktop"
+    },
+    {
+      "name": "Camera Editor",
+      "icon": "camera-editor",
+      "id": "app-567.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-568.desktop"
+    },
+    {
+      "name": "Studio Lite",
+      "icon": "studio-lite",
+      "id": "app-569.desktop"
+    },
+    {
+      "name": "System Voice",
+      "icon": "system-voice",
+      "id": "app-570.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-571.desktop"
+    },
+    {
+      "name": "ស្រលាញ់",
+      "icon": "ស្រលាញ់",
+      "id": "app-572.desktop"
+    },
+    {
+      "name": "Player Note",
+      "icon": "player-note",
+      "id": "app-573.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-574.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-575.desktop"
+    },
+    {
+      "name": "Viewer Viewer",
+      "icon": "viewer-viewer",
+      "id": "app-576.desktop"
+    },
+    {
+      "name": "Web Camera",
+      "icon": "web-camera",
+      "id": "app-577.desktop"
+    },
+    {
+      "name": "Terminal Voice",
+      "icon": "terminal-voice",
+      "id": "app-578.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-579.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-580.desktop"
+    },
+    {
+      "name": "Manager Viewer",
+      "icon": "manager-viewer",
+      "id": "app-581.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-582.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-583.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-584.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-585.desktop"
+    },
+    {
+      "name": "Browser Archive",
+      "icon": "browser-archive",
+      "id": "app-586.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-587.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-588.desktop"
+    },
+    {
+      "name": "File Disk",
+      "icon": "file-disk",
+      "id": "app-589.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-590.desktop"
+    },
+    {
+      "name": "Web Viewer",
+      "icon": "web-viewer",
+      "id": "app-591.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-592.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-593.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-594.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-595.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-596.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-597.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-598.desktop"
+    },
+    {
+      "name": "Voice Terminal",
+      "icon": "voice-terminal",
+      "id": "app-599.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-600.desktop"
+    },
+    {
+      "name": "Music Editor",
+      "icon": "music-editor",
+      "id": "app-601.desktop"
+    },
+    {
+      "name": "Calendar Player",
+      "icon": "calendar-player",
+      "id": "app-602.desktop"
+    },
+    {
+      "name": "Disk File",
+      "icon": "disk-file",
+      "id": "app-603.desktop"
+    },
+    {
+      "name": "Music Network",
+      "icon": "music-network",
+      "id": "app-604.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-605.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-606.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-607.desktop"
+    },
+    {
+      "name": "Photo Photo",
+      "icon": "photo-photo",
+      "id": "app-608.desktop"
+    },
+    {
+      "name": "Writer Music",
+      "icon": "writer-music",
+      "id": "app-609.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-610.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-611.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-612.desktop"
+    },
+    {
+      "name": "Text Settings",
+      "icon": "text-settings",
+      "id": "app-613.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-614.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-615.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-616.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-617.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-618.desktop"
+    },
+    {
+      "name": "Note Suite",
+      "icon": "note-suite",
+      "id": "app-619.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-620.desktop"
+    },
+    {
+      "name": "Video Suite",
+      "icon": "video-suite",
+      "id": "app-621.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-622.desktop"
+    },
+    {
+      "name": "Note Voice",
+      "icon": "note-voice",
+      "id": "app-623.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-624.desktop"
+    },
+    {
+      "name": "Paint Archive",
+      "icon": "paint-archive",
+      "id": "app-625.desktop"
+    },
+    {
+      "name": "Terminal Draw",
+      "icon": "terminal-draw",
+      "id": "app-626.desktop"
+    },
+    {
+      "name": "ស្រលាញ់",
+      "icon": "ស្រលាញ់",
+      "id": "app-627.desktop"
+    },
+    {
+      "name": "Hub Paint",
+      "icon": "hub-paint",
+      "id": "app-628.desktop"
+    },
+    {
+      "name": "Code Photo",
+      "icon": "code-photo",
+      "id": "app-629.desktop"
+    },
+    {
+      "name": "Settings Suite",
+      "icon": "settings-suite",
+      "id": "app-630.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-631.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-632.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-633.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-634.desktop"
+    },
+    {
+      "name": "Lite Note",
+      "icon": "lite-note",
+      "id": "app-635.desktop"
+    },
+    {
+      "name": "Terminal Music",
+      "icon": "terminal-music",
+      "id": "app-636.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-637.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-638.desktop"
+    },
+    {
+      "name": "Network Disk",
+      "icon": "network-disk",
+      "id": "app-639.desktop"
+    },
+    {
+      "name": "Hub Suite",
+      "icon": "hub-suite",
+      "id": "app-640.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-641.desktop"
+    },
+    {
+      "name": "Viewer Note",
+      "icon": "viewer-note",
+      "id": "app-642.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-643.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-644.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-645.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-646.desktop"
+    },
+    {
+      "name": "Paint Web",
+      "icon": "paint-web",
+      "id": "app-647.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-648.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-649.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-650.desktop"
+    },
+    {
+      "name": "Terminal Code",
+      "icon": "terminal-code",
+      "id": "app-651.desktop"
+    },
+    {
+      "name": "Draw Text",
+      "icon": "draw-text",
+      "id": "app-652.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-653.desktop"
+    },
+    {
+      "name": "Hub Disk",
+      "icon": "hub-disk",
+      "id": "app-654.desktop"
+    },
+    {
+      "name": "Reader Viewer",
+      "icon": "reader-viewer",
+      "id": "app-655.desktop"
+    },
+    {
+      "name": "Calendar Photo",
+      "icon": "calendar-photo",
+      "id": "app-656.desktop"
+    },
+    {
+      "name": "Suite Note",
+      "icon": "suite-note",
+      "id": "app-657.desktop"
+    },
+    {
+      "name": "Draw Photo",
+      "icon": "draw-photo",
+      "id": "app-658.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-659.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-660.desktop"
+    },
+    {
+      "name": "Draw Mail",
+      "icon": "draw-mail",
+      "id": "app-661.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-662.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-663.desktop"
+    },
+    {
+      "name": "Video Network",
+      "icon": "video-network",
+      "id": "app-664.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-665.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-666.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-667.desktop"
+    },
+    {
+      "name": "Studio Player",
+      "icon": "studio-player",
+      "id": "app-668.desktop"
+    },
+    {
+      "name": "File Editor",
+      "icon": "file-editor",
+      "id": "app-669.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-670.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-671.desktop"
+    },
+    {
+      "name": "Reader Viewer",
+      "icon": "reader-viewer",
+      "id": "app-672.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-673.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-674.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-675.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-676.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-677.desktop"
+    },
+    {
+      "name": "Pro Manager",
+      "icon": "pro-manager",
+      "id": "app-678.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-679.desktop"
+    },
+    {
+      "name": "Network Disk",
+      "icon": "network-disk",
+      "id": "app-680.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-681.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-682.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-683.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-684.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-685.desktop"
+    },
+    {
+      "name": "Archive System",
+      "icon": "archive-system",
+      "id": "app-686.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-687.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-688.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-689.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-690.desktop"
+    },
+    {
+      "name": "Pro Pro",
+      "icon": "pro-pro",
+      "id": "app-691.desktop"
+    },
+    {
+      "name": "Text File",
+      "icon": "text-file",
+      "id": "app-692.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-693.desktop"
+    },
+    {
+      "name": "Calendar Mail",
+      "icon": "calendar-mail",
+      "id": "app-694.desktop"
+    },
+    {
+      "name": "Text File",
+      "icon": "text-file",
+      "id": "app-695.desktop"
+    },
+    {
+      "name": "File Code",
+      "icon": "file-code",
+      "id": "app-696.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-697.desktop"
+    },
+    {
+      "name": "Manager Hub",
+      "icon": "manager-hub",
+      "id": "app-698.desktop"
+    },
+    {
+      "name": "Archive Settings",
+      "icon": "archive-settings",
+      "id": "app-699.desktop"
+    },
+    {
+      "name": "Archive Manager",
+      "icon": "archive-manager",
+      "id": "app-700.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-701.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-702.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-703.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-704.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-705.desktop"
+    },
+    {
+      "name": "Code Hub",
+      "icon": "code-hub",
+      "id": "app-706.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-707.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-708.desktop"
+    },
+    {
+      "name": "Music Voice",
+      "icon": "music-voice",
+      "id": "app-709.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-710.desktop"
+    },
+    {
+      "name": "Editor Text",
+      "icon": "editor-text",
+      "id": "app-711.desktop"
+    },
+    {
+      "name": "Viewer Player",
+      "icon": "viewer-player",
+      "id": "app-712.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-713.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-714.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-715.desktop"
+    },
+    {
+      "name": "Editor Suite",
+      "icon": "editor-suite",
+      "id": "app-716.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-717.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-718.desktop"
+    },
+    {
+      "name": "Player Manager",
+      "icon": "player-manager",
+      "id": "app-719.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-720.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-721.desktop"
+    },
+    {
+      "name": "Editor Editor",
+      "icon": "editor-editor",
+      "id": "app-722.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-723.desktop"
+    },
+    {
+      "name": "Music Settings",
+      "icon": "music-settings",
+      "id": "app-724.desktop"
+    },
+    {
+      "name": "Mail Video",
+      "icon": "mail-video",
+      "id": "app-725.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-726.desktop"
+    },
+    {
+      "name": "Photo Studio",
+      "icon": "photo-studio",
+      "id": "app-727.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-728.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-729.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-730.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-731.desktop"
+    },
+    {
+      "name": "Lite Editor",
+      "icon": "lite-editor",
+      "id": "app-732.desktop"
+    },
+    {
+      "name": "Network Text",
+      "icon": "network-text",
+      "id": "app-733.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-734.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-735.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-736.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-737.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-738.desktop"
+    },
+    {
+      "name": "Manager Voice",
+      "icon": "manager-voice",
+      "id": "app-739.desktop"
+    },
+    {
+      "name": "Code File",
+      "icon": "code-file",
+      "id": "app-740.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-741.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-742.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-743.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-744.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-745.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-746.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-747.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-748.desktop"
+    },
+    {
+      "name": "Lite System",
+      "icon": "lite-system",
+      "id": "app-749.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-750.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-751.desktop"
+    },
+    {
+      "name": "Player Hub",
+      "icon": "player-hub",
+      "id": "app-752.desktop"
+    },
+    {
+      "name": "Photo Lite",
+      "icon": "photo-lite",
+      "id": "app-753.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-754.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-755.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-756.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-757.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-758.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-759.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-760.desktop"
+    },
+    {
+      "name": "Reader Photo",
+      "icon": "reader-photo",
+      "id": "app-761.desktop"
+    },
+    {
+      "name": "Lite Lite",
+      "icon": "lite-lite",
+      "id": "app-762.desktop"
+    },
+    {
+      "name": "Settings Pro",
+      "icon": "settings-pro",
+      "id": "app-763.desktop"
+    },
+    {
+      "name": "Writer Settings",
+      "icon": "writer-settings",
+      "id": "app-764.desktop"
+    },
+    {
+      "name": "Writer Paint",
+      "icon": "writer-paint",
+      "id": "app-765.desktop"
+    },
+    {
+      "name": "Disk Photo",
+      "icon": "disk-photo",
+      "id": "app-766.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-767.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-768.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-769.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-770.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-771.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-772.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-773.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-774.desktop"
+    },
+    {
+      "name": "Studio Draw",
+      "icon": "studio-draw",
+      "id": "app-775.desktop"
+    },
+    {
+      "name": "Lite Network",
+      "icon": "lite-network",
+      "id": "app-776.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-777.desktop"
+    },
+    {
+      "name": "Web Video",
+      "icon": "web-video",
+      "id": "app-778.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-779.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-780.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-781.desktop"
+    },
+    {
+      "name": "Disk Calendar",
+      "icon": "disk-calendar",
+      "id": "app-782.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-783.desktop"
+    },
+    {
+      "name": "Viewer Text",
+      "icon": "viewer-text",
+      "id": "app-784.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-785.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-786.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-787.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-788.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-789.desktop"
+    },
+    {
+      "name": "Camera Voice",
+      "icon": "camera-voice",
+      "id": "app-790.desktop"
+    },
+    {
+      "name": "Paint File",
+      "icon": "paint-file",
+      "id": "app-791.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-792.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-793.desktop"
+    },
+    {
+      "name": "Note Manager",
+      "icon": "note-manager",
+      "id": "app-794.desktop"
+    },
+    {
+      "name": "Mail Video",
+      "icon": "mail-video",
+      "id": "app-795.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-796.desktop"
+    },
+    {
+      "name": "Code Editor",
+      "icon": "code-editor",
+      "id": "app-797.desktop"
+    },
+    {
+      "name": "Player Text",
+      "icon": "player-text",
+      "id": "app-798.desktop"
+    },
+    {
+      "name": "Browser Text",
+      "icon": "browser-text",
+      "id": "app-799.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-800.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-801.desktop"
+    },
+    {
+      "name": "Network File",
+      "icon": "network-file",
+      "id": "app-802.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-803.desktop"
+    },
+    {
+      "name": "Voice Writer",
+      "icon": "voice-writer",
+      "id": "app-804.desktop"
+    },
+    {
+      "name": "Player Viewer",
+      "icon": "player-viewer",
+      "id": "app-805.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-806.desktop"
+    },
+    {
+      "name": "Editor Camera",
+      "icon": "editor-camera",
+      "id": "app-807.desktop"
+    },
+    {
+      "name": "Network Voice",
+      "icon": "network-voice",
+      "id": "app-808.desktop"
+    },
+    {
+      "name": "Pro Hub",
+      "icon": "pro-hub",
+      "id": "app-809.desktop"
+    },
+    {
+      "name": "Lite System",
+      "icon": "lite-system",
+      "id": "app-810.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-811.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-812.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-813.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-814.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-815.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-816.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-817.desktop"
+    },
+    {
+      "name": "File Lite",
+      "icon": "file-lite",
+      "id": "app-818.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-819.desktop"
+    },
+    {
+      "name": "Camera Studio",
+      "icon": "camera-studio",
+      "id": "app-820.desktop"
+    },
+    {
+      "name": "File Paint",
+      "icon": "file-paint",
+      "id": "app-821.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-822.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-823.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-824.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-825.desktop"
+    },
+    {
+      "name": "Writer Suite",
+      "icon": "writer-suite",
+      "id": "app-826.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-827.desktop"
+    },
+    {
+      "name": "Chat Voice",
+      "icon": "chat-voice",
+      "id": "app-828.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-829.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-830.desktop"
+    },
+    {
+      "name": "Music Terminal",
+      "icon": "music-terminal",
+      "id": "app-831.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-832.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-833.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-834.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-835.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-836.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-837.desktop"
+    },
+    {
+      "name": "Draw Video",
+      "icon": "draw-video",
+      "id": "app-838.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-839.desktop"
+    },
+    {
+      "name": "Hub Calendar",
+      "icon": "hub-calendar",
+      "id": "app-840.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-841.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-842.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-843.desktop"
+    },
+    {
+      "name": "Draw Photo",
+      "icon": "draw-photo",
+      "id": "app-844.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-845.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-846.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-847.desktop"
+    },
+    {
+      "name": "Paint Draw",
+      "icon": "paint-draw",
+      "id": "app-848.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-849.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-850.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-851.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-852.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-853.desktop"
+    },
+    {
+      "name": "Viewer Chat",
+      "icon": "viewer-chat",
+      "id": "app-854.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-855.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-856.desktop"
+    },
+    {
+      "name": "Voice Browser",
+      "icon": "voice-browser",
+      "id": "app-857.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-858.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-859.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-860.desktop"
+    },
+    {
+      "name": "Studio Voice",
+      "icon": "studio-voice",
+      "id": "app-861.desktop"
+    },
+    {
+      "name": "Studio System",
+      "icon": "studio-system",
+      "id": "app-862.desktop"
+    },
+    {
+      "name": "File Photo",
+      "icon": "file-photo",
+      "id": "app-863.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-864.desktop"
+    },
+    {
+      "name": "Hub Web",
+      "icon": "hub-web",
+      "id": "app-865.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-866.desktop"
+    },
+    {
+      "name": "Archive Music",
+      "icon": "archive-music",
+      "id": "app-867.desktop"
+    },
+    {
+      "name": "Terminal Reader",
+      "icon": "terminal-reader",
+      "id": "app-868.desktop"
+    },
+    {
+      "name": "បាយ",
+      "icon": "បាយ",
+      "id": "app-869.desktop"
+    },
+    {
+      "name": "Web Paint",
+      "icon": "web-paint",
+      "id": "app-870.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-871.desktop"
+    },
+    {
+      "name": "Lite Network",
+      "icon": "lite-network",
+      "id": "app-872.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-873.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-874.desktop"
+    },
+    {
+      "name": "Studio Browser",
+      "icon": "studio-browser",
+      "id": "app-875.desktop"
+    },
+    {
+      "name": "Text Lite",
+      "icon": "text-lite",
+      "id": "app-876.desktop"
+    },
+    {
+      "name": "Writer Note",
+      "icon": "writer-note",
+      "id": "app-877.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-878.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-879.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-880.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-881.desktop"
+    },
+    {
+      "name": "Editor Draw",
+      "icon": "editor-draw",
+      "id": "app-882.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-883.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-884.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-885.desktop"
+    },
+    {
+      "name": "Hub Pro",
+      "icon": "hub-pro",
+      "id": "app-886.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-887.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-888.desktop"
+    },
+    {
+      "name": "Editor Reader",
+      "icon": "editor-reader",
+      "id": "app-889.desktop"
+    },
+    {
+      "name": "Video Reader",
+      "icon": "video-reader",
+      "id": "app-890.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-891.desktop"
+    },
+    {
+      "name": "System Note",
+      "icon": "system-note",
+      "id": "app-892.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-893.desktop"
+    },
+    {
+      "name": "Draw Pro",
+      "icon": "draw-pro",
+      "id": "app-894.desktop"
+    },
+    {
+      "name": "Note Disk",
+      "icon": "note-disk",
+      "id": "app-895.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-896.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-897.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-898.desktop"
+    },
+    {
+      "name": "File Viewer",
+      "icon": "file-viewer",
+      "id": "app-899.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-900.desktop"
+    },
+    {
+      "name": "Viewer Studio",
+      "icon": "viewer-studio",
+      "id": "app-901.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-902.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-903.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-904.desktop"
+    },
+    {
+      "name": "Paint Writer",
+      "icon": "paint-writer",
+      "id": "app-905.desktop"
+    },
+    {
+      "name": "Music Browser",
+      "icon": "music-browser",
+      "id": "app-906.desktop"
+    },
+    {
+      "name": "System Writer",
+      "icon": "system-writer",
+      "id": "app-907.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-908.desktop"
+    },
+    {
+      "name": "Player Hub",
+      "icon": "player-hub",
+      "id": "app-909.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-910.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-911.desktop"
+    },
+    {
+      "name": "Reader Music",
+      "icon": "reader-music",
+      "id": "app-912.desktop"
+    },
+    {
+      "name": "ស្រលាញ់",
+      "icon": "ស្រលាញ់",
+      "id": "app-913.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-914.desktop"
+    },
+    {
+      "name": "Camera System",
+      "icon": "camera-system",
+      "id": "app-915.desktop"
+    },
+    {
+      "name": "Calendar Web",
+      "icon": "calendar-web",
+      "id": "app-916.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-917.desktop"
+    },
+    {
+      "name": "Terminal Code",
+      "icon": "terminal-code",
+      "id": "app-918.desktop"
+    },
+    {
+      "name": "Lite Web",
+      "icon": "lite-web",
+      "id": "app-919.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-920.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-921.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-922.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-923.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-924.desktop"
+    },
+    {
+      "name": "Photo Voice",
+      "icon": "photo-voice",
+      "id": "app-925.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-926.desktop"
+    },
+    {
+      "name": "Video Hub",
+      "icon": "video-hub",
+      "id": "app-927.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-928.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-929.desktop"
+    },
+    {
+      "name": "Terminal Draw",
+      "icon": "terminal-draw",
+      "id": "app-930.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-931.desktop"
+    },
+    {
+      "name": "File Camera",
+      "icon": "file-camera",
+      "id": "app-932.desktop"
+    },
+    {
+      "name": "Terminal Player",
+      "icon": "terminal-player",
+      "id": "app-933.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-934.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-935.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-936.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-937.desktop"
+    },
+    {
+      "name": "Code Hub",
+      "icon": "code-hub",
+      "id": "app-938.desktop"
+    },
+    {
+      "name": "Mail System",
+      "icon": "mail-system",
+      "id": "app-939.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-940.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-941.desktop"
+    },
+    {
+      "name": "Editor Code",
+      "icon": "editor-code",
+      "id": "app-942.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-943.desktop"
+    },
+    {
+      "name": "Task Settings",
+      "icon": "task-settings",
+      "id": "app-944.desktop"
+    },
+    {
+      "name": "Terminal Calendar",
+      "icon": "terminal-calendar",
+      "id": "app-945.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-946.desktop"
+    },
+    {
+      "name": "Network Mail",
+      "icon": "network-mail",
+      "id": "app-947.desktop"
+    },
+    {
+      "name": "Music Mail",
+      "icon": "music-mail",
+      "id": "app-948.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-949.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-950.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-951.desktop"
+    },
+    {
+      "name": "File File",
+      "icon": "file-file",
+      "id": "app-952.desktop"
+    },
+    {
+      "name": "Code Text",
+      "icon": "code-text",
+      "id": "app-953.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-954.desktop"
+    },
+    {
+      "name": "Editor Camera",
+      "icon": "editor-camera",
+      "id": "app-955.desktop"
+    },
+    {
+      "name": "Disk Studio",
+      "icon": "disk-studio",
+      "id": "app-956.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-957.desktop"
+    },
+    {
+      "name": "Task Settings",
+      "icon": "task-settings",
+      "id": "app-958.desktop"
+    },
+    {
+      "name": "Player Lite",
+      "icon": "player-lite",
+      "id": "app-959.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-960.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-961.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-962.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-963.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-964.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-965.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-966.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-967.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-968.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-969.desktop"
+    },
+    {
+      "name": "Photo File",
+      "icon": "photo-file",
+      "id": "app-970.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-971.desktop"
+    },
+    {
+      "name": "Note Archive",
+      "icon": "note-archive",
+      "id": "app-972.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-973.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-974.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-975.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-976.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-977.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-978.desktop"
+    },
+    {
+      "name": "ស្រលាញ់",
+      "icon": "ស្រលាញ់",
+      "id": "app-979.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-980.desktop"
+    },
+    {
+      "name": "Web Music",
+      "icon": "web-music",
+      "id": "app-981.desktop"
+    },
+    {
+      "name": "Chat Chat",
+      "icon": "chat-chat",
+      "id": "app-982.desktop"
+    },
+    {
+      "name": "Photo Studio",
+      "icon": "photo-studio",
+      "id": "app-983.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-984.desktop"
+    },
+    {
+      "name": "Mail Pro",
+      "icon": "mail-pro",
+      "id": "app-985.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-986.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-987.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-988.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-989.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-990.desktop"
+    },
+    {
+      "name": "Lite Reader",
+      "icon": "lite-reader",
+      "id": "app-991.desktop"
+    },
+    {
+      "name": "Text Calendar",
+      "icon": "text-calendar",
+      "id": "app-992.desktop"
+    },
+    {
+      "name": "Lite Lite",
+      "icon": "lite-lite",
+      "id": "app-993.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-994.desktop"
+    },
+    {
+      "name": "Suite Terminal",
+      "icon": "suite-terminal",
+      "id": "app-995.desktop"
+    },
+    {
+      "name": "Chat Text",
+      "icon": "chat-text",
+      "id": "app-996.desktop"
+    },
+    {
+      "name": "Draw Web",
+      "icon": "draw-web",
+      "id": "app-997.desktop"
+    },
+    {
+      "name": "Draw Paint",
+      "icon": "draw-paint",
+      "id": "app-998.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-999.desktop"
+    },
+    {
+      "name": "Draw Viewer",
+      "icon": "draw-viewer",
+      "id": "app-1000.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1001.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1002.desktop"
+    },
+    {
+      "name": "Calendar Pro",
+      "icon": "calendar-pro",
+      "id": "app-1003.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1004.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1005.desktop"
+    },
+    {
+      "name": "Terminal Paint",
+      "icon": "terminal-paint",
+      "id": "app-1006.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1007.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1008.desktop"
+    },
+    {
+      "name": "System Player",
+      "icon": "system-player",
+      "id": "app-1009.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1010.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-1011.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-1012.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1013.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-1014.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1015.desktop"
+    },
+    {
+      "name": "Paint Pro",
+      "icon": "paint-pro",
+      "id": "app-1016.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1017.desktop"
+    },
+    {
+      "name": "Suite Task",
+      "icon": "suite-task",
+      "id": "app-1018.desktop"
+    },
+    {
+      "name": "Pro Photo",
+      "icon": "pro-photo",
+      "id": "app-1019.desktop"
+    },
+    {
+      "name": "Hub Chat",
+      "icon": "hub-chat",
+      "id": "app-1020.desktop"
+    },
+    {
+      "name": "Voice Paint",
+      "icon": "voice-paint",
+      "id": "app-1021.desktop"
+    },
+    {
+      "name": "File Terminal",
+      "icon": "file-terminal",
+      "id": "app-1022.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-1023.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1024.desktop"
+    },
+    {
+      "name": "Settings Note",
+      "icon": "settings-note",
+      "id": "app-1025.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1026.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-1027.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1028.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-1029.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1030.desktop"
+    },
+    {
+      "name": "Network Archive",
+      "icon": "network-archive",
+      "id": "app-1031.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-1032.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1033.desktop"
+    },
+    {
+      "name": "ភ្លៀង",
+      "icon": "ភ្លៀង",
+      "id": "app-1034.desktop"
+    },
+    {
+      "name": "Pro Pro",
+      "icon": "pro-pro",
+      "id": "app-1035.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1036.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-1037.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1038.desktop"
+    },
+    {
+      "name": "Hub Calendar",
+      "icon": "hub-calendar",
+      "id": "app-1039.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1040.desktop"
+    },
+    {
+      "name": "Web Writer",
+      "icon": "web-writer",
+      "id": "app-1041.desktop"
+    },
+    {
+      "name": "Viewer Chat",
+      "icon": "viewer-chat",
+      "id": "app-1042.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1043.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1044.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-1045.desktop"
+    },
+    {
+      "name": "Lite Terminal",
+      "icon": "lite-terminal",
+      "id": "app-1046.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1047.desktop"
+    },
+    {
+      "name": "Chat Studio",
+      "icon": "chat-studio",
+      "id": "app-1048.desktop"
+    },
+    {
+      "name": "Editor Draw",
+      "icon": "editor-draw",
+      "id": "app-1049.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1050.desktop"
+    },
+    {
+      "name": "Lite Calendar",
+      "icon": "lite-calendar",
+      "id": "app-1051.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1052.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-1053.desktop"
+    },
+    {
+      "name": "Studio Note",
+      "icon": "studio-note",
+      "id": "app-1054.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1055.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-1056.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1057.desktop"
+    },
+    {
+      "name": "Reader Studio",
+      "icon": "reader-studio",
+      "id": "app-1058.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1059.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1060.desktop"
+    },
+    {
+      "name": "Terminal Paint",
+      "icon": "terminal-paint",
+      "id": "app-1061.desktop"
+    },
+    {
+      "name": "Archive Mail",
+      "icon": "archive-mail",
+      "id": "app-1062.desktop"
+    },
+    {
+      "name": "Chat Note",
+      "icon": "chat-note",
+      "id": "app-1063.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1064.desktop"
+    },
+    {
+      "name": "Terminal Paint",
+      "icon": "terminal-paint",
+      "id": "app-1065.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1066.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-1067.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1068.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1069.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1070.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1071.desktop"
+    },
+    {
+      "name": "Terminal Writer",
+      "icon": "terminal-writer",
+      "id": "app-1072.desktop"
+    },
+    {
+      "name": "Archive Camera",
+      "icon": "archive-camera",
+      "id": "app-1073.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1074.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1075.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1076.desktop"
+    },
+    {
+      "name": "Camera Calendar",
+      "icon": "camera-calendar",
+      "id": "app-1077.desktop"
+    },
+    {
+      "name": "ភ្លៀង",
+      "icon": "ភ្លៀង",
+      "id": "app-1078.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-1079.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1080.desktop"
+    },
+    {
+      "name": "Reader Terminal",
+      "icon": "reader-terminal",
+      "id": "app-1081.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1082.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1083.desktop"
+    },
+    {
+      "name": "Suite Task",
+      "icon": "suite-task",
+      "id": "app-1084.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1085.desktop"
+    },
+    {
+      "name": "Viewer Voice",
+      "icon": "viewer-voice",
+      "id": "app-1086.desktop"
+    },
+    {
+      "name": "Draw Web",
+      "icon": "draw-web",
+      "id": "app-1087.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1088.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-1089.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1090.desktop"
+    },
+    {
+      "name": "Hub Calendar",
+      "icon": "hub-calendar",
+      "id": "app-1091.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-1092.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1093.desktop"
+    },
+    {
+      "name": "Studio Voice",
+      "icon": "studio-voice",
+      "id": "app-1094.desktop"
+    },
+    {
+      "name": "Chat Player",
+      "icon": "chat-player",
+      "id": "app-1095.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1096.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1097.desktop"
+    },
+    {
+      "name": "Browser Code",
+      "icon": "browser-code",
+      "id": "app-1098.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1099.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-1100.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1101.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1102.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1103.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1104.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1105.desktop"
+    },
+    {
+      "name": "Mail Reader",
+      "icon": "mail-reader",
+      "id": "app-1106.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1107.desktop"
+    },
+    {
+      "name": "Reader Note",
+      "icon": "reader-note",
+      "id": "app-1108.desktop"
+    },
+    {
+      "name": "Pro Photo",
+      "icon": "pro-photo",
+      "id": "app-1109.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1110.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-1111.desktop"
+    },
+    {
+      "name": "Note Archive",
+      "icon": "note-archive",
+      "id": "app-1112.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1113.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-1114.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1115.desktop"
+    },
+    {
+      "name": "Draw Note",
+      "icon": "draw-note",
+      "id": "app-1116.desktop"
+    },
+    {
+      "name": "System Camera",
+      "icon": "system-camera",
+      "id": "app-1117.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-1118.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1119.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1120.desktop"
+    },
+    {
+      "name": "Archive Reader",
+      "icon": "archive-reader",
+      "id": "app-1121.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-1122.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1123.desktop"
+    },
+    {
+      "name": "Music File",
+      "icon": "music-file",
+      "id": "app-1124.desktop"
+    },
+    {
+      "name": "Music Suite",
+      "icon": "music-suite",
+      "id": "app-1125.desktop"
+    },
+    {
+      "name": "Text System",
+      "icon": "text-system",
+      "id": "app-1126.desktop"
+    },
+    {
+      "name": "Network Paint",
+      "icon": "network-paint",
+      "id": "app-1127.desktop"
+    },
+    {
+      "name": "Text Disk",
+      "icon": "text-disk",
+      "id": "app-1128.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1129.desktop"
+    },
+    {
+      "name": "Browser Player",
+      "icon": "browser-player",
+      "id": "app-1130.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1131.desktop"
+    },
+    {
+      "name": "Camera Archive",
+      "icon": "camera-archive",
+      "id": "app-1132.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-1133.desktop"
+    },
+    {
+      "name": "Lite Network",
+      "icon": "lite-network",
+      "id": "app-1134.desktop"
+    },
+    {
+      "name": "Video Mail",
+      "icon": "video-mail",
+      "id": "app-1135.desktop"
+    },
+    {
+      "name": "Viewer Writer",
+      "icon": "viewer-writer",
+      "id": "app-1136.desktop"
+    },
+    {
+      "name": "Hub System",
+      "icon": "hub-system",
+      "id": "app-1137.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1138.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1139.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1140.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1141.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1142.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-1143.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-1144.desktop"
+    },
+    {
+      "name": "Web Photo",
+      "icon": "web-photo",
+      "id": "app-1145.desktop"
+    },
+    {
+      "name": "Photo Manager",
+      "icon": "photo-manager",
+      "id": "app-1146.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1147.desktop"
+    },
+    {
+      "name": "Photo Lite",
+      "icon": "photo-lite",
+      "id": "app-1148.desktop"
+    },
+    {
+      "name": "Lite Web",
+      "icon": "lite-web",
+      "id": "app-1149.desktop"
+    },
+    {
+      "name": "Paint Browser",
+      "icon": "paint-browser",
+      "id": "app-1150.desktop"
+    },
+    {
+      "name": "Calendar System",
+      "icon": "calendar-system",
+      "id": "app-1151.desktop"
+    },
+    {
+      "name": "Video Hub",
+      "icon": "video-hub",
+      "id": "app-1152.desktop"
+    },
+    {
+      "name": "Hub Task",
+      "icon": "hub-task",
+      "id": "app-1153.desktop"
+    },
+    {
+      "name": "Network Draw",
+      "icon": "network-draw",
+      "id": "app-1154.desktop"
+    },
+    {
+      "name": "អរគុណ",
+      "icon": "អរគុណ",
+      "id": "app-1155.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-1156.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1157.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1158.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1159.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1160.desktop"
+    },
+    {
+      "name": "Archive Task",
+      "icon": "archive-task",
+      "id": "app-1161.desktop"
+    },
+    {
+      "name": "File Chat",
+      "icon": "file-chat",
+      "id": "app-1162.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1163.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-1164.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1165.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-1166.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1167.desktop"
+    },
+    {
+      "name": "Viewer Music",
+      "icon": "viewer-music",
+      "id": "app-1168.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1169.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-1170.desktop"
+    },
+    {
+      "name": "Player System",
+      "icon": "player-system",
+      "id": "app-1171.desktop"
+    },
+    {
+      "name": "Reader Music",
+      "icon": "reader-music",
+      "id": "app-1172.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1173.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1174.desktop"
+    },
+    {
+      "name": "Studio Editor",
+      "icon": "studio-editor",
+      "id": "app-1175.desktop"
+    },
+    {
+      "name": "Paint Suite",
+      "icon": "paint-suite",
+      "id": "app-1176.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-1177.desktop"
+    },
+    {
+      "name": "Terminal Chat",
+      "icon": "terminal-chat",
+      "id": "app-1178.desktop"
+    },
+    {
+      "name": "Music Editor",
+      "icon": "music-editor",
+      "id": "app-1179.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1180.desktop"
+    },
+    {
+      "name": "Settings Chat",
+      "icon": "settings-chat",
+      "id": "app-1181.desktop"
+    },
+    {
+      "name": "Studio Hub",
+      "icon": "studio-hub",
+      "id": "app-1182.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1183.desktop"
+    },
+    {
+      "name": "Reader Note",
+      "icon": "reader-note",
+      "id": "app-1184.desktop"
+    },
+    {
+      "name": "Mail Calendar",
+      "icon": "mail-calendar",
+      "id": "app-1185.desktop"
+    },
+    {
+      "name": "Mail Mail",
+      "icon": "mail-mail",
+      "id": "app-1186.desktop"
+    },
+    {
+      "name": "Editor Text",
+      "icon": "editor-text",
+      "id": "app-1187.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1188.desktop"
+    },
+    {
+      "name": "Music Text",
+      "icon": "music-text",
+      "id": "app-1189.desktop"
+    },
+    {
+      "name": "Editor Disk",
+      "icon": "editor-disk",
+      "id": "app-1190.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1191.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1192.desktop"
+    },
+    {
+      "name": "Lite Suite",
+      "icon": "lite-suite",
+      "id": "app-1193.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1194.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1195.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1196.desktop"
+    },
+    {
+      "name": "Browser Studio",
+      "icon": "browser-studio",
+      "id": "app-1197.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1198.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-1199.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1200.desktop"
+    },
+    {
+      "name": "Paint Player",
+      "icon": "paint-player",
+      "id": "app-1201.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1202.desktop"
+    },
+    {
+      "name": "Code Chat",
+      "icon": "code-chat",
+      "id": "app-1203.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1204.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1205.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1206.desktop"
+    },
+    {
+      "name": "Chat Network",
+      "icon": "chat-network",
+      "id": "app-1207.desktop"
+    },
+    {
+      "name": "Player Photo",
+      "icon": "player-photo",
+      "id": "app-1208.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1209.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-1210.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1211.desktop"
+    },
+    {
+      "name": "Studio Task",
+      "icon": "studio-task",
+      "id": "app-1212.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-1213.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1214.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1215.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1216.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1217.desktop"
+    },
+    {
+      "name": "Note Task",
+      "icon": "note-task",
+      "id": "app-1218.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1219.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1220.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-1221.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1222.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1223.desktop"
+    },
+    {
+      "name": "Mail Hub",
+      "icon": "mail-hub",
+      "id": "app-1224.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1225.desktop"
+    },
+    {
+      "name": "Manager Hub",
+      "icon": "manager-hub",
+      "id": "app-1226.desktop"
+    },
+    {
+      "name": "Music Player",
+      "icon": "music-player",
+      "id": "app-1227.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1228.desktop"
+    },
+    {
+      "name": "Music Editor",
+      "icon": "music-editor",
+      "id": "app-1229.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1230.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1231.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-1232.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-1233.desktop"
+    },
+    {
+      "name": "Reader Video",
+      "icon": "reader-video",
+      "id": "app-1234.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1235.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1236.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1237.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1238.desktop"
+    },
+    {
+      "name": "Archive Hub",
+      "icon": "archive-hub",
+      "id": "app-1239.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1240.desktop"
+    },
+    {
+      "name": "Paint Settings",
+      "icon": "paint-settings",
+      "id": "app-1241.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1242.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-1243.desktop"
+    },
+    {
+      "name": "Hub Disk",
+      "icon": "hub-disk",
+      "id": "app-1244.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1245.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1246.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1247.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1248.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1249.desktop"
+    },
+    {
+      "name": "File Draw",
+      "icon": "file-draw",
+      "id": "app-1250.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1251.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1252.desktop"
+    },
+    {
+      "name": "Suite Camera",
+      "icon": "suite-camera",
+      "id": "app-1253.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-1254.desktop"
+    },
+    {
+      "name": "Chat Mail",
+      "icon": "chat-mail",
+      "id": "app-1255.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1256.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1257.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1258.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1259.desktop"
+    },
+    {
+      "name": "File Viewer",
+      "icon": "file-viewer",
+      "id": "app-1260.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-1261.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1262.desktop"
+    },
+    {
+      "name": "Settings Text",
+      "icon": "settings-text",
+      "id": "app-1263.desktop"
+    },
+    {
+      "name": "Archive System",
+      "icon": "archive-system",
+      "id": "app-1264.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-1265.desktop"
+    },
+    {
+      "name": "Studio Manager",
+      "icon": "studio-manager",
+      "id": "app-1266.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1267.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1268.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-1269.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1270.desktop"
+    },
+    {
+      "name": "Hub Video",
+      "icon": "hub-video",
+      "id": "app-1271.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1272.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1273.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-1274.desktop"
+    },
+    {
+      "name": "Photo Editor",
+      "icon": "photo-editor",
+      "id": "app-1275.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1276.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1277.desktop"
+    },
+    {
+      "name": "Code Pro",
+      "icon": "code-pro",
+      "id": "app-1278.desktop"
+    },
+    {
+      "name": "Writer Pro",
+      "icon": "writer-pro",
+      "id": "app-1279.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1280.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1281.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-1282.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1283.desktop"
+    },
+    {
+      "name": "Writer Writer",
+      "icon": "writer-writer",
+      "id": "app-1284.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1285.desktop"
+    },
+    {
+      "name": "Voice System",
+      "icon": "voice-system",
+      "id": "app-1286.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-1287.desktop"
+    },
+    {
+      "name": "Calendar Network",
+      "icon": "calendar-network",
+      "id": "app-1288.desktop"
+    },
+    {
+      "name": "Settings Pro",
+      "icon": "settings-pro",
+      "id": "app-1289.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1290.desktop"
+    },
+    {
+      "name": "Calendar Music",
+      "icon": "calendar-music",
+      "id": "app-1291.desktop"
+    },
+    {
+      "name": "Suite Text",
+      "icon": "suite-text",
+      "id": "app-1292.desktop"
+    },
+    {
+      "name": "Camera Manager",
+      "icon": "camera-manager",
+      "id": "app-1293.desktop"
+    },
+    {
+      "name": "Web Hub",
+      "icon": "web-hub",
+      "id": "app-1294.desktop"
+    },
+    {
+      "name": "Lite Chat",
+      "icon": "lite-chat",
+      "id": "app-1295.desktop"
+    },
+    {
+      "name": "Hub Mail",
+      "icon": "hub-mail",
+      "id": "app-1296.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1297.desktop"
+    },
+    {
+      "name": "បាយ",
+      "icon": "បាយ",
+      "id": "app-1298.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1299.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1300.desktop"
+    },
+    {
+      "name": "File Camera",
+      "icon": "file-camera",
+      "id": "app-1301.desktop"
+    },
+    {
+      "name": "Chat Draw",
+      "icon": "chat-draw",
+      "id": "app-1302.desktop"
+    },
+    {
+      "name": "Paint Reader",
+      "icon": "paint-reader",
+      "id": "app-1303.desktop"
+    },
+    {
+      "name": "Pro Manager",
+      "icon": "pro-manager",
+      "id": "app-1304.desktop"
+    },
+    {
+      "name": "Disk Writer",
+      "icon": "disk-writer",
+      "id": "app-1305.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1306.desktop"
+    },
+    {
+      "name": "Paint Pro",
+      "icon": "paint-pro",
+      "id": "app-1307.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1308.desktop"
+    },
+    {
+      "name": "បាយ",
+      "icon": "បាយ",
+      "id": "app-1309.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1310.desktop"
+    },
+    {
+      "name": "Browser Note",
+      "icon": "browser-note",
+      "id": "app-1311.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1312.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1313.desktop"
+    },
+    {
+      "name": "File Web",
+      "icon": "file-web",
+      "id": "app-1314.desktop"
+    },
+    {
+      "name": "Reader Archive",
+      "icon": "reader-archive",
+      "id": "app-1315.desktop"
+    },
+    {
+      "name": "Pro Note",
+      "icon": "pro-note",
+      "id": "app-1316.desktop"
+    },
+    {
+      "name": "Task Code",
+      "icon": "task-code",
+      "id": "app-1317.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1318.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1319.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1320.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1321.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1322.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1323.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-1324.desktop"
+    },
+    {
+      "name": "Manager Suite",
+      "icon": "manager-suite",
+      "id": "app-1325.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-1326.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1327.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1328.desktop"
+    },
+    {
+      "name": "Text Code",
+      "icon": "text-code",
+      "id": "app-1329.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1330.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-1331.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1332.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1333.desktop"
+    },
+    {
+      "name": "Hub System",
+      "icon": "hub-system",
+      "id": "app-1334.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1335.desktop"
+    },
+    {
+      "name": "Camera System",
+      "icon": "camera-system",
+      "id": "app-1336.desktop"
+    },
+    {
+      "name": "Terminal Note",
+      "icon": "terminal-note",
+      "id": "app-1337.desktop"
+    },
+    {
+      "name": "Reader Draw",
+      "icon": "reader-draw",
+      "id": "app-1338.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-1339.desktop"
+    },
+    {
+      "name": "Browser Task",
+      "icon": "browser-task",
+      "id": "app-1340.desktop"
+    },
+    {
+      "name": "Note Network",
+      "icon": "note-network",
+      "id": "app-1341.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1342.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1343.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1344.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1345.desktop"
+    },
+    {
+      "name": "System Web",
+      "icon": "system-web",
+      "id": "app-1346.desktop"
+    },
+    {
+      "name": "Camera File",
+      "icon": "camera-file",
+      "id": "app-1347.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1348.desktop"
+    },
+    {
+      "name": "Suite Terminal",
+      "icon": "suite-terminal",
+      "id": "app-1349.desktop"
+    },
+    {
+      "name": "Pro Mail",
+      "icon": "pro-mail",
+      "id": "app-1350.desktop"
+    },
+    {
+      "name": "Note Mail",
+      "icon": "note-mail",
+      "id": "app-1351.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1352.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-1353.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1354.desktop"
+    },
+    {
+      "name": "Player Terminal",
+      "icon": "player-terminal",
+      "id": "app-1355.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1356.desktop"
+    },
+    {
+      "name": "Camera System",
+      "icon": "camera-system",
+      "id": "app-1357.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1358.desktop"
+    },
+    {
+      "name": "Terminal Disk",
+      "icon": "terminal-disk",
+      "id": "app-1359.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1360.desktop"
+    },
+    {
+      "name": "Studio Viewer",
+      "icon": "studio-viewer",
+      "id": "app-1361.desktop"
+    },
+    {
+      "name": "Player Music",
+      "icon": "player-music",
+      "id": "app-1362.desktop"
+    },
+    {
+      "name": "Suite Suite",
+      "icon": "suite-suite",
+      "id": "app-1363.desktop"
+    },
+    {
+      "name": "ភ្នំពេញ",
+      "icon": "ភ្នំពេញ",
+      "id": "app-1364.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-1365.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1366.desktop"
+    },
+    {
+      "name": "Writer Calendar",
+      "icon": "writer-calendar",
+      "id": "app-1367.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1368.desktop"
+    },
+    {
+      "name": "Music Note",
+      "icon": "music-note",
+      "id": "app-1369.desktop"
+    },
+    {
+      "name": "Viewer Mail",
+      "icon": "viewer-mail",
+      "id": "app-1370.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1371.desktop"
+    },
+    {
+      "name": "Editor Reader",
+      "icon": "editor-reader",
+      "id": "app-1372.desktop"
+    },
+    {
+      "name": "Code Writer",
+      "icon": "code-writer",
+      "id": "app-1373.desktop"
+    },
+    {
+      "name": "Manager Browser",
+      "icon": "manager-browser",
+      "id": "app-1374.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-1375.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1376.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1377.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-1378.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1379.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-1380.desktop"
+    },
+    {
+      "name": "Writer Disk",
+      "icon": "writer-disk",
+      "id": "app-1381.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1382.desktop"
+    },
+    {
+      "name": "Music Text",
+      "icon": "music-text",
+      "id": "app-1383.desktop"
+    },
+    {
+      "name": "Network Music",
+      "icon": "network-music",
+      "id": "app-1384.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1385.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-1386.desktop"
+    },
+    {
+      "name": "File Video",
+      "icon": "file-video",
+      "id": "app-1387.desktop"
+    },
+    {
+      "name": "File Writer",
+      "icon": "file-writer",
+      "id": "app-1388.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1389.desktop"
+    },
+    {
+      "name": "Mail Suite",
+      "icon": "mail-suite",
+      "id": "app-1390.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1391.desktop"
+    },
+    {
+      "name": "Settings Viewer",
+      "icon": "settings-viewer",
+      "id": "app-1392.desktop"
+    },
+    {
+      "name": "Video Viewer",
+      "icon": "video-viewer",
+      "id": "app-1393.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1394.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1395.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1396.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-1397.desktop"
+    },
+    {
+      "name": "Voice Lite",
+      "icon": "voice-lite",
+      "id": "app-1398.desktop"
+    },
+    {
+      "name": "Draw Reader",
+      "icon": "draw-reader",
+      "id": "app-1399.desktop"
+    },
+    {
+      "name": "Voice Terminal",
+      "icon": "voice-terminal",
+      "id": "app-1400.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1401.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1402.desktop"
+    },
+    {
+      "name": "Photo Web",
+      "icon": "photo-web",
+      "id": "app-1403.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-1404.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1405.desktop"
+    },
+    {
+      "name": "Note File",
+      "icon": "note-file",
+      "id": "app-1406.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1407.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-1408.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1409.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1410.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-1411.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-1412.desktop"
+    },
+    {
+      "name": "Music Draw",
+      "icon": "music-draw",
+      "id": "app-1413.desktop"
+    },
+    {
+      "name": "Studio Hub",
+      "icon": "studio-hub",
+      "id": "app-1414.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1415.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1416.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-1417.desktop"
+    },
+    {
+      "name": "Code Editor",
+      "icon": "code-editor",
+      "id": "app-1418.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-1419.desktop"
+    },
+    {
+      "name": "Archive Task",
+      "icon": "archive-task",
+      "id": "app-1420.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1421.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1422.desktop"
+    },
+    {
+      "name": "Manager Archive",
+      "icon": "manager-archive",
+      "id": "app-1423.desktop"
+    },
+    {
+      "name": "Hub System",
+      "icon": "hub-system",
+      "id": "app-1424.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-1425.desktop"
+    },
+    {
+      "name": "Writer Calendar",
+      "icon": "writer-calendar",
+      "id": "app-1426.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-1427.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1428.desktop"
+    },
+    {
+      "name": "Browser Settings",
+      "icon": "browser-settings",
+      "id": "app-1429.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-1430.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1431.desktop"
+    },
+    {
+      "name": "Video Camera",
+      "icon": "video-camera",
+      "id": "app-1432.desktop"
+    },
+    {
+      "name": "Archive Browser",
+      "icon": "archive-browser",
+      "id": "app-1433.desktop"
+    },
+    {
+      "name": "Manager Web",
+      "icon": "manager-web",
+      "id": "app-1434.desktop"
+    },
+    {
+      "name": "Writer Archive",
+      "icon": "writer-archive",
+      "id": "app-1435.desktop"
+    },
+    {
+      "name": "Paint Paint",
+      "icon": "paint-paint",
+      "id": "app-1436.desktop"
+    },
+    {
+      "name": "Draw Settings",
+      "icon": "draw-settings",
+      "id": "app-1437.desktop"
+    },
+    {
+      "name": "Voice Disk",
+      "icon": "voice-disk",
+      "id": "app-1438.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1439.desktop"
+    },
+    {
+      "name": "Pro Note",
+      "icon": "pro-note",
+      "id": "app-1440.desktop"
+    },
+    {
+      "name": "អរគុណ",
+      "icon": "អរគុណ",
+      "id": "app-1441.desktop"
+    },
+    {
+      "name": "File Mail",
+      "icon": "file-mail",
+      "id": "app-1442.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-1443.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1444.desktop"
+    },
+    {
+      "name": "Camera Lite",
+      "icon": "camera-lite",
+      "id": "app-1445.desktop"
+    },
+    {
+      "name": "Terminal Lite",
+      "icon": "terminal-lite",
+      "id": "app-1446.desktop"
+    },
+    {
+      "name": "Manager Network",
+      "icon": "manager-network",
+      "id": "app-1447.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-1448.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-1449.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1450.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1451.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-1452.desktop"
+    },
+    {
+      "name": "Mail Music",
+      "icon": "mail-music",
+      "id": "app-1453.desktop"
+    },
+    {
+      "name": "Task Suite",
+      "icon": "task-suite",
+      "id": "app-1454.desktop"
+    },
+    {
+      "name": "Photo Code",
+      "icon": "photo-code",
+      "id": "app-1455.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-1456.desktop"
+    },
+    {
+      "name": "Video Chat",
+      "icon": "video-chat",
+      "id": "app-1457.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1458.desktop"
+    },
+    {
+      "name": "Editor Browser",
+      "icon": "editor-browser",
+      "id": "app-1459.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1460.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1461.desktop"
+    },
+    {
+      "name": "Archive Browser",
+      "icon": "archive-browser",
+      "id": "app-1462.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-1463.desktop"
+    },
+    {
+      "name": "Code File",
+      "icon": "code-file",
+      "id": "app-1464.desktop"
+    },
+    {
+      "name": "Writer File",
+      "icon": "writer-file",
+      "id": "app-1465.desktop"
+    },
+    {
+      "name": "File Code",
+      "icon": "file-code",
+      "id": "app-1466.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1467.desktop"
+    },
+    {
+      "name": "Calendar Voice",
+      "icon": "calendar-voice",
+      "id": "app-1468.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1469.desktop"
+    },
+    {
+      "name": "Disk Video",
+      "icon": "disk-video",
+      "id": "app-1470.desktop"
+    },
+    {
+      "name": "Video Editor",
+      "icon": "video-editor",
+      "id": "app-1471.desktop"
+    },
+    {
+      "name": "Paint Code",
+      "icon": "paint-code",
+      "id": "app-1472.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1473.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-1474.desktop"
+    },
+    {
+      "name": "Reader Task",
+      "icon": "reader-task",
+      "id": "app-1475.desktop"
+    },
+    {
+      "name": "Writer Web",
+      "icon": "writer-web",
+      "id": "app-1476.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1477.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1478.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1479.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1480.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1481.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-1482.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1483.desktop"
+    },
+    {
+      "name": "Video Music",
+      "icon": "video-music",
+      "id": "app-1484.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-1485.desktop"
+    },
+    {
+      "name": "Mail Chat",
+      "icon": "mail-chat",
+      "id": "app-1486.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1487.desktop"
+    },
+    {
+      "name": "Camera Network",
+      "icon": "camera-network",
+      "id": "app-1488.desktop"
+    },
+    {
+      "name": "Suite Calendar",
+      "icon": "suite-calendar",
+      "id": "app-1489.desktop"
+    },
+    {
+      "name": "Camera Task",
+      "icon": "camera-task",
+      "id": "app-1490.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1491.desktop"
+    },
+    {
+      "name": "Network Draw",
+      "icon": "network-draw",
+      "id": "app-1492.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1493.desktop"
+    },
+    {
+      "name": "Disk Studio",
+      "icon": "disk-studio",
+      "id": "app-1494.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-1495.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-1496.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1497.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1498.desktop"
+    },
+    {
+      "name": "Pro Studio",
+      "icon": "pro-studio",
+      "id": "app-1499.desktop"
+    },
+    {
+      "name": "Settings Text",
+      "icon": "settings-text",
+      "id": "app-1500.desktop"
+    },
+    {
+      "name": "Disk Calendar",
+      "icon": "disk-calendar",
+      "id": "app-1501.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1502.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1503.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1504.desktop"
+    },
+    {
+      "name": "Archive System",
+      "icon": "archive-system",
+      "id": "app-1505.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-1506.desktop"
+    },
+    {
+      "name": "ខ្យល់",
+      "icon": "ខ្យល់",
+      "id": "app-1507.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-1508.desktop"
+    },
+    {
+      "name": "Text Archive",
+      "icon": "text-archive",
+      "id": "app-1509.desktop"
+    },
+    {
+      "name": "Music Browser",
+      "icon": "music-browser",
+      "id": "app-1510.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1511.desktop"
+    },
+    {
+      "name": "Mail Browser",
+      "icon": "mail-browser",
+      "id": "app-1512.desktop"
+    },
+    {
+      "name": "Manager Code",
+      "icon": "manager-code",
+      "id": "app-1513.desktop"
+    },
+    {
+      "name": "Video Network",
+      "icon": "video-network",
+      "id": "app-1514.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1515.desktop"
+    },
+    {
+      "name": "Reader Pro",
+      "icon": "reader-pro",
+      "id": "app-1516.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-1517.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-1518.desktop"
+    },
+    {
+      "name": "Reader Chat",
+      "icon": "reader-chat",
+      "id": "app-1519.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1520.desktop"
+    },
+    {
+      "name": "✅ done",
+      "icon": "✅-done",
+      "id": "app-1521.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1522.desktop"
+    },
+    {
+      "name": "Player Task",
+      "icon": "player-task",
+      "id": "app-1523.desktop"
+    },
+    {
+      "name": "Voice Browser",
+      "icon": "voice-browser",
+      "id": "app-1524.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-1525.desktop"
+    },
+    {
+      "name": "Code Code",
+      "icon": "code-code",
+      "id": "app-1526.desktop"
+    },
+    {
+      "name": "Hub Studio",
+      "icon": "hub-studio",
+      "id": "app-1527.desktop"
+    },
+    {
+      "name": "Web Network",
+      "icon": "web-network",
+      "id": "app-1528.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1529.desktop"
+    },
+    {
+      "name": "File Terminal",
+      "icon": "file-terminal",
+      "id": "app-1530.desktop"
+    },
+    {
+      "name": "Pro File",
+      "icon": "pro-file",
+      "id": "app-1531.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-1532.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1533.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-1534.desktop"
+    },
+    {
+      "name": "Manager Mail",
+      "icon": "manager-mail",
+      "id": "app-1535.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1536.desktop"
+    },
+    {
+      "name": "Viewer Settings",
+      "icon": "viewer-settings",
+      "id": "app-1537.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1538.desktop"
+    },
+    {
+      "name": "Manager Photo",
+      "icon": "manager-photo",
+      "id": "app-1539.desktop"
+    },
+    {
+      "name": "អរគុណ",
+      "icon": "អរគុណ",
+      "id": "app-1540.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-1541.desktop"
+    },
+    {
+      "name": "Photo Voice",
+      "icon": "photo-voice",
+      "id": "app-1542.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1543.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1544.desktop"
+    },
+    {
+      "name": "Lite Paint",
+      "icon": "lite-paint",
+      "id": "app-1545.desktop"
+    },
+    {
+      "name": "Paint Web",
+      "icon": "paint-web",
+      "id": "app-1546.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-1547.desktop"
+    },
+    {
+      "name": "Settings File",
+      "icon": "settings-file",
+      "id": "app-1548.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1549.desktop"
+    },
+    {
+      "name": "Camera Disk",
+      "icon": "camera-disk",
+      "id": "app-1550.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-1551.desktop"
+    },
+    {
+      "name": "Camera Photo",
+      "icon": "camera-photo",
+      "id": "app-1552.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-1553.desktop"
+    },
+    {
+      "name": "Video Disk",
+      "icon": "video-disk",
+      "id": "app-1554.desktop"
+    },
+    {
+      "name": "Network Player",
+      "icon": "network-player",
+      "id": "app-1555.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1556.desktop"
+    },
+    {
+      "name": "Viewer Terminal",
+      "icon": "viewer-terminal",
+      "id": "app-1557.desktop"
+    },
+    {
+      "name": "Disk Web",
+      "icon": "disk-web",
+      "id": "app-1558.desktop"
+    },
+    {
+      "name": "Music Calendar",
+      "icon": "music-calendar",
+      "id": "app-1559.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-1560.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1561.desktop"
+    },
+    {
+      "name": "មិត្តភាព",
+      "icon": "មិត្តភាព",
+      "id": "app-1562.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1563.desktop"
+    },
+    {
+      "name": "Terminal Editor",
+      "icon": "terminal-editor",
+      "id": "app-1564.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1565.desktop"
+    },
+    {
+      "name": "Pro Lite",
+      "icon": "pro-lite",
+      "id": "app-1566.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-1567.desktop"
+    },
+    {
+      "name": "Code Studio",
+      "icon": "code-studio",
+      "id": "app-1568.desktop"
+    },
+    {
+      "name": "Draw Player",
+      "icon": "draw-player",
+      "id": "app-1569.desktop"
+    },
+    {
+      "name": "Photo Photo",
+      "icon": "photo-photo",
+      "id": "app-1570.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-1571.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-1572.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-1573.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-1574.desktop"
+    },
+    {
+      "name": "Viewer Pro",
+      "icon": "viewer-pro",
+      "id": "app-1575.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1576.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1577.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-1578.desktop"
+    },
+    {
+      "name": "Disk Camera",
+      "icon": "disk-camera",
+      "id": "app-1579.desktop"
+    },
+    {
+      "name": "Disk Chat",
+      "icon": "disk-chat",
+      "id": "app-1580.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1581.desktop"
+    },
+    {
+      "name": "Suite Suite",
+      "icon": "suite-suite",
+      "id": "app-1582.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-1583.desktop"
+    },
+    {
+      "name": "ភោជនីយដ្ឋាន",
+      "icon": "ភោជនីយដ្ឋាន",
+      "id": "app-1584.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-1585.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-1586.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1587.desktop"
+    },
+    {
+      "name": "Manager System",
+      "icon": "manager-system",
+      "id": "app-1588.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-1589.desktop"
+    },
+    {
+      "name": "Pro Disk",
+      "icon": "pro-disk",
+      "id": "app-1590.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-1591.desktop"
+    },
+    {
+      "name": "Writer Editor",
+      "icon": "writer-editor",
+      "id": "app-1592.desktop"
+    },
+    {
+      "name": "Camera Network",
+      "icon": "camera-network",
+      "id": "app-1593.desktop"
+    },
+    {
+      "name": "Writer Task",
+      "icon": "writer-task",
+      "id": "app-1594.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-1595.desktop"
+    },
+    {
+      "name": "Draw Mail",
+      "icon": "draw-mail",
+      "id": "app-1596.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-1597.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-1598.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-1599.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-1600.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-1601.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1602.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-1603.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-1604.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1605.desktop"
+    },
+    {
+      "name": "បាយ",
+      "icon": "បាយ",
+      "id": "app-1606.desktop"
+    },
+    {
+      "name": "Writer Chat",
+      "icon": "writer-chat",
+      "id": "app-1607.desktop"
+    },
+    {
+      "name": "Pro Music",
+      "icon": "pro-music",
+      "id": "app-1608.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-1609.desktop"
+    },
+    {
+      "name": "Mail Editor",
+      "icon": "mail-editor",
+      "id": "app-1610.desktop"
+    },
+    {
+      "name": "Photo Text",
+      "icon": "photo-text",
+      "id": "app-1611.desktop"
+    },
+    {
+      "name": "中文文档",
+      "icon": "中文文档",
+      "id": "app-1612.desktop"
+    },
+    {
+      "name": "Archive Note",
+      "icon": "archive-note",
+      "id": "app-1613.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-1614.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-1615.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1616.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-1617.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-1618.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-1619.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-1620.desktop"
+    },
+    {
+      "name": "Suite",
+      "icon": "suite",
+      "id": "app-1621.desktop"
+    },
+    {
+      "name": "Text Photo",
+      "icon": "text-photo",
+      "id": "app-1622.desktop"
+    },
+    {
+      "name": "Web System",
+      "icon": "web-system",
+      "id": "app-1623.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-1624.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-1625.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-1626.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-1627.desktop"
+    },
+    {
+      "name": "លុយ",
+      "icon": "លុយ",
+      "id": "app-1628.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-1629.desktop"
+    }
+  ],
+  "queries": [
+    {
+      "case": "no-match",
+      "query": "zzznomatch-apps-xyz999"
+    },
+    {
+      "case": "exact-hit",
+      "query": "editor"
+    },
+    {
+      "case": "prefix",
+      "query": "edi"
+    },
+    {
+      "case": "typo",
+      "query": "edtior"
+    },
+    {
+      "case": "khmer",
+      "query": "អរគុណ"
+    },
+    {
+      "case": "unicode-mixed",
+      "query": "café"
+    },
+    {
+      "case": "empty",
+      "query": ""
+    },
+    {
+      "case": "whitespace-only",
+      "query": "   "
+    },
+    {
+      "case": "very-long-10k",
+      "query": "searchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsear"
+    },
+    {
+      "case": "control-chars",
+      "query": "before\u0000\u0007\u001bafter"
+    },
+    {
+      "case": "lone-surrogate",
+      "query": "prefix\ud800suffix"
+    }
+  ]
+}

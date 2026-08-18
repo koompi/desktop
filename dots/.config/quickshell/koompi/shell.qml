@@ -29,6 +29,7 @@ ShellRoot {
         FirstRunExperience.load()
         ConflictKiller.load()
         Cliphist.refresh()
+        SearchBench.load()
         Wallpapers.load()
         Updates.load()
         SessionRestore.load()

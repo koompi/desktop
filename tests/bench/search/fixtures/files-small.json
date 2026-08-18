@@ -1,0 +1,154 @@
+{
+  "domain": "files",
+  "size": "small",
+  "entryCount": 20,
+  "seed": 1036511630,
+  "entries": [
+    {
+      "path": "/home/bench/Documents/ឯកសារ.pptx",
+      "name": "ឯកសារ.pptx",
+      "modified": "2026-03-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/report-8671.docx",
+      "name": "report-8671.docx",
+      "modified": "2026-12-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/presentation-8034.xlsx",
+      "name": "presentation-8034.xlsx",
+      "modified": "2026-02-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/timeline-3789.pdf",
+      "name": "timeline-3789.pdf",
+      "modified": "2026-01-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/quarterly-report.docx",
+      "name": "quarterly-report.docx",
+      "modified": "2026-09-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/itinerary-2863.zip",
+      "name": "itinerary-2863.zip",
+      "modified": "2026-06-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/notes-9027.txt",
+      "name": "notes-9027.txt",
+      "modified": "2026-11-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/checklist-1535.docx",
+      "name": "checklist-1535.docx",
+      "modified": "2026-03-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/timeline-6284.xlsx",
+      "name": "timeline-6284.xlsx",
+      "modified": "2026-06-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/សៀវភៅ.docx",
+      "name": "សៀវភៅ.docx",
+      "modified": "2026-11-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/photo-6174.png",
+      "name": "photo-6174.png",
+      "modified": "2026-08-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/សួស្តី.docx",
+      "name": "សួស្តី.docx",
+      "modified": "2026-10-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/invoice-1345.png",
+      "name": "invoice-1345.png",
+      "modified": "2026-06-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/Zürich.csv",
+      "name": "Zürich.csv",
+      "modified": "2026-01-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/📎-attachment.md",
+      "name": "📎-attachment.md",
+      "modified": "2026-12-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/draft-2425.txt",
+      "name": "draft-2425.txt",
+      "modified": "2026-01-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/summary-6734.docx",
+      "name": "summary-6734.docx",
+      "modified": "2026-05-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/presentation-8947.xlsx",
+      "name": "presentation-8947.xlsx",
+      "modified": "2026-08-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/checklist-1350.pdf",
+      "name": "checklist-1350.pdf",
+      "modified": "2026-04-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/log-3337.txt",
+      "name": "log-3337.txt",
+      "modified": "2026-06-06T00:00:00Z"
+    }
+  ],
+  "queries": [
+    {
+      "case": "no-match",
+      "query": "zzznomatch-files-xyz999"
+    },
+    {
+      "case": "exact-hit",
+      "query": "report"
+    },
+    {
+      "case": "prefix",
+      "query": "rep"
+    },
+    {
+      "case": "typo",
+      "query": "reoprt"
+    },
+    {
+      "case": "khmer",
+      "query": "អរគុណ"
+    },
+    {
+      "case": "unicode-mixed",
+      "query": "café"
+    },
+    {
+      "case": "empty",
+      "query": ""
+    },
+    {
+      "case": "whitespace-only",
+      "query": "   "
+    },
+    {
+      "case": "very-long-10k",
+      "query": "searchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsear"
+    },
+    {
+      "case": "control-chars",
+      "query": "before\u0000\u0007\u001bafter"
+    },
+    {
+      "case": "lone-surrogate",
+      "query": "prefix\ud800suffix"
+    }
+  ]
+}

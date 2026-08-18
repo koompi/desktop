@@ -1,0 +1,154 @@
+{
+  "domain": "apps",
+  "size": "small",
+  "entryCount": 20,
+  "seed": 1553622032,
+  "entries": [
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-0.desktop"
+    },
+    {
+      "name": "Task Code",
+      "icon": "task-code",
+      "id": "app-1.desktop"
+    },
+    {
+      "name": "Archive Studio",
+      "icon": "archive-studio",
+      "id": "app-2.desktop"
+    },
+    {
+      "name": "Settings Hub",
+      "icon": "settings-hub",
+      "id": "app-3.desktop"
+    },
+    {
+      "name": "Text Editor",
+      "icon": "text-editor",
+      "id": "app-4.desktop"
+    },
+    {
+      "name": "Studio Terminal",
+      "icon": "studio-terminal",
+      "id": "app-5.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-6.desktop"
+    },
+    {
+      "name": "Settings Reader",
+      "icon": "settings-reader",
+      "id": "app-7.desktop"
+    },
+    {
+      "name": "Note Manager",
+      "icon": "note-manager",
+      "id": "app-8.desktop"
+    },
+    {
+      "name": "សៀវភៅ",
+      "icon": "សៀវភៅ",
+      "id": "app-9.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-10.desktop"
+    },
+    {
+      "name": "សួស្តី",
+      "icon": "សួស្តី",
+      "id": "app-11.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-12.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-13.desktop"
+    },
+    {
+      "name": "日本語",
+      "icon": "日本語",
+      "id": "app-14.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-15.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-16.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-17.desktop"
+    },
+    {
+      "name": "Code Lite",
+      "icon": "code-lite",
+      "id": "app-18.desktop"
+    },
+    {
+      "name": "System Chat",
+      "icon": "system-chat",
+      "id": "app-19.desktop"
+    }
+  ],
+  "queries": [
+    {
+      "case": "no-match",
+      "query": "zzznomatch-apps-xyz999"
+    },
+    {
+      "case": "exact-hit",
+      "query": "editor"
+    },
+    {
+      "case": "prefix",
+      "query": "edi"
+    },
+    {
+      "case": "typo",
+      "query": "edtior"
+    },
+    {
+      "case": "khmer",
+      "query": "អរគុណ"
+    },
+    {
+      "case": "unicode-mixed",
+      "query": "café"
+    },
+    {
+      "case": "empty",
+      "query": ""
+    },
+    {
+      "case": "whitespace-only",
+      "query": "   "
+    },
+    {
+      "case": "very-long-10k",
+      "query": "searchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsear"
+    },
+    {
+      "case": "control-chars",
+      "query": "before\u0000\u0007\u001bafter"
+    },
+    {
+      "case": "lone-surrogate",
+      "query": "prefix\ud800suffix"
+    }
+  ]
+}

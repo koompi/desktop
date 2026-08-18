@@ -1,0 +1,1499 @@
+{
+  "domain": "files",
+  "size": "current-scale",
+  "entryCount": 289,
+  "seed": 3021922565,
+  "entries": [
+    {
+      "path": "/home/bench/Pictures/ខ្យល់.txt",
+      "name": "ខ្យល់.txt",
+      "modified": "2026-07-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/resume-2327.txt",
+      "name": "resume-2327.txt",
+      "modified": "2026-02-10T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/summary-8730.txt",
+      "name": "summary-8730.txt",
+      "modified": "2026-04-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/checklist-6328.pdf",
+      "name": "checklist-6328.pdf",
+      "modified": "2026-03-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/invoice-4748.jpg",
+      "name": "invoice-4748.jpg",
+      "modified": "2026-10-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/itinerary-43.xlsx",
+      "name": "itinerary-43.xlsx",
+      "modified": "2026-07-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/photo-1148.pdf",
+      "name": "photo-1148.pdf",
+      "modified": "2026-12-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/itinerary-8278.docx",
+      "name": "itinerary-8278.docx",
+      "modified": "2026-01-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/contract-6765.pptx",
+      "name": "contract-6765.pptx",
+      "modified": "2026-09-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/notes-5436.zip",
+      "name": "notes-5436.zip",
+      "modified": "2026-08-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/timeline-7384.jpg",
+      "name": "timeline-7384.jpg",
+      "modified": "2026-02-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/ភោជនីយដ្ឋាន.docx",
+      "name": "ភោជនីយដ្ឋាន.docx",
+      "modified": "2026-09-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-6194.pdf",
+      "name": "diagram-6194.pdf",
+      "modified": "2026-05-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/naïve-façade.pptx",
+      "name": "naïve-façade.pptx",
+      "modified": "2026-08-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/summary-8932.txt",
+      "name": "summary-8932.txt",
+      "modified": "2026-09-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/draft-613.xlsx",
+      "name": "draft-613.xlsx",
+      "modified": "2026-12-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/backup-9363.txt",
+      "name": "backup-9363.txt",
+      "modified": "2026-10-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/budget-5438.csv",
+      "name": "budget-5438.csv",
+      "modified": "2026-05-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/diagram-1429.csv",
+      "name": "diagram-1429.csv",
+      "modified": "2026-05-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-8882.pptx",
+      "name": "notes-8882.pptx",
+      "modified": "2026-09-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/photo-4753.md",
+      "name": "photo-4753.md",
+      "modified": "2026-02-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/summary-666.md",
+      "name": "summary-666.md",
+      "modified": "2026-06-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/សួស្តី.docx",
+      "name": "សួស្តី.docx",
+      "modified": "2026-04-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/diagram-4360.pptx",
+      "name": "diagram-4360.pptx",
+      "modified": "2026-05-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/photo-7479.png",
+      "name": "photo-7479.png",
+      "modified": "2026-10-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/diagram-9453.zip",
+      "name": "diagram-9453.zip",
+      "modified": "2026-03-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/日本語.pdf",
+      "name": "日本語.pdf",
+      "modified": "2026-08-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/contract-7748.zip",
+      "name": "contract-7748.zip",
+      "modified": "2026-02-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/backup-3360.xlsx",
+      "name": "backup-3360.xlsx",
+      "modified": "2026-02-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/diagram-5034.docx",
+      "name": "diagram-5034.docx",
+      "modified": "2026-02-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/photo-7836.csv",
+      "name": "photo-7836.csv",
+      "modified": "2026-02-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/notes-6211.pdf",
+      "name": "notes-6211.pdf",
+      "modified": "2026-04-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/photo-3010.zip",
+      "name": "photo-3010.zip",
+      "modified": "2026-03-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/ព្រះអាទិត្យ.jpg",
+      "name": "ព្រះអាទិត្យ.jpg",
+      "modified": "2026-06-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/export-5098.pdf",
+      "name": "export-5098.pdf",
+      "modified": "2026-03-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/resume-8058.xlsx",
+      "name": "resume-8058.xlsx",
+      "modified": "2026-08-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/backup-2006.pptx",
+      "name": "backup-2006.pptx",
+      "modified": "2026-10-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/notes-956.docx",
+      "name": "notes-956.docx",
+      "modified": "2026-08-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/timeline-5468.png",
+      "name": "timeline-5468.png",
+      "modified": "2026-04-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/Zürich.pdf",
+      "name": "Zürich.pdf",
+      "modified": "2026-11-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/export-4519.pptx",
+      "name": "export-4519.pptx",
+      "modified": "2026-12-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/contract-905.docx",
+      "name": "contract-905.docx",
+      "modified": "2026-05-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/photo-2219.csv",
+      "name": "photo-2219.csv",
+      "modified": "2026-12-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/invoice-1607.jpg",
+      "name": "invoice-1607.jpg",
+      "modified": "2026-11-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/ភោជនីយដ្ឋាន.txt",
+      "name": "ភោជនីយដ្ឋាន.txt",
+      "modified": "2026-07-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/archive-3280.zip",
+      "name": "archive-3280.zip",
+      "modified": "2026-10-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/proposal-5708.jpg",
+      "name": "proposal-5708.jpg",
+      "modified": "2026-11-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/archive-6202.docx",
+      "name": "archive-6202.docx",
+      "modified": "2026-11-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-209.md",
+      "name": "notes-209.md",
+      "modified": "2026-05-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/photo-5723.docx",
+      "name": "photo-5723.docx",
+      "modified": "2026-10-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/screenshot-3153.xlsx",
+      "name": "screenshot-3153.xlsx",
+      "modified": "2026-03-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/notes-1430.xlsx",
+      "name": "notes-1430.xlsx",
+      "modified": "2026-07-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/日本語.docx",
+      "name": "日本語.docx",
+      "modified": "2026-12-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/draft-2386.txt",
+      "name": "draft-2386.txt",
+      "modified": "2026-11-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/proposal-6288.png",
+      "name": "proposal-6288.png",
+      "modified": "2026-05-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/ឯកសារ.jpg",
+      "name": "ឯកសារ.jpg",
+      "modified": "2026-06-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/budget-9535.pptx",
+      "name": "budget-9535.pptx",
+      "modified": "2026-03-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/quarterly-report.zip",
+      "name": "quarterly-report.zip",
+      "modified": "2026-06-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/resume-8312.png",
+      "name": "resume-8312.png",
+      "modified": "2026-12-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/proposal-5976.md",
+      "name": "proposal-5976.md",
+      "modified": "2026-08-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-4808.xlsx",
+      "name": "notes-4808.xlsx",
+      "modified": "2026-11-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/backup-7535.pdf",
+      "name": "backup-7535.pdf",
+      "modified": "2026-10-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-7679.png",
+      "name": "diagram-7679.png",
+      "modified": "2026-09-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/draft-5101.pptx",
+      "name": "draft-5101.pptx",
+      "modified": "2026-11-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/invoice-9933.pptx",
+      "name": "invoice-9933.pptx",
+      "modified": "2026-08-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/✅-done.md",
+      "name": "✅-done.md",
+      "modified": "2026-05-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/ព្រះអាទិត្យ.pptx",
+      "name": "ព្រះអាទិត្យ.pptx",
+      "modified": "2026-03-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/proposal-8695.zip",
+      "name": "proposal-8695.zip",
+      "modified": "2026-09-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/invoice-1141.png",
+      "name": "invoice-1141.png",
+      "modified": "2026-10-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/photo-606.pdf",
+      "name": "photo-606.pdf",
+      "modified": "2026-10-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/resume-1895.docx",
+      "name": "resume-1895.docx",
+      "modified": "2026-01-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/checklist-5463.jpg",
+      "name": "checklist-5463.jpg",
+      "modified": "2026-04-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/resume-5029.csv",
+      "name": "resume-5029.csv",
+      "modified": "2026-03-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/report-8629.xlsx",
+      "name": "report-8629.xlsx",
+      "modified": "2026-12-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/export-617.xlsx",
+      "name": "export-617.xlsx",
+      "modified": "2026-11-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/diagram-7030.md",
+      "name": "diagram-7030.md",
+      "modified": "2026-01-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/notes-5535.png",
+      "name": "notes-5535.png",
+      "modified": "2026-01-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/ព្រះអាទិត្យ.pdf",
+      "name": "ព្រះអាទិត្យ.pdf",
+      "modified": "2026-04-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/Zürich.zip",
+      "name": "Zürich.zip",
+      "modified": "2026-04-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/summary-4088.zip",
+      "name": "summary-4088.zip",
+      "modified": "2026-09-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/archive-7729.png",
+      "name": "archive-7729.png",
+      "modified": "2026-05-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/checklist-8747.zip",
+      "name": "checklist-8747.zip",
+      "modified": "2026-07-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/draft-3321.txt",
+      "name": "draft-3321.txt",
+      "modified": "2026-05-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/backup-2707.jpg",
+      "name": "backup-2707.jpg",
+      "modified": "2026-07-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/contract-2383.docx",
+      "name": "contract-2383.docx",
+      "modified": "2026-12-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/contract-7360.pptx",
+      "name": "contract-7360.pptx",
+      "modified": "2026-03-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/invoice-7773.xlsx",
+      "name": "invoice-7773.xlsx",
+      "modified": "2026-03-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/invoice-107.png",
+      "name": "invoice-107.png",
+      "modified": "2026-09-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/កុំព្យូទ័រ.md",
+      "name": "កុំព្យូទ័រ.md",
+      "modified": "2026-01-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-4873.txt",
+      "name": "itinerary-4873.txt",
+      "modified": "2026-06-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/report-1538.pdf",
+      "name": "report-1538.pdf",
+      "modified": "2026-11-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/✅-done.xlsx",
+      "name": "✅-done.xlsx",
+      "modified": "2026-10-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/presentation-5032.pdf",
+      "name": "presentation-5032.pdf",
+      "modified": "2026-01-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/photo-8131.txt",
+      "name": "photo-8131.txt",
+      "modified": "2026-11-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/checklist-3386.pdf",
+      "name": "checklist-3386.pdf",
+      "modified": "2026-08-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/checklist-5331.pptx",
+      "name": "checklist-5331.pptx",
+      "modified": "2026-03-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/budget-5345.pptx",
+      "name": "budget-5345.pptx",
+      "modified": "2026-11-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-126.pdf",
+      "name": "diagram-126.pdf",
+      "modified": "2026-12-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/budget-3163.csv",
+      "name": "budget-3163.csv",
+      "modified": "2026-05-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/កុំព្យូទ័រ.pdf",
+      "name": "កុំព្យូទ័រ.pdf",
+      "modified": "2026-06-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/resume-2499.txt",
+      "name": "resume-2499.txt",
+      "modified": "2026-01-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/contract-8268.png",
+      "name": "contract-8268.png",
+      "modified": "2026-04-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/checklist-7359.pptx",
+      "name": "checklist-7359.pptx",
+      "modified": "2026-05-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/archive-1794.jpg",
+      "name": "archive-1794.jpg",
+      "modified": "2026-02-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/Zürich.txt",
+      "name": "Zürich.txt",
+      "modified": "2026-11-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/archive-9764.md",
+      "name": "archive-9764.md",
+      "modified": "2026-10-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/contract-9682.xlsx",
+      "name": "contract-9682.xlsx",
+      "modified": "2026-10-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/report-9399.jpg",
+      "name": "report-9399.jpg",
+      "modified": "2026-12-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/contract-8941.md",
+      "name": "contract-8941.md",
+      "modified": "2026-10-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/timeline-2995.pptx",
+      "name": "timeline-2995.pptx",
+      "modified": "2026-04-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/ភ្លៀង.jpg",
+      "name": "ភ្លៀង.jpg",
+      "modified": "2026-01-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/presentation-6642.txt",
+      "name": "presentation-6642.txt",
+      "modified": "2026-03-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/export-1496.txt",
+      "name": "export-1496.txt",
+      "modified": "2026-05-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/invoice-4898.txt",
+      "name": "invoice-4898.txt",
+      "modified": "2026-10-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/notes-5921.txt",
+      "name": "notes-5921.txt",
+      "modified": "2026-10-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/budget-7390.docx",
+      "name": "budget-7390.docx",
+      "modified": "2026-06-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/ភោជនីយដ្ឋាន.zip",
+      "name": "ភោជនីយដ្ឋាន.zip",
+      "modified": "2026-07-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/Zürich.docx",
+      "name": "Zürich.docx",
+      "modified": "2026-08-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/contract-609.png",
+      "name": "contract-609.png",
+      "modified": "2026-12-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/backup-3482.docx",
+      "name": "backup-3482.docx",
+      "modified": "2026-10-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/invoice-2974.jpg",
+      "name": "invoice-2974.jpg",
+      "modified": "2026-01-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/ជំរាបសួរ.csv",
+      "name": "ជំរាបសួរ.csv",
+      "modified": "2026-01-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/presentation-3014.docx",
+      "name": "presentation-3014.docx",
+      "modified": "2026-09-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/report-6592.jpg",
+      "name": "report-6592.jpg",
+      "modified": "2026-01-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/draft-8644.xlsx",
+      "name": "draft-8644.xlsx",
+      "modified": "2026-06-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/backup-8863.docx",
+      "name": "backup-8863.docx",
+      "modified": "2026-02-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/report-1323.zip",
+      "name": "report-1323.zip",
+      "modified": "2026-12-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/archive-5438.pdf",
+      "name": "archive-5438.pdf",
+      "modified": "2026-06-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-5871.md",
+      "name": "notes-5871.md",
+      "modified": "2026-03-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/draft-4869.csv",
+      "name": "draft-4869.csv",
+      "modified": "2026-04-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/Zürich.pdf",
+      "name": "Zürich.pdf",
+      "modified": "2026-07-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/contract-2429.txt",
+      "name": "contract-2429.txt",
+      "modified": "2026-05-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/កុំព្យូទ័រ.txt",
+      "name": "កុំព្យូទ័រ.txt",
+      "modified": "2026-06-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/presentation-9555.docx",
+      "name": "presentation-9555.docx",
+      "modified": "2026-03-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/draft-6098.csv",
+      "name": "draft-6098.csv",
+      "modified": "2026-04-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/itinerary-148.txt",
+      "name": "itinerary-148.txt",
+      "modified": "2026-01-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/archive-2319.txt",
+      "name": "archive-2319.txt",
+      "modified": "2026-03-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-3703.docx",
+      "name": "log-3703.docx",
+      "modified": "2026-11-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-3107.pdf",
+      "name": "notes-3107.pdf",
+      "modified": "2026-05-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/budget-4250.pdf",
+      "name": "budget-4250.pdf",
+      "modified": "2026-01-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/export-6475.docx",
+      "name": "export-6475.docx",
+      "modified": "2026-11-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/timeline-6539.docx",
+      "name": "timeline-6539.docx",
+      "modified": "2026-09-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/log-2531.csv",
+      "name": "log-2531.csv",
+      "modified": "2026-06-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/បាយ.jpg",
+      "name": "បាយ.jpg",
+      "modified": "2026-04-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-3992.jpg",
+      "name": "itinerary-3992.jpg",
+      "modified": "2026-05-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/resume-3134.docx",
+      "name": "resume-3134.docx",
+      "modified": "2026-02-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/resume-8952.csv",
+      "name": "resume-8952.csv",
+      "modified": "2026-05-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/budget-6621.csv",
+      "name": "budget-6621.csv",
+      "modified": "2026-09-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/backup-6621.docx",
+      "name": "backup-6621.docx",
+      "modified": "2026-01-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/checklist-8110.png",
+      "name": "checklist-8110.png",
+      "modified": "2026-12-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/report-798.csv",
+      "name": "report-798.csv",
+      "modified": "2026-01-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-8694.pptx",
+      "name": "log-8694.pptx",
+      "modified": "2026-03-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/screenshot-6216.txt",
+      "name": "screenshot-6216.txt",
+      "modified": "2026-04-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/checklist-3813.csv",
+      "name": "checklist-3813.csv",
+      "modified": "2026-12-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/ជំរាបសួរ.zip",
+      "name": "ជំរាបសួរ.zip",
+      "modified": "2026-08-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/notes-1094.pptx",
+      "name": "notes-1094.pptx",
+      "modified": "2026-07-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/✅-done.md",
+      "name": "✅-done.md",
+      "modified": "2026-11-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/timeline-1848.zip",
+      "name": "timeline-1848.zip",
+      "modified": "2026-09-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/backup-1535.jpg",
+      "name": "backup-1535.jpg",
+      "modified": "2026-11-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/timeline-7854.png",
+      "name": "timeline-7854.png",
+      "modified": "2026-06-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/export-9899.csv",
+      "name": "export-9899.csv",
+      "modified": "2026-08-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/backup-9186.pdf",
+      "name": "backup-9186.pdf",
+      "modified": "2026-09-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/archive-6835.xlsx",
+      "name": "archive-6835.xlsx",
+      "modified": "2026-07-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/export-9586.zip",
+      "name": "export-9586.zip",
+      "modified": "2026-07-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/resume-2898.pdf",
+      "name": "resume-2898.pdf",
+      "modified": "2026-01-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/បាយ.docx",
+      "name": "បាយ.docx",
+      "modified": "2026-04-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/itinerary-7650.txt",
+      "name": "itinerary-7650.txt",
+      "modified": "2026-02-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/report-5067.zip",
+      "name": "report-5067.zip",
+      "modified": "2026-04-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/budget-7251.csv",
+      "name": "budget-7251.csv",
+      "modified": "2026-07-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/✅-done.jpg",
+      "name": "✅-done.jpg",
+      "modified": "2026-02-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/draft-5966.xlsx",
+      "name": "draft-5966.xlsx",
+      "modified": "2026-06-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/presentation-8202.jpg",
+      "name": "presentation-8202.jpg",
+      "modified": "2026-01-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/diagram-6411.pdf",
+      "name": "diagram-6411.pdf",
+      "modified": "2026-08-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/notes-8893.pptx",
+      "name": "notes-8893.pptx",
+      "modified": "2026-11-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/itinerary-4520.docx",
+      "name": "itinerary-4520.docx",
+      "modified": "2026-05-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/café.jpg",
+      "name": "café.jpg",
+      "modified": "2026-05-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/ជំរាបសួរ.txt",
+      "name": "ជំរាបសួរ.txt",
+      "modified": "2026-01-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/invoice-5796.csv",
+      "name": "invoice-5796.csv",
+      "modified": "2026-01-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/draft-3791.zip",
+      "name": "draft-3791.zip",
+      "modified": "2026-11-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-9861.md",
+      "name": "itinerary-9861.md",
+      "modified": "2026-03-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/timeline-1524.docx",
+      "name": "timeline-1524.docx",
+      "modified": "2026-08-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/contract-4773.zip",
+      "name": "contract-4773.zip",
+      "modified": "2026-01-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/📎-attachment.csv",
+      "name": "📎-attachment.csv",
+      "modified": "2026-06-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/summary-2441.png",
+      "name": "summary-2441.png",
+      "modified": "2026-06-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-3874.csv",
+      "name": "itinerary-3874.csv",
+      "modified": "2026-03-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/resume-8771.pptx",
+      "name": "resume-8771.pptx",
+      "modified": "2026-08-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/screenshot-7355.pptx",
+      "name": "screenshot-7355.pptx",
+      "modified": "2026-11-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/ព្រះអាទិត្យ.png",
+      "name": "ព្រះអាទិត្យ.png",
+      "modified": "2026-03-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/notes-9543.pptx",
+      "name": "notes-9543.pptx",
+      "modified": "2026-06-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/contract-8383.zip",
+      "name": "contract-8383.zip",
+      "modified": "2026-02-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/draft-6067.jpg",
+      "name": "draft-6067.jpg",
+      "modified": "2026-05-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/report-9976.pdf",
+      "name": "report-9976.pdf",
+      "modified": "2026-08-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/timeline-9332.zip",
+      "name": "timeline-9332.zip",
+      "modified": "2026-08-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/notes-9040.docx",
+      "name": "notes-9040.docx",
+      "modified": "2026-07-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/proposal-8197.txt",
+      "name": "proposal-8197.txt",
+      "modified": "2026-06-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/✅-done.pptx",
+      "name": "✅-done.pptx",
+      "modified": "2026-12-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/contract-3614.zip",
+      "name": "contract-3614.zip",
+      "modified": "2026-03-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-3953.xlsx",
+      "name": "itinerary-3953.xlsx",
+      "modified": "2026-04-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/ស្រលាញ់.md",
+      "name": "ស្រលាញ់.md",
+      "modified": "2026-04-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/archive-7519.csv",
+      "name": "archive-7519.csv",
+      "modified": "2026-07-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/itinerary-2364.zip",
+      "name": "itinerary-2364.zip",
+      "modified": "2026-06-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/backup-1209.zip",
+      "name": "backup-1209.zip",
+      "modified": "2026-05-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/contract-3114.txt",
+      "name": "contract-3114.txt",
+      "modified": "2026-04-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/summary-2339.csv",
+      "name": "summary-2339.csv",
+      "modified": "2026-11-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-6503.csv",
+      "name": "log-6503.csv",
+      "modified": "2026-08-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/budget-6020.xlsx",
+      "name": "budget-6020.xlsx",
+      "modified": "2026-06-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/export-4346.jpg",
+      "name": "export-4346.jpg",
+      "modified": "2026-01-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-3410.xlsx",
+      "name": "log-3410.xlsx",
+      "modified": "2026-09-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/naïve-façade.txt",
+      "name": "naïve-façade.txt",
+      "modified": "2026-03-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/ព្រះអាទិត្យ.pdf",
+      "name": "ព្រះអាទិត្យ.pdf",
+      "modified": "2026-12-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/report-2452.csv",
+      "name": "report-2452.csv",
+      "modified": "2026-06-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/resume-5795.zip",
+      "name": "resume-5795.zip",
+      "modified": "2026-11-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/archive-654.docx",
+      "name": "archive-654.docx",
+      "modified": "2026-07-01T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/invoice-5044.txt",
+      "name": "invoice-5044.txt",
+      "modified": "2026-01-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/contract-1103.csv",
+      "name": "contract-1103.csv",
+      "modified": "2026-07-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/summary-9967.md",
+      "name": "summary-9967.md",
+      "modified": "2026-04-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/log-4642.pptx",
+      "name": "log-4642.pptx",
+      "modified": "2026-05-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/proposal-6304.txt",
+      "name": "proposal-6304.txt",
+      "modified": "2026-02-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-1473.txt",
+      "name": "diagram-1473.txt",
+      "modified": "2026-05-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/budget-1534.docx",
+      "name": "budget-1534.docx",
+      "modified": "2026-02-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/កុំព្យូទ័រ.jpg",
+      "name": "កុំព្យូទ័រ.jpg",
+      "modified": "2026-02-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/Zürich.csv",
+      "name": "Zürich.csv",
+      "modified": "2026-09-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/report-6232.csv",
+      "name": "report-6232.csv",
+      "modified": "2026-08-08T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/draft-3273.pptx",
+      "name": "draft-3273.pptx",
+      "modified": "2026-02-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/summary-3828.zip",
+      "name": "summary-3828.zip",
+      "modified": "2026-08-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/screenshot-8607.pptx",
+      "name": "screenshot-8607.pptx",
+      "modified": "2026-08-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/invoice-5168.zip",
+      "name": "invoice-5168.zip",
+      "modified": "2026-10-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/diagram-6647.md",
+      "name": "diagram-6647.md",
+      "modified": "2026-06-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/export-8887.md",
+      "name": "export-8887.md",
+      "modified": "2026-03-02T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/export-315.png",
+      "name": "export-315.png",
+      "modified": "2026-03-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/invoice-8701.pdf",
+      "name": "invoice-8701.pdf",
+      "modified": "2026-11-13T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/កុំព្យូទ័រ.zip",
+      "name": "កុំព្យូទ័រ.zip",
+      "modified": "2026-01-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/budget-7520.pptx",
+      "name": "budget-7520.pptx",
+      "modified": "2026-12-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-638.jpg",
+      "name": "diagram-638.jpg",
+      "modified": "2026-11-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/🚀-launch.pptx",
+      "name": "🚀-launch.pptx",
+      "modified": "2026-08-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/screenshot-6438.jpg",
+      "name": "screenshot-6438.jpg",
+      "modified": "2026-07-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/screenshot-9782.png",
+      "name": "screenshot-9782.png",
+      "modified": "2026-03-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/screenshot-4315.csv",
+      "name": "screenshot-4315.csv",
+      "modified": "2026-08-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/itinerary-5169.jpg",
+      "name": "itinerary-5169.jpg",
+      "modified": "2026-02-10T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/resume-6516.xlsx",
+      "name": "resume-6516.xlsx",
+      "modified": "2026-04-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/summary-7675.png",
+      "name": "summary-7675.png",
+      "modified": "2026-12-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/photo-4905.md",
+      "name": "photo-4905.md",
+      "modified": "2026-02-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/មិត្តភាព.pdf",
+      "name": "មិត្តភាព.pdf",
+      "modified": "2026-08-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/export-9371.xlsx",
+      "name": "export-9371.xlsx",
+      "modified": "2026-01-25T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/contract-2763.docx",
+      "name": "contract-2763.docx",
+      "modified": "2026-06-19T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/report-5641.png",
+      "name": "report-5641.png",
+      "modified": "2026-10-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/report-8647.txt",
+      "name": "report-8647.txt",
+      "modified": "2026-11-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/東京タワー.zip",
+      "name": "東京タワー.zip",
+      "modified": "2026-06-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/backup-978.zip",
+      "name": "backup-978.zip",
+      "modified": "2026-06-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/summary-6149.md",
+      "name": "summary-6149.md",
+      "modified": "2026-09-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/draft-8452.csv",
+      "name": "draft-8452.csv",
+      "modified": "2026-05-10T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/checklist-2677.pptx",
+      "name": "checklist-2677.pptx",
+      "modified": "2026-03-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/log-7146.png",
+      "name": "log-7146.png",
+      "modified": "2026-04-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/ភ្លៀង.zip",
+      "name": "ភ្លៀង.zip",
+      "modified": "2026-07-12T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/invoice-6631.png",
+      "name": "invoice-6631.png",
+      "modified": "2026-03-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/log-9719.csv",
+      "name": "log-9719.csv",
+      "modified": "2026-02-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/contract-7337.pdf",
+      "name": "contract-7337.pdf",
+      "modified": "2026-04-22T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/itinerary-6776.zip",
+      "name": "itinerary-6776.zip",
+      "modified": "2026-08-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/archive-6552.md",
+      "name": "archive-6552.md",
+      "modified": "2026-05-26T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/invoice-1322.txt",
+      "name": "invoice-1322.txt",
+      "modified": "2026-03-15T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/Zürich.png",
+      "name": "Zürich.png",
+      "modified": "2026-05-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/diagram-7420.zip",
+      "name": "diagram-7420.zip",
+      "modified": "2026-10-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/presentation-1205.md",
+      "name": "presentation-1205.md",
+      "modified": "2026-05-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/checklist-873.pdf",
+      "name": "checklist-873.pdf",
+      "modified": "2026-03-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/ខ្យល់.jpg",
+      "name": "ខ្យល់.jpg",
+      "modified": "2026-03-16T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/draft-1678.docx",
+      "name": "draft-1678.docx",
+      "modified": "2026-01-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/photo-876.png",
+      "name": "photo-876.png",
+      "modified": "2026-10-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/itinerary-9454.pdf",
+      "name": "itinerary-9454.pdf",
+      "modified": "2026-05-21T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/summary-177.docx",
+      "name": "summary-177.docx",
+      "modified": "2026-05-09T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/log-5227.md",
+      "name": "log-5227.md",
+      "modified": "2026-07-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/export-2131.xlsx",
+      "name": "export-2131.xlsx",
+      "modified": "2026-10-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/report-3802.pdf",
+      "name": "report-3802.pdf",
+      "modified": "2026-06-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/summary-8265.xlsx",
+      "name": "summary-8265.xlsx",
+      "modified": "2026-06-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/📎-attachment.docx",
+      "name": "📎-attachment.docx",
+      "modified": "2026-03-18T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/photo-7177.csv",
+      "name": "photo-7177.csv",
+      "modified": "2026-08-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/ស្រលាញ់.xlsx",
+      "name": "ស្រលាញ់.xlsx",
+      "modified": "2026-03-20T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/budget-4528.png",
+      "name": "budget-4528.png",
+      "modified": "2026-02-05T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/itinerary-4219.txt",
+      "name": "itinerary-4219.txt",
+      "modified": "2026-07-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/resume-8802.zip",
+      "name": "resume-8802.zip",
+      "modified": "2026-07-07T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/notes-7423.md",
+      "name": "notes-7423.md",
+      "modified": "2026-08-17T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Projects/photo-5306.pdf",
+      "name": "photo-5306.pdf",
+      "modified": "2026-12-23T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/archive-4779.docx",
+      "name": "archive-4779.docx",
+      "modified": "2026-09-03T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Pictures/presentation-7285.md",
+      "name": "presentation-7285.md",
+      "modified": "2026-03-14T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/notes-3535.png",
+      "name": "notes-3535.png",
+      "modified": "2026-10-04T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/contract-3297.png",
+      "name": "contract-3297.png",
+      "modified": "2026-05-06T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-3166.docx",
+      "name": "log-3166.docx",
+      "modified": "2026-02-11T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Documents/សួស្តី.pptx",
+      "name": "សួស្តី.pptx",
+      "modified": "2026-08-24T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Downloads/log-965.zip",
+      "name": "log-965.zip",
+      "modified": "2026-05-27T00:00:00Z"
+    },
+    {
+      "path": "/home/bench/Desktop/timeline-5342.csv",
+      "name": "timeline-5342.csv",
+      "modified": "2026-10-03T00:00:00Z"
+    }
+  ],
+  "queries": [
+    {
+      "case": "no-match",
+      "query": "zzznomatch-files-xyz999"
+    },
+    {
+      "case": "exact-hit",
+      "query": "report"
+    },
+    {
+      "case": "prefix",
+      "query": "rep"
+    },
+    {
+      "case": "typo",
+      "query": "reoprt"
+    },
+    {
+      "case": "khmer",
+      "query": "អរគុណ"
+    },
+    {
+      "case": "unicode-mixed",
+      "query": "café"
+    },
+    {
+      "case": "empty",
+      "query": ""
+    },
+    {
+      "case": "whitespace-only",
+      "query": "   "
+    },
+    {
+      "case": "very-long-10k",
+      "query": "searchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsear"
+    },
+    {
+      "case": "control-chars",
+      "query": "before\u0000\u0007\u001bafter"
+    },
+    {
+      "case": "lone-surrogate",
+      "query": "prefix\ud800suffix"
+    }
+  ]
+}

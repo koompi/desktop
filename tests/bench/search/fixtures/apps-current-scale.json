@@ -1,0 +1,869 @@
+{
+  "domain": "apps",
+  "size": "current-scale",
+  "entryCount": 163,
+  "seed": 597696364,
+  "entries": [
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-0.desktop"
+    },
+    {
+      "name": "Writer",
+      "icon": "writer",
+      "id": "app-1.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-2.desktop"
+    },
+    {
+      "name": "Browser Manager",
+      "icon": "browser-manager",
+      "id": "app-3.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-4.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-5.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-6.desktop"
+    },
+    {
+      "name": "Browser Archive",
+      "icon": "browser-archive",
+      "id": "app-7.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-8.desktop"
+    },
+    {
+      "name": "Mail Studio",
+      "icon": "mail-studio",
+      "id": "app-9.desktop"
+    },
+    {
+      "name": "Task Suite",
+      "icon": "task-suite",
+      "id": "app-10.desktop"
+    },
+    {
+      "name": "ភ្លៀង",
+      "icon": "ភ្លៀង",
+      "id": "app-11.desktop"
+    },
+    {
+      "name": "Text Music",
+      "icon": "text-music",
+      "id": "app-12.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-13.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-14.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-15.desktop"
+    },
+    {
+      "name": "Chat Disk",
+      "icon": "chat-disk",
+      "id": "app-16.desktop"
+    },
+    {
+      "name": "Paint",
+      "icon": "paint",
+      "id": "app-17.desktop"
+    },
+    {
+      "name": "Paint File",
+      "icon": "paint-file",
+      "id": "app-18.desktop"
+    },
+    {
+      "name": "Browser Reader",
+      "icon": "browser-reader",
+      "id": "app-19.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-20.desktop"
+    },
+    {
+      "name": "Note Settings",
+      "icon": "note-settings",
+      "id": "app-21.desktop"
+    },
+    {
+      "name": "ផ្ទះ",
+      "icon": "ផ្ទះ",
+      "id": "app-22.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-23.desktop"
+    },
+    {
+      "name": "Draw Task",
+      "icon": "draw-task",
+      "id": "app-24.desktop"
+    },
+    {
+      "name": "Disk Viewer",
+      "icon": "disk-viewer",
+      "id": "app-25.desktop"
+    },
+    {
+      "name": "naïve façade",
+      "icon": "naïve-façade",
+      "id": "app-26.desktop"
+    },
+    {
+      "name": "Disk Hub",
+      "icon": "disk-hub",
+      "id": "app-27.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-28.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-29.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-30.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-31.desktop"
+    },
+    {
+      "name": "Text Editor",
+      "icon": "text-editor",
+      "id": "app-32.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-33.desktop"
+    },
+    {
+      "name": "Chat Paint",
+      "icon": "chat-paint",
+      "id": "app-34.desktop"
+    },
+    {
+      "name": "Terminal",
+      "icon": "terminal",
+      "id": "app-35.desktop"
+    },
+    {
+      "name": "Network Text",
+      "icon": "network-text",
+      "id": "app-36.desktop"
+    },
+    {
+      "name": "Paint Player",
+      "icon": "paint-player",
+      "id": "app-37.desktop"
+    },
+    {
+      "name": "Network Web",
+      "icon": "network-web",
+      "id": "app-38.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-39.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-40.desktop"
+    },
+    {
+      "name": "Mail Archive",
+      "icon": "mail-archive",
+      "id": "app-41.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-42.desktop"
+    },
+    {
+      "name": "Task",
+      "icon": "task",
+      "id": "app-43.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-44.desktop"
+    },
+    {
+      "name": "Paint Disk",
+      "icon": "paint-disk",
+      "id": "app-45.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-46.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-47.desktop"
+    },
+    {
+      "name": "Manager Mail",
+      "icon": "manager-mail",
+      "id": "app-48.desktop"
+    },
+    {
+      "name": "Reader Editor",
+      "icon": "reader-editor",
+      "id": "app-49.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-50.desktop"
+    },
+    {
+      "name": "File Editor",
+      "icon": "file-editor",
+      "id": "app-51.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-52.desktop"
+    },
+    {
+      "name": "Lite",
+      "icon": "lite",
+      "id": "app-53.desktop"
+    },
+    {
+      "name": "Chat Network",
+      "icon": "chat-network",
+      "id": "app-54.desktop"
+    },
+    {
+      "name": "សាលារៀន",
+      "icon": "សាលារៀន",
+      "id": "app-55.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-56.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-57.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-58.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-59.desktop"
+    },
+    {
+      "name": "File",
+      "icon": "file",
+      "id": "app-60.desktop"
+    },
+    {
+      "name": "Music",
+      "icon": "music",
+      "id": "app-61.desktop"
+    },
+    {
+      "name": "Camera Studio",
+      "icon": "camera-studio",
+      "id": "app-62.desktop"
+    },
+    {
+      "name": "Terminal Video",
+      "icon": "terminal-video",
+      "id": "app-63.desktop"
+    },
+    {
+      "name": "Web Voice",
+      "icon": "web-voice",
+      "id": "app-64.desktop"
+    },
+    {
+      "name": "café",
+      "icon": "café",
+      "id": "app-65.desktop"
+    },
+    {
+      "name": "ជំរាបសួរ",
+      "icon": "ជំរាបសួរ",
+      "id": "app-66.desktop"
+    },
+    {
+      "name": "Lite Hub",
+      "icon": "lite-hub",
+      "id": "app-67.desktop"
+    },
+    {
+      "name": "Code",
+      "icon": "code",
+      "id": "app-68.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-69.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-70.desktop"
+    },
+    {
+      "name": "Web",
+      "icon": "web",
+      "id": "app-71.desktop"
+    },
+    {
+      "name": "Pro Draw",
+      "icon": "pro-draw",
+      "id": "app-72.desktop"
+    },
+    {
+      "name": "Viewer Terminal",
+      "icon": "viewer-terminal",
+      "id": "app-73.desktop"
+    },
+    {
+      "name": "Browser File",
+      "icon": "browser-file",
+      "id": "app-74.desktop"
+    },
+    {
+      "name": "Terminal Manager",
+      "icon": "terminal-manager",
+      "id": "app-75.desktop"
+    },
+    {
+      "name": "Studio Web",
+      "icon": "studio-web",
+      "id": "app-76.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-77.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-78.desktop"
+    },
+    {
+      "name": "Viewer Reader",
+      "icon": "viewer-reader",
+      "id": "app-79.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-80.desktop"
+    },
+    {
+      "name": "Manager",
+      "icon": "manager",
+      "id": "app-81.desktop"
+    },
+    {
+      "name": "Writer Writer",
+      "icon": "writer-writer",
+      "id": "app-82.desktop"
+    },
+    {
+      "name": "Lite Lite",
+      "icon": "lite-lite",
+      "id": "app-83.desktop"
+    },
+    {
+      "name": "Voice Text",
+      "icon": "voice-text",
+      "id": "app-84.desktop"
+    },
+    {
+      "name": "Pro Text",
+      "icon": "pro-text",
+      "id": "app-85.desktop"
+    },
+    {
+      "name": "Web Paint",
+      "icon": "web-paint",
+      "id": "app-86.desktop"
+    },
+    {
+      "name": "System Suite",
+      "icon": "system-suite",
+      "id": "app-87.desktop"
+    },
+    {
+      "name": "ឯកសារ",
+      "icon": "ឯកសារ",
+      "id": "app-88.desktop"
+    },
+    {
+      "name": "System Camera",
+      "icon": "system-camera",
+      "id": "app-89.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-90.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-91.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-92.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-93.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-94.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-95.desktop"
+    },
+    {
+      "name": "Photo",
+      "icon": "photo",
+      "id": "app-96.desktop"
+    },
+    {
+      "name": "System",
+      "icon": "system",
+      "id": "app-97.desktop"
+    },
+    {
+      "name": "Network Reader",
+      "icon": "network-reader",
+      "id": "app-98.desktop"
+    },
+    {
+      "name": "東京タワー",
+      "icon": "東京タワー",
+      "id": "app-99.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-100.desktop"
+    },
+    {
+      "name": "Player Draw",
+      "icon": "player-draw",
+      "id": "app-101.desktop"
+    },
+    {
+      "name": "Viewer Note",
+      "icon": "viewer-note",
+      "id": "app-102.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-103.desktop"
+    },
+    {
+      "name": "📎 attachment",
+      "icon": "📎-attachment",
+      "id": "app-104.desktop"
+    },
+    {
+      "name": "Chat Pro",
+      "icon": "chat-pro",
+      "id": "app-105.desktop"
+    },
+    {
+      "name": "Browser Chat",
+      "icon": "browser-chat",
+      "id": "app-106.desktop"
+    },
+    {
+      "name": "Hub Manager",
+      "icon": "hub-manager",
+      "id": "app-107.desktop"
+    },
+    {
+      "name": "Chat Manager",
+      "icon": "chat-manager",
+      "id": "app-108.desktop"
+    },
+    {
+      "name": "Code Reader",
+      "icon": "code-reader",
+      "id": "app-109.desktop"
+    },
+    {
+      "name": "ព្រះអាទិត្យ",
+      "icon": "ព្រះអាទិត្យ",
+      "id": "app-110.desktop"
+    },
+    {
+      "name": "Lite Code",
+      "icon": "lite-code",
+      "id": "app-111.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-112.desktop"
+    },
+    {
+      "name": "Music Draw",
+      "icon": "music-draw",
+      "id": "app-113.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-114.desktop"
+    },
+    {
+      "name": "Suite Voice",
+      "icon": "suite-voice",
+      "id": "app-115.desktop"
+    },
+    {
+      "name": "Manager Terminal",
+      "icon": "manager-terminal",
+      "id": "app-116.desktop"
+    },
+    {
+      "name": "🗂️ archive",
+      "icon": "🗂️-archive",
+      "id": "app-117.desktop"
+    },
+    {
+      "name": "Disk",
+      "icon": "disk",
+      "id": "app-118.desktop"
+    },
+    {
+      "name": "Note",
+      "icon": "note",
+      "id": "app-119.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-120.desktop"
+    },
+    {
+      "name": "កុំព្យូទ័រ",
+      "icon": "កុំព្យូទ័រ",
+      "id": "app-121.desktop"
+    },
+    {
+      "name": "Browser Manager",
+      "icon": "browser-manager",
+      "id": "app-122.desktop"
+    },
+    {
+      "name": "Reader",
+      "icon": "reader",
+      "id": "app-123.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-124.desktop"
+    },
+    {
+      "name": "Video",
+      "icon": "video",
+      "id": "app-125.desktop"
+    },
+    {
+      "name": "Pro",
+      "icon": "pro",
+      "id": "app-126.desktop"
+    },
+    {
+      "name": "Mail",
+      "icon": "mail",
+      "id": "app-127.desktop"
+    },
+    {
+      "name": "Viewer",
+      "icon": "viewer",
+      "id": "app-128.desktop"
+    },
+    {
+      "name": "Network Note",
+      "icon": "network-note",
+      "id": "app-129.desktop"
+    },
+    {
+      "name": "Zürich",
+      "icon": "zürich",
+      "id": "app-130.desktop"
+    },
+    {
+      "name": "Chat Voice",
+      "icon": "chat-voice",
+      "id": "app-131.desktop"
+    },
+    {
+      "name": "ខ្មែរ",
+      "icon": "ខ្មែរ",
+      "id": "app-132.desktop"
+    },
+    {
+      "name": "Calendar File",
+      "icon": "calendar-file",
+      "id": "app-133.desktop"
+    },
+    {
+      "name": "Settings",
+      "icon": "settings",
+      "id": "app-134.desktop"
+    },
+    {
+      "name": "Voice",
+      "icon": "voice",
+      "id": "app-135.desktop"
+    },
+    {
+      "name": "Draw Studio",
+      "icon": "draw-studio",
+      "id": "app-136.desktop"
+    },
+    {
+      "name": "Terminal Photo",
+      "icon": "terminal-photo",
+      "id": "app-137.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-138.desktop"
+    },
+    {
+      "name": "Network",
+      "icon": "network",
+      "id": "app-139.desktop"
+    },
+    {
+      "name": "Manager Draw",
+      "icon": "manager-draw",
+      "id": "app-140.desktop"
+    },
+    {
+      "name": "Web Pro",
+      "icon": "web-pro",
+      "id": "app-141.desktop"
+    },
+    {
+      "name": "Hub",
+      "icon": "hub",
+      "id": "app-142.desktop"
+    },
+    {
+      "name": "ព្រះច័ន្ទ",
+      "icon": "ព្រះច័ន្ទ",
+      "id": "app-143.desktop"
+    },
+    {
+      "name": "Disk Editor",
+      "icon": "disk-editor",
+      "id": "app-144.desktop"
+    },
+    {
+      "name": "Code Archive",
+      "icon": "code-archive",
+      "id": "app-145.desktop"
+    },
+    {
+      "name": "Paint System",
+      "icon": "paint-system",
+      "id": "app-146.desktop"
+    },
+    {
+      "name": "Draw",
+      "icon": "draw",
+      "id": "app-147.desktop"
+    },
+    {
+      "name": "System Reader",
+      "icon": "system-reader",
+      "id": "app-148.desktop"
+    },
+    {
+      "name": "Studio",
+      "icon": "studio",
+      "id": "app-149.desktop"
+    },
+    {
+      "name": "Editor",
+      "icon": "editor",
+      "id": "app-150.desktop"
+    },
+    {
+      "name": "Calendar",
+      "icon": "calendar",
+      "id": "app-151.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-152.desktop"
+    },
+    {
+      "name": "Text Writer",
+      "icon": "text-writer",
+      "id": "app-153.desktop"
+    },
+    {
+      "name": "ទឹក",
+      "icon": "ទឹក",
+      "id": "app-154.desktop"
+    },
+    {
+      "name": "Disk Network",
+      "icon": "disk-network",
+      "id": "app-155.desktop"
+    },
+    {
+      "name": "🚀 launch",
+      "icon": "🚀-launch",
+      "id": "app-156.desktop"
+    },
+    {
+      "name": "Player",
+      "icon": "player",
+      "id": "app-157.desktop"
+    },
+    {
+      "name": "Camera",
+      "icon": "camera",
+      "id": "app-158.desktop"
+    },
+    {
+      "name": "Browser",
+      "icon": "browser",
+      "id": "app-159.desktop"
+    },
+    {
+      "name": "Archive",
+      "icon": "archive",
+      "id": "app-160.desktop"
+    },
+    {
+      "name": "Chat",
+      "icon": "chat",
+      "id": "app-161.desktop"
+    },
+    {
+      "name": "Text",
+      "icon": "text",
+      "id": "app-162.desktop"
+    }
+  ],
+  "queries": [
+    {
+      "case": "no-match",
+      "query": "zzznomatch-apps-xyz999"
+    },
+    {
+      "case": "exact-hit",
+      "query": "editor"
+    },
+    {
+      "case": "prefix",
+      "query": "edi"
+    },
+    {
+      "case": "typo",
+      "query": "edtior"
+    },
+    {
+      "case": "khmer",
+      "query": "អរគុណ"
+    },
+    {
+      "case": "unicode-mixed",
+      "query": "café"
+    },
+    {
+      "case": "empty",
+      "query": ""
+    },
+    {
+      "case": "whitespace-only",
+      "query": "   "
+    },
+    {
+      "case": "very-long-10k",
+      "query": "searchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsearchsear"
+    },
+    {
+      "case": "control-chars",
+      "query": "before\u0000\u0007\u001bafter"
+    },
+    {
+      "case": "lone-surrogate",
+      "query": "prefix\ud800suffix"
+    }
+  ]
+}
