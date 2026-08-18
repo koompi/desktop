@@ -68,23 +68,7 @@ Singleton {
         interval: 250
         onTriggered: {
             const search = root.query.trim();
-            if (search.length < 2) {
-                root.files = [];
-                return;
-            }
-
-            // searchd first, when it's up and has finished its initial walk;
-            // the fd Process below is the unconditional fallback otherwise -
-            // never started, still indexing, or crashed and mid-restart.
-            // See scripts/searchd/PROTOCOL.md for the daemon's own query
-            // semantics (smart-case substring, non-hidden + .gitignore-aware
-            // index scope, min length 2, --full-path-equivalent on "/").
-            if (SearchDaemon.filesReady && SearchDaemon.search("files", search, 30, (msg) => {
-                root.files = msg.ok ? msg.results : [];
-            }))
-                return;
-
-            if (root.findBinary === "") {
+            if (search.length < 2 || root.findBinary === "") {
                 root.files = [];
                 return;
             }
