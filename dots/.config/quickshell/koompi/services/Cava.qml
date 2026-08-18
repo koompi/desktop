@@ -22,11 +22,14 @@ Singleton {
     // is the cost of a live visualiser on the bar; the alternative is a strip
     // whose background only moves while a panel happens to be open.
     //
-    // Gated on Playing, not merely "has a player" - a paused player already
-    // renders as a flat line (WaveVisualizer.live), so running the process and
-    // repainting every consumer's Canvas while paused had no visible effect.
-    readonly property bool wanted: GlobalStates.mediaControlsOpen
-        || MprisController.isPlaying
+    // Gated on Playing alone, not "has a player" and not "a panel that could
+    // show one is open" - every consumer (bar strip, media popup, sidebar
+    // player card) flattens to a line via WaveVisualizer.live when the active
+    // player isn't playing, so running the process for a paused player with
+    // the media popup open bought nothing visible. mediaControlsOpen was
+    // dropped from this condition for exactly that reason: it only ever
+    // mattered while nothing was playing, which is the flat-line case.
+    readonly property bool wanted: MprisController.isPlaying
 
     property list<real> points: []
 
