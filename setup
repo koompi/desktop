@@ -173,6 +173,9 @@ doctor() {
     local menu="$XDG_CONFIG_HOME/quickshell/koompi/scripts/global-menu/zig-out/bin/global-menu-daemon"
     if [[ -x "$menu" ]]; then ok "global-menu-daemon built"
     else warn "global-menu-daemon not built"; fi
+    local searchd="$XDG_CONFIG_HOME/quickshell/koompi/scripts/searchd/zig-out/bin/searchd"
+    if [[ -x "$searchd" ]]; then ok "searchd built"
+    else warn "searchd not built; file search falls back to the fd-based path"; fi
 
     (( missing_required == 0 )) || return 1
     return 0
@@ -232,6 +235,7 @@ main() {
     # empty on every fresh machine. --only-setups still reaches it because the
     # config is already there by then.
     { $DO_SETUPS || $DO_FILES; } && setup_global_menu
+    { $DO_SETUPS || $DO_FILES; } && setup_searchd
 
     # Installing into a session that is already running leaves that session on the
     # old files: Quickshell holds its QML and its config in memory, so a migration

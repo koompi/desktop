@@ -72,6 +72,11 @@ run_update() {
     $DO_SETUPS && run_setups
     $DO_FILES  && install_files
 
+    # Same reasoning as the install path in ./setup: the daemon builds inside
+    # the installed config, which install_files above just refreshed, so this
+    # has to run after it rather than as part of run_setups.
+    { $DO_SETUPS || $DO_FILES; } && setup_searchd
+
     record_repo_path
 
     sudo_stop

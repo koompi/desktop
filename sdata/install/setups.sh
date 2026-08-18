@@ -83,6 +83,26 @@ setup_global_menu() {
     ok "global-menu-daemon built"
 }
 
+# The file-search daemon, same reason and same shape as setup_global_menu just
+# above: Zig source in the shell tree, zig-out/ gitignored, SearchDaemon.qml
+# resolves the binary at ../scripts/searchd/zig-out/bin relative to itself.
+setup_searchd() {
+    step "File search daemon"
+    local src="${XDG_CONFIG_HOME}/quickshell/koompi/scripts/searchd"
+    [[ -d "$src" ]] || {
+        warn "the shell config is not installed, so there is nowhere to build the daemon"
+        warn "run './setup install --only-files' first, then './setup install --only-setups'"
+        return 0
+    }
+    if ! zig_usable; then
+        warn "zig ${ZIG_MIN} or newer not found; file search falls back to the fd-based path until it is built."
+        warn "Install one, then re-run: ./setup install --only-setups"
+        return 0
+    fi
+    ( cd "$src" && run zig build -Doptimize=ReleaseSafe )
+    ok "searchd built"
+}
+
 # The Rust daemon answers the same stdio protocol as the zig one above, and the
 # shell prefers it when it is present. Both are kept while the port is proven:
 # tests/test_globalmenu.sh runs the one conformance suite against each. Unlike
