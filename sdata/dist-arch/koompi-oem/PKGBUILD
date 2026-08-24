@@ -1,0 +1,30 @@
+# koompi-oem - first-boot user provisioning for cidata OEM/deferred installs.
+# archinstall runs with an empty "users": [] and locked root when the cidata
+# seed drive requests defer_provisioning (see installer/src/cidata.zig); this
+# package's service asks for the real account on first console boot instead.
+#
+# NOTE (enablement): the shipped preset alone does not guarantee the service
+# runs - nothing in the install pipeline invokes `systemctl preset-all` today
+# (same caveat as koompi-branding's sddm preset). Wiring an explicit enable
+# into post_install.sh's OEM branch, or into user_configuration.json's
+# services key, is a follow-up outside this package's scope.
+pkgname=koompi-oem
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI OS first-boot user provisioning for cidata OEM/deferred installs'
+arch=(any)
+url='https://github.com/koompi/desktop'
+license=('custom')
+depends=(systemd shadow)
+
+package() {
+  local _src="$startdir/files"
+
+  install -Dm755 "$_src/koompi-oem-provision" "$pkgdir/usr/bin/koompi-oem-provision"
+
+  install -Dm644 "$_src/koompi-oem-provision.service" \
+    "$pkgdir/usr/lib/systemd/system/koompi-oem-provision.service"
+
+  install -Dm644 "$_src/50-koompi-oem-provision.preset" \
+    "$pkgdir/usr/lib/systemd/system-preset/50-koompi-oem-provision.preset"
+}

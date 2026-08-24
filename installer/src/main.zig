@@ -15,6 +15,7 @@ const config = @import("config.zig");
 const InstallConfig = config.InstallConfig;
 const Edition = config.Edition;
 const archinstall = @import("archinstall.zig");
+const cidata = @import("cidata.zig");
 
 /// The installer's linear-but-back-navigable steps. The state machine is just
 /// "which screen are we on"; each screen mutates one slice of InstallConfig.
@@ -266,6 +267,18 @@ pub fn main() !void {
     _ = vaxis; // silence unused import in the skeleton
 
     var app = App{ .alloc = alloc };
+
+    // Unattended install: a cidata-labeled seed drive skips (or defers) the wizard.
+    // Must fail open - .none leaves app.step at its .welcome default.
+    switch (try cidata.detect(alloc, &app.cfg)) {
+        .none => {},
+        .configured, .deferred => {
+            // No interactive Review screen is reached on this path; print its
+            // summary anyway so an unattended wipe still has an audit trail.
+            drawReview(&app, std.io.getStdOut().writer());
+            app.step = .run;
+        },
+    }
 
     // The main loop: advance the state machine until we quit.
     // In a real build each iteration blocks on a vaxis event and redraws.

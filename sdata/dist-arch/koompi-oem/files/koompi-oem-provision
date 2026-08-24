@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# koompi-oem-provision - first-boot user creation for cidata OEM/deferred installs.
+# Runs as root on the raw console (koompi-oem-provision.service), no pkexec/session.
+#
+# Retries instead of exiting on bad input (unlike koompi-useradd, which is a
+# relaunchable settings dialog): ConditionFirstBoot=yes means this unit will not
+# fire again on the next boot, so a hard exit here would strand the machine with
+# no working login.
+set -euo pipefail
+
+echo "KOOMPI OS - first boot setup"
+echo
+
+while true; do
+    read -rp "New username: " username
+    if [[ ! "$username" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
+        echo "Invalid username. Use lowercase letters, digits, - and _." >&2
+        continue
+    fi
+    if id "$username" >/dev/null 2>&1; then
+        echo "User '$username' already exists." >&2
+        continue
+    fi
+    break
+done
+
+useradd -m -G wheel "$username"
+
+echo "Now set the password for '$username':"
+until passwd "$username"; do
+    echo "Password not set, try again." >&2
+done
+
+echo
+echo "User '$username' created."
+
+systemctl disable koompi-oem-provision.service
