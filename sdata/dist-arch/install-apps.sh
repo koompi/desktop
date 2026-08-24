@@ -5,7 +5,7 @@
 
 have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 
-# arch_install_yay and arch_install_pkgbuild, shared with install-deps.sh.
+# arch_install_paru and arch_install_pkgbuild, shared with install-deps.sh.
 # Sourcing install-deps.sh to borrow them is not an option: it does its work at
 # the top level, so it would re-run a full system upgrade on the way past.
 # shellcheck source=sdata/lib/arch.sh
@@ -16,7 +16,7 @@ if arch_pkgbuild_satisfied "$REPO_ROOT/sdata/dist-arch/koompi-apps"; then
     ok "koompi-apps already installed and complete"
 else
     # --only-apps skips the dependency step, and every browser here is an AUR build.
-    arch_install_yay
+    arch_install_paru
     arch_install_pkgbuild koompi-apps
 fi
 
@@ -25,6 +25,6 @@ fi
 # other wallpaper type works without it, so it is asked for rather than assumed.
 if ! pacman -Qq mpvpaper >/dev/null 2>&1; then
     if confirm "Install mpvpaper? (lets you set a video as the wallpaper; AUR build)"; then
-        run yay -S --needed --noconfirm mpvpaper
+        run paru -S --needed --noconfirm mpvpaper
     fi
 fi

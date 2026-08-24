@@ -45,7 +45,7 @@ _Might not be necessary depending on what you change, but this is recommended._
 
 _Most stuff in the shell will work but not everything._
 
-- Install Hyprland and the development version of Quickshell (`yay -S hyprland quickshell-git`).
+- Install Hyprland and the development version of Quickshell (`paru -S hyprland quickshell-git`).
 - Copy `dots/.config/quickshell` folder to your home directory.
 
 ## Extra setup for Quickshell

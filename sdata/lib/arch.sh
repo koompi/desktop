@@ -18,13 +18,13 @@ arch_exact_installed_packages() {
     return 0
 }
 
-arch_install_yay() {
-    have yay && return 0
-    info "yay not found; building it (needed for the AUR dependencies)"
+arch_install_paru() {
+    have paru && return 0
+    info "paru not found; building it (needed for the AUR dependencies)"
     local build
     build="$(mktemp -d)"
     run sudo pacman -S --needed --noconfirm base-devel git
-    run git clone --depth 1 https://aur.archlinux.org/yay-bin.git "$build"
+    run git clone --depth 1 https://aur.archlinux.org/paru-bin.git "$build"
     run_in_dir "$build" makepkg -si --noconfirm
     rm -rf "$build"
 }
@@ -93,7 +93,7 @@ arch_pending_pkgbuilds() {
     done
 }
 
-# yay -Bi is unreliable (end-4/dots-hyprland#581), so the PKGBUILD is sourced for
+# -Bi is unreliable across AUR helpers (end-4/dots-hyprland#581), so the PKGBUILD is sourced for
 # its depends[] and those go in first, then the meta itself is built.
 arch_install_pkgbuild() {
     local dir="$REPO_ROOT/sdata/dist-arch/$1"
@@ -104,7 +104,7 @@ arch_install_pkgbuild() {
         return 0
     fi
 
-    # Only what is actually missing. Handing yay the whole depends[] list on a
+    # Only what is actually missing. Handing paru the whole depends[] list on a
     # machine that already has it is a full AUR resolve for no change, and
     # --asdeps would re-mark packages the user installed explicitly, quietly
     # turning them into orphan candidates for the next `pacman -Rns $(pacman -Qtdq)`.
@@ -113,10 +113,10 @@ arch_install_pkgbuild() {
     if [[ -n "$missing" ]]; then
         local -a wanted
         mapfile -t wanted <<< "$missing"
-        # yay calls sudo on its own account, part-way through a resolve it does
+        # paru calls sudo on its own account, part-way through a resolve it does
         # not report progress for. Take the prompt here, at a boundary.
         sudo_refresh
-        run yay -S --needed --noconfirm --asdeps "${wanted[@]}"
+        run paru -S --needed --noconfirm --asdeps "${wanted[@]}"
     fi
 
     # With `debug` in /etc/makepkg.conf, the Arch default, every meta also yields a

@@ -8,11 +8,11 @@
 
 have pacman || die "no pacman; sdata/dist-arch is for Arch and its derivatives"
 
-# arch_install_yay and arch_install_pkgbuild, shared with install-apps.sh.
+# arch_install_paru and arch_install_pkgbuild, shared with install-apps.sh.
 # shellcheck source=sdata/lib/arch.sh
 source "$REPO_ROOT/sdata/lib/arch.sh"
 
-# Dependency metas, in dependency order. A meta's depends[] go in through yay,
+# Dependency metas, in dependency order. A meta's depends[] go in through paru,
 # which only knows the repos and the AUR, so anything built from this directory
 # has to be listed here ahead of whatever names it. tests/test_arch_local_dep_order.sh
 # fails if one is missing or listed too late.
@@ -71,7 +71,7 @@ arch_drop_deprecated
 
 # Work out what is actually missing before touching anything else. On a machine
 # that is already up to date this costs a handful of local database reads and
-# lets the whole step fall through - no upgrade, no yay, no rebuilds.
+# lets the whole step fall through - no upgrade, no paru, no rebuilds.
 mapfile -t _koompi_pending < <(arch_pending_pkgbuilds "${ARCH_DEP_PKGBUILDS[@]}")
 
 if (( ${#_koompi_pending[@]} == 0 )); then
@@ -85,7 +85,7 @@ else
     sudo_refresh
     run sudo pacman -Syu --noconfirm
 
-    arch_install_yay
+    arch_install_paru
 
     for _koompi_pkg in "${_koompi_pending[@]}"; do
         step "Arch: $_koompi_pkg"

@@ -84,7 +84,7 @@ e "Checking directories/files"
 x ls -l ~/.local/state/quickshell/.venv
 
 #e "Checking command existence"
-#commands=(yay pacman zypper apt dnf yum)
+#commands=(paru pacman zypper apt dnf yum)
 #commands+=(ags agsv1)
 #commands+=(Hyprland hypr{ctl,idle,lock,picker})
 #commands+=(uv)

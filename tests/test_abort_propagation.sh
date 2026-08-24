@@ -32,7 +32,7 @@ cat > "$stub/pacman" <<'EOF'
 case "$1" in
     -Qq) [[ $# -eq 1 ]] && exit 0; exit 1 ;;   # nothing stale, nothing installed
     -Q)  exit 1 ;;                             # so every meta counts as pending
-    -T)  exit 0 ;;                             # no missing depends[], so no yay
+    -T)  exit 0 ;;                             # no missing depends[], so no paru
     *)   exit 0 ;;
 esac
 EOF
@@ -44,9 +44,9 @@ cat > "$stub/git" <<'EOF'
 exit 0
 EOF
 
-# yay is never reached (pacman -T reports nothing missing) but must exist, or
-# arch_install_yay tries to build it.
-printf '#!/usr/bin/env bash\nexit 0\n' > "$stub/yay"
+# paru is never reached (pacman -T reports nothing missing) but must exist, or
+# arch_install_paru tries to build it.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$stub/paru"
 # sudo has to run its argument so the stubbed pacman above is what answers.
 printf '#!/usr/bin/env bash\n[[ "$1" == -* ]] && exit 0\nexec "$@"\n' > "$stub/sudo"
 # Belt and braces: nothing may reload or kill the caller's live session.

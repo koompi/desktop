@@ -177,7 +177,7 @@ update_packaged() {
     # KOOMPI's own -git packages (quickshell, microtex) live in the AUR, and
     # pacman will not rebuild them. Only bother if a helper is already there.
     local helper
-    for helper in yay paru; do
+    for helper in paru yay; do
         if have "$helper"; then
             info "$helper found; refreshing AUR packages too"
             run "$helper" -Sua "${noconfirm[@]}" || \

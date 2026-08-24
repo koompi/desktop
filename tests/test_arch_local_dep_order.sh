@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# A meta's depends[] are handed to yay, which knows the repos and the AUR and
+# A meta's depends[] are handed to paru, which knows the repos and the AUR and
 # nothing else. So a dependency built from sdata/dist-arch has to be installed
 # from its own PKGBUILD first, or the install dies on "No AUR package found" -
 # which is exactly how ttf-koompi-star broke every Arch install on 2026-08-04.
@@ -38,13 +38,13 @@ for i in "${!order[@]}"; do
         printf '%s\n' "${depends[@]:-}"
     )
     for dep in "${deps[@]}"; do
-        # Strip any version constraint: yay is given the bare name either way.
+        # Strip any version constraint: paru is given the bare name either way.
         dep="${dep%%[<>=]*}"
         [[ -n "$dep" ]] || continue
         [[ -n "${built_by[$dep]:-}" ]] || continue          # repo or AUR, not ours
         if [[ -z "${position[$dep]:-}" ]]; then
             echo "FAIL: $entry depends on $dep, which this repo builds but the" >&2
-            echo "      install order never installs - yay will look for it in the AUR" >&2
+            echo "      install order never installs - paru will look for it in the AUR" >&2
             failed=1
         elif (( position[$dep] > i )); then
             echo "FAIL: $entry depends on $dep, but $dep is built after it" >&2
