@@ -49,7 +49,7 @@ payload=$(jq -n \
 API_KEY=$(secret-tool lookup 'application' 'koompi' | jq -r '.apiKeys.gemini')
 
 # Notify start
-notify-send "Translation started" "Will take 2 minutes, and you'll be notified when it's done, so feel free to do something else in the meantime." -a "$NOTIFICATION_APP_NAME"
+koompi-notify-send -a "$NOTIFICATION_APP_NAME" "Translation started" "Will take 2 minutes, and you'll be notified when it's done, so feel free to do something else in the meantime."
 
 # Make the request
 response=$(curl "https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent" \
@@ -62,4 +62,4 @@ response=$(curl "https://generativelanguage.googleapis.com/v1beta/models/${MODEL
 # Write the result
 echo "$response" | jq -r '.candidates[0].content.parts[0].text' > "${TRANSLATIONS_TARGET_DIR}/${TARGET_LOCALE}.json"
 jq --arg locale "$TARGET_LOCALE" '.language.ui = $locale' "$SHELL_CONFIG_FILE" > "${SHELL_CONFIG_FILE}.tmp" && mv "${SHELL_CONFIG_FILE}.tmp" "$SHELL_CONFIG_FILE"
-notify-send "Translation complete" "Enjoy! In case you wanna refine it, the file is in ${TRANSLATIONS_TARGET_DIR}/${TARGET_LOCALE}.json" -a "$NOTIFICATION_APP_NAME"
+koompi-notify-send -a "$NOTIFICATION_APP_NAME" "Translation complete" "Enjoy! In case you wanna refine it, the file is in ${TRANSLATIONS_TARGET_DIR}/${TARGET_LOCALE}.json"
