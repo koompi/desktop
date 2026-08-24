@@ -1,0 +1,18 @@
+[Unit]
+Description=Notify when the session is running from a booted btrfs snapshot
+Documentation=man:snapper(8)
+PartOf=graphical-session.target
+After=graphical-session.target
+# koompi-snapshot-boot-check.service (system unit) touches this at boot only
+# when the active root is a grub-btrfs snapshot; absent, this unit is a no-op.
+ConditionPathExists=/run/koompi-booted-snapshot
+
+[Service]
+Type=oneshot
+# TODO: switch to koompi-notify-send once it lands (argv-safe wrapper, see
+# the hook/notify-sender work); this message has no untrusted input so raw
+# notify-send is safe meanwhile.
+ExecStart=/usr/bin/notify-send -u critical "Booted into a snapshot" "Run 'koompi-snapshot rollback' to restore, or reboot to return to the live system."
+
+[Install]
+WantedBy=graphical-session.target
