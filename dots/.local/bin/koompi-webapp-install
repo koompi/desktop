@@ -1,0 +1,314 @@
+#!/usr/bin/env bash
+# Install a website as a desktop webapp: fetch an icon and write a
+# .desktop entry that launches it via koompi-launch-webapp.
+#
+# Usage:
+#   koompi-webapp-install <name> <url> [icon-url-or-path] [exec-override] [mime-types]
+#   koompi-webapp-install            (interactive prompts)
+set -euo pipefail
+
+APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/koompi-webapps"
+
+# Privacy note (also in --help): when no icon is supplied or discoverable on
+# the site itself, the last-resort fallback sends the site's hostname to a
+# third-party favicon service (icons.duckduckgo.com). That is a deliberate,
+# announced default per the J06 contract's stop condition — not silent.
+FAVICON_SERVICE_URL="https://icons.duckduckgo.com/ip3"
+
+curl_fetch() {
+    curl -fsSL --connect-timeout 5 --max-time 15 \
+        -A "Mozilla/5.0 (X11; Linux x86_64) koompi-webapp-install/1.0" "$1"
+}
+
+usage() {
+    cat <<'USAGE'
+Usage:
+  koompi-webapp-install <name> <url> [icon-url-or-path] [exec-override] [mime-types]
+  koompi-webapp-install                (prompts interactively)
+
+Installs a website as a desktop application:
+  ~/.local/share/applications/koompi-webapp-<slug>.desktop
+
+Arguments:
+  name              Display name, e.g. "HEY". Required.
+  url               Site URL, e.g. https://hey.com (https:// added if the
+                    scheme is omitted). Required.
+  icon-url-or-path  Local path used as-is, or an image URL that is downloaded
+                    to ~/.local/share/icons/koompi-webapps/.
+                    When omitted, resolution order is:
+                      1. the page's apple-touch-icon link tag
+                      2. <url>/apple-touch-icon.png
+                      3. third-party favicon service (icons.duckduckgo.com)
+                      4. embedded placeholder icon
+
+                  PRIVACY: step 3 sends the site's hostname to DuckDuckGo, a
+                  third party. It runs by default only after steps 1-2 fail,
+                  and prints a notice when it fires. To avoid any third-party
+                  call, pass an explicit icon argument.
+  exec-override     Full replacement Exec= line (desktop-entry spec literal;
+                    %u/%f field codes pass through unescaped). Default:
+                    koompi-launch-webapp <url> --name "<name>"
+  mime-types        Semicolon-separated MimeType= list, e.g.
+                    "x-scheme-handler/mailto;text/html"
+
+Re-running with the same name overwrites the previous entry.
+Remove with: koompi-webapp-remove <name>
+USAGE
+}
+
+die() {
+    printf 'koompi-webapp-install: %s\n' "$1" >&2
+    exit 1
+}
+
+notice() {
+    printf 'koompi-webapp-install: %s\n' "$1" >&2
+}
+
+slugify() {
+    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed -e 's/^-*//' -e 's/-*$//'
+}
+
+# Escape for the desktop-entry Exec key: % starts a field code and must be
+# doubled; inside double quotes backslash and double quote need escaping.
+exec_escape() {
+    printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/%/%%/g' -e 's/"/\\"/g'
+}
+
+icon_magic_ext() {
+    local magic svg_head
+    magic="$(od -An -tx1 -N4 -- "$1" | tr -d ' \n')"
+    case "$magic" in
+        89504e47) printf 'png' ;;
+        ffd8ff*) printf 'jpg' ;;
+        47494638) printf 'gif' ;;
+        00000100) printf 'ico' ;;
+        *)
+            svg_head="$(head -c 200 -- "$1" | tr -d '\0')"
+            if printf '%s' "$svg_head" | grep -qi '<svg'; then
+                printf 'svg'
+            else
+                printf 'png'
+            fi
+            ;;
+    esac
+}
+
+download_icon() {
+    # $1 = source url, $2 = slug -> prints cached path on success
+    local src="$1" slug="$2" tmp path ext
+    tmp="$(mktemp)"
+    if ! curl_fetch "$src" >"$tmp"; then
+        rm -f "$tmp"
+        return 1
+    fi
+    if [[ ! -s "$tmp" ]]; then
+        rm -f "$tmp"
+        return 1
+    fi
+    ext="$(icon_magic_ext "$tmp")"
+    mkdir -p "$ICON_DIR"
+    path="$ICON_DIR/$slug.$ext"
+    mv -f "$tmp" "$path"
+    printf '%s' "$path"
+}
+
+apple_touch_icon_url() {
+    # Scrape $1's HTML for an apple-touch-icon link tag; print absolute URL.
+    local page="$1" html tag href origin base_dir
+    local -a attrs
+    html="$(curl_fetch "$page" || true)"
+    [[ -n "$html" ]] || return 1
+    tag="$(
+        printf '%s' "$html" |
+            tr '\n\r' '  ' |
+            grep -oiE '<link[^>]*>' |
+            grep -i 'apple-touch-icon' |
+            grep -iE 'href=' |
+            head -n 1
+    )" || true
+    [[ -n "$tag" ]] || return 1
+    IFS=' ' read -ra attrs <<<"$tag"
+    for attr in "${attrs[@]}"; do
+        if [[ "${attr,,}" == href=* ]]; then
+            href="${attr#*=}"
+            break
+        fi
+    done
+    href="${href%>}"
+    href="${href#\"}"
+    href="${href%\"}"
+    href="${href#\'}"
+    href="${href%\'}"
+    [[ -n "$href" ]] || return 1
+    origin="$(printf '%s' "$page" | sed -E 's#^(https?://[^/]+).*#\1#')"
+    case "$href" in
+        http://*|https://*) printf '%s' "$href" ;;
+        //*) printf '%s%s' "${page%%//*}" "$href" ;;
+        /*) printf '%s%s' "$origin" "$href" ;;
+        *) base_dir="$(dirname "$page")"; printf '%s/%s' "$base_dir" "$href" ;;
+    esac
+}
+
+resolve_icon() {
+    # $1 = url, $2 = slug, $3 = user-provided icon arg ("" when none).
+    # Prints the resolved icon path.
+    local page_url="$1" slug="$2" given="$3" src path
+
+    if [[ -n "$given" ]]; then
+        case "$given" in
+            http://*|https://*)
+                if path="$(download_icon "$given" "$slug")"; then
+                    printf '%s' "$path"
+                    return 0
+                fi
+                die "could not download icon from $given"
+                ;;
+            *)
+                [[ -f "$given" ]] || die "icon file not found: $given"
+                printf '%s' "$given"
+                return 0
+                ;;
+        esac
+    fi
+
+    # 1. apple-touch-icon link tag on the page itself (no third party)
+    if src="$(apple_touch_icon_url "$page_url")" && [[ -n "$src" ]]; then
+        if path="$(download_icon "$src" "$slug")"; then
+            notice "icon: fetched apple-touch-icon from $src"
+            printf '%s' "$path"
+            return 0
+        fi
+    fi
+
+    # 2. conventional location next to the target URL (no third party)
+    if path="$(download_icon "${page_url%/}/apple-touch-icon.png" "$slug")"; then
+        notice "icon: fetched ${page_url%/}/apple-touch-icon.png"
+        printf '%s' "$path"
+        return 0
+    fi
+
+    # 3. PRIVACY: sends the hostname to icons.duckduckgo.com (third party).
+    # Announced here and in --help per J06's stop condition.
+    local host
+    host="$(printf '%s' "$page_url" | sed -E 's#^https?://([^/]+).*#\1#')"
+    notice "PRIVACY: no icon found on-site; asking third-party service $FAVICON_SERVICE_URL for host '$host'"
+    if path="$(download_icon "$FAVICON_SERVICE_URL/$host.ico" "$slug")"; then
+        notice "icon: fetched favicon-service icon for $host"
+        printf '%s' "$path"
+        return 0
+    fi
+
+    # 4. offline-safe placeholder so Icon= always resolves
+    notice "icon: falling back to embedded placeholder"
+    mkdir -p "$ICON_DIR"
+    path="$ICON_DIR/$slug-placeholder.png"
+    base64 -d >"$path" <<'B64'
+iVBORw0KGgoAAAANSUhEUgAAAEAAAABAEAYAAAD6+a2dAAAAvElEQVR42u3SMQHAIADAsDEvKEM+IkAGRxMFPTrmXGvvcz6S/tcBvGWAOAPEGSDOAHEGiDNAnAHiDBBngDgDxBkgzgBxBogzQJwB4gwQZ4A4A8QZIM4AcQaIM0CcAeIMEGeAOAPEGSDOAHEGiDNAnAHiDBBngDgDxBkgzgBxBogzQJwB4gwQZ4A4A8QZIM4AcQaIM0CcAeIMEGeAOAPEGSDOAHEGiDNAnAHiDBBngDgDxBkgzgBxBogzQNwF068FZC3S5AMAAAAASUVORK5CYII=
+B64
+    printf '%s' "$path"
+}
+
+prompt() {
+    # prompt <label> <current> -> prints answer (falls back to current)
+    local answer=""
+    read -r -p "$1 [$2]: " answer || true
+    printf '%s' "${answer:-$2}"
+}
+
+main() {
+    local name="" url="" icon_arg="" exec_override="" mime_types=""
+
+    for arg in "$@"; do
+        case "$arg" in
+            -h|--help)
+                usage
+                exit 0
+                ;;
+        esac
+    done
+
+    if [[ $# -gt 5 ]]; then
+        usage >&2
+        die "too many arguments (expected at most 5, got $#)"
+    fi
+
+    name="${1:-}"
+    url="${2:-}"
+    icon_arg="${3:-}"
+    exec_override="${4:-}"
+    mime_types="${5:-}"
+
+    if [[ -z "$name" || -z "$url" ]]; then
+        if [[ ! -t 0 ]]; then
+            usage >&2
+            die "name and url are required when not run interactively"
+        fi
+        notice "interactive mode — press Enter to accept [defaults]"
+        while [[ -z "$name" ]]; do
+            name="$(prompt 'Name' '')" || true
+            [[ -n "$name" ]] || notice "a name is required"
+        done
+        while [[ -z "$url" ]]; do
+            url="$(prompt 'URL' '')" || true
+            [[ -n "$url" ]] || notice "a URL is required"
+        done
+        icon_arg="$(prompt 'Icon (URL or path, blank = auto)' "$icon_arg")"
+        exec_override="$(prompt 'Exec override (blank = default launcher)' "$exec_override")"
+        mime_types="$(prompt 'MIME types (semicolon-separated, blank = none)' "$mime_types")"
+    fi
+
+    case "$url" in
+        http://*|https://*) ;;
+        *) url="https://$url" ;;
+    esac
+
+    local slug
+    slug="$(slugify "$name")"
+    [[ -n "$slug" ]] || die "could not derive an identifier from name '$name'"
+
+    local icon_path
+    icon_path="$(resolve_icon "$url" "$slug" "$icon_arg")"
+    [[ -f "$icon_path" ]] || die "resolved icon vanished: $icon_path"
+
+    local exec_line
+    if [[ -n "$exec_override" ]]; then
+        exec_line="$exec_override"
+    else
+        exec_line="koompi-launch-webapp $(exec_escape "$url") --name \"$(exec_escape "$name")\""
+    fi
+
+    local desktop_file
+    desktop_file="$APPS_DIR/koompi-webapp-$slug.desktop"
+    mkdir -p "$APPS_DIR"
+    local tmp
+    tmp="$(mktemp "$desktop_file.XXXXXX")"
+    {
+        printf '[Desktop Entry]\n'
+        printf 'Type=Application\n'
+        printf 'Version=1.0\n'
+        printf 'Name=%s\n' "$name"
+        printf 'Comment=%s (koompi webapp)\n' "$name"
+        printf 'Exec=%s\n' "$exec_line"
+        printf 'TryExec=koompi-launch-webapp\n'
+        printf 'Icon=%s\n' "$icon_path"
+        printf 'Terminal=false\n'
+        printf 'Categories=Network;WebBrowser;\n'
+        printf 'StartupWMClass=webapp-%s\n' "$slug"
+        if [[ -n "$mime_types" ]]; then
+            printf 'MimeType=%s\n' "$mime_types"
+        fi
+    } >"$tmp"
+    mv -f "$tmp" "$desktop_file"
+
+    if command -v update-desktop-database >/dev/null 2>&1; then
+        update-desktop-database "$APPS_DIR" >/dev/null 2>&1 || true
+    fi
+
+    printf 'Installed %s\n' "$desktop_file"
+    printf '  Icon: %s\n' "$icon_path"
+    printf '  Launch it from your app launcher, or: koompi-launch-webapp %s --name "%s"\n' "$url" "$name"
+}
+
+main "$@"

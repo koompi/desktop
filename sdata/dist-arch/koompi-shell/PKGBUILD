@@ -59,7 +59,7 @@ package() {
   local tool
   for tool in koompi-health koompi-theme koompi-settings koompi-displays koompi-migrate \
               koompi-useradd koompi-stacking koompi-quicklook koompi-flatpak-open \
-              koompi-workbench koompi-reload koompi-signature; do
+              koompi-workbench koompi-reload koompi-signature koompi-snapshot; do
     install -Dm755 "$_repo_root/dots/.local/bin/$tool" "$pkgdir/usr/bin/$tool"
   done
   # In dots/ this is a symlink into the hypr tree; installed system-wide it is
@@ -71,4 +71,15 @@ package() {
   # Plasma's menu left with the plasma removal.
   install -Dm644 "$_repo_root/dots/.config/menus/applications.menu" \
     "$pkgdir/etc/xdg/menus/applications.menu"
+
+  # koompi-snapshot-boot-check: system-level (not a per-user dotfile, so it
+  # lives in files/, not dots/), flags /run/koompi-booted-snapshot at boot so
+  # the user koompi-snapshot-notify.service can tell the session about it.
+  # Shipped pre-enabled via a sysinit.target.wants symlink in the package
+  # tree, matching how the ISO enables its own oneshot units.
+  install -Dm644 "$_repo_root/sdata/dist-arch/koompi-shell/files/koompi-snapshot-boot-check.service" \
+    "$pkgdir/usr/lib/systemd/system/koompi-snapshot-boot-check.service"
+  install -dm755 "$pkgdir/usr/lib/systemd/system/sysinit.target.wants"
+  ln -s ../koompi-snapshot-boot-check.service \
+    "$pkgdir/usr/lib/systemd/system/sysinit.target.wants/koompi-snapshot-boot-check.service"
 }

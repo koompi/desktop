@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# koompi-snapshot - btrfs snapshot CLI over the snapper 'root' config that
+# installer/src/post_install.sh sets up (setup_snapper()).
+#
+# Never hardcode subvolume names here (@, @home, ...); everything routes
+# through `snapper -c root`, the config the installer bound to the real
+# @snapshots subvolume.
+#
+# Safe to call unconditionally, from any system: on a machine without
+# snapper, or without the 'root' config (non-Arch, non-btrfs, or a from-git
+# install), every subcommand exits 0 with an explanation on stderr rather
+# than erroring.
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-snapshot <command> [args]
+
+Commands:
+  create [--description TEXT]   Create a snapshot now.
+  list                          List existing snapshots (snapper -c root list).
+  rollback <N>                  Roll back to snapshot N. Does not reboot; prints
+                                 snapper's own instructions to finish the rollback.
+  --pre-update                  Prune the pacman cache, then create a pre-update
+                                 snapshot. Called by `koompi update` before a
+                                 packaged upgrade. Prints the new snapshot number.
+
+On a system without snapper, or without its 'root' config (non-Arch,
+non-btrfs, or a from-git install), every command exits 0 and explains why on
+stderr, so this is safe to call unconditionally.
+USAGE
+}
+
+# --help works regardless of snapper's presence; every other command needs it.
+case "${1:-}" in
+    -h|--help|help) usage; exit 0 ;;
+esac
+
+command -v snapper >/dev/null 2>&1 || {
+    echo "koompi-snapshot: snapper not installed (non-Arch or non-btrfs system?)" >&2
+    exit 0
+}
+snapper list-configs 2>/dev/null | grep -qw root || {
+    echo "koompi-snapshot: no snapper 'root' config (run the KOOMPI installer's post-install step first)" >&2
+    exit 0
+}
+
+cmd_create() {
+    local description=()
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --description)
+                [[ $# -ge 2 ]] || { echo "koompi-snapshot: --description needs an argument" >&2; exit 1; }
+                description=(--description "$2")
+                shift 2
+                ;;
+            *) echo "koompi-snapshot: unknown argument '$1'" >&2; exit 1 ;;
+        esac
+    done
+    snapper -c root create --userdata "important=yes" "${description[@]}"
+}
+
+cmd_list() {
+    snapper -c root list
+}
+
+cmd_rollback() {
+    local n="${1:-}"
+    [[ "$n" =~ ^[0-9]+$ ]] || { echo "koompi-snapshot: rollback needs a snapshot number, got '${n:-<none>}'" >&2; exit 1; }
+    snapper -c root rollback "$n"
+}
+
+cmd_pre_update() {
+    if command -v paccache >/dev/null 2>&1; then
+        paccache -rk2
+    else
+        echo "koompi-snapshot: paccache not found (install pacman-contrib); skipping cache prune" >&2
+    fi
+    snapper -c root create --type pre --cleanup-algorithm number \
+        --userdata "important=no" \
+        --description "pre-update $(date -Iseconds)"
+}
+
+[[ $# -ge 1 ]] || { usage >&2; exit 1; }
+
+case "$1" in
+    create)     shift; cmd_create "$@" ;;
+    list)       shift; cmd_list ;;
+    rollback)   shift; cmd_rollback "${1:-}" ;;
+    --pre-update) cmd_pre_update ;;
+    *) echo "koompi-snapshot: unknown command '$1'" >&2; usage >&2; exit 1 ;;
+esac

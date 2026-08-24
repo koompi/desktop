@@ -165,6 +165,12 @@ update_packaged() {
     local -a noconfirm=()
     [[ "$ASSUME_YES" == true ]] && noconfirm=(--noconfirm)
 
+    # btrfs installs only (koompi-snapshot itself no-ops elsewhere): a
+    # pre-update snapshot so a bad upgrade has a rollback point.
+    if have koompi-snapshot; then
+        run koompi-snapshot --pre-update
+    fi
+
     run sudo pacman -Syu "${noconfirm[@]}" \
         || die "pacman upgrade failed; fix that before reloading the session"
 
@@ -214,12 +220,20 @@ update_from_git() {
 }
 
 main() {
+    local method
     if is_packaged; then
+        method=packaged
         update_packaged
         reload_session
     else
+        method=from-git
         update_from_git
     fi
+
+    # Both branches die() on failure, so reaching this line means the update
+    # completed. Fires exactly once per run, whichever way it updated. The
+    # guard keeps updates working where koompi-hook isn't on PATH (yet).
+    command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_UPDATE_METHOD="$method" koompi-hook post-update
 
     step "Done"
     printf '  KOOMPI is up to date. %skoompi-health%s reports on the session.\n' \

@@ -1,0 +1,16 @@
+[Unit]
+Description=Flag a boot into a btrfs snapshot (grub-btrfs) for the graphical session
+Documentation=man:snapper(8)
+DefaultDependencies=no
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# grub-btrfs's snapshot boot entries mount the snapshot subvolume, which
+# shows up in findmnt's SOURCE as .../.snapshots/<N>/snapshot; a normal boot
+# mounts @ instead. No match -> the case falls through, exit 0 either way.
+ExecStart=/usr/bin/bash -c 'src=$(findmnt -no SOURCE / 2>/dev/null); case "$src" in */.snapshots/*) touch /run/koompi-booted-snapshot ;; esac'
+
+[Install]
+WantedBy=sysinit.target

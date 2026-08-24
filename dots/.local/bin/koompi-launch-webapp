@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Launch a URL as a standalone webapp window (Chromium --app mode).
+#
+# Resolves the browser the same way launch_first_available.sh does (first
+# candidate found on PATH wins, per variables.lua's browser role list), but
+# restricted to the Chromium family: --app= is Chrome/Brave/Chromium/Edge's
+# app-mode flag and has no Firefox/Zen equivalent (same restriction as
+# dots/.config/hypr/hyprland/scripts/launch_whatsapp_web.sh).
+#
+# Usage: koompi-launch-webapp <url> [--name NAME] [--icon PATH]
+set -euo pipefail
+
+# variables.lua browser role order (google-chrome-stable zen-browser firefox
+# brave chromium microsoft-edge-stable opera librewolf) filtered down to the
+# browsers whose --app= flag opens a dedicated chrome-less window.
+BROWSERS=(google-chrome-stable brave chromium microsoft-edge-stable)
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-launch-webapp <url> [--name NAME] [--icon PATH]
+
+Launch <url> as a standalone desktop-style app window.
+
+Options:
+  --name NAME   Human name; derives the window class / profile slug.
+                Defaults to the URL hostname.
+  --icon PATH   Informational only; Chromium derives its own window icon,
+                the .desktop entry written by koompi-webapp-install carries
+                the icon. Accepted for interface parity, validated if given.
+
+The window is made taskbar-separable via:
+  --class=webapp-<slug>          (X11 WM_CLASS)
+  --wayland-class=webapp-<slug>  (Wayland app_id)
+  --user-data-dir=.../webapp-<slug>  (isolated profile => own process)
+  --no-first-run --no-default-browser-check
+
+Requires a Chromium-family browser (--app= has no Firefox equivalent).
+USAGE
+}
+
+die() {
+    printf 'koompi-launch-webapp: %s\n' "$1" >&2
+    exit 1
+}
+
+url=""
+name=""
+icon=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --name)
+            [[ $# -ge 2 ]] || die "--name requires a value"
+            name="$2"
+            shift 2
+            ;;
+        --icon)
+            [[ $# -ge 2 ]] || die "--icon requires a value"
+            icon="$2"
+            shift 2
+            ;;
+    -*)
+        die "unknown option: $1 (see --help)"
+        ;;
+    *)
+        [[ -z "$url" ]] || die "unexpected extra argument: $1"
+        url="$1"
+        shift
+        ;;
+    esac
+done
+
+[[ -n "$url" ]] || {
+    usage >&2
+    exit 1
+}
+case "$url" in
+    http://*|https://*) ;;
+    *) url="https://$url" ;;
+esac
+
+if [[ -n "$icon" && ! -e "$icon" ]]; then
+    printf 'koompi-launch-webapp: warning: icon does not exist: %s\n' "$icon" >&2
+fi
+
+slug="$(printf '%s' "${name:-$url}" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed -e 's/^-*//' -e 's/-*$//')"
+[[ -n "$slug" ]] || die "could not derive an identifier from name/url"
+
+browser=""
+for candidate in "${BROWSERS[@]}"; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+        browser="$candidate"
+        break
+    fi
+done
+[[ -n "$browser" ]] || die "no Chromium-family browser found (tried: ${BROWSERS[*]}). --app= mode needs one."
+
+profile_dir="${XDG_DATA_HOME:-$HOME/.local/share}/koompi/webapps/$slug"
+mkdir -p "$profile_dir"
+
+exec "$browser" \
+    "--app=$url" \
+    "--class=webapp-$slug" \
+    "--wayland-class=webapp-$slug" \
+    "--user-data-dir=$profile_dir" \
+    --no-first-run \
+    --no-default-browser-check
