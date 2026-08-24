@@ -23,6 +23,10 @@ const commands = [_]Command{
     .{ .name = "workbench", .helper = "koompi-workbench", .usage = "koompi workbench [project]", .summary = "Open the agent workbench" },
     .{ .name = "signature", .helper = "koompi-signature", .usage = "koompi signature <capture|from|install-okular|list> ...", .summary = "Capture and install document signatures" },
     .{ .name = "migrate", .helper = "koompi-migrate", .usage = "koompi migrate [--apply]", .summary = "Preview or apply packaged-default migration" },
+    .{ .name = "hook", .helper = "koompi-hook", .usage = "koompi hook <event> [-- env=value ...]", .summary = "Run lifecycle hooks for an event" },
+    .{ .name = "webapp", .helper = "@webapp", .usage = "koompi webapp <install|remove> ...", .summary = "Install or remove a website as a desktop app" },
+    .{ .name = "plugin", .helper = "koompi-plugin", .usage = "koompi plugin <list|clone|enable|disable|remove|validate> ...", .summary = "Manage bar widget plugins" },
+    .{ .name = "snapshot", .helper = "koompi-snapshot", .usage = "koompi snapshot <create|list|rollback> ...", .summary = "Manage btrfs snapshots" },
 };
 
 const aliases = [_]struct { name: []const u8, target: []const u8 }{
@@ -60,6 +64,10 @@ const help_text =
     \\  workbench    Open the agent workbench
     \\  signature    Capture and install document signatures
     \\  migrate      Preview or apply packaged-default migration
+    \\  hook         Run lifecycle hooks for an event
+    \\  webapp       Install or remove a website as a desktop app
+    \\  plugin       Manage bar widget plugins
+    \\  snapshot     Manage btrfs snapshots
     \\  completion   Print completion for bash, zsh, or fish
     \\
     \\Run `koompi help <command>` for command-specific usage.
@@ -67,13 +75,13 @@ const help_text =
     \\
 ;
 
-const command_names = "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate completion help";
+const command_names = "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help";
 
 const bash_completion =
     \\_koompi() {
     \\    local current="${COMP_WORDS[COMP_CWORD]}"
     \\    if (( COMP_CWORD == 1 )); then
-    \\        COMPREPLY=( $(compgen -W "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate completion help" -- "$current") )
+    \\        COMPREPLY=( $(compgen -W "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help" -- "$current") )
     \\    fi
     \\}
     \\complete -F _koompi koompi
@@ -82,13 +90,13 @@ const bash_completion =
 
 const zsh_completion =
     \\#compdef koompi
-    \\_arguments '1:command:(update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate completion help)' '*::argument:->args'
+    \\_arguments '1:command:(update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help)' '*::argument:->args'
     \\
 ;
 
 const fish_completion =
     \\complete -c koompi -f
-    \\complete -c koompi -n '__fish_use_subcommand' -a 'update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate completion help'
+    \\complete -c koompi -n '__fish_use_subcommand' -a 'update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help'
     \\
 ;
 
@@ -185,6 +193,19 @@ fn runHelper(init: std.process.Init, helper: []const u8, rest: []const []const u
         .signal => |signal| @intCast(@min(255, 128 + @intFromEnum(signal))),
         .stopped, .unknown => 1,
     };
+}
+
+fn webappHelper(init: std.process.Init, rest: []const []const u8) !u8 {
+    if (rest.len == 0) {
+        try writeErr(init.io, "Usage: koompi webapp <install|remove> ...\n");
+        return 2;
+    }
+    if (std.mem.eql(u8, rest[0], "install")) return runHelper(init, "koompi-webapp-install", rest[1..]);
+    if (std.mem.eql(u8, rest[0], "remove")) return runHelper(init, "koompi-webapp-remove", rest[1..]);
+    const message = try std.fmt.allocPrint(init.gpa, "koompi: unknown webapp subcommand '{s}'\nUsage: koompi webapp <install|remove> ...\n", .{rest[0]});
+    defer init.gpa.free(message);
+    try writeErr(init.io, message);
+    return 2;
 }
 
 fn showVersion(io: std.Io) !u8 {
@@ -292,6 +313,9 @@ fn execute(init: std.process.Init, args: []const []const u8) !u8 {
         };
         defer init.gpa.free(helper);
         return runHelper(init, helper, args[1..]);
+    }
+    if (std.mem.eql(u8, command.helper, "@webapp")) {
+        return webappHelper(init, args[1..]);
     }
     return runHelper(init, command.helper, args[1..]);
 }
