@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#
+# koompi-notify-send [-a app-name] [-i icon] [-u urgency] [-t ms] <title> <body> [--exec <program> [args...]]
+#
+# Argv-safe org.freedesktop.Notifications sender: title and body each travel as their
+# own busctl argv element, never concatenated into a shell string, so a hostile title
+# or body can never reach a shell. Talks to whichever process owns the standard bus
+# name (Quickshell's NotificationServer today, per shell-services/notifications'
+# lib.rs doc comment) — daemon-agnostic by design.
+#
+# --exec encodes its program+args as a literal JSON array (e.g.
+# ["/usr/bin/xdg-open","/home/user/Pictures/foo.png"]) under the private
+# "koompi-exec-argv" hint, built from "$@" via `jq -n --args` so no shell string-join
+# ever happens. Any consumer of this hint must invoke it as
+# `bash -lc 'exec "$@"' -- "${argv[@]}"` (argv array) and must NEVER do
+# `sh -c "$joined_string"` — that reopens the exact injection class this script exists
+# to close.
+
+set -euo pipefail
+
+usage() {
+    echo "usage: koompi-notify-send [-a app-name] [-i icon] [-u urgency] [-t ms] <title> <body> [--exec <program> [args...]]" >&2
+    exit 1
+}
+
+app_name="koompi-notify-send"
+icon=""
+urgency_name="normal"
+expire_timeout=-1
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -a) app_name="${2:?}"; shift 2 ;;
+        -i) icon="${2:?}"; shift 2 ;;
+        -u) urgency_name="${2:?}"; shift 2 ;;
+        -t) expire_timeout="${2:?}"; shift 2 ;;
+        --) shift; break ;;
+        -*) echo "koompi-notify-send: unknown flag '$1'" >&2; usage ;;
+        *) break ;;
+    esac
+done
+
+[[ $# -ge 2 ]] || usage
+title="$1"
+body="$2"
+shift 2
+
+case "$urgency_name" in
+    low) urgency_byte=0 ;;
+    normal) urgency_byte=1 ;;
+    critical) urgency_byte=2 ;;
+    *) echo "koompi-notify-send: invalid urgency '$urgency_name' (want low|normal|critical)" >&2; exit 1 ;;
+esac
+
+hints=(1 "urgency" y "$urgency_byte")
+
+if [[ "${1:-}" == "--exec" ]]; then
+    shift
+    [[ $# -ge 1 ]] || { echo "koompi-notify-send: --exec needs a program" >&2; exit 1; }
+    exec_json=$(jq -n --args '$ARGS.positional' -- "$@")
+    hints=(2 "urgency" y "$urgency_byte" "koompi-exec-argv" s "$exec_json")
+fi
+
+busctl --user call org.freedesktop.Notifications /org/freedesktop/Notifications \
+    org.freedesktop.Notifications Notify "susssasa{sv}i" -- \
+    "$app_name" 0 "$icon" "$title" "$body" \
+    0 \
+    "${hints[@]}" \
+    "$expire_timeout" >/dev/null

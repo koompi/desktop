@@ -23,7 +23,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [[ -z "$model" ]]; then
-    notify-send --app-name="Text selection query" "No Ollama model available" \
+    koompi-notify-send -a "Text selection query" "No Ollama model available" \
         "Pull a model first, e.g. 'ollama pull llama3.2'."
     exit 1
 fi
@@ -41,9 +41,9 @@ response=$(curl -s http://localhost:11434/api/generate -d "$api_payload" | jq -r
 
 # Check if content is a single line and no longer than 30 characters
 if [[ ${#content} -le 30 && "$content" != *$'\n'* ]]; then
-    notify-send --app-name="Text selection query" --expire-time=10000 \
+    koompi-notify-send -a "Text selection query" -t 10000 \
         "$content" "$response"
 else
-    notify-send --app-name="Text selection query" --expire-time=10000 \
+    koompi-notify-send -a "Text selection query" -t 10000 \
         "AI Response" "$response"
 fi
