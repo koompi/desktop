@@ -1,26 +1,10 @@
 // KOOMPI installer — package manifest (Zig 0.14.x).
 //
-// SCAFFOLD: untested. The libvaxis `.hash` below is a PLACEHOLDER.
-//
-// HOW TO FILL THE HASH:
-//   Run `zig build`. It will fail with a message like:
-//     error: hash mismatch: expected <placeholder>, found <REAL_HASH>
-//   Paste the REAL_HASH into the `.hash` field below and run `zig build` again.
-//   (Or run: `zig fetch --save git+https://github.com/rockorager/libvaxis#<rev>`
-//    which writes the url+hash for you.)
-//
-// VERSION COUPLING: libvaxis `main` tracks newer Zig (0.16+ at time of writing).
-// For a Zig 0.14.x toolchain, PIN a libvaxis commit/tag known to build on 0.14.
-// Replace the `#<rev>` below with that revision.
-//
-// DEFERRED on Zig 0.16: the box this was last touched on shipped a 0.16.0-dev
-// snapshot mid-"Writergate" — `std.fs.File` moved under `std.Io.File`,
-// `File.writer()` now threads an explicit `Io` parameter, `bufferedWriter` and
-// `std.heap.GeneralPurposeAllocator` are gone, and libvaxis 0.6.0 does not build
-// on it. Compiling the stub against that in-flux API is wasted churn (the TUI
-// can't be tested headless and the archinstall JSON can't be validated with no
-// archinstall present). Pin a STABLE zig + a matching libvaxis rev before
-// wiring this up; the src/ files target the 0.14 conventions deliberately.
+// No dependencies: vaxis was imported but never actually wired to any rendering
+// (confirmed dead import) and its only pinned version needs Zig >=0.16, which
+// breaks archinstall.zig/cidata.zig's pre-Writergate stdlib usage on this
+// toolchain. Rendering is direct ANSI (see main.zig) instead — no fetch, no
+// version coupling. See .work/P3-report.md for the full reasoning.
 .{
     // Zig 0.14+ uses the enum-literal name form `.name = .koompi_installer`
     // plus a required `.fingerprint` field. (Pre-0.14 / 0.13.x used a quoted
@@ -31,14 +15,7 @@
     .version = "0.0.0-scaffold",
     .minimum_zig_version = "0.14.0",
 
-    .dependencies = .{
-        .vaxis = .{
-            // TODO: pin `#<rev>` to a libvaxis commit/tag that builds on Zig 0.14.x.
-            .url = "git+https://github.com/rockorager/libvaxis#REPLACE_WITH_0_14_COMPATIBLE_REV",
-            // PLACEHOLDER — see "HOW TO FILL THE HASH" above. `zig build` prints the real one.
-            .hash = "1220PLACEHOLDERPLACEHOLDERPLACEHOLDERPLACEHOLDERPLACEHOLDERPLACEHOLDER",
-        },
-    },
+    .dependencies = .{},
 
     .paths = .{
         "build.zig",
