@@ -1,0 +1,5 @@
+# Enable first-boot user provisioning for cidata OEM/deferred installs.
+# Applied on `systemctl preset-all` - nothing in the current install pipeline
+# invokes that today (see koompi-branding's own sddm preset, same caveat), so
+# this alone does not guarantee enablement on a real image; see PKGBUILD.
+enable koompi-oem-provision.service

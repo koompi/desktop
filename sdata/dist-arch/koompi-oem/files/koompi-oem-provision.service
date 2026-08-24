@@ -1,0 +1,17 @@
+[Unit]
+Description=KOOMPI OEM first-boot user provisioning (cidata deferred install)
+ConditionFirstBoot=yes
+Before=sddm.service
+Conflicts=getty@tty1.service
+After=systemd-firstboot.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/koompi-oem-provision
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

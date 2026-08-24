@@ -44,13 +44,16 @@ pub const InstallConfig = struct {
     encrypt: bool = false, // LUKS full-disk; archinstall owns the actual LUKS
     btrfs: bool = true, //    btrfs + subvolumes is the KOOMPI default layout
 
+    // cidata OEM mode: user creation deferred to koompi-oem-provision at first
+    // boot, so username/password are legitimately empty here. See cidata.zig.
+    defer_provisioning: bool = false,
+
     /// Cheap completeness gate for the Review step. NOT validation of contents
     /// (that's archinstall's job) - just "did the user answer the required
     /// questions". TODO: surface which field is missing in the TUI.
     pub fn isComplete(self: InstallConfig) bool {
         return self.disk_path.len != 0 and
-            self.username.len != 0 and
-            self.password.len != 0 and
-            self.hostname.len != 0;
+            self.hostname.len != 0 and
+            (self.defer_provisioning or (self.username.len != 0 and self.password.len != 0));
     }
 };

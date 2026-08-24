@@ -155,6 +155,23 @@ pub fn writeUserCredentials(alloc: std.mem.Allocator, cfg: InstallConfig) !void 
     var bw = std.io.bufferedWriter(file.writer());
     const w = bw.writer();
 
+    // defer_provisioning (cidata OEM mode): no user known yet, koompi-oem-provision
+    // creates the real sudo user at first boot instead. root stays locked, same as
+    // the normal path below.
+    // UNVERIFIED: whether the pinned archinstall accepts empty "users": [] alongside
+    // a locked root without erroring - not run against real archinstall.
+    if (cfg.defer_provisioning) {
+        try w.print(
+            \\{{
+            \\  "// root": "root intentionally LOCKED - koompi-oem-provision.service creates the real sudo user on first boot (defer_provisioning mode)",
+            \\  "users": []
+            \\}}
+            \\
+        , .{});
+        try bw.flush();
+        return;
+    }
+
     // Keys verified against archinstall source, both easy to get wrong:
     //   a user's plaintext key is "!password", not "password". A bare "password" is read
     //   by neither parser branch, so the user is silently skipped and never created.
