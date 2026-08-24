@@ -40,3 +40,11 @@ output_path = '~/.config/qt6ct/colors/koompi-material.conf'
 [templates.wallpaper]
 input_path = '~/.config/matugen/templates/wallpaper.txt'
 output_path = '~/.local/state/quickshell/user/generated/wallpaper/path.txt'
+
+[templates.konsole]
+input_path = '~/.config/matugen/templates/konsole/MaterialYou.colorscheme'
+output_path = '~/.local/share/konsole/MaterialYou.colorscheme'
+
+[templates.zed]
+input_path = '~/.config/matugen/templates/zed/koompi-material.json'
+output_path = '~/.config/zed/themes/koompi-material.json'

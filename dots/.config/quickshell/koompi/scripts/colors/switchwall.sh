@@ -87,6 +87,8 @@ pre_process() {
 post_process() {
     handle_qt_app_colors "$1" &
     "$SCRIPT_DIR/code/material-code-set-color.sh" &
+    "$SCRIPT_DIR/zed/zed-set-theme.sh" &
+    "$SCRIPT_DIR/agents/agent-theme-sync.sh" "$1" &
 }
 
 check_and_prompt_upscale() {
