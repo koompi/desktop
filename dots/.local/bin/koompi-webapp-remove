@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Remove a webapp installed by koompi-webapp-install.
+#
+# Usage: koompi-webapp-remove <name-or-slug>
+set -euo pipefail
+
+APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/koompi-webapps"
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-webapp-remove <name-or-slug>
+
+Deletes the .desktop entry for a webapp installed with koompi-webapp-install,
+plus its cached icon if one was downloaded (icons referenced by local path are
+left in place). Browser profile data under ~/.local/share/koompi/webapps/ is
+kept — remove it by hand if you want site data gone too.
+
+Accepts the display name (e.g. HEY) or the slug (hey), with or without the
+koompi-webapp- prefix.
+USAGE
+}
+
+die() {
+    printf 'koompi-webapp-remove: %s\n' "$1" >&2
+    exit 1
+}
+
+slugify() {
+    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed -e 's/^-*//' -e 's/-*$//'
+}
+
+if [[ $# -ne 1 ]]; then
+    usage >&2
+    exit 1
+fi
+
+case "$1" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+esac
+
+query="$1"
+query="${query#koompi-webapp-}"
+query="${query%.desktop}"
+
+desktop_file="$APPS_DIR/koompi-webapp-$query.desktop"
+if [[ ! -f "$desktop_file" ]]; then
+    # Fall back to matching the entry's Name= (case-insensitive).
+    match=""
+    for f in "$APPS_DIR"/koompi-webapp-*.desktop; do
+        [[ -f "$f" ]] || continue
+        if grep -qiE "^Name=${query//./\\.}$" "$f" 2>/dev/null; then
+            if [[ -n "$match" ]]; then
+                die "ambiguous name '$query': matches $(basename "$match") and $(basename "$f")"
+            fi
+            match="$f"
+        fi
+    done
+    [[ -n "$match" ]] || die "no webapp found for '$query' (looked in $APPS_DIR)"
+    desktop_file="$match"
+fi
+
+removed_icon="no"
+icon_value="$(grep -m1 '^Icon=' "$desktop_file" | cut -d= -f2- || true)"
+case "$icon_value" in
+    "$ICON_DIR"/*)
+        if [[ -f "$icon_value" ]]; then
+            rm -f -- "$icon_value"
+            removed_icon="$icon_value"
+        fi
+        ;;
+esac
+
+rm -f -- "$desktop_file"
+
+printf 'Removed %s\n' "$desktop_file"
+if [[ "$removed_icon" != "no" ]]; then
+    printf 'Removed cached icon %s\n' "$removed_icon"
+else
+    printf 'No cached icon to remove\n'
+fi
+
+slug="$(basename "$desktop_file" .desktop)"
+slug="${slug#koompi-webapp-}"
+profile_dir="${XDG_DATA_HOME:-$HOME/.local/share}/koompi/webapps/$slug"
+if [[ -d "$profile_dir" ]]; then
+    printf 'Browser profile kept at %s (delete manually to drop site data)\n' "$profile_dir"
+fi
