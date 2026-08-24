@@ -297,8 +297,25 @@ install_files() {
     run rm -rf "$stage"
 
     install_session_entry
+    install_agent_skills
     manifest_finalize
     ok "config files installed"
+}
+
+# Symlink docs/agents into every agent harness's skills dir this machine has, so an
+# agent session picks up koompi's own working conventions without being told. Only
+# acts where the harness itself is already present (the parent dir exists); this
+# never creates a harness's config tree, only extends one that's already there.
+install_agent_skills() {
+    local skills_dir target
+    for skills_dir in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.pi/agent/skills"; do
+        [[ -d "$(dirname "$skills_dir")" ]] || continue
+        target="$skills_dir/koompi"
+        info "linking $target -> $REPO_ROOT/docs/agents"
+        run mkdir -p "$skills_dir"
+        run ln -sfn "$REPO_ROOT/docs/agents" "$target"
+        manifest_add "$target"
+    done
 }
 
 # The shipped entries point at /usr/bin/koompi-session, where the Arch package puts
