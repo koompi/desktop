@@ -1,23 +1,67 @@
-# KOOMPI OS — placeholder boot splash (Plymouth "script" module).
-# Black background + centered wordmark, no image dependency so it is valid
-# without art. Replace with the Naga animation when the per-era visual identity
-# is ready (docs/naming.md).
+# KOOMPI OS boot splash (Plymouth "script" module). Logo + progress bar,
+# falls back to a text wordmark if logo.png is missing so boot never blanks.
+# Colors: installer/themes/koompi.toml [colors], converted to 0.0-1.0 floats.
 
-Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
-Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+Window.SetBackgroundTopColor(0.043137, 0.054902, 0.078431);    # bg 0B0E14
+Window.SetBackgroundBottomColor(0.043137, 0.054902, 0.078431); # bg 0B0E14
 
-wordmark = Image.Text("KOOMPI OS", 1, 1, 1);
-wordmark_sprite = Sprite(wordmark);
-wordmark_sprite.SetX(Window.GetWidth()  / 2 - wordmark.GetWidth()  / 2);
-wordmark_sprite.SetY(Window.GetHeight() / 2 - wordmark.GetHeight() / 2);
+logo_image = Image("logo.png");
+
+if (logo_image) {
+  logo_w = Window.GetWidth() * 0.15;
+  logo_scale = logo_w / logo_image.GetWidth();
+  logo_h = logo_image.GetHeight() * logo_scale;
+  logo_image = logo_image.Scale(logo_w, logo_h);
+  mark_sprite = Sprite(logo_image);
+  mark_sprite.SetX(Window.GetWidth()  / 2 - logo_w / 2);
+  mark_sprite.SetY(Window.GetHeight() / 2 - logo_h / 2 - Window.GetHeight() * 0.06);
+  mark_bottom = Window.GetHeight() / 2 - Window.GetHeight() * 0.06 + logo_h;
+} else {
+  wordmark = Image.Text("KOOMPI OS", 0.901961, 0.929412, 0.952941); # text E6EDF3
+  mark_sprite = Sprite(wordmark);
+  mark_sprite.SetX(Window.GetWidth()  / 2 - wordmark.GetWidth()  / 2);
+  mark_sprite.SetY(Window.GetHeight() / 2 - wordmark.GetHeight() / 2 - Window.GetHeight() * 0.06);
+  mark_bottom = Window.GetHeight() / 2 - Window.GetHeight() * 0.06 + wordmark.GetHeight();
+}
 
 fun refresh_callback() { }
 Plymouth.SetRefreshFunction(refresh_callback);
 
+# Progress bar: dim track + brand-blue fill, driven by boot duration fraction.
+bar_w = Window.GetWidth() * 0.22;
+bar_h = 4;
+bar_x = Window.GetWidth() / 2 - bar_w / 2;
+bar_y = mark_bottom + Window.GetHeight() * 0.05;
+
+track_image = Image("track.png");
+if (track_image) {
+  track_sprite = Sprite(track_image.Scale(bar_w, bar_h));
+  track_sprite.SetX(bar_x);
+  track_sprite.SetY(bar_y);
+}
+
+fill_image = Image("bar.png");
+if (fill_image) {
+  fill_sprite = Sprite();
+  fill_sprite.SetX(bar_x);
+  fill_sprite.SetY(bar_y);
+}
+
+fun progress_callback(duration, progress) {
+  if (fill_image) {
+    fill_w = Math.Int(bar_w * progress);
+    if (fill_w < 1) {
+      fill_w = 1;
+    }
+    fill_sprite.SetImage(fill_image.Scale(fill_w, bar_h));
+  }
+}
+Plymouth.SetBootProgressFunction(progress_callback);
+
 fun message_callback(text) {
-  message = Image.Text(text, 0.7, 0.7, 0.7);
+  message = Image.Text(text, 0.545098, 0.596078, 0.647059); # textDim 8B98A5
   message_sprite = Sprite(message);
   message_sprite.SetX(Window.GetWidth() / 2 - message.GetWidth() / 2);
-  message_sprite.SetY(Window.GetHeight() / 2 + wordmark.GetHeight());
+  message_sprite.SetY(bar_y + Window.GetHeight() * 0.05);
 }
 Plymouth.SetMessageFunction(message_callback);
