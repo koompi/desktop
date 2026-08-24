@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# koompi-agent-usage-codex - summarize Codex CLI token usage into the shared
+# agent-usage JSON that the bar's AgentUsage service reads.
+#
+# Codex's on-disk format is not documented; this was reverse-engineered by
+# inspecting real rollout files under ~/.codex/sessions/YYYY/MM/DD/*.jsonl on a
+# machine with Codex actually installed: each file is a stream of
+# {"type":"event_msg","payload":{"type":"token_count",...}} records holding a
+# *cumulative* total_token_usage for the session, interleaved with
+# {"type":"turn_context","payload":{"model":...}} records. Only the last
+# token_count record per file is used (it already reflects the whole
+# session's total), attributed to the last turn_context's model, and the day
+# is taken from the file's own YYYY/MM/DD path segment rather than parsed out
+# of the record stream.
+#
+# If a future Codex version doesn't match this shape, no token_count records
+# are found and this script exits 0 without writing a "codex" key - same
+# silently-absent contract as when the CLI itself isn't installed.
+set -euo pipefail
+
+command -v codex >/dev/null 2>&1 || exit 0
+command -v jq >/dev/null 2>&1 || { echo "koompi-agent-usage-codex: jq required" >&2; exit 1; }
+
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+STATE_DIR="$XDG_STATE_HOME/koompi"
+OUT_FILE="$STATE_DIR/agent-usage.json"
+SESSIONS_DIR="$HOME/.codex/sessions"
+
+[[ -d "$SESSIONS_DIR" ]] || exit 0
+
+mkdir -p "$STATE_DIR"
+
+per_session_entries=()
+while IFS= read -r -d '' f; do
+    day="$(grep -oE '[0-9]{4}/[0-9]{2}/[0-9]{2}' <<<"$f" | head -1 | tr '/' '-')"
+    [[ -n "$day" ]] || continue
+    entry="$(
+        jq -R -c 'fromjson? // empty' "$f" |
+            jq -sc --arg day "$day" '
+              (map(select(.type == "event_msg" and .payload.type == "token_count"
+                          and .payload.info.total_token_usage != null)) | last) as $tc
+              | (map(select(.type == "turn_context")) | last) as $tx
+              | if $tc == null then empty else
+                  {
+                    day: $day,
+                    model: ($tx.payload.model // "unknown"),
+                    inputTokens: ($tc.payload.info.total_token_usage.input_tokens // 0),
+                    outputTokens: ($tc.payload.info.total_token_usage.output_tokens // 0),
+                    cacheReadTokens: ($tc.payload.info.total_token_usage.cached_input_tokens // 0),
+                    cacheCreationTokens: ($tc.payload.info.total_token_usage.cache_write_input_tokens // 0),
+                    totalTokens: ($tc.payload.info.total_token_usage.total_tokens // 0)
+                  }
+                end
+            '
+    )"
+    [[ -n "$entry" ]] && per_session_entries+=("$entry")
+done < <(find "$SESSIONS_DIR" -type f -name 'rollout-*.jsonl' -print0)
+
+[[ ${#per_session_entries[@]} -gt 0 ]] || exit 0
+
+usage_json="$(
+    printf '%s\n' "${per_session_entries[@]}" |
+        jq -sc '
+          . as $entries
+          | def bucket(field):
+              group_by(field) | map({key: (.[0] | field), value: (
+                reduce .[] as $e ({inputTokens:0,outputTokens:0,cacheReadTokens:0,cacheCreationTokens:0,totalTokens:0};
+                  .inputTokens += $e.inputTokens
+                  | .outputTokens += $e.outputTokens
+                  | .cacheReadTokens += $e.cacheReadTokens
+                  | .cacheCreationTokens += $e.cacheCreationTokens
+                  | .totalTokens += $e.totalTokens)
+              )}) | from_entries;
+          {
+            generatedAt: (now | todate),
+            totalTokens: ($entries | map(.totalTokens) | add // 0),
+            byDay: ($entries | bucket(.day)),
+            byModel: ($entries | bucket(.model))
+          }
+        '
+)"
+
+[[ -n "$usage_json" ]] || exit 0
+
+if [[ -f "$OUT_FILE" ]] && jq -e 'type == "object"' "$OUT_FILE" >/dev/null 2>&1; then
+    base_json="$(cat "$OUT_FILE")"
+else
+    base_json='{}'
+fi
+
+tmp_file="$(mktemp "$STATE_DIR/agent-usage.json.XXXXXX")"
+trap 'rm -f "$tmp_file"' EXIT
+
+jq -c --argjson usage "$usage_json" '. + {codex: $usage}' <<<"$base_json" >"$tmp_file"
+
+jq -e 'type == "object"' "$tmp_file" >/dev/null 2>&1 || {
+    echo "koompi-agent-usage-codex: generated JSON failed validation, not writing" >&2
+    exit 1
+}
+
+mv "$tmp_file" "$OUT_FILE"
+trap - EXIT

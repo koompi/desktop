@@ -323,6 +323,15 @@ Item { // Bar content region
                 Layout.alignment: Qt.AlignVCenter
             }
 
+            BarGroup { // AI-agent token usage, immediately left of the battery.
+                Layout.alignment: Qt.AlignVCenter
+                visible: root.useShortenedForm === 0 && AgentUsage.available
+
+                AgentUsageIndicator {
+                    Layout.fillHeight: true
+                }
+            }
+
             BarGroup { // Media, immediately left of the battery.
                 // This layout is RightToLeft, so declaring it after the battery
                 // is what puts it to the battery's left.

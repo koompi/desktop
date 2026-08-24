@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# koompi-agent-usage-claude - summarize Claude Code token usage into the shared
+# agent-usage JSON that the bar's AgentUsage service reads.
+#
+# Reads every session transcript under ~/.claude/projects/*/*.jsonl, sums
+# message.usage token counts by day and by model, and merges the result into
+# ~/.local/state/koompi/agent-usage.json under a "claude" key. The read-modify-
+# write is done with jq so the "codex"/"pi" keys written by the sibling scripts
+# are preserved rather than clobbered.
+set -euo pipefail
+
+command -v claude >/dev/null 2>&1 || exit 0
+command -v jq >/dev/null 2>&1 || { echo "koompi-agent-usage-claude: jq required" >&2; exit 1; }
+
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+STATE_DIR="$XDG_STATE_HOME/koompi"
+OUT_FILE="$STATE_DIR/agent-usage.json"
+PROJECTS_DIR="$HOME/.claude/projects"
+
+[[ -d "$PROJECTS_DIR" ]] || exit 0
+
+mkdir -p "$STATE_DIR"
+
+# "<synthetic>" is Claude Code's placeholder model for internally-generated
+# messages (retries, etc); their usage is always zero and would otherwise show
+# up as a bogus per-model bucket.
+usage_json="$(
+    find "$PROJECTS_DIR" -mindepth 2 -maxdepth 2 -type f -name '*.jsonl' -print0 |
+        xargs -0 -r cat |
+        jq -sc '
+          [ .[]
+            | select(.message.usage != null and .message.model != null
+                      and .message.model != "<synthetic>" and .timestamp != null)
+            | {
+                day: (.timestamp | sub("T.*$"; "")),
+                model: .message.model,
+                inputTokens: (.message.usage.input_tokens // 0),
+                outputTokens: (.message.usage.output_tokens // 0),
+                cacheCreationTokens: (.message.usage.cache_creation_input_tokens // 0),
+                cacheReadTokens: (.message.usage.cache_read_input_tokens // 0)
+              }
+            | .totalTokens = (.inputTokens + .outputTokens + .cacheCreationTokens + .cacheReadTokens)
+          ] as $entries
+          | def bucket(field):
+              group_by(field) | map({key: (.[0] | field), value: (
+                reduce .[] as $e ({inputTokens:0,outputTokens:0,cacheCreationTokens:0,cacheReadTokens:0,totalTokens:0};
+                  .inputTokens += $e.inputTokens
+                  | .outputTokens += $e.outputTokens
+                  | .cacheCreationTokens += $e.cacheCreationTokens
+                  | .cacheReadTokens += $e.cacheReadTokens
+                  | .totalTokens += $e.totalTokens)
+              )}) | from_entries;
+          {
+            generatedAt: (now | todate),
+            totalTokens: ($entries | map(.totalTokens) | add // 0),
+            byDay: ($entries | bucket(.day)),
+            byModel: ($entries | bucket(.model))
+          }
+        '
+)"
+
+[[ -n "$usage_json" ]] || exit 0
+
+if [[ -f "$OUT_FILE" ]] && jq -e 'type == "object"' "$OUT_FILE" >/dev/null 2>&1; then
+    base_json="$(cat "$OUT_FILE")"
+else
+    base_json='{}'
+fi
+
+tmp_file="$(mktemp "$STATE_DIR/agent-usage.json.XXXXXX")"
+trap 'rm -f "$tmp_file"' EXIT
+
+jq -c --argjson usage "$usage_json" '. + {claude: $usage}' <<<"$base_json" >"$tmp_file"
+
+jq -e 'type == "object"' "$tmp_file" >/dev/null 2>&1 || {
+    echo "koompi-agent-usage-claude: generated JSON failed validation, not writing" >&2
+    exit 1
+}
+
+mv "$tmp_file" "$OUT_FILE"
+trap - EXIT
