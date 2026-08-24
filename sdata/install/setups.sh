@@ -224,6 +224,14 @@ setup_services() {
     else
         run systemctl --user enable koompi-migrate-notify
     fi
+
+    # No-ops unless koompi-snapshot-boot-check.service (system unit, btrfs
+    # installs only) flagged a booted snapshot - safe to enable unconditionally.
+    if ! systemd_user_running; then
+        warn "no user systemd manager here; enable koompi-snapshot-notify after your next login"
+    else
+        run systemctl --user enable koompi-snapshot-notify
+    fi
 }
 
 # The sidebar's local model runs on LiteRT-LM, which serves an OpenAI-compatible
