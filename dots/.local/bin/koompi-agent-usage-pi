@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# koompi-agent-usage-pi - summarize Pi (pi_agent) token usage into the shared
+# agent-usage JSON that the bar's AgentUsage service reads.
+#
+# Pi's on-disk format is not documented; this was reverse-engineered by
+# inspecting real session files under ~/.pi/agent/sessions/**/*.jsonl on a
+# machine with Pi actually installed: each assistant turn is a line shaped
+# like {"message":{"model":..., "usage":{"input":N,"output":N,"cacheRead":N,
+# "cacheWrite":N,"totalTokens":N}}, "timestamp":...}. Usage is a per-message
+# delta (not cumulative), so every line with a usage object is summed.
+#
+# If a future Pi version doesn't match this shape, no usage objects are found
+# and this script exits 0 without writing a "pi" key - same silently-absent
+# contract as when the CLI itself isn't installed.
+set -euo pipefail
+
+command -v pi >/dev/null 2>&1 || exit 0
+command -v jq >/dev/null 2>&1 || { echo "koompi-agent-usage-pi: jq required" >&2; exit 1; }
+
+XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+STATE_DIR="$XDG_STATE_HOME/koompi"
+OUT_FILE="$STATE_DIR/agent-usage.json"
+SESSIONS_DIR="$HOME/.pi/agent/sessions"
+
+[[ -d "$SESSIONS_DIR" ]] || exit 0
+
+mkdir -p "$STATE_DIR"
+
+usage_json="$(
+    find "$SESSIONS_DIR" -type f -name '*.jsonl' -print0 |
+        xargs -0 -r cat |
+        jq -R -c 'fromjson? // empty' |
+        jq -sc '
+          [ .[]
+            | select(.message.usage != null and .message.model != null and .timestamp != null)
+            | {
+                day: (.timestamp | sub("T.*$"; "")),
+                model: .message.model,
+                inputTokens: (.message.usage.input // 0),
+                outputTokens: (.message.usage.output // 0),
+                cacheReadTokens: (.message.usage.cacheRead // 0),
+                cacheCreationTokens: (.message.usage.cacheWrite // 0)
+              }
+            | .totalTokens = (.inputTokens + .outputTokens)
+          ] as $entries
+          | def bucket(field):
+              group_by(field) | map({key: (.[0] | field), value: (
+                reduce .[] as $e ({inputTokens:0,outputTokens:0,cacheReadTokens:0,cacheCreationTokens:0,totalTokens:0};
+                  .inputTokens += $e.inputTokens
+                  | .outputTokens += $e.outputTokens
+                  | .cacheReadTokens += $e.cacheReadTokens
+                  | .cacheCreationTokens += $e.cacheCreationTokens
+                  | .totalTokens += $e.totalTokens)
+              )}) | from_entries;
+          {
+            generatedAt: (now | todate),
+            totalTokens: ($entries | map(.totalTokens) | add // 0),
+            byDay: ($entries | bucket(.day)),
+            byModel: ($entries | bucket(.model))
+          }
+        '
+)"
+
+[[ -n "$usage_json" ]] || exit 0
+
+if [[ -f "$OUT_FILE" ]] && jq -e 'type == "object"' "$OUT_FILE" >/dev/null 2>&1; then
+    base_json="$(cat "$OUT_FILE")"
+else
+    base_json='{}'
+fi
+
+tmp_file="$(mktemp "$STATE_DIR/agent-usage.json.XXXXXX")"
+trap 'rm -f "$tmp_file"' EXIT
+
+jq -c --argjson usage "$usage_json" '. + {pi: $usage}' <<<"$base_json" >"$tmp_file"
+
+jq -e 'type == "object"' "$tmp_file" >/dev/null 2>&1 || {
+    echo "koompi-agent-usage-pi: generated JSON failed validation, not writing" >&2
+    exit 1
+}
+
+mv "$tmp_file" "$OUT_FILE"
+trap - EXIT

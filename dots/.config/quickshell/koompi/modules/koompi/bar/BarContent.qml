@@ -176,8 +176,9 @@ Item { // Bar content region
             spacing: Appearance.spacing.normal
             layoutDirection: Qt.RightToLeft
 
-            ClockWidget { // Time, far-right corner; date removed by default
-                showDate: false
+            PluginSlot { // Time, far-right corner; date removed by default
+                pluginId: "koompi.clock"
+                builtin: ClockWidget { showDate: false }
                 Layout.alignment: Qt.AlignVCenter
                 Layout.rightMargin: Appearance.rounding.screenRounding
             }
@@ -320,6 +321,15 @@ Item { // Bar content region
             BatteryIndicator {
                 visible: (root.useShortenedForm < 2 && Battery.available)
                 Layout.alignment: Qt.AlignVCenter
+            }
+
+            BarGroup { // AI-agent token usage, immediately left of the battery.
+                Layout.alignment: Qt.AlignVCenter
+                visible: root.useShortenedForm === 0 && AgentUsage.available
+
+                AgentUsageIndicator {
+                    Layout.fillHeight: true
+                }
             }
 
             BarGroup { // Media, immediately left of the battery.
