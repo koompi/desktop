@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# koompi-hook - run user hooks registered for a lifecycle event.
+#
+# KOOMPI's own tools (koompi-theme, the update engine) call this after the
+# thing already happened, so users and scripts can react without editing
+# package files. It runs every executable file in
+# ${XDG_CONFIG_HOME:-$HOME/.config}/koompi/hooks/<event>/ in sorted order;
+# each hook inherits the caller's environment, the env=value pairs passed
+# after `--`, and KOOMPI_HOOK_EVENT=<event>.
+#
+# Hooks are the user's code, so they are never trusted with the caller's
+# exit status: a hook that fails or crashes is logged to
+# ${XDG_STATE_HOME:-$HOME/.local/state}/koompi/logs/hooks.log and the next
+# one runs. Nothing is printed on success; this command exits 0 unless its
+# own arguments are wrong.
+set -euo pipefail
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-hook <event> [-- env=value ...]
+
+Run every executable file in ~/.config/koompi/hooks/<event>/ in sorted
+order. Each hook inherits your environment, the given env=value pairs,
+and KOOMPI_HOOK_EVENT=<event>.
+
+Events KOOMPI fires today:
+  theme-set     after koompi-theme applies a change successfully
+  post-update   after `koompi update` finishes
+
+A missing event directory is a silent no-op. A failing hook is logged to
+~/.local/state/koompi/logs/hooks.log and never aborts the caller.
+USAGE
+}
+
+[[ $# -ge 1 ]] || { echo "koompi-hook: event required" >&2; usage >&2; exit 1; }
+case "$1" in
+    -h|--help|help) usage; exit 0 ;;
+esac
+event="$1"; shift
+
+# The event names one directory under the hooks dir, so accept only plain
+# names; anything else (paths, globs, ..) is argument-parsing error.
+[[ "$event" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]] || {
+    echo "koompi-hook: invalid event '$event'" >&2
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --) ;;
+        *)
+            [[ "$1" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || {
+                echo "koompi-hook: expected env=value, got '$1'" >&2
+                usage >&2
+                exit 1
+            }
+            # $1 is a validated NAME=value pair (regex above); export it as-is.
+            # shellcheck disable=SC2163
+            export "$1"
+            ;;
+    esac
+    shift
+done
+
+LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/koompi/logs/hooks.log"
+
+export KOOMPI_HOOK_EVENT="$event"
+
+# Glob over a missing or empty dir matches nothing -> silent no-op, the
+# common case on a machine where nobody registered hooks for this event.
+shopt -s nullglob
+for hook in "$XDG_CONFIG_HOME/koompi/hooks/$event"/*; do
+    [[ -f "$hook" && -x "$hook" ]] || continue
+    rc=0
+    "$hook" || rc=$?
+    (( rc == 0 )) && continue
+    mkdir -p "${LOG_FILE%/*}"
+    printf '%s event=%s hook=%s exit=%s\n' \
+        "$(date -Iseconds)" "$event" "$hook" "$rc" >> "$LOG_FILE"
+done
+
+exit 0

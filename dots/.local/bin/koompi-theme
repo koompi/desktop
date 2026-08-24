@@ -41,24 +41,32 @@ if ! command -v matugen >/dev/null; then
 fi
 
 cmd="${1:-regenerate}"
+# Every branch below used to tail-call `exec $SWITCHWALL`; now it runs the
+# switchwall, propagates its exit code, and on success fires the theme-set
+# hook with whatever changed as env vars. The command -v guard keeps theming
+# working where koompi-hook isn't installed (or not yet symlinked) at all.
 case "$cmd" in
     regenerate|apply)
-        exec "$SWITCHWALL" --noswitch
+        "$SWITCHWALL" --noswitch || exit $?
+        command -v koompi-hook >/dev/null 2>&1 && koompi-hook theme-set
         ;;
     mode)
         m="${2:-}"
         [[ "$m" == dark || "$m" == light ]] || { echo "koompi-theme: mode must be 'dark' or 'light'" >&2; exit 1; }
-        exec "$SWITCHWALL" --noswitch --mode "$m"
+        "$SWITCHWALL" --noswitch --mode "$m" || exit $?
+        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_MODE="$m" koompi-hook theme-set
         ;;
     scheme)
         s="${2:-}"
         [[ -n "$s" ]] || { echo "koompi-theme: scheme name required" >&2; exit 1; }
-        exec "$SWITCHWALL" --noswitch --type "$s"
+        "$SWITCHWALL" --noswitch --type "$s" || exit $?
+        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_SCHEME="$s" koompi-hook theme-set
         ;;
     color)
         c="${2:-}"
         [[ -n "$c" ]] || { echo "koompi-theme: color hex or 'clear' required" >&2; exit 1; }
-        exec "$SWITCHWALL" --color "$c"
+        "$SWITCHWALL" --color "$c" || exit $?
+        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_COLOR="$c" koompi-hook theme-set
         ;;
     -h|--help|help)
         usage
