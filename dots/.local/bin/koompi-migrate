@@ -16,14 +16,17 @@
 set -euo pipefail
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-STATE_DIR="${KOOMPI_STATE_DIR:-$HOME/.local/state/koompi}"
+STATE_DIR="${KOOMPI_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/koompi}"
 BACKUP_DIR="$STATE_DIR/backups"
 LOG_FILE="$STATE_DIR/logs/migrate.log"
 CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$XDG_CONFIG_HOME/koompi/config.json}"
+MIGRATIONS_MARKER_DIR="$STATE_DIR/migrations"
 
 usage() {
     cat <<'USAGE'
 Usage: koompi-migrate [--apply]
+       koompi-migrate --pending
+       koompi-migrate run
 
 Sync the KOOMPI-owned code trees (shell QML, shipped Hyprland modules) from
 the packaged defaults into your user config. Without --apply this is a dry
@@ -33,16 +36,82 @@ run that only reports what would change.
 tarball before changing anything. Your settings (~/.config/koompi/), Hyprland
 overrides (~/.config/hypr/custom/), and machine-local files (monitors.lua,
 workspaces.conf, hyprlock.conf, hypridle.conf) are never touched.
+
+--pending lists point-fix migrations (sdata/migrations/) not yet applied for
+this user; exits 0 if any are pending, 1 if none.
+
+run applies every pending migration in order, recording completion per user
+under ~/.local/state/koompi/migrations/. A failing migration stops the run
+and later ones are left pending.
 USAGE
 }
 
+migrations_dir() {
+    if [[ -n "${KOOMPI_MIGRATE_MIGRATIONS_DIR:-}" ]]; then
+        printf '%s\n' "$KOOMPI_MIGRATE_MIGRATIONS_DIR"
+        return 0
+    fi
+    if [[ -d /usr/share/koompi/migrations ]]; then
+        printf '%s\n' /usr/share/koompi/migrations
+        return 0
+    fi
+    local self repo_root
+    self="$(readlink -f -- "$0" 2>/dev/null || echo "$0")"
+    repo_root="$(cd -- "$(dirname -- "$self")/../../.." 2>/dev/null && pwd)" || return 1
+    [[ -d "$repo_root/sdata/migrations" ]] || return 1
+    printf '%s\n' "$repo_root/sdata/migrations"
+}
+
+# Glob order sorts lexically, which is chronological for same-width unix timestamps.
+pending_migrations() {
+    local dir="$1" f name
+    [[ -d "$dir" ]] || return 0
+    for f in "$dir"/*.sh; do
+        [[ -e "$f" ]] || continue
+        name="$(basename -- "$f")"
+        [[ -e "$MIGRATIONS_MARKER_DIR/$name" ]] || printf '%s\n' "$name"
+    done
+}
+
+mode=resync
 apply=false
 case "${1:-}" in
     --apply) apply=true ;;
+    --pending) mode=pending ;;
+    run) mode=run ;;
     -h|--help|help) usage; exit 0 ;;
     "") ;;
     *) echo "koompi-migrate: unknown argument '$1'" >&2; usage >&2; exit 1 ;;
 esac
+
+if [[ "$mode" == pending ]]; then
+    dir="$(migrations_dir || true)"
+    mapfile -t pending < <(pending_migrations "$dir")
+    [[ ${#pending[@]} -gt 0 ]] || exit 1
+    printf '%s\n' "${pending[@]}"
+    exit 0
+fi
+
+if [[ "$mode" == run ]]; then
+    dir="$(migrations_dir || true)"
+    mapfile -t pending < <(pending_migrations "$dir")
+    if [[ ${#pending[@]} -eq 0 ]]; then
+        echo "koompi-migrate: no pending migrations"
+        exit 0
+    fi
+    mkdir -p "$MIGRATIONS_MARKER_DIR"
+    for name in "${pending[@]}"; do
+        echo "koompi-migrate: running $name"
+        if bash -euo pipefail "$dir/$name"; then
+            : > "$MIGRATIONS_MARKER_DIR/$name"
+        else
+            echo "koompi-migrate: FAILED $name; stopping, later migrations left pending" >&2
+            exit 1
+        fi
+    done
+    echo "koompi-migrate: all pending migrations complete"
+    exit 0
+fi
 
 command -v rsync >/dev/null || { echo "koompi-migrate: rsync required" >&2; exit 1; }
 

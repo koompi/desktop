@@ -1,0 +1,11 @@
+[Unit]
+Description=Notify when per-user KOOMPI migrations are pending
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'if %h/.local/bin/koompi-migrate --pending >/dev/null; then notify-send -a KOOMPI "Desktop update available" "Run koompi-migrate run to finish applying it."; fi'
+
+[Install]
+WantedBy=graphical-session.target
