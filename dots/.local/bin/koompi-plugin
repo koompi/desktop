@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# koompi-plugin - fork a shipped bar widget to user space without editing the package.
+#
+# PluginSlot.qml (dots/.config/quickshell/koompi/modules/common/PluginSlot.qml) loads
+# ~/.config/koompi/plugins/<id>/Widget.qml when present and falls back to the shipped
+# widget otherwise. This tool manages that directory: clone a builtin into it, validate
+# its manifest, and enable/disable/remove it. There is no separate enable/disable state
+# file - PluginSlot's Loader picks up file presence directly, so disabling a plugin is
+# just renaming its directory out of the way.
+#
+# PoC scope: only "koompi.clock" is a valid <builtin-id> for `clone`.
+set -euo pipefail
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+PLUGINS_DIR="${KOOMPI_PLUGINS_DIR:-$XDG_CONFIG_HOME/koompi/plugins}"
+
+# User config wins; /etc/xdg/quickshell/koompi is the packaged default tree
+# (koompi-shell), the same search order koompi-theme and quickshell itself use.
+SHELL_DIR="${KOOMPI_SHELL_DIR:-}"
+if [[ -z "$SHELL_DIR" ]]; then
+    SHELL_DIR="$XDG_CONFIG_HOME/quickshell/koompi"
+    [[ -d "$SHELL_DIR" ]] || SHELL_DIR="/etc/xdg/quickshell/koompi"
+fi
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-plugin <command> [args]
+
+Commands:
+  list                    List installed plugins (enabled and disabled).
+  clone <builtin-id>      Fork a shipped widget into ~/.config/koompi/plugins/<id>/.
+                          Only 'koompi.clock' is supported in this PoC.
+  enable <id>             Re-enable a previously disabled plugin.
+  disable <id>            Disable a plugin without deleting it.
+  remove <id>             Delete a plugin's directory entirely.
+  validate <id>           Check manifest.json's schema and that its entry point exists.
+USAGE
+}
+
+die() {
+    echo "koompi-plugin: $*" >&2
+    exit 1
+}
+
+require_id() {
+    [[ -n "${1:-}" ]] || die "missing <id> argument"
+    case "$1" in
+        */*|.|..) die "invalid plugin id: '$1'" ;;
+    esac
+}
+
+active_dir() { printf '%s/%s' "$PLUGINS_DIR" "$1"; }
+disabled_dir() { printf '%s/%s.disabled' "$PLUGINS_DIR" "$1"; }
+
+cmd_list() {
+    if [[ ! -d "$PLUGINS_DIR" ]]; then
+        echo "no plugins installed"
+        return 0
+    fi
+    local found=0 dir base id status manifest name
+    for dir in "$PLUGINS_DIR"/*/; do
+        [[ -d "$dir" ]] || continue
+        manifest="${dir}manifest.json"
+        [[ -f "$manifest" ]] || continue
+        found=1
+        base="$(basename "$dir")"
+        if [[ "$base" == *.disabled ]]; then
+            id="${base%.disabled}"
+            status="disabled"
+        else
+            id="$base"
+            status="enabled"
+        fi
+        name="?"
+        if command -v jq >/dev/null 2>&1; then
+            name="$(jq -r '.name // "?"' "$manifest" 2>/dev/null || echo "?")"
+        fi
+        printf '%s\t%s\t%s\n' "$id" "$status" "$name"
+    done
+    [[ "$found" -eq 1 ]] || echo "no plugins installed"
+}
+
+cmd_clone() {
+    local builtin_id="${1:-}"
+    [[ -n "$builtin_id" ]] || die "clone requires a <builtin-id> argument"
+
+    local src_dir widget_src popup_src display_name
+    case "$builtin_id" in
+        koompi.clock)
+            src_dir="$SHELL_DIR/modules/koompi/bar"
+            widget_src="$src_dir/ClockWidget.qml"
+            popup_src="$src_dir/ClockWidgetPopup.qml"
+            display_name="Clock"
+            ;;
+        *)
+            die "unsupported builtin id for clone: '$builtin_id' (only 'koompi.clock' is supported in this PoC)"
+            ;;
+    esac
+
+    [[ -f "$widget_src" ]] || die "builtin source not found: $widget_src"
+
+    local id="$builtin_id"
+    local target; target="$(active_dir "$id")"
+    local disabled; disabled="$(disabled_dir "$id")"
+    if [[ -d "$target" || -d "$disabled" ]]; then
+        die "'$id' already exists (run 'koompi-plugin remove $id' first)"
+    fi
+
+    mkdir -p "$target"
+    cp -- "$widget_src" "$target/Widget.qml"
+    if [[ -f "$popup_src" ]]; then
+        # Widget.qml refers to the popup by bare type name, resolved by QML's
+        # same-directory implicit import - the filename must match the type.
+        cp -- "$popup_src" "$target/$(basename "$popup_src")"
+    fi
+
+    local manifest="$target/manifest.json"
+    if command -v jq >/dev/null 2>&1; then
+        jq -n --arg id "$id" --arg name "$display_name" \
+            '{schemaVersion: 1, id: $id, name: $name, kinds: ["bar-widget"], entryPoints: {"bar-widget": "Widget.qml"}}' \
+            > "$manifest"
+    else
+        printf '{"schemaVersion":1,"id":"%s","name":"%s","kinds":["bar-widget"],"entryPoints":{"bar-widget":"Widget.qml"}}\n' \
+            "$id" "$display_name" > "$manifest"
+    fi
+
+    echo "koompi-plugin: cloned '$id' into $target"
+}
+
+cmd_enable() {
+    require_id "${1:-}"
+    local id="$1"
+    local active; active="$(active_dir "$id")"
+    local disabled; disabled="$(disabled_dir "$id")"
+    [[ -d "$active" ]] && die "'$id' is already enabled"
+    [[ -d "$disabled" ]] || die "no plugin named '$id' (enabled or disabled)"
+    mv -- "$disabled" "$active"
+    echo "koompi-plugin: enabled '$id'"
+}
+
+cmd_disable() {
+    require_id "${1:-}"
+    local id="$1"
+    local active; active="$(active_dir "$id")"
+    local disabled; disabled="$(disabled_dir "$id")"
+    [[ -d "$active" ]] || die "no enabled plugin named '$id'"
+    mv -- "$active" "$disabled"
+    echo "koompi-plugin: disabled '$id'"
+}
+
+cmd_remove() {
+    require_id "${1:-}"
+    local id="$1"
+    local active; active="$(active_dir "$id")"
+    local disabled; disabled="$(disabled_dir "$id")"
+    local removed=0
+    if [[ -d "$active" ]]; then
+        rm -rf -- "$active"
+        removed=1
+    fi
+    if [[ -d "$disabled" ]]; then
+        rm -rf -- "$disabled"
+        removed=1
+    fi
+    [[ "$removed" -eq 1 ]] || die "no plugin named '$id'"
+    echo "koompi-plugin: removed '$id'"
+}
+
+cmd_validate() {
+    require_id "${1:-}"
+    local id="$1"
+    local dir; dir="$(active_dir "$id")"
+    [[ -d "$dir" ]] || dir="$(disabled_dir "$id")"
+    [[ -d "$dir" ]] || die "no plugin named '$id'"
+
+    local manifest="$dir/manifest.json"
+    [[ -f "$manifest" ]] || die "$id: missing manifest.json"
+    command -v jq >/dev/null 2>&1 || die "validate requires jq"
+
+    # jq -e 'type == "object"' rather than 'jq empty': an empty/truncated
+    # manifest must fail validation, not pass silently.
+    jq -e 'type == "object"' "$manifest" >/dev/null 2>&1 \
+        || die "$id: manifest.json is not a valid JSON object"
+
+    local schema_version manifest_id entry
+    schema_version="$(jq -r '.schemaVersion // empty' "$manifest")"
+    manifest_id="$(jq -r '.id // empty' "$manifest")"
+    entry="$(jq -r '.entryPoints["bar-widget"] // empty' "$manifest")"
+
+    [[ "$schema_version" == "1" ]] || die "$id: schemaVersion must be 1, got '$schema_version'"
+    [[ "$manifest_id" == "$id" ]] || die "$id: manifest id '$manifest_id' does not match plugin directory '$id'"
+    [[ -n "$entry" ]] || die "$id: entryPoints[\"bar-widget\"] is missing"
+    [[ -f "$dir/$entry" ]] || die "$id: entryPoints[\"bar-widget\"] points at missing file '$entry'"
+
+    echo "koompi-plugin: $id: valid (schemaVersion=$schema_version, entryPoints.bar-widget=$entry)"
+}
+
+cmd="${1:-}"
+[[ -n "$cmd" ]] || { usage; exit 1; }
+shift || true
+
+case "$cmd" in
+    list) cmd_list "$@" ;;
+    clone) cmd_clone "$@" ;;
+    enable) cmd_enable "$@" ;;
+    disable) cmd_disable "$@" ;;
+    remove) cmd_remove "$@" ;;
+    validate) cmd_validate "$@" ;;
+    -h|--help|help) usage ;;
+    *) echo "koompi-plugin: unknown command '$cmd'" >&2; usage >&2; exit 1 ;;
+esac
