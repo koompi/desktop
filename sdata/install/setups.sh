@@ -215,6 +215,15 @@ setup_services() {
     else
         run systemctl --user enable touch-gestures
     fi
+
+    # Notifies at login if a per-user migration is pending. Enabled without
+    # --now, same as touch-gestures: the unit is WantedBy=graphical-session.target
+    # and starts with the next session.
+    if ! systemd_user_running; then
+        warn "no user systemd manager here; enable koompi-migrate-notify after your next login"
+    else
+        run systemctl --user enable koompi-migrate-notify
+    fi
 }
 
 # The sidebar's local model runs on LiteRT-LM, which serves an OpenAI-compatible
