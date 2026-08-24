@@ -176,8 +176,9 @@ Item { // Bar content region
             spacing: Appearance.spacing.normal
             layoutDirection: Qt.RightToLeft
 
-            ClockWidget { // Time, far-right corner; date removed by default
-                showDate: false
+            PluginSlot { // Time, far-right corner; date removed by default
+                pluginId: "koompi.clock"
+                builtin: ClockWidget { showDate: false }
                 Layout.alignment: Qt.AlignVCenter
                 Layout.rightMargin: Appearance.rounding.screenRounding
             }
