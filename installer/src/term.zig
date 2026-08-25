@@ -16,11 +16,11 @@ const Rgb = theme_mod.Rgb;
 
 pub const ColorTier = enum { truecolor, ansi16, none };
 
-pub fn detectColorTier() ColorTier {
-    if (std.posix.getenv("NO_COLOR")) |_| return .none;
-    const term = std.posix.getenv("TERM") orelse return .ansi16;
+pub fn detectColorTier(environ: std.process.Environ) ColorTier {
+    if (environ.getPosix("NO_COLOR")) |_| return .none;
+    const term = environ.getPosix("TERM") orelse return .ansi16;
     if (std.mem.eql(u8, term, "linux")) return .ansi16; // console framebuffer: never truecolor
-    if (std.posix.getenv("COLORTERM")) |ct| {
+    if (environ.getPosix("COLORTERM")) |ct| {
         if (std.mem.indexOf(u8, ct, "truecolor") != null or std.mem.indexOf(u8, ct, "24bit") != null) return .truecolor;
     }
     if (std.mem.indexOf(u8, term, "256color") != null) return .ansi16;
