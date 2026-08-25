@@ -47,7 +47,7 @@ Item {
     }
 
     function reattemptAsNeeded() {
-        if (root.visionParagraphs == [] && GoogleCloud.tokenReady && !GoogleCloud.tokenError) {
+        if (root.visionParagraphs.length === 0 && GoogleCloud.tokenReady && !GoogleCloud.tokenError) {
             root.error = false;
             cloudVision.annotateImage(root.screenshotPath);
         }
