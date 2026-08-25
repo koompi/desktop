@@ -30,6 +30,8 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J20 | lock screen unlocks itself after 2.6 s | J15 finding | `modules/koompi/lock/*`, `common/panels/lock/pam/*`, new test | ready | — |
 | J21 | launch apps as app-*.scope so oomd can act | J14 finding | new `koompi-launch`, exec paths in keybinds + 4 QML call sites, new test | after J15 J19 (same QML files) | — |
 | J22 | hypridle output to the journal / packaged unit; prove Lock handling | J15 finding 3 | `execs.lua` (one line), optional user unit + `setup_services`, new test | ready | — |
+| J24 | `koompi update` hardening: lock, inhibit, free space, reboot advice, lock-aware reload | O02 O10 O21 | `libexec/update`, `koompi-reload`, new test | ready (after J11, merged) | — |
+| J25 | port installer/src to zig 0.16 std.Io | J06 finding | `installer/src/**`, `.zon` min version | ready (after J06, merged) | — |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
 
