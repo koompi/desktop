@@ -28,8 +28,15 @@ sha256sums=(
 prepare() {
   cd $_pkgname
   patch -Np1 -i "$srcdir/microtex-fontconfig-2.18.patch"
-  sed -i 's/gtksourceviewmm-3.0/gtksourceviewmm-4.0/' CMakeLists.txt
-  sed -i 's/tinyxml2.so.10/tinyxml2.so.11/' CMakeLists.txt
+  # Upstream asks pkg-config for gtksourceviewmm-3.0; Arch's gtksourceviewmm
+  # ships a newer module name (4.0 today). Use whatever is installed instead of
+  # pinning the next name that will break on the bump after it. tinyxml2 needs
+  # nothing: CMakeLists finds it through pkg-config too, and the old
+  # tinyxml2.so.10 -> .so.11 rewrite matched no line.
+  local gsvmm
+  gsvmm="$(pkg-config --list-all | awk '$1 ~ /^gtksourceviewmm-[0-9.]+$/ { print $1 }' | sort -V | tail -n1)"
+  [[ -n "$gsvmm" ]] || { echo "no gtksourceviewmm-*.pc found; is gtksourceviewmm installed?" >&2; return 1; }
+  sed -i "s/gtksourceviewmm-3\.0/$gsvmm/" CMakeLists.txt
 }
 
 build() {
