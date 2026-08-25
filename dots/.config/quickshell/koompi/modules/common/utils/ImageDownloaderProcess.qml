@@ -29,7 +29,7 @@ Process {
 
     running: true
     command: ["bash", "-c", 
-        `mkdir -p $(dirname '${processFilePath()}'); [ -f '${processFilePath()}' ] || curl -sSL '${processSourceUrl()}'${curlUserAgentArg()} -o '${processFilePath()}' && file '${processFilePath()}'`
+        `mkdir -p $(dirname '${processFilePath()}'); [ -f '${processFilePath()}' ] || curl -sSLf '${processSourceUrl()}'${curlUserAgentArg()} -o '${processFilePath()}' && file '${processFilePath()}'`
     ]
     stdout: StdioCollector {
         id: imageSizeOutputCollector
@@ -41,7 +41,13 @@ Process {
                 const width = Number(match[1]);
                 const height = Number(match[2]);
                 root.done(root.filePath, width, height);
+            } else if (output.length > 0) {
+                console.warn(`[ImageDownloaderProcess] Not an image with a size, from ${root.sourceUrl}: ${output}`);
             }
         }
+    }
+    onExited: (exitCode, exitStatus) => {
+        if (exitCode !== 0)
+            console.warn(`[ImageDownloaderProcess] Download of ${root.sourceUrl} failed (exit ${exitCode})`);
     }
 }

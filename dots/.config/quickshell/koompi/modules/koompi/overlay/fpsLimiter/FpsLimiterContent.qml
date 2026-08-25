@@ -45,13 +45,11 @@ OverlayBackground {
             "else echo 'fps_limit=" + fpsValue + "' >> " + path + "; fi";
         }).join("; ");
 
-        var cmd = updateCommands + "; pkill -SIGUSR2 mangohud";
+        // The signal is best effort: no running game is not a failure.
+        var cmd = updateCommands + " && { pkill -SIGUSR2 mangohud || true; }";
 
         fpsSetter.command = ["bash", "-c", cmd];
-        fpsSetter.startDetached();
-
-        root.currentState = FpsLimiterContent.State.Success;
-        iconResetTimer.restart();
+        fpsSetter.running = true;
 
         // Clear the field after applying
         fpsField.text = "";
@@ -59,6 +57,12 @@ OverlayBackground {
 
     Process {
         id: fpsSetter
+        onExited: (exitCode, exitStatus) => {
+            root.currentState = exitCode === 0 ? FpsLimiterContent.State.Success : FpsLimiterContent.State.Error;
+            if (exitCode !== 0)
+                console.warn(`[FpsLimiter] Could not write fps_limit to the MangoHud config (exit ${exitCode})`);
+            iconResetTimer.restart();
+        }
     }
 
     RowLayout {
