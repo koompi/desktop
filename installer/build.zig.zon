@@ -1,4 +1,4 @@
-// KOOMPI installer — package manifest (Zig 0.14.x).
+// KOOMPI installer — package manifest (Zig 0.16).
 //
 // No dependencies: rendering is direct ANSI (see main.zig), so nothing is fetched.
 .{

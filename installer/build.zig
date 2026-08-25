@@ -1,4 +1,4 @@
-// KOOMPI installer — build script (Zig 0.14+ build API; src/ needs 0.14.x std).
+// KOOMPI installer — build script (Zig 0.16).
 //
 // Declares the `koompi-installer` executable. No dependencies — rendering is
 // direct ANSI, not libvaxis; see build.zig.zon.
