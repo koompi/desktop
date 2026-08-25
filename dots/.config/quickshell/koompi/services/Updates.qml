@@ -61,10 +61,18 @@ Singleton {
 
     Process {
         id: checkUpdatesProc
-        command: ["bash", "-c", "checkupdates | wc -l"]
+        command: ["checkupdates"]
         stdout: StdioCollector {
-            onStreamFinished: {
-                root.count = parseInt(text.trim());
+            id: checkUpdatesCollector
+        }
+        // checkupdates: 0 lists updates, 2 none, 1 could not check; keep the count on 1
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                root.count = checkUpdatesCollector.text.split("\n").filter(line => line.trim().length > 0).length;
+            } else if (exitCode === 2) {
+                root.count = 0;
+            } else {
+                console.warn("[Updates] checkupdates failed with code", exitCode, "and status", exitStatus, "- keeping count", root.count);
             }
         }
     }
