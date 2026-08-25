@@ -108,3 +108,79 @@ check_restart_needed() {
         && REBOOT_REASON="${REBOOT_REASON:+$REBOOT_REASON; }the Hyprland binary was replaced under the running compositor"
     return 0
 }
+
+# ---------------------------------------------------------------------------
+# J30: the transcript (audit O28) and firmware advice (O31).
+# ---------------------------------------------------------------------------
+
+# Same directory koompi-health appends to; koompi doctor --last-update reads it.
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/koompi/logs"
+TRANSCRIPT_KEEP=10
+
+# Delete all but the newest $1 transcripts. The names carry the timestamp, so
+# the glob's sort order is the chronological one.
+prune_transcripts() {
+    local keep="$1" i
+    local -a logs=("$LOG_DIR"/update-*.log)
+    [[ -e "${logs[0]}" ]] || return 0
+    for (( i = 0; i < ${#logs[@]} - keep; i++ )); do
+        rm -f -- "${logs[i]}"
+    done
+}
+
+# Re-run this script under script(1) so everything it prints, pass or fail,
+# lands in a file someone can be asked for. The inner run sees
+# KOOMPI_UPDATE_TRANSCRIPT and does not re-exec again; the outer appends the
+# exit line and names the file last, whatever happened. Never returns.
+transcript_reexec() {
+    have script || die "script (util-linux) is required to keep the update transcript"
+    mkdir -p -- "$LOG_DIR" || die "cannot create $LOG_DIR"
+    local log
+    log="$LOG_DIR/update-$(date +%Y%m%d-%H%M%S).log"
+    while [[ -e "$log" ]]; do   # same second as the previous run: the name is the order
+        sleep 1; log="$LOG_DIR/update-$(date +%Y%m%d-%H%M%S).log"
+    done
+    prune_transcripts "$((TRANSCRIPT_KEEP - 1))"
+    # script gives the inner run a pty, so it would colour a piped stdout
+    [[ -t 1 ]] || export NO_COLOR=1
+    local cmd
+    cmd="$(printf '%q ' "$BASH" "$0" "$@")"
+    KOOMPI_UPDATE_TRANSCRIPT="$log" script -qefc "$cmd" "$log"
+    local rc=$?
+    printf 'koompi update: exit %s at %s\n' "$rc" "$(date '+%Y-%m-%d %H:%M:%S')" >> "$log"
+    printf '%stranscript: %s%s\n' "${C_DIM}" "${log/#$HOME/\~}" "${C_RST}"
+    exit "$rc"
+}
+
+# After a successful packaged upgrade: a read-only look for firmware.
+# `refresh` alone touches the network, so offline it fails and that is fine;
+# `get-updates` with the three --no-*-check flags asks nothing (fwupdmgr 2.1:
+# without them it can prompt to upload reports, refresh 30-day-old metadata,
+# or enable remotes) and exits 2 for "nothing to do".
+firmware_advice() {
+    have fwupdmgr || return 0
+    if [[ "$DRY_RUN" == true ]]; then
+        info "would check for firmware updates (fwupdmgr get-updates)"
+        return 0
+    fi
+    fwupdmgr refresh >/dev/null 2>&1 || true
+    local out rc
+    out="$(fwupdmgr get-updates --no-unreported-check --no-metadata-check --no-remote-check 2>&1)"
+    rc=$?
+    case "$rc" in
+        0) info "firmware updates are available; apply them with 'koompi update --firmware'" ;;
+        2) info "firmware: up to date" ;;
+        *) warn "fwupdmgr could not check for firmware updates (exit $rc): ${out##*$'\n'}" ;;
+    esac
+    return 0
+}
+
+# `koompi update --firmware`: fwupdmgr update, interactively, and nothing else.
+cmd_firmware() {
+    have fwupdmgr || die "fwupdmgr is not installed; it comes with the fwupd package: sudo pacman -S fwupd"
+    step "Updating firmware"
+    run fwupdmgr update
+    local rc=$?
+    (( rc == 2 )) && { ok "firmware: nothing to update"; return 0; }
+    return "$rc"
+}

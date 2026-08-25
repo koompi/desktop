@@ -38,27 +38,12 @@ CLONE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/koompi-desktop"
 source "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")/update-lib.sh" \
     || { echo "koompi update: update-lib.sh is missing next to this script; reinstall with ./setup update" >&2; exit 1; }
 
-DRY_RUN=false; ASSUME_YES=false; NO_RELOAD=false
+DRY_RUN=false; ASSUME_YES=false; NO_RELOAD=false; FIRMWARE=false
 
 # ./setup update reloads on its own (common.sh reload_session has no --no-reload)
 refuse_git_route_if_locked() {
     session_locked && die "session is locked; ./setup update would restart the shell under the lock. Unlock and run 'koompi update' again"
     info "session lock: unlocked (logind LockedHint); ./setup update may restart the shell"
-}
-
-REBOOT_REASON=""
-check_restart_needed() {
-    local running newest dir pid
-    running="$(uname -r)"
-    # KOOMPI_UPDATE_MODULES_DIR: test hook (tests/test_update_guards.sh)
-    newest="$(for dir in "${KOOMPI_UPDATE_MODULES_DIR:-/usr/lib/modules}"/*/; do
-                  [[ -f "$dir/vmlinuz" ]] && basename "$dir"; done | sort -V | tail -1)"
-    [[ -n "$newest" && "$newest" != "$running" ]] \
-        && REBOOT_REASON="kernel $newest is installed but $running is running"
-    pid="$(pidof -s Hyprland 2>/dev/null)" || return 0
-    [[ "$(readlink "/proc/$pid/exe" 2>/dev/null)" == *' (deleted)' ]] \
-        && REBOOT_REASON="${REBOOT_REASON:+$REBOOT_REASON; }the Hyprland binary was replaced under the running compositor"
-    return 0
 }
 
 usage() {
@@ -80,11 +65,14 @@ Both routes also migrate changed config defaults into your config.json,
 backing it up to config.json.bak-<timestamp> first.
 
 One run at a time, awake throughout, 2 GiB free required, locked session left alone.
+Every real run keeps a transcript in ~/.local/state/koompi/logs/update-<stamp>.log
+(newest 10 kept, never uploaded); 'koompi doctor --last-update' reads it back.
 
 Options:
-  -n, --dry-run    Print what would happen and change nothing
+  -n, --dry-run    Print what would happen and change nothing (no transcript)
   -y, --yes        Do not ask anything
       --no-reload  Leave the running session alone (changes apply at next login)
+      --firmware   Run 'fwupdmgr update' interactively and nothing else
   -h, --help       This message
 
 Subcommands (used by the installer and koompi-migrate, not meant for hands):
@@ -567,6 +555,7 @@ update_packaged() {
         fi
     done
     check_restart_needed
+    firmware_advice
 
     # Could anything of ours have moved? Either the [koompi] repo is real on
     # this machine, or some koompi-* package version changed. If neither, say
@@ -651,16 +640,20 @@ main() {
             -n|--dry-run) DRY_RUN=true ;;
             -y|--yes)     ASSUME_YES=true ;;
             --no-reload)  NO_RELOAD=true ;;
+            --firmware)   FIRMWARE=true ;;
             *)            usage >&2; die "unknown option: $1" ;;
         esac
         shift
     done
 
     [[ "$(id -u)" -ne 0 ]] || die "do not run this as root; it calls sudo itself where needed"
+    [[ "$FIRMWARE" != true ]] || { cmd_firmware || die "fwupdmgr update failed"; exit 0; }
 
+    # transcript first so a refused second run is on record too; dry runs keep none
+    [[ "$DRY_RUN" == true || -n "${KOOMPI_UPDATE_TRANSCRIPT:-}" ]] || transcript_reexec "${argv[@]}"
     # unset at once: children must not inherit the claim
     [[ -n "${KOOMPI_UPDATE_LOCKED:-}" ]] || run_locked "${argv[@]}"
-    unset KOOMPI_UPDATE_LOCKED
+    unset KOOMPI_UPDATE_LOCKED KOOMPI_UPDATE_TRANSCRIPT
     printf '%s\n' "$$" > "$LOCK_FILE"
     info "lock taken: $LOCK_FILE (pid $$)"
     stay_awake

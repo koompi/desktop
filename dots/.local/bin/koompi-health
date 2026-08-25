@@ -4,7 +4,7 @@
 # and running. Changes nothing except appending one summary line to the log.
 set -uo pipefail
 
-LOG_DIR="${KOOMPI_LOG_DIR:-$HOME/.local/state/koompi/logs}"
+LOG_DIR="${KOOMPI_LOG_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/koompi/logs}"
 LOG_FILE="$LOG_DIR/health.log"
 CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$HOME/.config/koompi/config.json}"
 SHELL_DIR="$HOME/.config/quickshell/koompi"
@@ -59,6 +59,69 @@ check_env() {
         ok "$var=$val"
     fi
 }
+
+usage() {
+    cat <<'EOF'
+koompi doctor - read-only health check of the KOOMPI desktop session
+
+Usage:
+  koompi doctor                 Check the compositor, shell, portals and tools;
+                                exits 1 when a core check fails
+  koompi doctor --last-update   Print the newest 'koompi update' transcript's
+                                path, how it ended, and one line per known
+                                failure pattern found in it; exits 1 unless
+                                that update finished with exit 0
+  koompi doctor -h, --help      This message
+
+Transcripts are ~/.local/state/koompi/logs/update-<stamp>.log (newest 10 kept).
+They are never uploaded anywhere; hand the file to whoever is helping you yourself.
+EOF
+}
+
+# Known failure patterns, one per row: grep -E pattern => what it means and
+# what to do. Matched against the raw transcript (script(1) writes CRLF and
+# leaves colour codes in; the message text survives both).
+readonly FAILURE_PATTERNS='
+conflicting files|exists in filesystem|unresolvable package conflicts|are in conflict => pacman conflict: read the error: lines above it, remove or rename the file or package it names, then run koompi update again
+The requested URL returned error: 404|failed retrieving file .* from => a mirror returned 404 or timed out: the mirror list is stale; sudo pacman -Syyu (or refresh the mirrorlist) and run koompi update again
+signature from .* is (unknown trust|invalid|marginal trust)|invalid or corrupted package \(PGP signature\)|keyring is not writable|key .* could not be looked up remotely => package signatures failed: sudo pacman -Sy archlinux-keyring, then run koompi update again
+[Nn]o space left on device|not enough free disk space|koompi update needs [0-9]+ GiB => the disk is full: free space (sudo pacman -Sc, old snapshots, ~/.cache) and run koompi update again
+another koompi update is running => another koompi update was already running: wait for it; if that pid is gone, remove the lock file the refusal names and run koompi update again
+CONFLICT \(|Automatic merge failed|fix conflicts and then commit|would be overwritten by (merge|checkout) => the checkout has local changes that conflict with upstream: git status in the checkout, commit or stash them, then run koompi update again
+'
+
+last_update() {
+    local -a logs=("$LOG_DIR"/update-*.log)
+    if [[ ! -e "${logs[-1]}" ]]; then
+        echo "koompi doctor: no update transcript in $LOG_DIR (every non-dry 'koompi update' writes one)" >&2
+        return 1
+    fi
+    local log="${logs[-1]}" exit_line rc=1
+    printf 'transcript: %s\n' "$log"
+    exit_line="$(grep -a 'koompi update: exit [0-9]' "$log" | tail -1 | tr -d '\r')"
+    if [[ -n "$exit_line" ]]; then
+        printf 'ended:      %s\n' "$exit_line"
+        [[ "$exit_line" == *': exit 0 at '* ]] && rc=0
+    else
+        printf 'ended:      no exit line; the run was interrupted, or is still going\n'
+    fi
+    local matched=0 row
+    while read -r row; do
+        [[ -n "$row" ]] || continue
+        grep -aqE -- "${row% => *}" "$log" || continue
+        printf 'diagnosis:  %s\n' "${row##* => }"
+        matched=1
+    done <<<"$FAILURE_PATTERNS"
+    (( matched )) || printf 'diagnosis:  no known failure pattern\n'
+    return "$rc"
+}
+
+case "${1:-}" in
+    "")            ;;
+    -h|--help)     usage; exit 0 ;;
+    --last-update) last_update; exit $? ;;
+    *)             usage >&2; printf 'koompi doctor: unknown option: %s\n' "$1" >&2; exit 2 ;;
+esac
 
 printf '%sKOOMPI desktop health%s\n' "$C_DIM" "$C_RST"
 
