@@ -208,3 +208,42 @@ exit 0
 Baseline on main `422c58e4`: 79 passed, 3 skipped, 0 failed.
 This branch as committed: 78 passed, 3 skipped, 1 failed (`test_services_qml_bugs.sh`, L2).
 This branch plus the patch above: 79 passed, 3 skipped, 0 failed.
+
+## Round 2: the follow-up patch, now owned and landed
+
+Lead addendum: `services/Emojis.qml` and `tests/test_services_qml_bugs.sh` are mine for this fix (J18 merged). The patch from the blocker section above applied unchanged as `[33m40404bc3[m fix(emojis): read the data file, not the script`. The blocker at the top of this report is cleared.
+
+### qmllint on Emojis.qml, before and after
+
+Same invocation as `tests/test_services_qml_bugs.sh:34-38`: `/usr/lib/qt6/bin/qmllint -I "$LINT" -I /usr/lib/qt6/qml services/Emojis.qml`, where `$LINT/qs` is a symlink to the shell root.
+
+Before (main + the D2 split, Emojis.qml untouched): exit 0, 9 warnings.
+After the fix: exit 0, 9 warnings.
+
+The nine are the same nine, shifted by one line: four `[import]` warnings on `qs.modules.common` and `qs.modules.common.functions` (the lint fixture cannot resolve the `qs` module tree; the test tolerates these and only fails on `^Error`), and five `[unqualified]` on `Directories`, `Config`, `Fuzzy` (x2) and `Levendist`, which are the singletons those imports would have provided. The fix adds no warning and removes none. The only changed warning line:
+
+```
+-Emojis.qml:15:41: Unqualified access [unqualified]
+-    property string emojiScriptPath: `${Directories.config}/hypr/hyprland/scripts/fuzzel-emoji.sh`
++Emojis.qml:15:39: Unqualified access [unqualified]
++    property string emojiDataPath: `${Directories.config}/hypr/hyprland/scripts/fuzzel-emoji.txt`
+```
+
+### tests/test_services_qml_bugs.sh
+
+```
+ok   source: guarded lines present in MemoryService, Notifications, LauncherSearch, Ai, Audio, MprisController, LatexRenderer
+ok   qmllint: 14 touched services parse without errors
+PASS L2 sloppy emoji search works on the loaded list  fuzzy=153 sloppy=73 list=1928
+PROBE OK
+ok   services: cliphist queue, checkupdates exit codes, xkb variants, wallpaper dir validation, easyeffects readback, emoji sloppy search, latex argv and exit code
+```
+
+### ./tests/run.sh
+
+```
+79 passed, 3 skipped, 0 failed
+skipped: test_globalmenu.sh test_hypridle_logged.sh test_search_bench_parity.sh
+```
+
+Matches the main baseline. Branch is merge-ready.
