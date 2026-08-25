@@ -17,7 +17,7 @@ if arch_pkgbuild_satisfied "$REPO_ROOT/sdata/dist-arch/koompi-apps"; then
 else
     # --only-apps skips the dependency step, and every browser here is an AUR build.
     arch_install_paru
-    arch_install_pkgbuild koompi-apps
+    arch_install_pkgbuild koompi-apps || return 1
 fi
 
 # mpvpaper is the only piece of shipped configuration with no packaged home on

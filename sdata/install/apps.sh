@@ -42,8 +42,9 @@ install_apps() {
     fi
 
     info "using $recipe"
+    # same as deps.sh: a recipe that bailed must not fall through to "ok"
     # shellcheck source=/dev/null
-    source "$recipe"
+    source "$recipe" || { err "the $OS_GROUP_ID application recipe failed"; return 1; }
 
     # Agent CLIs update too quickly for distro archives. They are installed
     # user-locally from their official distribution channels after the distro
