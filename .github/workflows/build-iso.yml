@@ -1,23 +1,21 @@
-# SKELETON — build the KOOMPI OS live ISO with mkarchiso.
+# Build the KOOMPI OS live ISO with mkarchiso and publish it as a GitHub Release.
 #
-# This is a SCAFFOLD. It runs mkarchiso against the archiso profile at
-# sdata/dist-arch/iso/koompi/ and uploads the resulting .iso artifact.
+# Runs mkarchiso against the archiso profile at sdata/dist-arch/iso/koompi/,
+# then publishes the resulting .iso (+ sha256 checksum) as a GitHub Release so
+# users can download and install it directly.
 #
-# PRECONDITION: the signed [koompi] pacman repo must ALREADY EXIST and be
-# published, because the profile's pacman.conf points its [koompi] Server= at it
-# and mkarchiso pulls KOOMPI packages from there. Run build-packages.yml (and the
-# sign + publish steps) FIRST. See sdata/dist-arch/repo/README.md.
-#
-# NOTE: the archiso profile at sdata/dist-arch/iso/koompi/ exists (this scaffold).
-# The remaining precondition is the signed [koompi] repo (above) being published,
-# so mkarchiso can pull KOOMPI packages into the image.
-name: Build KOOMPI ISO (SKELETON)
+# v1 NOTE: sdata/dist-arch/iso/koompi/pacman.conf deliberately disables the
+# [koompi] repo — the v1 live ISO installs a 100% stock-Arch package set (see
+# packages.x86_64), so no signed [koompi] repo is required to build it. Once the
+# [koompi] repo (sdata/dist-arch/repo/) is signed + published and the live set
+# starts pulling koompi-* packages, re-enable it in pacman.conf first.
+name: Build & Release KOOMPI ISO
 
 on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
+  contents: write  # needed to create the GitHub Release
 
 jobs:
   build-iso:
@@ -28,23 +26,18 @@ jobs:
       # privileged. Without this, image assembly fails on loop-device setup.
       options: --privileged
     steps:
-      - name: Install archiso
+      - name: Install archiso + release tooling
         run: |
           set -euo pipefail
-          pacman -Syu --noconfirm --needed archiso git
+          pacman -Syu --noconfirm --needed archiso git github-cli
 
       - uses: actions/checkout@v4
 
-      - name: Verify the [koompi] repo is reachable
+      - name: Sanity-check the archiso profile
         run: |
           set -euo pipefail
-          echo "TODO: confirm the signed [koompi] repo is published and that"
-          echo "      sdata/dist-arch/iso/koompi/pacman.conf points [koompi]"
-          echo "      Server= at it. mkarchiso pacstraps from this repo, so the"
-          echo "      signing key must also be trusted inside the profile."
           test -f sdata/dist-arch/iso/koompi/profiledef.sh || {
-            echo "archiso profile not scaffolded yet (sdata/dist-arch/iso/koompi/)." >&2
-            echo "This workflow is the consumer; create the profile first." >&2
+            echo "archiso profile not scaffolded (sdata/dist-arch/iso/koompi/)." >&2
             exit 1
           }
 
@@ -57,9 +50,29 @@ jobs:
             -o "$GITHUB_WORKSPACE/out" \
             sdata/dist-arch/iso/koompi/
 
+      - name: Checksum the ISO
+        working-directory: out
+        run: sha256sum *.iso | tee SHA256SUMS
+
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
           name: koompi-iso
-          path: out/*.iso
+          path: |
+            out/*.iso
+            out/SHA256SUMS
           if-no-files-found: error
+
+      - name: Publish GitHub Release
+        working-directory: out
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          iso="$(ls -- *.iso)"
+          tag="iso-${iso%.iso}"
+          gh release create "$tag" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "KOOMPI OS — ${iso%.iso}" \
+            --notes "Automated live/install ISO build from commit ${GITHUB_SHA}." \
+            "$iso" SHA256SUMS
