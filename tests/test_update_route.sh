@@ -47,6 +47,10 @@ printf '#!/usr/bin/env bash\nexec "$@"\n' > "$T/bin/sudo"
 printf '#!/usr/bin/env bash\ntouch "$T/aur-ran"\nexit 0\n' > "$T/bin/paru"
 printf '#!/usr/bin/env bash\ntouch "$T/aur-ran"\nexit 0\n' > "$T/bin/yay"
 printf '#!/usr/bin/env bash\necho "hook \$KOOMPI_HOOK_UPDATE_METHOD" >> "$T/hook"\nexit 0\n' > "$T/bin/koompi-hook"
+# The git route refuses to run under a locked seat (session_locked asks logind
+# for LockedHint); answer "no sessions" so the real desktop's lock state never
+# decides this test.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$T/bin/loginctl"
 
 # A checkout the fallback can be handed to: ./setup records how it was called.
 mkdir -p "$T/repo"
@@ -56,7 +60,7 @@ printf '%s\\n' "\$*" >> "$T/setup-called"
 exit 0
 STUB
 chmod +x "$T/bin/pacman" "$T/bin/pacman-conf" "$T/bin/sudo" \
-         "$T/bin/paru" "$T/bin/yay" "$T/bin/koompi-hook" "$T/repo/setup"
+         "$T/bin/paru" "$T/bin/yay" "$T/bin/koompi-hook" "$T/bin/loginctl" "$T/repo/setup"
 echo "$T/repo" > "$T/home/.local/state/koompi/repo-path"
 
 export PATH="$T/bin:$PATH"
