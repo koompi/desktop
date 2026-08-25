@@ -29,4 +29,3 @@ dots/.config/quickshell/koompi/welcome.qml	511
 dots/.local/bin/koompi-quicklook	426
 dots/.local/bin/koompi-remotedesktop-portal	526
 sdata/dist-arch/koompi-branding/files/sddm/theme/Main.qml	437
-sdata/install/setups.sh	710
