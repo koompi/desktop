@@ -11,7 +11,6 @@ dots/.config/quickshell/koompi/modules/koompi/launchpad/LaunchpadContent.qml	575
 dots/.config/quickshell/koompi/modules/koompi/lock/LockSurface.qml	734
 dots/.config/quickshell/koompi/modules/koompi/onScreenKeyboard/layouts.js	302
 dots/.config/quickshell/koompi/modules/koompi/regionSelector/RegionSelection.qml	554
-dots/.config/quickshell/koompi/modules/koompi/sidebarLeft/AiChat.qml	1389
 dots/.config/quickshell/koompi/modules/koompi/sidebarLeft/aiChat/AiMessage.qml	577
 dots/.config/quickshell/koompi/modules/koompi/sidebarLeft/aiChat/memory/MemoryBrowser.qml	525
 dots/.config/quickshell/koompi/modules/koompi/sidebarRight/SidebarRightContent.qml	532
