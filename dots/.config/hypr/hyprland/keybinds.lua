@@ -10,6 +10,10 @@ local appScratch = hyprScripts .. "/toggle_app_scratchpad.sh"
 local qsIpcCall = "qs -c $qsConfig ipc --any-display call"
 local qsIsAlive = qsIpcCall .. " TEST_ALIVE"
 local volumeFeedback = "pw-play --volume=0.8 /usr/share/sounds/freedesktop/stereo/audio-volume-change.oga >/dev/null 2>&1"
+-- apps become their own app-*.scope in app.slice so oomd can kill one, not the session
+local function app(id, cmd)
+    return hl.dsp.exec_cmd("koompi-launch --id " .. id .. " " .. cmd)
+end
 
 -- hl.bind rejects `catchall`, so every Super chord carries the release interrupt
 -- itself. Wrapper stays installed for the rest of the config.
@@ -46,15 +50,15 @@ hl.bind("SUPER + ALT + A", hl.dsp.global("quickshell:sidebarLeftToggleDetach"), 
 -- it the only way out is a button the surface has to be rendering for you to find.
 hl.bind("SUPER + SHIFT + I", hl.dsp.global("quickshell:intelligenceToggle"),
     { description = "Shell: Toggle the full assistant window" })
-hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd("brave"), { description = "App: Brave browser" })
+hl.bind("SUPER + SHIFT + W", app("brave", "brave"), { description = "App: Brave browser" })
 -- Okular has no plugin API, so enrolment cannot live in its menus; a global
 -- bind is the nearest thing that works while a PDF is focused.
-hl.bind("SUPER + SHIFT + E", hl.dsp.exec_cmd("koompi-signature capture"), { description = "App: Capture signature" })
-hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(appScratch .. " discord 'discord' discord"), { description = "App: Discord widget" })
-hl.bind("SUPER + H", hl.dsp.exec_cmd(appScratch .. " whatsapp 'web.whatsapp.com' " .. hyprScripts .. "/launch_whatsapp_web.sh"), { description = "App: WhatsApp widget" })
-hl.bind("SUPER + Y", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' Telegram"), { description = "App: Telegram widget" })
-hl.bind("SUPER + grave", hl.dsp.exec_cmd(appScratch .. " term 'term-scratch' 'wezterm start --class term-scratch'"), { description = "App: Terminal widget" })
-hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scratch' " .. hyprScripts .. "/launch_sysmon.sh"), { description = "App: System monitor widget" })
+hl.bind("SUPER + SHIFT + E", app("koompi-signature", "koompi-signature capture"), { description = "App: Capture signature" })
+hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(appScratch .. " discord 'discord' koompi-launch --id discord discord"), { description = "App: Discord widget" })
+hl.bind("SUPER + H", hl.dsp.exec_cmd(appScratch .. " whatsapp 'web.whatsapp.com' koompi-launch --id whatsapp " .. hyprScripts .. "/launch_whatsapp_web.sh"), { description = "App: WhatsApp widget" })
+hl.bind("SUPER + Y", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' koompi-launch --id telegram Telegram"), { description = "App: Telegram widget" })
+hl.bind("SUPER + grave", hl.dsp.exec_cmd(appScratch .. " term 'term-scratch' 'koompi-launch --id term-scratch wezterm start --class term-scratch'"), { description = "App: Terminal widget" })
+hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scratch' koompi-launch --id sysmon " .. hyprScripts .. "/launch_sysmon.sh"), { description = "App: System monitor widget" })
 -- SUPER + O is reserved for Quickwork and stays unbound until it exists.
 -- The left sidebar keeps SUPER + A.
 hl.bind("SUPER + N", hl.dsp.global("quickshell:sidebarRightToggle"), { description = "Shell: Toggle right sidebar" })
@@ -426,17 +430,17 @@ hl.bind("CTRL + SHIFT + ALT + SUPER + Delete", hl.dsp.exec_cmd("systemctl powero
 
 
 --##! Apps
-hl.bind("SUPER + Return", hl.dsp.exec_cmd(terminal), { description = "App: Terminal" })
-hl.bind("SUPER + T", hl.dsp.exec_cmd(terminal), { description = "App: Terminal" })
-hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd(terminal), { description = "App: Terminal" })
-hl.bind("SUPER + E", hl.dsp.exec_cmd(fileManager), { description = "App: File manager" })
-hl.bind("SUPER + W", hl.dsp.exec_cmd(browser), { description = "App: Browser" })
-hl.bind("SUPER + C", hl.dsp.exec_cmd(codeEditor), { description = "App: Code editor" })
-hl.bind("CTRL + SUPER + SHIFT + ALT + W", hl.dsp.exec_cmd(officeSoftware), { description = "App: Office software" })
-hl.bind("SUPER + X", hl.dsp.exec_cmd(textEditor), { description = "App: Text editor" })
-hl.bind("CTRL + SUPER + V", hl.dsp.exec_cmd(volumeMixer), { description = "App: Volume mixer" })
-hl.bind("SUPER + I", hl.dsp.exec_cmd(settingsApp), { description = "App: Settings app" })
-hl.bind("CTRL + SHIFT + Escape", hl.dsp.exec_cmd(taskManager), { description = "App: Task manager" })
+hl.bind("SUPER + Return", app("terminal", terminal), { description = "App: Terminal" })
+hl.bind("SUPER + T", app("terminal", terminal), { description = "App: Terminal" })
+hl.bind("CTRL + ALT + T", app("terminal", terminal), { description = "App: Terminal" })
+hl.bind("SUPER + E", app("fileManager", fileManager), { description = "App: File manager" })
+hl.bind("SUPER + W", app("browser", browser), { description = "App: Browser" })
+hl.bind("SUPER + C", app("codeEditor", codeEditor), { description = "App: Code editor" })
+hl.bind("CTRL + SUPER + SHIFT + ALT + W", app("officeSoftware", officeSoftware), { description = "App: Office software" })
+hl.bind("SUPER + X", app("textEditor", textEditor), { description = "App: Text editor" })
+hl.bind("CTRL + SUPER + V", app("volumeMixer", volumeMixer), { description = "App: Volume mixer" })
+hl.bind("SUPER + I", app("settingsApp", settingsApp), { description = "App: Settings app" })
+hl.bind("CTRL + SHIFT + Escape", app("taskManager", taskManager), { description = "App: Task manager" })
 
 --# Cursed stuff
 --## Make window not amogus large
