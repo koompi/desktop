@@ -13,6 +13,8 @@ XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE="$XDG_RUNTIME_DIR/koompi-stacking"
 LOG_DIR="$XDG_STATE_HOME/koompi/logs"
+SCRATCH="$(mktemp -d)"
+trap 'rm -rf -- "${SCRATCH:?}"' EXIT
 
 log() {
     mkdir -p "$LOG_DIR"
@@ -70,9 +72,9 @@ set_float() {
 # "place cascade" also fans windows out the way macOS and Windows do instead of
 # leaving them exactly stacked; "place clamp" only rescues what is out of bounds.
 place() {
-    hyprctl monitors -j > /tmp/.koompi-stacking-mon.$$
-    hyprctl clients -j > /tmp/.koompi-stacking-cli.$$
-    python3 - "$1" /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-cli.$$ <<'PY'
+    hyprctl monitors -j > "$SCRATCH/monitors.json"
+    hyprctl clients -j > "$SCRATCH/clients.json"
+    python3 - "$1" "$SCRATCH/monitors.json" "$SCRATCH/clients.json" <<'PY'
 import json, subprocess, sys
 
 mode, monf, clif = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -136,16 +138,15 @@ for c in cmds:
     subprocess.run(["hyprctl", "dispatch", c], capture_output=True)
 print(len(cmds))
 PY
-    rm -f /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-cli.$$
 }
 
 # Hyprland's maximized fullscreen leaves a floating window at its float size, so
 # fill the work area ourselves. Work area, not monitor, is the whole point: a
 # maximized window must stop at the panel, not run under it.
 maximize() {
-    hyprctl monitors -j > /tmp/.koompi-stacking-mon.$$
-    hyprctl activewindow -j > /tmp/.koompi-stacking-act.$$
-    python3 - "$STATE.max" /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-act.$$ <<'PY'
+    hyprctl monitors -j > "$SCRATCH/monitors.json"
+    hyprctl activewindow -j > "$SCRATCH/activewindow.json"
+    python3 - "$STATE.max" "$SCRATCH/monitors.json" "$SCRATCH/activewindow.json" <<'PY'
 import json, os, subprocess, sys
 
 store, monf, actf = sys.argv[1], sys.argv[2], sys.argv[3]
@@ -193,7 +194,6 @@ for cmd in (f'hl.dsp.window.resize({{ x = {nw}, y = {nh}, "exact", window = "add
     subprocess.run(["hyprctl", "dispatch", cmd], capture_output=True)
 print(f"{nw}x{nh}+{nx}+{ny}")
 PY
-    rm -f /tmp/.koompi-stacking-mon.$$ /tmp/.koompi-stacking-act.$$
 }
 
 stacking_on() {
