@@ -83,6 +83,73 @@ count_shells() {
     printf '%s\n' "$n"
 }
 
+LOCK_FILE="${TMPDIR:-/tmp}/koompi-update-$(id -u).lock"
+[[ -d "${XDG_RUNTIME_DIR:-}" && -w "${XDG_RUNTIME_DIR:-}" ]] && LOCK_FILE="$XDG_RUNTIME_DIR/koompi-update.lock"
+
+# flock(1) not a bash fd: a bash fd leaks into the restarted qs and holds the lock till logout; -o closes it pre-exec
+run_locked() {
+    have flock || die "flock (util-linux) is required"
+    KOOMPI_UPDATE_LOCKED=1 flock -n -E 75 -o "$LOCK_FILE" "$BASH" "$0" "$@"
+    local rc=$?
+    (( rc == 75 )) || exit "$rc"
+    local pid; pid="$(tr -dc '0-9' < "$LOCK_FILE" 2>/dev/null | head -c 20)"
+    die "another koompi update is running (pid ${pid:-unknown})"
+}
+
+# same classes as services/Idle.qml: logind weighs the lid against handle-lid-switch alone; tail --pid self-ends if this run dies
+INHIBIT_PID=""
+stay_awake() {
+    local -a cmd=(systemd-inhibit --what=sleep:idle:handle-lid-switch --mode=block --who=koompi-update --why='KOOMPI update in progress')
+    have systemd-inhibit || { warn "systemd-inhibit not found; the machine may sleep or suspend during the upgrade"; return 0; }
+    printf '%s     $ %s%s\n' "${C_DIM}" "${cmd[*]} tail --pid=$$ -f /dev/null" "${C_RST}"
+    [[ "$DRY_RUN" == true ]] && return 0
+    "${cmd[@]}" tail --pid=$$ -f /dev/null </dev/null >/dev/null 2>&1 &
+    INHIBIT_PID=$!
+    trap 'kill "$INHIBIT_PID" 2>/dev/null' EXIT
+}
+
+# 2 GiB not omarchy's 10: 64 GB eMMC school laptops; covers the download, pacman CheckSpace covers the install
+require_free_space() {
+    local path="$1" need_gib=2 avail_kib avail_gib
+    avail_kib="$(df -Pk -- "$path" 2>/dev/null | awk 'NR == 2 { print $4 }')"
+    [[ "$avail_kib" =~ ^[0-9]+$ ]] || die "cannot read the free space on $path (df failed)"
+    avail_gib="$(awk -v k="$avail_kib" 'BEGIN { printf "%.1f", k / 1048576 }')"
+    (( avail_kib >= need_gib * 1048576 )) \
+        || die "only ${avail_gib} GiB free on $path; koompi update needs ${need_gib} GiB. Free some space and run it again"
+    info "free space on $path: ${avail_gib} GiB (needs ${need_gib} GiB)"
+}
+
+# no qs ipc target for screenLocked; the shell mirrors it to logind LockedHint
+# (modules/common/panels/lock/LockScreen.qml setLockedHint), readable from ssh; hyprlock sets none. copied in koompi-reload
+session_locked() {
+    local id
+    while read -r id _; do
+        [[ "$(loginctl show-session "$id" -p LockedHint --value 2>/dev/null)" == yes ]] && return 0
+    done < <(loginctl list-sessions --no-legend 2>/dev/null | awk -v uid="$(id -u)" '$2 == uid { print $1 }')
+    pgrep -x hyprlock >/dev/null 2>&1
+}
+
+# ./setup update reloads on its own (common.sh reload_session has no --no-reload)
+refuse_git_route_if_locked() {
+    session_locked && die "session is locked; ./setup update would restart the shell under the lock. Unlock and run 'koompi update' again"
+    info "session lock: unlocked (logind LockedHint); ./setup update may restart the shell"
+}
+
+REBOOT_REASON=""
+check_restart_needed() {
+    local running newest dir pid
+    running="$(uname -r)"
+    # KOOMPI_UPDATE_MODULES_DIR: test hook (tests/test_update_guards.sh)
+    newest="$(for dir in "${KOOMPI_UPDATE_MODULES_DIR:-/usr/lib/modules}"/*/; do
+                  [[ -f "$dir/vmlinuz" ]] && basename "$dir"; done | sort -V | tail -1)"
+    [[ -n "$newest" && "$newest" != "$running" ]] \
+        && REBOOT_REASON="kernel $newest is installed but $running is running"
+    pid="$(pidof -s Hyprland 2>/dev/null)" || return 0
+    [[ "$(readlink "/proc/$pid/exe" 2>/dev/null)" == *' (deleted)' ]] \
+        && REBOOT_REASON="${REBOOT_REASON:+$REBOOT_REASON; }the Hyprland binary was replaced under the running compositor"
+    return 0
+}
+
 usage() {
     cat <<'EOF'
 koompi update - bring an installed KOOMPI desktop up to date
@@ -100,6 +167,8 @@ It detects how KOOMPI was installed and does the right thing:
 
 Both routes also migrate changed config defaults into your config.json,
 backing it up to config.json.bak-<timestamp> first.
+
+One run at a time, awake throughout, 2 GiB free required, locked session left alone.
 
 Options:
   -n, --dry-run    Print what would happen and change nothing
@@ -143,6 +212,9 @@ reload_session() {
     run hyprctl reload
     have qs || return 0
 
+    # killing qs under a lock strands the seat on Hyprland's failsafe lock
+    session_locked && { warn "session is locked; the shell was not restarted. Unlock and run 'koompi reload'"; return 0; }
+    info "session lock: unlocked (logind LockedHint); restarting the shell"
     stop_processes global-menu-daemon qs quickshell
     if [[ "$DRY_RUN" == true ]]; then
         info "would restart the shell"
@@ -160,7 +232,7 @@ reload_session() {
     done
     case "$count" in
         0) warn "the shell did not come back within ${waited}s; run 'qs -c koompi' to see why" ;;
-        1) ok "shell restarted" ;;
+        1) [[ -n "$REBOOT_REASON" ]] || ok "shell restarted" ;;   # reboot advice replaces it
         *) warn "$count koompi shells are running where there should be one" ;;
     esac
 }
@@ -278,6 +350,7 @@ EOF
 # the defaults -> add it. Arrays are one leaf (Quickshell's JsonAdapter replaces
 # lists wholesale, so element-wise merging would fight the shell). Values the
 # user added that the defaults never had are kept. Nothing is deleted.
+# shellcheck disable=SC2016  # $old/$new/$user are jq variables
 readonly MERGE_JQ_PROGRAM='
 def merge3($old; $new; $user):
   if (($new | type) == "object") and (($old | type) == "object") and (($user | type) == "object")
@@ -298,6 +371,7 @@ merge3($old[0]; $new[0]; $user[0])
 
 # Every leaf of a JSON doc as "path<TAB>json" rows; arrays are one leaf, same
 # as the merge treats them. Used only to size the report lines.
+# shellcheck disable=SC2016  # $pre/$x/$k are jq variables
 _rows_jq='
 def rows($pre):
   . as $x
@@ -533,6 +607,7 @@ resolve_checkout() {
 update_packaged() {
     step "Updating KOOMPI OS packages"
     info "route: packaged (the desktop ships from pacman packages)"
+    require_free_space /
     confirm "Run a full system upgrade?" || die "aborted"
 
     local -a noconfirm=()
@@ -580,6 +655,7 @@ update_packaged() {
             break
         fi
     done
+    check_restart_needed
 
     # Could anything of ours have moved? Either the [koompi] repo is real on
     # this machine, or some koompi-* package version changed. If neither, say
@@ -595,6 +671,8 @@ update_packaged() {
         local repo
         repo="$(resolve_checkout)" || die "cannot find or fetch a koompi-desktop checkout; install git and retry"
         info "falling back to the git route: updating from $repo"
+        require_free_space "$repo"
+        refuse_git_route_if_locked
         local -a args=()
         [[ "$DRY_RUN"    == true ]] && args+=(--dry-run)
         [[ "$ASSUME_YES" == true ]] && args+=(--yes)
@@ -624,6 +702,8 @@ update_from_git() {
 
     step "Updating from $repo"
     info "route: from-git (the checkout owns the installed config)"
+    require_free_space "$repo"
+    refuse_git_route_if_locked
     local -a args=()
     [[ "$DRY_RUN"    == true ]] && args+=(--dry-run)
     [[ "$ASSUME_YES" == true ]] && args+=(--yes)
@@ -654,6 +734,7 @@ main() {
             usage; exit 0 ;;
     esac
 
+    local -a argv=("$@")   # re-exec needs them whole
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -n|--dry-run) DRY_RUN=true ;;
@@ -666,6 +747,13 @@ main() {
 
     [[ "$(id -u)" -ne 0 ]] || die "do not run this as root; it calls sudo itself where needed"
 
+    # unset at once: children must not inherit the claim
+    [[ -n "${KOOMPI_UPDATE_LOCKED:-}" ]] || run_locked "${argv[@]}"
+    unset KOOMPI_UPDATE_LOCKED
+    printf '%s\n' "$$" > "$LOCK_FILE"
+    info "lock taken: $LOCK_FILE (pid $$)"
+    stay_awake
+
     local method
     if is_packaged; then
         method=packaged
@@ -673,6 +761,7 @@ main() {
         # A fallback already ran the git route, which reloads on its own.
         [[ "$UPDATE_ROUTE" == from-git ]] && method=from-git
         [[ "$UPDATE_ROUTE" == from-git ]] || reload_session
+        [[ -z "$REBOOT_REASON" ]] || warn "reboot needed: $REBOOT_REASON; a shell reload cannot apply that. Reboot when convenient"
     else
         method=from-git
         update_from_git

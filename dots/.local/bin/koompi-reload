@@ -1,17 +1,46 @@
 #!/usr/bin/env bash
 # Reload the compositor configuration and restart the KOOMPI shell so QML
 # changes become visible immediately.
+# stop_processes/session_locked: copies of update's; installed alone, cannot source it
 set -euo pipefail
 
-if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || ! command -v hyprctl >/dev/null 2>&1; then
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] || ! have hyprctl; then
     echo "koompi reload: no running Hyprland session" >&2
+    exit 1
+fi
+
+# one name at a time: killall a b c fails when any name is absent
+stop_processes() {
+    local name
+    for name in "$@"; do
+        pgrep -x -- "$name" >/dev/null 2>&1 || continue
+        killall -w -q -- "$name" 2>/dev/null || echo "koompi reload: could not stop $name" >&2
+    done
+    return 0
+}
+
+# no qs ipc target for screenLocked; the shell mirrors it to logind LockedHint
+# (modules/common/panels/lock/LockScreen.qml setLockedHint), readable from ssh; hyprlock sets none
+session_locked() {
+    local id
+    while read -r id _; do
+        [[ "$(loginctl show-session "$id" -p LockedHint --value 2>/dev/null)" == yes ]] && return 0
+    done < <(loginctl list-sessions --no-legend 2>/dev/null | awk -v uid="$(id -u)" '$2 == uid { print $1 }')
+    pgrep -x hyprlock >/dev/null 2>&1
+}
+
+# killing qs under a lock strands the seat on Hyprland's failsafe lock
+if session_locked; then
+    echo "koompi reload: session is locked; unlock and run 'koompi reload'" >&2
     exit 1
 fi
 
 hyprctl reload
 
-if command -v qs >/dev/null 2>&1; then
-    killall -w -q global-menu-daemon qs quickshell 2>/dev/null || true
+if have qs; then
+    stop_processes global-menu-daemon qs quickshell
     setsid env QT_QPA_PLATFORM=wayland qs -c koompi >/dev/null 2>&1 &
 fi
 
