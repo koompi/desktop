@@ -252,7 +252,7 @@ fn contentLines(app: *App, ctx: Ctx, alloc: std.mem.Allocator) ![]const []const 
 
 pub fn draw(app: *App, ctx: Ctx) void {
     var out_buf: [4096]u8 = undefined;
-    var stdout = std.Io.File.stdout().writer(ctx.io, &out_buf);
+    var stdout = std.Io.File.stdout().writerStreaming(ctx.io, &out_buf);
     const out = &stdout.interface;
     defer out.flush() catch {};
     out.writeAll("\x1b[2J\x1b[H") catch {};
