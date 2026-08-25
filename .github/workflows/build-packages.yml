@@ -58,7 +58,9 @@ jobs:
           # only need the .pkg.tar.zst artifacts here; resolution is a client-side
           # / install-time concern. PRODUCTION builds in dependency order inside a
           # clean chroot, repo-add-ing each result before building the metas.
-          install -dm755 "$GITHUB_WORKSPACE/sdata/dist-arch/repo/packages"
+          # The workspace was chowned to builder above; PKGDEST must be too, or
+          # the first makepkg cannot write its package into a root-owned dir.
+          install -dm755 -o builder -g builder "$GITHUB_WORKSPACE/sdata/dist-arch/repo/packages"
           for pkgdir in "$GITHUB_WORKSPACE"/sdata/dist-arch/*/; do
             [ -f "$pkgdir/PKGBUILD" ] || continue
             echo "::group::build $(basename "$pkgdir")"
