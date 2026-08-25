@@ -41,8 +41,18 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J32 | OSD from the command line + battery-low hook + TUI launch convention | O23 O29, ALREADY BUILT battery row | `OnScreenDisplay.qml`, new `koompi-osd`, `koompi-shell/PKGBUILD`, `services/Battery.qml`, `hyprland/scripts/launch_*.sh`, `rules.lua` | after J31 | — |
 | J33 | packages: ufw default-deny (+KDE Connect, LocalSend ports), localsend, fwupd, tesseract-data-khm | O25 O17 O31 khm | `koompi-sysdefaults/**`, `koompi-apps`/`koompi-basic`/`koompi-screencapture` PKGBUILDs, `setups/system.sh`, `post_install.sh`, tests | ready | — |
 | J34 | update badge on the KOOMPI bar + bar popups by keyboard | O09 O34 | `services/Updates.qml`, `modules/koompi/bar/**`, `keybinds_*.lua` | after J31 | — |
+| J35 | cheatsheet rows searchable and executable | O13 | `modules/koompi/cheatsheet/**`, `services/HyprlandKeybinds.qml`, new test | ready | — |
+| J36 | hibernation system half: swapfile, resume hook, cmdline; doctor line | O14 | new `libexec/hibernation-setup`, `post_install.sh`, `setups/system.sh`, `koompi-health` (one line), PKGBUILD install line, new test | after J33 J30 | — |
+| J37 | fingerprint enrolment wizard + first-run invitation | O15 | new `koompi-hw-fingerprint`, `koompi-setup-fingerprint`, `pam/fprintd.conf`, `FirstRunExperience.qml`, `LockScreenSection.qml`, tests | after J31 | — |
+| J38 | factory reset from @baseline | O16 | new `koompi-factory-reset`, `koompi-snapshot` | blocked-on-user | — |
+| J39 | one text-size knob (shell, GTK, wezterm) | O18 | `Appearance.qml` (≤467), `Config.qml` (≤827), `FontsSection.qml`, `koompi-theme`, `wezterm.lua`, new test | ready | — |
+| J40 | crash watch → local-agent diagnosis | O30 | new `koompi-crash-watch`, `koompi-crash-diagnose`, user unit, `docs/agents/crash.md`, new test | after J31 J33 | — |
+| J41 | branded idle screen before lock | O32 | new `modules/koompi/screensaver/**`, `KoompiFamily.qml`, `GlobalStates.qml`, `hypridle.conf`, new test | ready | — |
+| J42 | hardware quirk layer keyed on DMI | O08 | new `koompi-hw-match`, `koompi-hw-laptop`, `sdata/hardware/**`, `libexec/apply-hardware`, `post_install.sh`, `setups/system.sh`, `update-lib.sh` (one call), new test | after J33 J31 J30 | — |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
+
+Contended (wave 3): `sdata/dist-arch/koompi-shell/PKGBUILD` `_tools` rows are appended by J32 J37 J40 J42; workers leave `pkgrel` alone and the lead resolves the list as the union and bumps `pkgrel` once per merge. `post_install.sh` and `setups/system.sh` get one function + one call each from J36 J42 after J33.
 
 Contended: `tests/file-length-allow.txt` is written by J01 and later trimmed by J09 only; refactor jobs never touch it (a shrunk file still passes). `tests/run.sh` is not owned by anyone: it auto-discovers `test_*.sh` (`tests/run.sh:21`).
 

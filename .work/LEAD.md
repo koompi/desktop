@@ -48,6 +48,14 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J32 | — | after J31 | |
 | J33 | claude | live | |
 | J34 | — | after J31 | |
+| J35 | — | ready | |
+| J36 | — | after J33 J30 | |
+| J37 | — | after J31 | |
+| J38 | — | blocked-on-user | factory reset semantics: root only / root+home (recommended) / re-provision+LUKS |
+| J39 | — | ready | |
+| J40 | — | after J31 J33 | |
+| J41 | — | ready | |
+| J42 | — | after J33 J31 J30 | |
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 
 ## Live now
@@ -109,6 +117,8 @@ Watcher: Monitor loop, 45 s.
 
 - 18:05 Rithy "next." with an empty queue = start the next campaign. Lead picked the remaining OMARCHY-AUDIT S rows (no design call needed) over O05 (needs Rithy) and the ALREADY BUILT splits (Rithy said not to): J29 O03+O22+O26+O27, J30 O28+O31 logic, J31 O24+O12, J33 O25+O17+O31 dep+khm; J32 (O23 O29) and J34 (O09 O34) serial after J31 because of `koompi-shell/PKGBUILD` `_tools` and keybinds. M rows (O08 O13 O14 O15 O16 O18 O19 O30 O32) are wave 3, contracts written when wave 2 lands. Four concurrent: worker runtimes and lead gates at nice 19.
 - Rule kept: `keybinds.lua` (447) and `libexec/update` (695) sit on their allow-list rows, so jobs touching them must add code in a sibling file, never grow them.
+
+- 17:40 wave 3 (M rows) contracts J35-J42 written from an Explore agent's cited fact sheet (O14's shell half already exists: `SessionScreen.qml:172-188`; O19 manual left out — prose in Rithy's voice, his call). PKGBUILD `_tools` contention relaxed: workers append rows and leave pkgrel; the lead unions and bumps on merge. Concurrency cap 5 workers.
 
 ## Next action
 
