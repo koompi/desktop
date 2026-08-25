@@ -14,6 +14,11 @@ Column {
     id: root
     required property string categoryName
     readonly property bool isCategorized: categoryName?.length > 0
+    // Ids of the rows the search keeps, or null for every row
+    property var matchIds: null
+    // The row Enter would run
+    property int firstMatchId: -1
+    required property var activate
     property int maxBindWidth: 0
     property real columnSpacing: 40
     property real titleSpacing: 7
@@ -81,20 +86,6 @@ Column {
       Config.options.cheatsheet.useMouseSymbol ? mouseSymbolMap : {},
     )
 
-    function modMaskToStringList(modMask: int): list<string> {
-        var list = [];
-        // Funny mathematical order but we wanna have this natural user-facing order
-        if (modMask & (1 << 2)) { list.push("Ctrl"); }
-        if (modMask & (1 << 6)) { list.push("Super"); }
-        if (modMask & (1 << 0)) { list.push("Shift"); }
-        if (modMask & (1 << 3)) { list.push("Alt"); }
-        if (modMask & (1 << 1)) { list.push("Caps"); }
-        if (modMask & (1 << 4)) { list.push("Mod2"); }
-        if (modMask & (1 << 5)) { list.push("Mod3"); }
-        if (modMask & (1 << 7)) { list.push("Mod5"); }
-        return list;
-    }
-
     visible: repeater.model.length > 0
     spacing: titleSpacing
 
@@ -123,6 +114,10 @@ Column {
         // Contains non-left direction
         if (/^(right|up|down)\b/i.test(key)) return true;
         return false;
+    }
+
+    function shown(bind) {
+        return root.matchIds === null || root.matchIds.includes(bind.id);
     }
 
     function containsFirstRepetitive(bind) {
@@ -156,9 +151,9 @@ Column {
             id: repeater
             model: {
                 if (!root.isCategorized) {
-                    return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isUncategorized(bind) && !root.containsNonFirstRepetitive(bind));
+                    return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isUncategorized(bind) && !root.containsNonFirstRepetitive(bind) && root.shown(bind));
                 }
-                return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isCategory(bind, root.categoryName) && !root.containsNonFirstRepetitive(bind));
+                return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isCategory(bind, root.categoryName) && !root.containsNonFirstRepetitive(bind) && root.shown(bind));
             }
             delegate: BindLine {
                 required property var modelData
@@ -168,12 +163,36 @@ Column {
         }
     }
 
-    component BindLine: Row {
+    // A row that can be dispatched is a button: hover lights it, a click runs the
+    // bind and closes the sheet. Rows that cannot (mouse drags, submaps, Lua
+    // closures) stay plain text.
+    component BindLine: Rectangle {
         id: bindLine
         required property var keyData
         property string categoryName: ""
+        readonly property bool dispatchable: HyprlandKeybinds.dispatchable(keyData)
+        readonly property bool primary: keyData.id === root.firstMatchId
+        property real horizontalPadding: 6
+
+        implicitWidth: bindContent.implicitWidth + horizontalPadding * 2
+        implicitHeight: bindContent.implicitHeight + 4
+        radius: Appearance.rounding.small
+        color: primary ? Appearance.colors.colSecondaryContainer
+            : bindMouse.containsMouse ? Appearance.colors.colLayer1Hover : "transparent"
+
+        MouseArea {
+            id: bindMouse
+            anchors.fill: parent
+            enabled: bindLine.dispatchable
+            hoverEnabled: bindLine.dispatchable
+            cursorShape: bindLine.dispatchable ? Qt.PointingHandCursor : Qt.ArrowCursor
+            onClicked: root.activate(bindLine.keyData)
+        }
 
         Row {
+            id: bindContent
+            x: bindLine.horizontalPadding
+            anchors.verticalCenter: parent.verticalCenter
             spacing: 16
             Row {
                 id: modRow
@@ -182,7 +201,7 @@ Column {
                 spacing: 4
                 Repeater {
                     model: {
-                        const modList = root.modMaskToStringList(bindLine.keyData.modmask).map(mod => root.keySubstitutions[mod] || mod)
+                        const modList = HyprlandKeybinds.modifiersOf(bindLine.keyData.modmask).map(mod => root.keySubstitutions[mod] || mod)
                         if (modList.length == 0) return []
                         if (Config.options.cheatsheet.splitButtons) return modList;
                         return [modList.join(" ")]

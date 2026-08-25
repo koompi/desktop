@@ -123,9 +123,10 @@ Scope { // Scope
                 }
             }
 
+            // Keyboard focus belongs to the search field in CheatsheetKeybinds,
+            // which takes it on open; Escape and the tab chords bubble up here.
             RippleButton { // Close button
                 id: closeButton
-                focus: cheatsheetRoot.visible
                 implicitWidth: 40
                 implicitHeight: 40
                 buttonRadius: Appearance.rounding.full
