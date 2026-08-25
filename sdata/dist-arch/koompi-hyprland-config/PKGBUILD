@@ -17,6 +17,7 @@ depends=(koompi-hyprland koompi-quickshell-git)
 # Mutually exclusive with the Plasma edition's /etc/skel layout: both ship the
 # same shared KDE/Qt theming paths, so they conflict (one edition per machine).
 conflicts=('koompi-kde-config')
+makedepends=(rsync)
 
 package() {
   local _repo_root
@@ -27,5 +28,13 @@ package() {
     return 1
   fi
   install -dm755 "$pkgdir/etc/skel"
-  cp -a "$_repo_root/dots/." "$pkgdir/etc/skel/"
+  # Build artefacts and caches never reach /etc/skel, or every new user gets a
+  # private copy (the list ./setup uses in sdata/install/files.sh; a checkout
+  # that has built the global-menu daemon carries hundreds of MB of .zig-cache
+  # under the shell tree, and cp -a used to package it — BUG-AUDIT H3).
+  rsync -a \
+    --exclude='.git' --exclude='.gitignore' --exclude='.claude' \
+    --exclude='zig-out' --exclude='.zig-cache' --exclude='__pycache__' \
+    --exclude='*.pyc' --exclude='.qmlls.ini' \
+    "$_repo_root/dots/" "$pkgdir/etc/skel/"
 }

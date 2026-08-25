@@ -24,7 +24,7 @@ license=(GPL-3.0-only)
 # window properties with xprop. Without either one the bar is silently empty.
 # python-gobject: koompi-remotedesktop-portal is a Python script on Gio/GLib.
 depends=(koompi-quickshell-git rsync jq xorg-xprop xorg-xwayland python-gobject)
-makedepends=(zig)
+makedepends=(zig rsync)
 
 # Every dots/.local/bin/koompi-* executable ships, by name, so what the package
 # puts in /usr/bin can be read off this file. tests/test_packaged_tools.sh
@@ -87,12 +87,22 @@ package() {
     return 1
   fi
 
+  # Build artefacts and caches never ship (the list ./setup uses in
+  # sdata/install/files.sh): a checkout that has built the global-menu daemon
+  # carries hundreds of MB of .zig-cache under the shell tree, gitignored but
+  # on disk, and cp -a used to package it (BUG-AUDIT H3).
+  local -a _excludes=(
+    --exclude='.git' --exclude='.gitignore' --exclude='.claude'
+    --exclude='zig-out' --exclude='.zig-cache' --exclude='__pycache__'
+    --exclude='*.pyc' --exclude='.qmlls.ini'
+  )
   install -dm755 "$pkgdir/etc/xdg/quickshell"
-  cp -a "$_repo_root/dots/.config/quickshell/koompi" "$pkgdir/etc/xdg/quickshell/koompi"
+  rsync -a "${_excludes[@]}" "$_repo_root/dots/.config/quickshell/koompi/" \
+    "$pkgdir/etc/xdg/quickshell/koompi/"
   # Quick Look is a separate quickshell config, not a panel of the main shell,
   # so a crash in a file preview cannot take the bar down with it.
-  cp -a "$_repo_root/dots/.config/quickshell/koompi-quicklook" \
-    "$pkgdir/etc/xdg/quickshell/koompi-quicklook"
+  rsync -a "${_excludes[@]}" "$_repo_root/dots/.config/quickshell/koompi-quicklook/" \
+    "$pkgdir/etc/xdg/quickshell/koompi-quicklook/"
 
   install -Dm755 "$srcdir/koompi-cli-out/bin/koompi" "$pkgdir/usr/bin/koompi"
   install -Dm755 "$_repo_root/dots/.local/share/koompi/libexec/update" \
