@@ -261,6 +261,11 @@ Item { // Bar content region
                         realSpacing: indicatorsRowLayout.realSpacing
                         color: rightSidebarButton.colText
                     }
+                    UpdateBadge { // Pending updates: count, click runs koompi update
+                        Layout.fillHeight: true
+                        realSpacing: indicatorsRowLayout.realSpacing
+                        color: rightSidebarButton.colText
+                    }
                     Revealer {
                         reveal: Audio.sink?.audio?.muted ?? false
                         Layout.fillHeight: true
