@@ -11,10 +11,27 @@
 # Nobody should have to remember which one they have, so the CLI works it out. The
 # checkout's path is read from ~/.local/state/koompi/repo-path, which ./setup
 # writes at install time (see sdata/lib/common.sh).
+#
+# Honesty rule (B1): the [koompi] pacman repo is not published yet, so a packaged
+# upgrade usually cannot deliver anything this tree committed. "packages up to
+# date" is therefore never the last word: unless the repo is configured or a
+# koompi-* package actually moved, the update falls back to the git route.
+#
+# Config defaults migration (B2): a user's config.json is written in full at
+# first run and never revisited, so a shipped default changed later in
+# Config.qml never reaches them. Both routes now dump the defaults of the tree
+# the user had BEFORE the update and the tree they are getting, and three-way
+# merge them into config.json (see cmd_merge_config). Old defaults come from
+# the pre-upgrade /etc/xdg/quickshell/koompi tree (packaged) or the checkout
+# pre-pull (from git); every update also saves its baseline snapshot to
+# ~/.local/state/koompi/config-defaults.json.
 set -uo pipefail
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/koompi"
 REPO_PATH_FILE="$STATE_DIR/repo-path"
+DEFAULTS_SNAPSHOT="$STATE_DIR/config-defaults.json"
+UPSTREAM_REPO="https://github.com/koompi/desktop"
+CLONE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/koompi-desktop"
 
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
     C_RED=$'\e[31m'; C_GREEN=$'\e[32m'; C_YELLOW=$'\e[33m'
@@ -74,29 +91,31 @@ Usage:
   koompi update [options]
 
 It detects how KOOMPI was installed and does the right thing:
-  packaged (KOOMPI OS)   pacman -Syu, plus the AUR helper if you have one
+  packaged (KOOMPI OS)   pacman -Syu, plus the AUR helper if you have one.
+                         If the [koompi] repo is not configured and no
+                         koompi-* package moved, it falls back to the git
+                         route, because the packages alone cannot carry a
+                         desktop change we committed.
   from a git checkout    git pull, then ./setup update
+
+Both routes also migrate changed config defaults into your config.json,
+backing it up to config.json.bak-<timestamp> first.
 
 Options:
   -n, --dry-run    Print what would happen and change nothing
   -y, --yes        Do not ask anything
       --no-reload  Leave the running session alone (changes apply at next login)
   -h, --help       This message
+
+Subcommands (used by the installer and koompi-migrate, not meant for hands):
+  dump-defaults <shell-tree> <out.json>
+      Write the full default config.json of a shell tree (e.g. the checkout's
+      dots/.config/quickshell/koompi or /etc/xdg/quickshell/koompi) to out.json.
+  merge-config <old-defaults.json> <new-defaults.json> <config.json> [--apply]
+      Three-way merge of config defaults over a user's config.json. Without
+      --apply the merged result is printed to stdout and nothing is written.
 EOF
 }
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -n|--dry-run) DRY_RUN=true ;;
-        -y|--yes)     ASSUME_YES=true ;;
-        --no-reload)  NO_RELOAD=true ;;
-        -h|--help)    usage; exit 0 ;;
-        *)            usage >&2; die "unknown option: $1" ;;
-    esac
-    shift
-done
-
-[[ "$(id -u)" -ne 0 ]] || die "do not run this as root; it calls sudo itself where needed"
 
 confirm() {
     [[ "$ASSUME_YES" == true ]] && return 0
@@ -157,18 +176,387 @@ is_packaged() {
         || pacman -Qq koompi-hyprland-config >/dev/null 2>&1
 }
 
+# ---------------------------------------------------------------------------
+# Config defaults: dumping the defaults of a tree, and the three-way merge.
+# ---------------------------------------------------------------------------
+
+# Dump the default config.json of a Quickshell config tree without a running
+# session and without touching the user's real HOME.
+#
+# How it works (the obvious one, per the J11 brief): a minimal shell.qml is
+# staged in a temp directory alongside symlinks to just the files Config's
+# singleton graph needs (Config, Directories, Appearance, the common function
+# utils, SystemInfo - staging the whole tree would instantiate every service
+# and demand a real display backend). Running it points Config's FileView at
+# an empty temp XDG_CONFIG_HOME, so its own JsonAdapter writes the full
+# defaults exactly the way a fresh user's first run does. Qt runs on the
+# offscreen platform: no window ever maps, no compositor needed.
+#
+# If Config.qml grows a new dependency, the staged load fails loudly here
+# rather than writing a partial dump; add the missing symlink to STAGED_FILES.
+cmd_dump_defaults() {
+    local tree="$1" out="$2"
+    have qs || { echo "dump-config-defaults: qs (quickshell) is required" >&2; return 1; }
+    [[ -d "$tree" ]] || { echo "dump-config-defaults: no such tree: $tree" >&2; return 1; }
+
+    local work root
+    work="$(mktemp -d "${TMPDIR:-/tmp}/koompi-defaults.XXXXXX")"
+    root="$work/root"
+    mkdir -p "$root/modules/common/functions" "$root/services" \
+             "$work/home" "$work/runtime"
+    local f
+    for f in modules/common/Config.qml modules/common/Directories.qml \
+             modules/common/Appearance.qml services/SystemInfo.qml; do
+        ln -s "$tree/$f" "$root/$f" || { rm -rf "$work"; return 1; }
+    done
+    # The whole functions/ dir, scripts included: Fuzzy pulls fuzzysort.js,
+    # and a missing sibling only surfaces as a loud load failure.
+    for f in "$tree"/modules/common/functions/*; do
+        ln -s "$f" "$root/modules/common/functions/$(basename "$f")" || return 1
+    done
+    ln -s "$tree/defaults" "$root/defaults" || return 1
+
+    cat > "$root/shell.qml" <<'EOF'
+import QtQuick
+import Quickshell
+import qs.modules.common
+
+ShellRoot {
+    // Touching Config.options instantiates the singleton; its FileView finds
+    // no config.json in the temp XDG_CONFIG_HOME and writes the defaults.
+    Timer { interval: 20000; running: true; onTriggered: Qt.exit(3) }
+    Component.onCompleted: {
+        const options = Config.options
+        console.info(`defaults dump: ${Object.keys(options).length} top-level groups`)
+    }
+}
+EOF
+
+    local raw="$work/home/.config/koompi/config.json"
+    HOME="$work/home" \
+    XDG_CONFIG_HOME="$work/home/.config" \
+    XDG_STATE_HOME="$work/home/.local/state" \
+    XDG_CACHE_HOME="$work/home/.cache" \
+    XDG_RUNTIME_DIR="$work/runtime" \
+    QT_QPA_PLATFORM=offscreen \
+        timeout 60 qs -p "$root" -n >"$work/qs.log" 2>&1 &
+    local pid=$!
+    local waited=0
+    while (( waited < 180 )); do
+        [[ -s "$raw" ]] && break
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.25
+        waited=$((waited + 1))
+    done
+    sleep 0.5   # let the adapter's write timer flush
+    kill "$pid" 2>/dev/null
+    wait "$pid" 2>/dev/null
+
+    if [[ ! -s "$raw" ]] || ! jq -e 'type == "object"' "$raw" >/dev/null 2>&1; then
+        echo "dump-config-defaults: quickshell did not produce the defaults for $tree" >&2
+        tail -5 "$work/qs.log" >&2 2>/dev/null || true
+        rm -rf "$work"
+        return 1
+    fi
+    # A few defaults are absolute paths derived from HOME (screenshot save
+    # location, wallpaper library, ...). Rewrite this run's temp home back to a
+    # canonical placeholder so two dumps of the same tree are byte-identical
+    # and old-vs-new comparisons never diff on the sandbox's random name.
+    local normalized
+    normalized="$(mktemp "${TMPDIR:-/tmp}/koompi-norm.XXXXXX")"
+    sed "s|$work/home|KOOMPI-DUMP-HOME|g" -- "$raw" > "$normalized"
+    mkdir -p "$(dirname "$out")"
+    cp -- "$normalized" "$out.tmp" && mv -f -- "$out.tmp" "$out"
+    rm -f "$normalized"
+    rm -rf "$work"
+}
+
+# Three-way merge of config defaults over the user's config.
+#
+# For every leaf: user == old default and new default differs -> apply the new
+# default; user != old default -> the user owns it, keep theirs; a leaf new in
+# the defaults -> add it. Arrays are one leaf (Quickshell's JsonAdapter replaces
+# lists wholesale, so element-wise merging would fight the shell). Values the
+# user added that the defaults never had are kept. Nothing is deleted.
+readonly MERGE_JQ_PROGRAM='
+def merge3($old; $new; $user):
+  if (($new | type) == "object") and (($old | type) == "object") and (($user | type) == "object")
+  then reduce (($old | keys_unsorted) + ($new | keys_unsorted) + ($user | keys_unsorted) | unique[]) as $k
+      ({};
+        . + (
+          if $new | has($k)
+          then { ($k): merge3($old[$k]; $new[$k]; $user[$k]) }
+          elif $user | has($k)
+          then { ($k): $user[$k] }
+          else {} end))
+  elif $user == null then $new
+  elif $user == $old then $new
+  else $user
+  end;
+merge3($old[0]; $new[0]; $user[0])
+'
+
+# Every leaf of a JSON doc as "path<TAB>json" rows; arrays are one leaf, same
+# as the merge treats them. Used only to size the report lines.
+_rows_jq='
+def rows($pre):
+  . as $x
+  | if ($x | type) == "object"
+    then $x | keys_unsorted[] as $k | ($x[$k] | rows($pre + [$k]))
+    else [($pre | join(".")), ($x | tojson)]
+    end;
+[rows([])][] | @tsv
+'
+
+# Number of leaves whose value differs between two JSON documents.
+diff_leaf_count() {
+    local a="$1" b="$2"
+    diff <(jq -r "$_rows_jq" "$a" | sort) <(jq -r "$_rows_jq" "$b" | sort) | grep -c '^[<>]' || true
+}
+
+cmd_merge_config() {
+    local old="" new="" user="" apply=false
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --apply) apply=true ;;
+            -*) echo "merge-config: unknown option: $1" >&2; return 1 ;;
+            *)  if [[ -z "$old" ]]; then old="$1"
+                elif [[ -z "$new" ]]; then new="$1"
+                elif [[ -z "$user" ]]; then user="$1"
+                else echo "merge-config: too many arguments" >&2; return 1
+                fi ;;
+        esac
+        shift
+    done
+    [[ -n "$old" && -n "$new" && -n "$user" ]] || {
+        echo "usage: merge-config <old-defaults> <new-defaults> <config.json> [--apply]" >&2
+        return 1
+    }
+    have jq || { echo "merge-config: jq is required" >&2; return 1; }
+    for f in "$old" "$new"; do
+        [[ -s "$f" ]] || { echo "merge-config: missing defaults file: $f" >&2; return 1; }
+        jq -e 'type == "object"' "$f" >/dev/null 2>&1 \
+            || { echo "merge-config: $f is not a JSON object" >&2; return 1; }
+    done
+
+    # No config yet: nothing to migrate. The first shell start writes the
+    # current defaults itself, which is exactly what we would have produced.
+    if [[ ! -f "$user" ]]; then
+        info "no config at ${user/#$HOME/\~} yet; the first start will write the current defaults"
+        return 0
+    fi
+    if ! jq -e 'type == "object"' "$user" >/dev/null 2>&1; then
+        echo "merge-config: $user is not valid JSON; refusing to touch it" >&2
+        return 1
+    fi
+
+    local merged
+    merged="$(mktemp "${TMPDIR:-/tmp}/koompi-merged.XXXXXX")"
+    # --slurpfile wraps each document in a one-element array, hence the [0]s.
+    jq -nc --slurpfile old "$old" --slurpfile new "$new" --slurpfile user "$user" \
+        "$MERGE_JQ_PROGRAM" > "$merged" \
+        || { rm -f "$merged"; echo "merge-config: merge failed" >&2; return 1; }
+    jq -e 'type == "object"' "$merged" >/dev/null 2>&1 \
+        || { rm -f "$merged"; echo "merge-config: merge produced invalid JSON" >&2; return 1; }
+
+    if cmp -s "$user" "$merged"; then
+        if [[ "$apply" == true ]]; then
+            rm -f "$merged"
+            ok "config defaults already current; ${user/#$HOME/\~} untouched"
+            return 0
+        fi
+        cat "$merged"   # compute mode always answers with the result document
+        rm -f "$merged"
+        return 0
+    fi
+
+    local changed
+    changed="$(diff_leaf_count "$user" "$merged")"
+    if [[ "$apply" != true ]]; then
+        cat "$merged"
+        rm -f "$merged"
+        echo "merge-config: $changed value(s) would change (--apply to write)" >&2
+        return 0
+    fi
+
+    # Stop condition honoured literally: never write without a backup first.
+    local backup
+    backup="${user}.bak-$(date +%Y%m%d-%H%M%S)"
+    cp -a -- "$user" "$backup" \
+        || { rm -f "$merged"; echo "merge-config: backup failed; $user untouched" >&2; return 1; }
+
+    # Temp + mv, validated before the rename: a failed write can leave junk
+    # behind, never a half-written config.json.
+    local tmp
+    tmp="$(mktemp "$(dirname -- "$user")/.config-merge.XXXXXX")"
+    if ! cp -- "$merged" "$tmp" || ! jq -e 'type == "object"' "$tmp" >/dev/null 2>&1; then
+        rm -f "$tmp" "$merged"
+        echo "merge-config: write failed; $user untouched (backup: $backup)" >&2
+        return 1
+    fi
+    chmod --reference="$user" "$tmp" 2>/dev/null || true
+    mv -f -- "$tmp" "$user"
+    rm -f "$merged"
+    ok "migrated $changed config value(s); previous copy at ${backup/#$HOME/\~}"
+}
+
+# Wrapper kept separate so tests can substitute the dumper instead of shelling
+# out to a real quickshell.
+dump_defaults() {
+    cmd_dump_defaults "$@"
+}
+
+# The installed shell tree of a PACKAGED system.
+packaged_shell_tree() {
+    printf '%s\n' /etc/xdg/quickshell/koompi
+}
+
+# Snapshot bookkeeping shared by both routes: after every update the snapshot
+# holds the defaults the user is now running, so the NEXT update always has an
+# exact baseline even if the dump source changed underneath it.
+save_defaults_snapshot() {
+    local new="$1"
+    [[ "$DRY_RUN" == true ]] && return 0
+    mkdir -p "$STATE_DIR"
+    cp -a -- "$new" "$DEFAULTS_SNAPSHOT.tmp" && mv -f -- "$DEFAULTS_SNAPSHOT.tmp" "$DEFAULTS_SNAPSHOT"
+}
+
+# Merge the freshly dumped defaults into the user's config, honouring the
+# no-previous-snapshot contract: without a snapshot from before this update we
+# cannot tell the user's choices from stale defaults, so this run takes the
+# snapshot, applies nothing, and says tracking starts now.
+apply_defaults_migration() {
+    local old_dump="$1" new_dump="$2" had_snapshot="$3"
+
+    if [[ ! -s "$new_dump" ]]; then
+        warn "new defaults could not be dumped; skipping the config merge rather than guessing"
+        return 1
+    fi
+
+    if [[ "$had_snapshot" != true ]]; then
+        save_defaults_snapshot "$new_dump"
+        info "config defaults are tracked from this update on; no default changes are applied this time"
+        return 0
+    fi
+
+    if [[ ! -s "$old_dump" ]]; then
+        warn "old defaults could not be dumped on this route; skipping the config merge rather than guessing"
+        return 1
+    fi
+
+    local config="${XDG_CONFIG_HOME:-$HOME/.config}/koompi/config.json"
+    step "Migrating config defaults"
+    if [[ "$DRY_RUN" == true ]]; then
+        local preview
+        preview="$(mktemp "${TMPDIR:-/tmp}/koompi-preview.XXXXXX")"
+        if cmd_merge_config "$old_dump" "$new_dump" "$config" > "$preview" 2>/dev/null; then
+            info "dry run: $(diff_leaf_count "$config" "$preview") config value(s) would be migrated; nothing written"
+        else
+            warn "dry run: the config merge could not be computed; nothing written"
+        fi
+        rm -f "$preview"
+        return 0
+    fi
+    cmd_merge_config "$old_dump" "$new_dump" "$config" --apply || return 1
+    save_defaults_snapshot "$new_dump"
+}
+
+# ---------------------------------------------------------------------------
+# Routes.
+# ---------------------------------------------------------------------------
+
+# Every installed package whose name starts with koompi, sorted: comparing
+# before/after the upgrade tells us whether the packaged route could have
+# delivered anything.
+packaged_versions_now() {
+    local pkgs
+    pkgs="$(pacman -Qq 2>/dev/null | grep '^koompi' | sort)" || true
+    printf '%s\n' "$pkgs"
+}
+
+koompi_repo_enabled() {
+    have pacman-conf || return 1
+    pacman-conf --repo-list 2>/dev/null | grep -qx 'koompi'
+}
+
+# Where this desktop's checkout lives, for the git route. State file first,
+# then the historical guesses, then - since packages demonstrably do not
+# deliver the desktop - cloning upstream ourselves.
+resolve_checkout() {
+    local repo='' guess
+    if [[ -f "$REPO_PATH_FILE" ]]; then
+        repo="$(< "$REPO_PATH_FILE")"
+    fi
+    if [[ -n "$repo" && -x "$repo/setup" ]]; then
+        printf '%s\n' "$repo"
+        return 0
+    fi
+    # A checkout that moved, or an install from before this file existed.
+    # koompi-hyprland is the pre-rename name, still on disk for older installs.
+    for guess in "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
+                 "$HOME/src/koompi-desktop" "$HOME/.local/share/koompi-desktop" \
+                 "$HOME/koompi-hyprland" "$HOME/workspace/koompi-hyprland" \
+                 "$HOME/src/koompi-hyprland" "$HOME/.local/share/koompi-hyprland" \
+                 "$HOME/.local/share/koompi-os"; do
+        [[ -x "$guess/setup" ]] && { printf '%s\n' "$guess"; return 0; }
+    done
+
+    if [[ -x "$CLONE_DIR/setup" ]]; then
+        printf '%s\n' "$CLONE_DIR"
+        return 0
+    fi
+    [[ -d "$CLONE_DIR" ]] && {
+        echo "resolve_checkout: $CLONE_DIR exists but has no ./setup; remove it and retry" >&2
+        return 1
+    }
+
+    if [[ "$DRY_RUN" == true ]]; then
+        info "would clone $UPSTREAM_REPO to ${CLONE_DIR/#$HOME/\~} and update from there"
+        return 1
+    fi
+    have git || { echo "resolve_checkout: git is required to fetch the checkout" >&2; return 1; }
+    step "Cloning the desktop checkout"
+    info "packages alone cannot deliver KOOMPI updates here, so updating means the checkout"
+    run git clone --recursive "$UPSTREAM_REPO" "$CLONE_DIR" || return 1
+    mkdir -p "$STATE_DIR"
+    printf '%s\n' "$CLONE_DIR" > "$REPO_PATH_FILE"
+    printf '%s\n' "$CLONE_DIR"
+}
+
 update_packaged() {
     step "Updating KOOMPI OS packages"
-    info "the desktop is installed from packages; updating the system"
+    info "route: packaged (the desktop ships from pacman packages)"
     confirm "Run a full system upgrade?" || die "aborted"
 
     local -a noconfirm=()
     [[ "$ASSUME_YES" == true ]] && noconfirm=(--noconfirm)
 
+    local before_versions after_versions
+    before_versions="$(packaged_versions_now)"
+
+    # Defaults the user is running BEFORE the upgrade: the previously
+    # installed /etc/xdg tree is the exact baseline for the merge later.
+    local pre_dump="" had_snapshot=false
+    [[ -s "$DEFAULTS_SNAPSHOT" ]] && had_snapshot=true
+    if [[ -d "$(packaged_shell_tree)" ]]; then
+        pre_dump="$(mktemp "${TMPDIR:-/tmp}/koompi-pre.XXXXXX")"
+        dump_defaults "$(packaged_shell_tree)" "$pre_dump" \
+            || { warn "could not dump the pre-update defaults"; pre_dump=""; }
+    fi
+
     # btrfs installs only (koompi-snapshot itself no-ops elsewhere): a
-    # pre-update snapshot so a bad upgrade has a rollback point.
+    # pre-update snapshot so a bad upgrade has a rollback point. Checked
+    # properly: koompi-snapshot used to abort before creating anything, and
+    # this caller used to print the command and upgrade anyway.
     if have koompi-snapshot; then
-        run koompi-snapshot --pre-update
+        printf '%s     $ %s%s\n' "${C_DIM}" "koompi-snapshot --pre-update" "${C_RST}"
+        if [[ "$DRY_RUN" != true ]] && ! koompi-snapshot --pre-update; then
+            if [[ "$ASSUME_YES" == true ]]; then
+                warn "no rollback snapshot was created; continuing (--yes)"
+            else
+                die "no rollback snapshot; refusing to upgrade (run again with --yes to accept that risk)"
+            fi
+        fi
     fi
 
     run sudo pacman -Syu "${noconfirm[@]}" \
@@ -185,46 +573,99 @@ update_packaged() {
             break
         fi
     done
-    ok "packages up to date"
+
+    # Could anything of ours have moved? Either the [koompi] repo is real on
+    # this machine, or some koompi-* package version changed. If neither, say
+    # so honestly and deliver the desktop the other way instead of declaring
+    # victory over packages that never carried it.
+    after_versions="$(packaged_versions_now)"
+    local delivered=false
+    koompi_repo_enabled && delivered=true
+    [[ "$before_versions" != "$after_versions" ]] && delivered=true
+
+    if [[ "$delivered" != true ]]; then
+        warn "the packaged route delivered nothing of ours: no [koompi] repo is configured and no koompi-* package changed"
+        local repo
+        repo="$(resolve_checkout)" || die "cannot find or fetch a koompi-desktop checkout; install git and retry"
+        info "falling back to the git route: updating from $repo"
+        local -a args=()
+        [[ "$DRY_RUN"    == true ]] && args+=(--dry-run)
+        [[ "$ASSUME_YES" == true ]] && args+=(--yes)
+        NO_RELOAD=true   # ./setup update reloads the session itself
+        UPDATE_ROUTE=from-git
+        "$repo/setup" update "${args[@]}" || die "./setup update failed"
+        return 0
+    fi
+
+    ok "packages up to date (route: packaged)"
+
+    local post_dump=""
+    post_dump="$(mktemp "${TMPDIR:-/tmp}/koompi-post.XXXXXX")"
+    dump_defaults "$(packaged_shell_tree)" "$post_dump" || post_dump=""
+    apply_defaults_migration "$pre_dump" "$post_dump" "$had_snapshot" || true
+    [[ -n "$post_dump" ]] && rm -f "$post_dump"
+    [[ -n "$pre_dump" ]] && rm -f "$pre_dump"
+    UPDATE_ROUTE=packaged
 }
 
 update_from_git() {
-    local repo=''
-    if [[ -f "$REPO_PATH_FILE" ]]; then
-        repo="$(< "$REPO_PATH_FILE")"
-    fi
-    if [[ -z "$repo" || ! -x "$repo/setup" ]]; then
-        # A checkout that moved, or an install from before this file existed.
-        local guess
-        # koompi-hyprland is the pre-rename name, still on disk for older installs.
-        for guess in "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
-                     "$HOME/src/koompi-desktop" "$HOME/.local/share/koompi-desktop" \
-                     "$HOME/koompi-hyprland" "$HOME/workspace/koompi-hyprland" \
-                     "$HOME/src/koompi-hyprland" "$HOME/.local/share/koompi-hyprland" \
-                     "$HOME/.local/share/koompi-os"; do
-            [[ -x "$guess/setup" ]] && { repo="$guess"; break; }
-        done
-    fi
-    [[ -n "$repo" && -x "$repo/setup" ]] || die \
+    local repo
+    repo="$(resolve_checkout)" || die \
 "cannot find the koompi-desktop checkout this desktop was installed from.
-  Clone it and run ./setup update there, or record the path:
+  Record the path:
     mkdir -p $STATE_DIR && echo /path/to/koompi-desktop > $REPO_PATH_FILE"
 
     step "Updating from $repo"
+    info "route: from-git (the checkout owns the installed config)"
     local -a args=()
     [[ "$DRY_RUN"    == true ]] && args+=(--dry-run)
     [[ "$ASSUME_YES" == true ]] && args+=(--yes)
     # ./setup update reloads the session itself, so suppress the second reload.
     NO_RELOAD=true
+    UPDATE_ROUTE=from-git
     "$repo/setup" update "${args[@]}" || die "./setup update failed"
 }
 
+UPDATE_ROUTE=unknown
+
 main() {
+    # Helper entry points used by ./setup update and koompi-migrate, which
+    # source nothing and instead call this script so the logic lives in exactly
+    # one installed place.
+    case "${1:-}" in
+        dump-defaults)
+            shift; cmd_dump_defaults "$@"; exit $? ;;
+        merge-config)
+            shift; cmd_merge_config "$@"; exit $? ;;
+        apply-defaults-migration)
+            # <old-dump> <new-dump> [had-snapshot]; used by ./setup update,
+            # which passes its own dry-run state through KOOMPI_UPDATE_DRY_RUN.
+            shift
+            DRY_RUN="${KOOMPI_UPDATE_DRY_RUN:-false}"
+            apply_defaults_migration "${1:-}" "${2:-}" "${3:-true}"; exit $? ;;
+        -h|--help|help)
+            usage; exit 0 ;;
+    esac
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -n|--dry-run) DRY_RUN=true ;;
+            -y|--yes)     ASSUME_YES=true ;;
+            --no-reload)  NO_RELOAD=true ;;
+            *)            usage >&2; die "unknown option: $1" ;;
+        esac
+        shift
+    done
+
+    [[ "$(id -u)" -ne 0 ]] || die "do not run this as root; it calls sudo itself where needed"
+
     local method
     if is_packaged; then
         method=packaged
         update_packaged
-        reload_session
+        # A fallback already ran the git route, which reloads on its own.
+        [[ "$UPDATE_ROUTE" == from-git ]] && method=from-git
+        [[ "$UPDATE_ROUTE" == from-git ]] || reload_session
     else
         method=from-git
         update_from_git
@@ -236,8 +677,12 @@ main() {
     command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_UPDATE_METHOD="$method" koompi-hook post-update
 
     step "Done"
-    printf '  KOOMPI is up to date. %skoompi-health%s reports on the session.\n' \
-        "${C_BOLD}" "${C_RST}"
+    printf '  KOOMPI is up to date (%s route). %skoompi-health%s reports on the session.\n' \
+        "$method" "${C_BOLD}" "${C_RST}"
 }
 
-main
+# Sourcing this file (KOOMPI_UPDATE_LIBRARY=1) defines the helpers without
+# running anything; tests use that to drive single functions.
+if [[ -z "${KOOMPI_UPDATE_LIBRARY:-}" ]]; then
+    main "$@"
+fi
