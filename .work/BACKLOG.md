@@ -34,6 +34,7 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J25 | port installer/src to zig 0.16 std.Io | J06 finding | `installer/src/**`, `.zon` min version | ready (after J06, merged) | — |
 | J26 | length walk: Rust (cap 600) and libexec/update | J01 finding | `tests/test_file_length.sh`, allow-list (add rows), `docs/conventions.md` table | ready | J09 after it (same allow-list) |
 | J27 | 0xAlpha is the default remote AI model | Rithy 15:20 | `ModelRegistry.qml`, `Persistent.qml` (default), `Config.qml` sample, new test | ready | — |
+| J28 | `/model` with no argument wipes remote state | J08 finding | `ModelRegistry.qml` setModel, probe test | ready | — |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
 
