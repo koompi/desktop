@@ -8,12 +8,17 @@ _prefix='koompi'
 _pkgname=quickshell
 pkgname="$_prefix-$_pkgname-git"
 pkgver=0.1.0.r1
-pkgrel=8
+pkgrel=10
 pkgdesc="$_pkgname-git pinned commit and extra deps for $_prefix"
 arch=(x86_64 aarch64)
 url='https://git.outfoxxed.me/quickshell/quickshell'
 options=(!strip)
 license=('LGPL-3.0-only')
+# quickshell links Qt6's private, unstable ABI. package() pins qt6-base and
+# qt6-declarative to the exact versions present at build time, so pacman blocks
+# a Qt6 upgrade instead of silently leaving this binary symbol-broken
+# (undefined symbol: QUntypedPropertyBinding...Qt_6_PRIVATE_API). Rebuild
+# after a Qt bump; nothing here needs editing.
 depends=(
   'cpptrace'
   'jemalloc'
@@ -75,6 +80,9 @@ build() {
 }
 
 package() {
+  # Exact-version pins against the Qt this build linked (private ABI, see above).
+  depends+=("qt6-base=$(pacman -Q qt6-base | cut -d' ' -f2)"
+            "qt6-declarative=$(pacman -Q qt6-declarative | cut -d' ' -f2)")
   install -Dm644 "quickshell-check.hook" -t "$pkgdir/usr/share/libalpm/hooks"
   cd "$_pkgname"
   DESTDIR="$pkgdir" cmake --install build
