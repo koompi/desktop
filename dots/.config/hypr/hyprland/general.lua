@@ -294,6 +294,19 @@ hl.animation({
     bezier = "standardDecel"
 })
 
+-- read from drm, not a hard "eDP-1": a desktop with a touchscreen has no eDP,
+-- and a bound name that matches nothing logs an error at every reload
+local function internal_panel()
+    local drm = io.popen("ls /sys/class/drm 2>/dev/null")
+    if not drm then return nil end
+    local panel
+    for entry in drm:lines() do
+        panel = panel or entry:match("^card%d+%-(eDP%-%d+)$")
+    end
+    drm:close()
+    return panel
+end
+
 hl.config({
     input = {
         kb_layout = "us,kh",
@@ -311,11 +324,11 @@ hl.config({
             scroll_factor = 0.7
         },
 
-        -- Bind the touchscreen digitizer to eDP-1. Without this the [[Auto]]
-        -- mapping spreads the touch surface across the whole layout span, and
-        -- since eDP-1 sits at layout pos (1920,1080) every touch lands offset.
+        -- Bind the touchscreen digitizer to the internal panel. Without this the
+        -- [[Auto]] mapping spreads the touch surface across the whole layout span,
+        -- and with the panel at layout pos (1920,1080) every touch lands offset.
         touchdevice = {
-            output = "eDP-1"
+            output = internal_panel()
         }
     },
 
