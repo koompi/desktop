@@ -59,13 +59,14 @@ candidates="$(grep -rlE '^ManagedOOM(MemoryPressure|Swap)=' \
 # 3. Wiring. The package needs zram-generator or the zram file is inert; the
 #    Hyprland edition has to pull the package in; the from-git route has to
 #    install the same files and enable the daemon that reads them.
-# shellcheck disable=SC1091
-mapfile -t pkg_depends < <(source "$PKG_DIR/PKGBUILD" 2>/dev/null; printf '%s\n' "${depends[@]}")
-printf '%s\n' "${pkg_depends[@]}" | grep -Fxq zram-generator \
+# A PKGBUILD's depends=() only exists once the file is sourced, so read it in
+# a child bash rather than here, where it would be an unassigned reference.
+pkgbuild_depends() {
+    bash -c 'source "$1" 2>/dev/null; printf "%s\n" "${depends[@]}"' _ "$1"
+}
+pkgbuild_depends "$PKG_DIR/PKGBUILD" | grep -Fxq zram-generator \
     || fail "koompi-sysdefaults does not depend on zram-generator"
-# shellcheck disable=SC1091
-mapfile -t meta_depends < <(source "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD" 2>/dev/null; printf '%s\n' "${depends[@]}")
-printf '%s\n' "${meta_depends[@]}" | grep -Fxq koompi-sysdefaults \
+pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD" | grep -Fxq koompi-sysdefaults \
     || fail "koompi-desktop-hyprland does not depend on koompi-sysdefaults"
 
 setups="$ROOT/sdata/install/setups.sh"
