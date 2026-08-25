@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           pacman -Syu --noconfirm --needed \
             base-devel git sudo rsync jq nodejs bun python python-evdev python-yaml \
-            qt6-declarative dbus pipewire zig rust lua
+            qt6-declarative dbus pipewire zig rust lua ufw shellcheck
           # base-devel   : makepkg's helpers (fakeroot) for the sourced PKGBUILDs, gcc for cargo
           # sudo         : to run the suite as the unprivileged user created below
           # rsync        : ./setup's files step and the two PKGBUILDs under test
@@ -48,6 +48,8 @@ jobs:
           # pipewire     : libpipewire-0.3, which audiod links
           # zig, rust    : the cli/, audiod/ and shell-services/ builds and their tests
           # lua          : test_touch_output.sh runs the Hyprland lua config
+          # ufw          : test_firewall_defaults.sh reads the profile through the python ufw module
+          # shellcheck   : test_hardware_quirks.sh lints the quirk scripts
 
       - uses: actions/checkout@v4
         with:
@@ -94,6 +96,10 @@ jobs:
             test_config_merge.sh         the dump smoke test needs a running quickshell (qs)
             test_hypridle_logged.sh      needs the hypridle unit and a live session for the Lock check; static checks run
             test_lock_pam.sh             the PamContext probe needs a running quickshell (qs); static checks run
+            test_ai_remote_default.sh    the ModelRegistry probe needs a running quickshell (qs); static checks run
+            test_notification_exec_hint.sh  the hint probe needs a running quickshell (qs); static checks run
+            test_bar_keys.sh             the headless bar capture needs qs and kwin_wayland; qmllint and lua checks run
+            test_cheatsheet_dispatch.sh  the HyprlandKeybinds probe needs a running quickshell (qs); recorder checks run
           '
           bad=0
           skipped_tests=()
