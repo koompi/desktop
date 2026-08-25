@@ -120,3 +120,55 @@ J26 adds `dots/.local/share/koompi/libexec/*` at the bash cap of 400 with an all
 - Comment rule: my additions are one-line WHYs. The pre-existing prose paragraphs in `update` (header, dump_defaults, merge) fall under `~/.claude/rules/comments.md` but are J11's text; I left them rather than rewrite 700 lines under a three-row contract. Rithy's call.
 - Pre-existing, not mine, seen while running: `sdata/install/files.sh:216` says `ok backed up 75 file(s)` in a dry run that backs up nothing; `tests/test_reload_idempotent.sh`'s fake `qs` leaves an orphaned `sleep 30` after cleanup (same pattern I hit; my test reaps its sleep on TERM).
 - Stop conditions honoured: no real `pacman -Syu`, no reboot, no live shell killed (the only reload runs were shimmed); the one real git pull was the incident above, a no-op.
+
+## Round 2 — J26 ratchet: guards moved to `libexec/update-lib.sh`
+
+Rebased onto main (`1a0b8492`); on that tree `test_file_length.sh` failed with `update grew from 695 to 784`.
+Commit `0e59bcea` moves the messages, `run`/`stop_processes`/`count_shells` and the guards (`run_locked`, `stay_awake`, `require_free_space`, `session_locked`, `check_restart_needed`) into new `dots/.local/share/koompi/libexec/update-lib.sh` (110 lines, sourced, `# shellcheck shell=bash`).
+`update` sources it next to itself (`dirname "$(readlink -f "${BASH_SOURCE[0]}")"`, so the CLI's `$XDG_DATA_HOME` symlink still resolves to the real file) and exits 1 with `update-lib.sh is missing next to this script; reinstall with ./setup update` if it is not there.
+`koompi-reload` looks in `$XDG_DATA_HOME/koompi/libexec`, `~/.local/share/koompi/libexec`, `/usr/lib/koompi`, the order `updateHelper` uses in `cli/src/main.zig:151-165`, and dies naming all three when none has it; its own copies of `stop_processes`/`session_locked` are gone.
+The allow-list was not touched.
+
+### Line counts (`awk 'END { print NR }'`, as `test_file_length.sh` counts)
+
+```
+dots/.local/share/koompi/libexec/update: 695
+dots/.local/share/koompi/libexec/update-lib.sh: 110
+dots/.local/bin/koompi-reload: 36
+```
+
+### Packaging: libexec is NOT shipped as a tree
+
+- `sdata/dist-arch/koompi-shell/PKGBUILD:110-111`: `install -Dm755 ".../dots/.local/share/koompi/libexec/update" "$pkgdir/usr/lib/koompi/update"` — one file, by name; `update-lib.sh` will not be in the package.
+- `tests/test_packaged_tools.sh` pins only `_tools`/`_tools_excluded` against `dots/.local/bin` (lines 24-27, 48-53); nothing there covers `libexec`, so the suite cannot catch this.
+- Consequence on KOOMPI OS: `/usr/lib/koompi/update` dies at start (`dump-defaults`/`merge-config` subcommands too, since the source line runs first) and `koompi reload` dies on the third lookup, until the PKGBUILD also installs `update-lib.sh` to `/usr/lib/koompi/update-lib.sh` (one more `install -Dm644` line at `PKGBUILD:111`). `sdata/dist-arch/` is out of this job's scope; not touched.
+- Git installs are fine: `sdata/install/files.sh` copies `dots/` whole, so `~/.local/share/koompi/libexec/update-lib.sh` lands with `update`.
+- Missing-lib behaviour, exercised: `XDG_DATA_HOME= HOME=/nonexistent koompi-reload` → `koompi reload: update-lib.sh not found in ${XDG_DATA_HOME}/koompi/libexec, ~/.local/share/koompi/libexec or /usr/lib/koompi; reinstall with ./setup update`, rc 1; a copy of `update` alone in `/tmp` → `koompi update: update-lib.sh is missing next to this script; reinstall with ./setup update`, rc 1.
+
+### Checks
+
+```
+$ shellcheck -x dots/.local/share/koompi/libexec/update dots/.local/share/koompi/libexec/update-lib.sh dots/.local/bin/koompi-reload; echo rc=$?
+rc=0
+$ bash tests/test_update_guards.sh
+update guards test passed            # 5 consecutive runs, all rc=0
+$ bash tests/test_file_length.sh
+ok: 909 files under cap, 34 allow-listed and not grown
+$ ./tests/run.sh
+81 passed, 3 skipped, 0 failed
+skipped: test_globalmenu.sh test_hypridle_logged.sh test_search_bench_parity.sh
+```
+
+The first suite run after the split failed `test_update_guards.sh` once: `koompi-reload` backgrounds `setsid … &` and the test read the shim log the instant the script exited. The test now polls for that line (up to 2 s); five standalone runs and the suite are green.
+
+Real `koompi update --dry-run` through the CLI against the split scripts, same four lines in the same order (rc 0, 0 inhibitors left):
+
+```
+  -> lock taken: /run/user/1000/koompi-update.lock (pid 1976577)
+     $ systemd-inhibit --what=sleep:idle:handle-lid-switch --mode=block --who=koompi-update --why=KOOMPI update in progress tail --pid=1976577 -f /dev/null
+
+==> Updating from /home/userx/workspace/koompi-desktop
+  -> route: from-git (the checkout owns the installed config)
+  -> free space on /home/userx/workspace/koompi-desktop: 178.3 GiB (needs 2 GiB)
+  -> session lock: unlocked (logind LockedHint); ./setup update may restart the shell
+```
