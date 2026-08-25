@@ -32,6 +32,7 @@ run_setups() {
     setup_groups_and_modules
     setup_suspend_hook
     setup_low_ram_defaults
+    setup_firewall_defaults
     setup_local_ai
     setup_agent_memory
     setup_portals

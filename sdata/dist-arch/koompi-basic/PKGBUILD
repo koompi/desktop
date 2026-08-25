@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-basic
 pkgver=1.0
-pkgrel=6
+pkgrel=7
 pkgdesc='KOOMPI Basic Dependencies'
 arch=(any)
 license=(None)
@@ -31,4 +31,6 @@ depends=(
   go-yq # https://github.com/mikefarah/yq
   # Fingerprint login/unlock; lock screen's fprintd.conf needs pam_fprintd. libfprint is pulled in by fprintd.
   fprintd
+  # `koompi update` runs fwupdmgr; koompi-sysdefaults' preset enables its refresh timer
+  fwupd
 )

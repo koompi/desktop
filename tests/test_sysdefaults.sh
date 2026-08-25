@@ -12,7 +12,11 @@ set -uo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 PKG_DIR="$ROOT/sdata/dist-arch/koompi-sysdefaults"
-FILES="$PKG_DIR/files"
+FILES="$PKG_DIR/files/usr/lib"
+# Not a /usr/lib drop-in: ufw reads profiles from /etc/ufw/applications.d only.
+# Its contents are tests/test_firewall_defaults.sh's; here it is the one file
+# the package ships outside /usr/lib.
+UFW_PROFILE=etc/ufw/applications.d/koompi
 
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
@@ -46,6 +50,9 @@ expect "$OOMD_CONF" 'DefaultMemoryPressureDurationSec=20s'
 expect "$STOP_SYSTEM" 'DefaultTimeoutStopSec=5s'
 expect "$STOP_USER" 'TimeoutStopSec=5s'
 expect "$PRESET" 'enable systemd-oomd.service'
+expect "$PRESET" 'enable ufw.service'
+expect "$PRESET" 'enable fwupd-refresh.timer'
+[[ -f "$PKG_DIR/files/$UFW_PROFILE" ]] || fail "$UFW_PROFILE is not in the package source"
 
 # 2. Kill candidacy is set on app.slice and nowhere else. Hyprland and the
 #    shell run in the login session's scope; any candidacy on user@.service,
@@ -64,9 +71,11 @@ candidates="$(grep -rlE '^ManagedOOM(MemoryPressure|Swap)=' \
 pkgbuild_depends() {
     bash -c 'source "$1" 2>/dev/null; printf "%s\n" "${depends[@]}"' _ "$1"
 }
-pkgbuild_depends "$PKG_DIR/PKGBUILD" | grep -Fxq zram-generator \
+# Captured, not piped into grep -q: grep quits on the first match and a
+# writer still printing gets SIGPIPE, which pipefail reports as a failure.
+grep -Fxq zram-generator <<< "$(pkgbuild_depends "$PKG_DIR/PKGBUILD")" \
     || fail "koompi-sysdefaults does not depend on zram-generator"
-pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD" | grep -Fxq koompi-sysdefaults \
+grep -Fxq koompi-sysdefaults <<< "$(pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD")" \
     || fail "koompi-desktop-hyprland does not depend on koompi-sysdefaults"
 
 setups="$ROOT/sdata/install/setups.sh"
@@ -87,8 +96,9 @@ grep -Fq 'systemctl restart systemd-oomd.service' <<< "$fn" \
 grep -Fq 'systemctl --user daemon-reload' <<< "$fn" \
     || fail "the user manager reports app.slice candidacy only after a reload"
 
-# 4. The built package: the seven files at their /usr/lib paths, nothing else,
-#    and the dependency recorded in the artifact.
+# 4. The built package: the seven files at their /usr/lib paths, the ufw
+#    profile at its /etc path, nothing else, and the dependency recorded in
+#    the artifact.
 analyze_root="$tmp/root"
 if command -v makepkg >/dev/null 2>&1; then
     if ! (cd "$PKG_DIR" && BUILDDIR="$tmp/build" PKGDEST="$tmp/pkgs" SRCDEST="$tmp/src" \
@@ -100,10 +110,10 @@ if command -v makepkg >/dev/null 2>&1; then
     [[ -n "$pkg" ]] || fail "makepkg produced no koompi-sysdefaults package"
 
     bsdtar -tf "$pkg" > "$tmp/listing"
-    printf 'usr/lib/%s\n' "${SHIPPED[@]}" | sort > "$tmp/want"
+    { printf 'usr/lib/%s\n' "${SHIPPED[@]}"; printf '%s\n' "$UFW_PROFILE"; } | sort > "$tmp/want"
     grep -v '/$' "$tmp/listing" | grep -v '^\.' | sort > "$tmp/got"
     diff -u "$tmp/want" "$tmp/got" >&2 \
-        || fail "the package does not ship exactly the seven drop-ins"
+        || fail "the package does not ship exactly the seven drop-ins and the ufw profile"
     bsdtar -xOf "$pkg" .PKGINFO | grep -Fxq 'depend = zram-generator' \
         || fail "the built package does not record the zram-generator dependency"
 

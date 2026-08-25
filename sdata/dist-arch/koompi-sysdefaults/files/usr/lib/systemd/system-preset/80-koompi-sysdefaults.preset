@@ -1,0 +1,6 @@
+# applied on `systemctl preset-all`; installer and ./setup also enable each explicitly
+enable systemd-oomd.service
+# inert until ENABLED=yes is in /etc/ufw/ufw.conf, which installer and ./setup write
+enable ufw.service
+# unit belongs to fwupd (koompi-basic dependency)
+enable fwupd-refresh.timer

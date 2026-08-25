@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-screencapture
 pkgver=1.0
-pkgrel=3
+pkgrel=4
 pkgdesc='KOOMPI Screenshot and Recording Dependencies'
 arch=(any)
 license=(None)
@@ -13,6 +13,8 @@ depends=(
   slurp
   swappy
   tesseract
+  # OCR already uses every installed language (ScreenshotAction.qml:70 builds -l from --list-langs)
   tesseract-data-eng
+  tesseract-data-khm
   wf-recorder
 )

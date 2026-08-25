@@ -93,7 +93,7 @@ setup_low_ram_defaults() {
 
     # Collected first: run() prompts on stdin when a command fails, and inside
     # a `find | while read` loop that prompt would eat the file list.
-    local src="$REPO_ROOT/sdata/dist-arch/koompi-sysdefaults/files" file files=()
+    local src="$REPO_ROOT/sdata/dist-arch/koompi-sysdefaults/files/usr/lib" file files=()
     mapfile -d '' files < <(find "$src" -type f -print0)
     (( ${#files[@]} )) || die "no files under $src"
     for file in "${files[@]}"; do
@@ -139,6 +139,44 @@ setup_low_ram_defaults() {
     fi
 }
 
+# Raw ports rather than the package's profile names: ufw reads profiles from
+# /etc/ufw/applications.d only (config_dir in ufw/common.py), and a file put
+# there from git makes a later package install fail on "exists in filesystem".
+# tests/test_firewall_defaults.sh holds these to the profile's ports.
+setup_firewall_defaults() {
+    step "Firewall: deny incoming, allow KDE Connect and LocalSend"
+    systemd_running || { info "no running systemd; skipping"; return 0; }
+    if systemctl is-active --quiet firewalld; then
+        warn "firewalld is active; leaving it in charge rather than running two firewalls"
+        return 0
+    fi
+    if ! have ufw; then
+        case "$OS_GROUP_ID" in
+            arch)   run sudo pacman -S --needed --noconfirm ufw ;;
+            fedora) run sudo dnf install -y ufw ;;
+            debian) run sudo apt-get install -y ufw ;;
+            *)      warn "ufw is not installed; incoming connections stay open"; return 0 ;;
+        esac
+    fi
+
+    # ufw skips an existing rule: re-runs change nothing
+    run sudo ufw default deny incoming
+    run sudo ufw default allow outgoing
+    run sudo ufw allow 1714:1764/tcp comment 'KDE Connect'
+    run sudo ufw allow 1714:1764/udp comment 'KDE Connect'
+    run sudo ufw allow 53317/tcp comment 'LocalSend'
+    run sudo ufw allow 53317/udp comment 'LocalSend'
+    # a setup run over ssh must not cut its own session
+    if systemctl is-active --quiet sshd; then
+        info "sshd is running; keeping ssh reachable"
+        run sudo ufw allow ssh
+    fi
+    # --force skips the ssh-disruption prompt; on Arch `ufw enable` leaves the unit alone
+    run sudo ufw --force enable
+    run sudo systemctl enable ufw.service
+    ok "incoming denied, KDE Connect and LocalSend allowed"
+}
+
 # ydotool ships a system unit on most distros but the shell drives it as a user
 # service; link it into the user manager where the distro has not.
 setup_services() {
@@ -159,6 +197,12 @@ setup_services() {
     fi
     if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
         run sudo systemctl enable --now bluetooth
+    fi
+    # fwupd's timer (koompi-basic dependency); no package, no unit
+    if systemctl list-unit-files fwupd-refresh.timer >/dev/null 2>&1; then
+        run sudo systemctl enable fwupd-refresh.timer
+    else
+        warn "fwupd is not installed; firmware updates stay manual"
     fi
 
     # Only useful with a touchscreen, and it needs python-evdev to start at all.

@@ -145,6 +145,34 @@ enable_login() {
   systemctl enable sddm.service || true
 }
 
+# 5a. Firewall rules. The chroot shares the live ISO's kernel, so `ufw enable`
+#     would load rules into the installer's firewall; with ufw down every other
+#     command only edits /etc/ufw, and ENABLED=yes is what ufw.service reads at
+#     first boot (omarchy's firewall.sh does the same).
+setup_firewall() {
+  local conf="${KOOMPI_UFW_CONF:-/etc/ufw/ufw.conf}"
+  if ! command -v ufw &>/dev/null; then
+    log "WARNING: ufw is not installed; incoming connections stay open"
+    return
+  fi
+  log "firewall: deny incoming, allow KDE Connect and LocalSend"
+  if ! ufw default deny incoming \
+    || ! ufw default allow outgoing \
+    || ! ufw allow KOOMPI-KDEConnect \
+    || ! ufw allow KOOMPI-LocalSend; then
+    log "WARNING: writing the ufw rules failed; the firewall stays off"
+    return
+  fi
+  sed -i 's/^ENABLED=.*/ENABLED=yes/' "$conf"
+  systemctl enable ufw.service || true
+}
+
+# 5b. enable-only, as the snapper timers: a chroot cannot start units.
+enable_firmware_refresh() {
+  log "enabling fwupd-refresh.timer"
+  systemctl enable fwupd-refresh.timer || true
+}
+
 # 6. /etc/os-release - KOOMPI identity. Deliberately NOT a package (the
 #    `filesystem` package owns the stock file); we overwrite in the target.
 #    MUST stay byte-for-byte identical to the live ISO's os-release at
@@ -172,6 +200,8 @@ main() {
   ensure_pkgs
   setup_snapper       # snapper config + restore archinstall's @snapshots subvol
   enable_login        # enable sddm BEFORE the baseline so it captures it
+  setup_firewall      # rules + ENABLED=yes into the baseline too
+  enable_firmware_refresh
   write_os_release    # bake KOOMPI identity into the baseline too
   setup_snapshot_boot # grub-btrfs-overlayfs initramfs hook (bootable snapshots)
   pin_baseline        # snapshot the FINISHED install (un-prunable factory reset)

@@ -1,0 +1,13 @@
+# kde connect: dynamic ports 1714-1764 tcp+udp (https://userbase.kde.org/KDEConnect,
+# same range the kdeconnect package's own /etc/ufw/applications.d/kdeconnect names).
+# own profile names so the rules do not depend on which package installed first.
+[KOOMPI-KDEConnect]
+title=KDE Connect (KOOMPI)
+description=Phone pairing, clipboard sync and notification mirroring over the LAN
+ports=1714:1764/tcp|1714:1764/udp
+
+# localsend: 53317 tcp+udp incoming (Setup table, https://github.com/localsend/localsend#setup)
+[KOOMPI-LocalSend]
+title=LocalSend (KOOMPI)
+description=Laptop-to-laptop file sharing without internet
+ports=53317/tcp|53317/udp

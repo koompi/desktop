@@ -1,4 +1,0 @@
-# Enable systemd-oomd by default on KOOMPI OS. Applied on `systemctl preset-all`;
-# the installer and ./setup also enable it explicitly, since the app.slice
-# drop-in is inert while the daemon that reads it is disabled.
-enable systemd-oomd.service
