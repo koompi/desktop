@@ -49,6 +49,7 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J40 | crash watch → local-agent diagnosis | O30 | new `koompi-crash-watch`, `koompi-crash-diagnose`, user unit, `docs/agents/crash.md`, new test | after J31 J33 | — |
 | J41 | branded idle screen before lock | O32 | new `modules/koompi/screensaver/**`, `KoompiFamily.qml`, `GlobalStates.qml`, `hypridle.conf`, new test | ready | — |
 | J42 | hardware quirk layer keyed on DMI | O08 | new `koompi-hw-match`, `koompi-hw-laptop`, `sdata/hardware/**`, `libexec/apply-hardware`, `post_install.sh`, `setups/system.sh`, `update-lib.sh` (one call), new test | after J33 J31 J30 | — |
+| J43 | shell honours `koompi-notify-send --exec` (click runs the argv) | J29 finding | `services/Notifications.qml`, `widgets/NotificationItem.qml`, new test | after J31 | J37 J40 click paths need it |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
 

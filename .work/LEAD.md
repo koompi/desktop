@@ -56,6 +56,7 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J40 | — | after J31 J33 | |
 | J41 | — | ready | |
 | J42 | — | after J33 J31 J30 | |
+| J43 | — | after J31 | |
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 
 ## Live now
@@ -119,6 +120,8 @@ Watcher: Monitor loop, 45 s.
 - Rule kept: `keybinds.lua` (447) and `libexec/update` (695) sit on their allow-list rows, so jobs touching them must add code in a sibling file, never grow them.
 
 - 17:40 wave 3 (M rows) contracts J35-J42 written from an Explore agent's cited fact sheet (O14's shell half already exists: `SessionScreen.qml:172-188`; O19 manual left out — prose in Rithy's voice, his call). PKGBUILD `_tools` contention relaxed: workers append rows and leave pkgrel; the lead unions and bumps on merge. Concurrency cap 5 workers.
+
+- J29 found the `--exec` hint has no consumer in the shell (toasts are never clickable). J43 written; J37/J40 toasts inherit that gap until it lands.
 
 ## Next action
 
