@@ -8,6 +8,18 @@ STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHELL_CONFIG_FILE="$XDG_CONFIG_HOME/koompi/config.json"
 terminalscheme="$SCRIPT_DIR/terminal/scheme-base.json"
+# set by hyprland/env.lua inside a session only; same default as env.lua
+VENV_DIR="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$XDG_STATE_HOME/quickshell/.venv}"
+
+activate_venv() {
+    local activate="$VENV_DIR/bin/activate"
+    if [[ ! -f "$activate" ]]; then
+        echo "switchwall: no Python venv at $VENV_DIR; run './setup install --only-setups' to create it" >&2
+        return 1
+    fi
+    # shellcheck source=/dev/null # venv activate script lives outside the repo
+    source "$activate"
+}
 
 handle_qt_app_colors() {
     # Check if Qt app theming is enabled in config
@@ -337,9 +349,9 @@ switch() {
         [[ "$term_fg_boost" != "null" && -n "$term_fg_boost" ]] && generate_colors_material_args+=(--term_fg_boost "$term_fg_boost")
     fi
 
+    # before matugen: a missing venv must not leave a half-applied theme
+    activate_venv || exit 1
     matugen "${matugen_args[@]}"
-    # shellcheck source=/dev/null # venv activate script lives outside the repo
-    source "$(eval echo "$ILLOGICAL_IMPULSE_VIRTUAL_ENV")/bin/activate"
     python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
         > "$STATE_DIR"/user/generated/material_colors.scss
     deactivate
@@ -373,8 +385,7 @@ main() {
 
     detect_scheme_type_from_image() {
         local img="$1"
-        # shellcheck source=/dev/null # venv activate script lives outside the repo
-        source "$(eval echo "$ILLOGICAL_IMPULSE_VIRTUAL_ENV")/bin/activate"
+        activate_venv || return 1
         "$SCRIPT_DIR"/scheme_for_image.py "$img" 2>/dev/null | tr -d '\n'
         deactivate
     }
