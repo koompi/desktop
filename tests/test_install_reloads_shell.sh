@@ -40,8 +40,8 @@ grep -qi 'shell restarted above\|session was reloaded' "$SETUP" \
 # daemon builds inside the installed config and the shell loads it from there by
 # relative path, so run_setups was reaching a directory the files step had not
 # created yet. Every fresh machine came up with an empty global menu.
-grep -q 'setup_global_menu' "$REPO_ROOT/sdata/install/setups.sh" \
-    || fail "setup_global_menu is gone from setups.sh"
+grep -q '^setup_global_menu()' "$REPO_ROOT/sdata/install/setups/globalmenu.sh" \
+    || fail "setup_global_menu is gone from setups/globalmenu.sh"
 grep -qE '^\s*setup_global_menu\s*$' <(sed -n '/^run_setups()/,/^}/p' "$REPO_ROOT/sdata/install/setups.sh") \
     && fail "run_setups builds the global menu again; it runs before install_files, so on a first install there is nothing to build"
 menu_line="$(grep -n 'setup_global_menu' "$SETUP" | head -1 | cut -d: -f1)"

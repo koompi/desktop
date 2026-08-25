@@ -70,8 +70,8 @@ pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD" | grep
     || fail "koompi-desktop-hyprland does not depend on koompi-sysdefaults"
 
 setups="$ROOT/sdata/install/setups.sh"
-fn="$(sed -n '/^setup_low_ram_defaults() {/,/^}/p' "$setups")"
-[[ -n "$fn" ]] || fail "setups.sh has no setup_low_ram_defaults"
+fn="$(sed -n '/^setup_low_ram_defaults() {/,/^}/p' "$ROOT/sdata/install/setups/system.sh")"
+[[ -n "$fn" ]] || fail "setups/system.sh has no setup_low_ram_defaults"
 sed -n '/^run_setups() {/,/^}/p' "$setups" | grep -Fxq '    setup_low_ram_defaults' \
     || fail "run_setups never calls setup_low_ram_defaults"
 grep -Fq 'koompi-sysdefaults/files' <<< "$fn" \

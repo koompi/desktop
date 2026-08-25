@@ -7,7 +7,7 @@
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-SETUPS="$ROOT/sdata/install/setups.sh"
+SETUPS="$ROOT/sdata/install/setups/desktop.sh"
 ENV_LUA="$ROOT/dots/.config/hypr/hyprland/env.lua"
 EXECS_LUA="$ROOT/dots/.config/hypr/hyprland/execs.lua"
 

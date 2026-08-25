@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 DROPIN="$ROOT/sdata/dist-arch/koompi-session/sddm-sessiondir.conf"
 PKGBUILD="$ROOT/sdata/dist-arch/koompi-session/PKGBUILD"
-SETUPS="$ROOT/sdata/install/setups.sh"
+SETUPS="$ROOT/sdata/install/setups/session.sh"
 UNINSTALL="$ROOT/sdata/install/uninstall.sh"
 
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
