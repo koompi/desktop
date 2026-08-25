@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Lid switch handler behind the `switch:on/off:Lid Switch` binds in keybinds.lua.
+#
+# close: lock the session the moment the lid shuts, unless an external monitor
+# is attached, so a docked laptop keeps working with its lid down. The lock is
+# the same `loginctl lock-session` the session menu uses (Session.qml), so the
+# lock screen and hyprlock fallback are shared. Suspend stays with logind and
+# its HandleLidSwitch setting: with Keep awake on, the shell's systemd-inhibit
+# blocks handle-lid-switch (services/Idle.qml), and this script never suspends
+# on its own, so that inhibitor keeps winning.
+# open: nothing. Restoring a clamshell layout is a separate job; the bind is
+# here so the hook has one obvious place to grow.
+set -euo pipefail
+
+usage() {
+    printf 'usage: koompi-lid close|open\n' >&2
+    exit 2
+}
+
+# Internal panels enumerate as eDP-*, LVDS-* or DSI-*; anything else is
+# external. An unreadable monitor list is treated as "internal only": a lock
+# that was not needed beats a shared laptop left open.
+external_monitor_attached() {
+    local monitors
+    monitors="$(hyprctl monitors -j 2> /dev/null)" || return 1
+    jq -e '[.[] | select(.name | test("^(eDP|LVDS|DSI)-") | not)] | length > 0' \
+        <<< "$monitors" > /dev/null 2>&1
+}
+
+case "${1:-}" in
+    close)
+        if external_monitor_attached; then
+            printf 'koompi-lid: external monitor attached, not locking\n'
+            exit 0
+        fi
+        loginctl lock-session || {
+            printf 'koompi-lid: loginctl lock-session failed\n' >&2
+            exit 1
+        }
+        ;;
+    open) ;;
+    *) usage ;;
+esac

@@ -211,6 +211,7 @@ The `XF86Audio*` and `XF86MonBrightness*` keys carry the same actions and are ma
 | --- | --- |
 | `Super+L` | lock |
 | `Super+Shift+L` | sleep |
+| lid close | lock, unless an external monitor is attached; suspend stays with logind and Keep awake still blocks it |
 | `Ctrl+Shift+Alt+Super+Delete` | shut down |
 
 ### Apps

@@ -415,7 +415,11 @@ hl.bind("SUPER + ALT + Equal",
 hl.bind("SUPER + L", hl.dsp.exec_cmd("loginctl lock-session"), { description = "Session: Lock" })
 hl.bind("SUPER + SHIFT + L", hl.dsp.exec_cmd("systemctl suspend || loginctl suspend"),
     { locked = true, description = "Session: Sleep" }) -- Sleep
--- hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("systemctl suspend || loginctl suspend"), {locked = true} ) -- # [hidden] Suspend when laptop lid is closed, uncomment if for whatever reason it's not the default behavior
+-- Closing the lid locks before logind gets round to suspending (or does not,
+-- when Keep awake holds handle-lid-switch). koompi-lid skips the lock while an
+-- external monitor is attached so a docked laptop keeps working with its lid shut.
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("koompi-lid close"), { locked = true }) -- # [hidden] not a key
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("koompi-lid open"), { locked = true }) -- # [hidden] not a key
 
 hl.bind("CTRL + SHIFT + ALT + SUPER + Delete", hl.dsp.exec_cmd("systemctl poweroff || loginctl poweroff"),
     { description = "Session: Shut down" }) -- # [hidden] Power off
