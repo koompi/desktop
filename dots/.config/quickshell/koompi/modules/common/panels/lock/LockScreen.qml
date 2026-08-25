@@ -85,6 +85,7 @@ Scope {
         Connections {
             target: GlobalStates
             function onScreenLockedChanged() {
+                root.setLockedHint(GlobalStates.screenLocked);
                 if (GlobalStates.screenLocked) {
                     // A lock that arrives while a previous unlock is still
                     // fading must start from a fully drawn surface.
@@ -127,6 +128,15 @@ Scope {
         id: lock
         locked: GlobalStates.screenLocked
         surface: root.sessionLockSurface
+    }
+
+    // logind's LockedHint is how `loginctl show-session` and anything watching
+    // the session learn that this lock exists; the compositor lock alone never
+    // sets it. "auto" resolves to the session this shell runs in.
+    function setLockedHint(locked: bool) {
+        Quickshell.execDetached(["busctl", "call", "org.freedesktop.login1",
+            "/org/freedesktop/login1/session/auto", "org.freedesktop.login1.Session",
+            "SetLockedHint", "b", locked ? "true" : "false"]);
     }
 
     function lock() {

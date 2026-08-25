@@ -1,0 +1,8 @@
+#%PAM-1.0
+# libpam looks up <configDirectory>/other for every service it starts in this
+# directory and logs "_pam_init_handlers: no default config other" when the
+# file is missing. Nothing here is meant to fall through to it, so it denies.
+auth      required   pam_deny.so
+account   required   pam_deny.so
+password  required   pam_deny.so
+session   required   pam_deny.so

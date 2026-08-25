@@ -29,7 +29,7 @@ Scope {
     property var targetAction: LockContext.ActionEnum.Unlock
     property bool alsoInhibitIdle: false
 
-    readonly property string failureMessage: root.showFailure ? Translation.tr("Incorrect password. Try again.") : ""
+    property string failureMessage: ""
     readonly property string fingerprintMessage: {
         switch (root.fingerprintState) {
         case LockContext.FingerprintEnum.Ready:
@@ -61,7 +61,9 @@ Scope {
         root.resetTargetAction();
         root.clearText();
         root.unlockInProgress = false;
+        root.alsoInhibitIdle = false;
         root.showFailure = false;
+        root.failureMessage = "";
         GlobalStates.screenUnlockFailed = false;
         stopFingerPam();
     }
@@ -77,6 +79,7 @@ Scope {
     onCurrentTextChanged: {
         if (currentText.length > 0) {
             showFailure = false;
+            failureMessage = "";
             GlobalStates.screenUnlockFailed = false;
         }
         GlobalStates.screenLockContainsCharacters = currentText.length > 0;
@@ -87,14 +90,40 @@ Scope {
         if (root.unlockInProgress) return;
         root.alsoInhibitIdle = alsoInhibitIdle;
         root.unlockInProgress = true;
-        pam.start();
+        // start() is false when the PAM config cannot be opened. Without this
+        // the field stays disabled behind unlockInProgress and nothing ever
+        // completes, which is a lockout, not a failed attempt.
+        if (!pam.start()) {
+            console.warn("[LockContext] password PamContext could not start; check /etc/pam.d/login");
+            root.authFailed(Translation.tr("Password check is unavailable. Check the PAM configuration."));
+        }
     }
 
     function tryFingerUnlock() {
         if (root.fingerprintsConfigured) {
+            root.fingerprintTimedOut = false;
             root.fingerprintState = LockContext.FingerprintEnum.Ready;
-            fingerPam.start();
+            // A config that cannot be opened never completes; say so instead
+            // of inviting a touch that nothing is listening for.
+            if (!fingerPam.start()) {
+                console.warn("[LockContext] fingerprint PamContext could not start; check " + fingerPam.configDirectory);
+                root.fingerprintState = LockContext.FingerprintEnum.Error;
+            }
         }
+    }
+
+    // Every way a password attempt ends short of success lands here, so the
+    // keep-awake flag from a Ctrl+Enter attempt cannot outlive the attempt and
+    // ride along on a later unlock.
+    function authFailed(message: string) {
+        root.clearText();
+        root.unlockInProgress = false;
+        root.alsoInhibitIdle = false;
+        GlobalStates.screenUnlockFailed = true;
+        root.showFailure = true;
+        root.failureMessage = message;
+        root.failed();
+        root.shouldReFocus();
     }
 
     function stopFingerPam() {
@@ -250,39 +279,49 @@ Scope {
                 root.unlocked(root.targetAction);
                 stopFingerPam();
             } else {
-                root.clearText();
-                root.unlockInProgress = false;
-                GlobalStates.screenUnlockFailed = true;
-                root.showFailure = true;
-                root.failed();
                 // A wrong password must not cost the user their fingerprint
                 // reader, and vice versa: the two paths never share state.
-                root.shouldReFocus();
+                root.authFailed(Translation.tr("Incorrect password. Try again."));
             }
         }
     }
 
+    // pam_fprintd gives up after its timeout with an info message before the
+    // stack completes. That completion is a quiet re-arm, not a failed scan.
+    property bool fingerprintTimedOut: false
+
     PamContext {
         id: fingerPam
 
+        // Relative to this file: modules/common/panels/lock/pam/fprintd.conf,
+        // with pam/other denying everything else libpam looks up there.
         configDirectory: "pam"
         config: "fprintd.conf"
 
         // fprintd text is classified into a state, never displayed or logged.
         onPamMessage: {
             const prompt = (this.message ?? "").toLowerCase();
+            if (prompt.includes("timed out")) {
+                root.fingerprintTimedOut = true;
+                return;
+            }
             const isIdlePrompt = prompt.includes("place") || prompt.includes("swipe");
             root.fingerprintState = isIdlePrompt
                 ? LockContext.FingerprintEnum.Ready
                 : LockContext.FingerprintEnum.Scanning;
         }
 
+        // Only PamResult.Success unlocks. Failed, Error and MaxTries all end
+        // here as a re-arm, whatever the reason libpam gave.
         onCompleted: result => {
             if (result == PamResult.Success) {
                 root.fingerprintState = LockContext.FingerprintEnum.Ready;
                 root.unlocked(root.targetAction);
                 stopFingerPam();
-            } else if (result == PamResult.Error) { // if timeout or etc..
+            } else if (root.fingerprintTimedOut) {
+                root.fingerprintState = LockContext.FingerprintEnum.Ready;
+                fingerprintRearmTimer.restart();
+            } else if (result == PamResult.Error) { // config or fprintd unavailable
                 root.fingerprintState = LockContext.FingerprintEnum.Error;
                 fingerprintRearmTimer.restart();
             } else {
