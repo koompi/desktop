@@ -15,7 +15,7 @@
 groups=(koompi)
 pkgname=koompi-shell
 pkgver=1.1
-pkgrel=7
+pkgrel=8
 pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
 arch=(x86_64 aarch64)
 license=(GPL-3.0-only)
