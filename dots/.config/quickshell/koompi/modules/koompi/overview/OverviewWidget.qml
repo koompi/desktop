@@ -270,7 +270,7 @@ Item {
                                 updateWindowPosition.restart()
                             }
                             else {
-                                if (!window.windowData.floating) {
+                                if (!window.windowData?.floating) {
                                     updateWindowPosition.restart()
                                     return
                                 }

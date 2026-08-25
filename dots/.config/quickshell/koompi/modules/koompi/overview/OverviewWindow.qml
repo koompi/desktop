@@ -58,7 +58,7 @@ Item { // Window
     y: initY
     width: targetWindowWidth
     height: targetWindowHeight
-    opacity: windowData.monitor == widgetMonitorId ? 1 : 0.4
+    opacity: windowData?.monitor == widgetMonitorId ? 1 : 0.4
 
     property real topLeftRadius
     property real topRightRadius
