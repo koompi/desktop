@@ -136,6 +136,7 @@ Many shell binds have a second copy guarded by `qs ipc call TEST_ALIVE ||` that 
 | `Ctrl+Super+Shift+D` | light/dark mode |
 | `Ctrl+Super+P` | cycle panel family |
 | `Ctrl+Super+R` | restart the shell |
+| `Super+Alt+F1` | virtual machine mode, every key passes through until pressed again |
 
 Clipboard and emoji belong to Search, not to Overview.
 They set their own flags rather than aliasing `searchOpen`, which is what makes `Super+V` then `Super+.` switch mode instead of toggling the panel shut.
