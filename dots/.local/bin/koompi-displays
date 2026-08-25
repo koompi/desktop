@@ -70,7 +70,15 @@ tmp=$(mktemp)
     hyprctl monitors -j | jq -r '.[] |
         "hl.monitor({\n    output = \"\(.name)\",\n    mode = \"\(.width)x\(.height)@\(.refreshRate*10|round/10)\",\n    position = \"\(.x)x\(.y)\",\n    scale = \(.scale)\n})"'
 } > "$tmp"
-if luac -p "$tmp" 2>/dev/null || lua -e "assert(loadfile('$tmp'))" 2>/dev/null; then
+# no koompi package depends on lua; the file is a fixed template filled by jq
+validate_lua() {
+    if command -v luac >/dev/null 2>&1; then
+        luac -p "$1" 2>/dev/null
+    elif command -v lua >/dev/null 2>&1; then
+        lua -e "assert(loadfile('$1'))" 2>/dev/null
+    fi
+}
+if validate_lua "$tmp"; then
     mv "$tmp" "$MONITORS_LUA"
 else
     rm -f "$tmp"
