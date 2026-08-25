@@ -43,7 +43,8 @@ Singleton {
     readonly property string embedKey: {
         const id = memoryConfig.keyId ?? "";
         if (id.length === 0) return "";
-        return KeyringStorage.keyringData?.apiKeys?.[id]?.key ?? "";
+        // apiKeys.<id> is a plain string (ModelRegistry.setApiKey)
+        return KeyringStorage.keyringData?.apiKeys?.[id] ?? "";
     }
 
     /* ---- the type vocabulary the daemon enforces (memd src/taxonomy.rs) ---- */
