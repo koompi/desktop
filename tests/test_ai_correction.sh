@@ -6,35 +6,42 @@
 # called, and the next request still carried Owner: Nimmit. The reply itself was then
 # stored as a durable memory and read back on every turn afterwards.
 #
-# This runs the real functions out of FeedbackService.qml over that transcript twice:
-# once with the audit off, which is the shipped behaviour, and once with it on. No mock
+# This runs the real functions out of feedbackRules.js over that transcript twice: once
+# with the audit off, which is the shipped behaviour, and once with it on. No mock
 # service, no hand-written copy of the rules. No network, no daemon, no shell.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE="$REPO_ROOT/dots/.config/quickshell/koompi/services/ai/FeedbackService.qml"
+RULES="$REPO_ROOT/dots/.config/quickshell/koompi/services/ai/feedbackRules.js"
 FEEDBACK_UI="$REPO_ROOT/dots/.config/quickshell/koompi/modules/koompi/sidebarLeft/aiChat/feedback"
 
 [[ -f "$SERVICE" ]] || { echo "missing $SERVICE" >&2; exit 1; }
+[[ -f "$RULES" ]] || { echo "missing $RULES" >&2; exit 1; }
 command -v bun >/dev/null || { echo "bun not installed; skipping" >&2; exit 0; }
 
 fail=0
 
 # The verdict has to be reached from the tool-call record. If these three stop being
 # true the check has gone back to reading the model's prose, which is the bug.
-grep -q 'const backing = root.backingCall(calls, correction);' "$SERVICE" \
+grep -q 'const backing = backingCall(calls, correction);' "$RULES" \
     || { echo "FAIL: auditTurn no longer decides on the call record" >&2; fail=1; }
-grep -q 'const correction = root.correctionFrom(turn?.userText ?? "");' "$SERVICE" \
+grep -q 'const correction = correctionFrom(turn?.userText ?? "");' "$RULES" \
     || { echo "FAIL: the stored fact no longer comes from the user's own turn" >&2; fail=1; }
-grep -q 'MemoryService.remember(record.statement, record.mtype, root.tagsFor(record), root.correctionSource' "$SERVICE" \
+grep -q 'MemoryService.remember(record.statement, record.mtype, Rules.tagsFor(record), root.correctionSource' "$SERVICE" \
     || { echo "FAIL: a correction no longer goes to memory as an asserted correction" >&2; fail=1; }
 
 # Precedence has no column in memd, so it rides the fields memd does store. If either
 # constant moves, the ledger and the daemon stop agreeing about what outranks what.
-grep -q 'readonly property string precedence: "asserted"' "$SERVICE" \
+# The rules own the value; the service re-exports it, so both are checked.
+grep -q '^var precedence = "asserted";' "$RULES" \
     || { echo "FAIL: precedence is no longer 'asserted'" >&2; fail=1; }
-grep -q 'readonly property string correctionSource: "manual-correction"' "$SERVICE" \
+grep -q '^var correctionSource = "manual-correction";' "$RULES" \
     || { echo "FAIL: the correction source stamp changed" >&2; fail=1; }
+grep -q 'readonly property string precedence: Rules.precedence' "$SERVICE" \
+    || { echo "FAIL: FeedbackService no longer re-exports the rules' precedence" >&2; fail=1; }
+grep -q 'readonly property string correctionSource: Rules.correctionSource' "$SERVICE" \
+    || { echo "FAIL: FeedbackService no longer re-exports the rules' correction source" >&2; fail=1; }
 
 # The affordance the spec asks for, and the promise the modal makes.
 grep -rq 'This is wrong' "$FEEDBACK_UI" \
@@ -50,20 +57,13 @@ trap 'rm -rf "$tmp"' EXIT
 cat > "$tmp/run.mjs" <<'EOF'
 import { readFileSync, writeFileSync } from "node:fs";
 
-const qml = readFileSync(process.argv[2], "utf8");
+const source = readFileSync(process.argv[2], "utf8");
 
-// Lift a function out of the .qml by brace matching, so the test runs the shipped
-// source rather than a copy that can drift away from it.
-function lift(name) {
-    const start = qml.indexOf(`function ${name}(`);
-    if (start < 0) throw new Error(`${name} not found in FeedbackService.qml`);
-    let depth = 0;
-    for (let j = qml.indexOf("{", start); j < qml.length; j++) {
-        if (qml[j] === "{") depth++;
-        else if (qml[j] === "}" && --depth === 0) return qml.slice(start, j + 1);
-    }
-    throw new Error(`unbalanced braces in ${name}`);
-}
+// feedbackRules.js is a QML JavaScript library: plain functions and `var`s under a
+// `.pragma library` line. Drop that one directive and it is a module node can load,
+// so the test runs the shipped source rather than a copy that can drift away from it.
+if (!/^\.pragma library$/m.test(source)) throw new Error("feedbackRules.js is not a .pragma library file");
+if (/^\.import /m.test(source)) throw new Error("feedbackRules.js imports a QML module; the rules must stay pure");
 
 const PURE = [
     "clausesOf", "contentWords", "keyWord", "overlaps", "normalise", "sameValue",
@@ -71,18 +71,15 @@ const PURE = [
     "claimsStorage", "callArgs", "storageCalls", "backingCall", "auditTurn",
     "subjectOf", "contradicts", "losesConflict", "procedureKey", "outcomeOf", "estimateTokens",
     "tagsFor", "provenanceOf", "draftFrom", "hashOf",
+    "turnFrom", "sourceKey", "isMemorySuppressed",
 ];
 
 writeFileSync("./rules.mjs", `
-const Translation = { tr: s => s };
-${PURE.map(lift).join("\n")}
-const root = { ${PURE.join(", ")} };
-root.precedence = "asserted";
-root.correctionSource = "manual-correction";
-export { root };
+${source.replace(/^\.pragma library$/m, "")}
+export { precedence, correctionSource, ${PURE.join(", ")} };
 `);
 
-const { root } = await import("./rules.mjs");
+const root = await import("./rules.mjs");
 
 let failed = 0;
 const check = (name, cond, extra = "") => {
@@ -90,6 +87,9 @@ const check = (name, cond, extra = "") => {
     console.error(`FAIL: ${name} ${extra}`);
     failed++;
 };
+
+for (const name of PURE) check(`${name} is a function exported by feedbackRules.js`, typeof root[name] === "function");
+console.log(`found ${PURE.filter(name => typeof root[name] === "function").length}/${PURE.length} rules: ${PURE.join(" ")}`);
 
 /* ------------------------------------------------------------------ *
  * The transcript. Every line is verbatim from the live system: the two
@@ -269,7 +269,8 @@ check("resolving the conflict lets it back in",
 /* ---- the modal writes what its preview says ---- */
 
 const draft = root.draftFrom("I am Rithy", "I've noted that you are Rithy.");
-const preview = root.provenanceOf(draft);
+const preview = root.provenanceOf(draft, "the assistant's memory store");
+check("the preview names the store it was handed", preview.store === "the assistant's memory store", preview.store);
 check("the preview names the type that will be written", preview.mtype === "identity", preview.mtype);
 check("the preview names the precedence", preview.precedence === "asserted");
 check("the preview names the source", preview.source === "manual-correction");
@@ -279,6 +280,40 @@ check("the preview's tags are the tags that get written",
 const once = root.draftFrom("The user's laptop is a Dell XPS 13.", "");
 check("a free-form correction still types itself", once.mtype === "fact", once.mtype);
 check("and gets a subject", once.subject === "user.laptop", once.subject);
+
+/* ---- the turn is read off the conversation, not off the last message ---- */
+
+const conversation = {
+    messageIDs: ["u0", "a0", "u1", "a1", "t1", "a2"],
+    messageByID: {
+        u0: { role: "user", content: "hello" },
+        a0: { role: "assistant", content: "hi", done: true },
+        u1: { role: "user", rawContent: "i am not Nimmit. You are Nimmit. I am Rithy.", content: "(rendered)" },
+        a1: { role: "assistant", content: "Let me check.", done: true,
+            toolCalls: [{ id: "call_1", name: "recall", arguments: '{"query": "name"}' }] },
+        t1: { role: "tool", toolCallId: "call_1", functionName: "recall", functionResponse: "No relevant memories found." },
+        a2: { role: "assistant", content: "I've noted that you are Rithy.", done: true, sources: [{ type: "memory" }] },
+    },
+};
+const turn = root.turnFrom(conversation);
+check("the turn starts at the user's last message, raw", turn.userText === "i am not Nimmit. You are Nimmit. I am Rithy.", turn.userText);
+check("every assistant message since is one text", turn.assistantText === "Let me check.\nI've noted that you are Rithy.", JSON.stringify(turn.assistantText));
+check("every call since is collected", turn.toolCalls.length === 1 && turn.toolCalls[0].id === "call_1");
+check("every result since is collected", turn.toolResults.length === 1 && turn.toolResults[0].toolCallId === "call_1");
+check("the turn is the last assistant message", turn.messageId === "a2" && turn.done === true && turn.pending === false);
+check("the audit of a read turn is the audit of the transcript", root.auditTurn(turn).verdict === "unbacked-claim", root.auditTurn(turn).verdict);
+check("no conversation, no turn", root.turnFrom(null) === null);
+
+/* ---- suppression keys and matches ---- */
+
+check("a memory source is keyed by its normalised name",
+    root.sourceKey({ type: "memory", name: "The user's laptop is a Dell." }) === "memory|users laptop is a dell");
+check("a web source is keyed by its url", root.sourceKey({ type: "web", name: "x", url: "https://koompi.com" }) === "web|https://koompicom");
+const suppressed = [{ active: true, type: "memory", name: "The user's laptop…", memoryId: -1 }, { active: false, type: "memory", name: "gone", memoryId: 9 }];
+check("a row whose text starts with a suppressed name is held back",
+    root.isMemorySuppressed({ id: 3, text: "The user's laptop is a Dell XPS 13." }, suppressed));
+check("a lifted suppression no longer holds anything back", !root.isMemorySuppressed({ id: 9, text: "gone for good" }, suppressed));
+check("an unrelated row is not", !root.isMemorySuppressed({ id: 4, text: "The user uses Okular." }, suppressed));
 
 /* ---- the habit table's inputs ---- */
 
@@ -300,6 +335,6 @@ if (failed > 0) { console.error(`${failed} check(s) failed`); process.exit(1); }
 console.log("ok: the owner-name correction sticks, and it is decided by the call record");
 EOF
 
-cd "$tmp" && bun run run.mjs "$SERVICE" || fail=1
+cd "$tmp" && bun run run.mjs "$RULES" || fail=1
 
 exit "$fail"
