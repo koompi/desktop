@@ -81,6 +81,21 @@ exit 0'
     run sudo chmod 755 "$hook"
 }
 
+# DMI-gated hardware quirks (OMARCHY-AUDIT O08), the runner koompi-shell ships,
+# run from the checkout: it finds sdata/hardware and dots/.local/bin itself.
+# dry run is the runner's own: real decisions for this machine, no sudo.
+setup_hardware_quirks() {
+    step "Hardware quirks"
+    local runner="$REPO_ROOT/dots/.local/share/koompi/libexec/apply-hardware"
+    [[ -x "$runner" ]] || { warn "$runner missing; hardware quirks skipped"; return 0; }
+    if [[ "$DRY_RUN" == true ]]; then
+        "$runner" --dry-run || warn "a hardware quirk failed its dry run"
+        return 0
+    fi
+    try sudo "$runner" \
+        || warn "a hardware quirk failed; see /var/log/koompi/hardware.log"
+}
+
 # Swap on zram, systemd-oomd allowed to kill only user app scopes, and a 5 s
 # stop timeout: what keeps a 4 GB machine's session alive under pressure. The
 # ISO gets them from the koompi-sysdefaults package; this installs the same

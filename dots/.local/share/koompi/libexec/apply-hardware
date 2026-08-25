@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# apply-hardware: run every KOOMPI hardware quirk for this machine (root,
+# rerunnable). Each quirk under hardware/ gates on a predicate (koompi-hw-match,
+# koompi-hw-laptop, what the kernel ships) and is a no-op otherwise. Called by
+# installer/src/post_install.sh in the chroot, ./setup from a checkout, and
+# koompi update after a packaged upgrade. Modelled on omarchy
+# bin/omarchy-apply-hardware + install/hardware/all.sh.
+#
+#   apply-hardware              apply (root)
+#   apply-hardware --dry-run    print every decision, change nothing; any user
+#
+# Decisions go to stdout and, when applying, /var/log/koompi/hardware.log.
+# Packaged: /usr/lib/koompi/{apply-hardware,hardware/}, predicates in /usr/bin.
+# Checkout: dots/.local/share/koompi/libexec/, sdata/hardware/, dots/.local/bin.
+# Overrides (tests): KOOMPI_HARDWARE_DIR, KOOMPI_HW_LOG, KOOMPI_HW_PREFIX (fake
+# root; set, the root requirement is dropped since / is never touched).
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+usage: apply-hardware [--dry-run]
+Run the KOOMPI hardware quirks for this machine (root). --dry-run lists what
+each quirk would do and changes nothing.
+USAGE
+}
+
+DRY_RUN=false
+while (($#)); do
+    case "$1" in
+        --dry-run) DRY_RUN=true ;;
+        -h|--help) usage; exit 0 ;;
+        *) printf 'apply-hardware: unknown option: %s\n' "$1" >&2; usage >&2; exit 2 ;;
+    esac
+    shift
+done
+
+here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+# /usr/lib/koompi/../../../bin is /bin; from a checkout it is dots/.local/bin.
+# prepended always: sudo's secure_path is not the caller's PATH
+if [[ -d "$here/../../../bin" ]]; then
+    PATH="$(cd -- "$here/../../../bin" && pwd):$PATH"
+fi
+export PATH
+
+hw_dir="${KOOMPI_HARDWARE_DIR:-}"
+if [[ -z "$hw_dir" ]]; then
+    if [[ -f "$here/hardware/all.sh" ]]; then
+        hw_dir="$here/hardware"
+    elif [[ -f "$here/../../../../../sdata/hardware/all.sh" ]]; then
+        hw_dir="$(cd -- "$here/../../../../../sdata/hardware" && pwd)"
+    fi
+fi
+[[ -n "$hw_dir" && -f "$hw_dir/all.sh" ]] \
+    || { printf 'apply-hardware: no hardware directory (set KOOMPI_HARDWARE_DIR)\n' >&2; exit 1; }
+for tool in koompi-hw-match koompi-hw-laptop; do
+    command -v "$tool" > /dev/null 2>&1 \
+        || { printf 'apply-hardware: %s not on PATH\n' "$tool" >&2; exit 1; }
+done
+
+export KOOMPI_HW_DRY_RUN="$DRY_RUN"
+export KOOMPI_HW_PREFIX="${KOOMPI_HW_PREFIX:-}"
+log_file="${KOOMPI_HW_LOG:-/var/log/koompi/hardware.log}"
+
+if [[ "$DRY_RUN" != true && -z "$KOOMPI_HW_PREFIX" && "$(id -u)" != 0 ]]; then
+    printf 'apply-hardware: root required to apply; use --dry-run to see the decisions\n' >&2
+    exit 1
+fi
+
+if [[ "$DRY_RUN" != true ]]; then
+    mkdir -p -- "$(dirname -- "$log_file")"
+    : >> "$log_file"
+fi
+
+log() {
+    local line
+    line="$(date '+%Y-%m-%d %H:%M:%S') $*"
+    printf '%s\n' "$line"
+    [[ "$DRY_RUN" == true ]] || printf '%s\n' "$line" >> "$log_file"
+}
+
+failed=()
+# own process per quirk: one failing cannot stop the rest or the runner
+run_quirk() {
+    local name="$1" script="$hw_dir/$1" out rc=0 line
+    if [[ ! -f "$script" ]]; then
+        log "$name: FAILED, script missing"
+        failed+=("$name")
+        return 0
+    fi
+    out="$(bash "$script" 2>&1 < /dev/null)" || rc=$?
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && log "$name: $line"
+    done <<< "$out"
+    if (( rc != 0 )); then
+        log "$name: FAILED (exit $rc)"
+        failed+=("$name")
+    fi
+    return 0
+}
+
+if [[ "$DRY_RUN" == true ]]; then
+    log "dry run: nothing will change (quirks from $hw_dir)"
+else
+    log "applying quirks from $hw_dir"
+fi
+
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../../../../../sdata/hardware/all.sh
+source "$hw_dir/all.sh"
+
+if (( ${#failed[@]} )); then
+    log "FAILED: ${failed[*]}"
+    exit 1
+fi
+if [[ "$DRY_RUN" != true ]]; then
+    log "done"
+elif [[ -z "$KOOMPI_HW_PREFIX" && "$(id -u)" != 0 ]]; then
+    log "dry run done; root required to apply: sudo $here/apply-hardware"
+else
+    log "dry run done; nothing changed"
+fi

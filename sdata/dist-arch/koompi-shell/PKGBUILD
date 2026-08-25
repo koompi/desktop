@@ -41,6 +41,8 @@ _tools=(
   koompi-flatpak-open
   koompi-health
   koompi-hook
+  koompi-hw-laptop
+  koompi-hw-match
   koompi-launch
   koompi-launch-tui
   koompi-launch-webapp
@@ -120,6 +122,14 @@ package() {
   install -Dm644 "$_repo_root/dots/.local/share/koompi/libexec/migrate-lib.sh" \
     "$pkgdir/usr/lib/koompi/migrate-lib.sh"
   ln -s koompi "$pkgdir/usr/bin/koompi-update"
+  # Hardware quirks (OMARCHY-AUDIT O08): apply-hardware finds hardware/ beside
+  # itself and the koompi-hw-* predicates in /usr/bin.
+  install -Dm755 "$_repo_root/dots/.local/share/koompi/libexec/apply-hardware" \
+    "$pkgdir/usr/lib/koompi/apply-hardware"
+  local _hw
+  while IFS= read -r -d '' _hw; do
+    install -Dm644 "$_hw" "$pkgdir/usr/lib/koompi/hardware/${_hw#"$_repo_root/sdata/hardware/"}"
+  done < <(find "$_repo_root/sdata/hardware" -type f -print0)
 
   local tool
   for tool in "${_tools[@]}"; do

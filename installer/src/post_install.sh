@@ -27,6 +27,19 @@ ensure_pkgs() {
   fi
 }
 
+# 0b. DMI-gated hardware quirks (OMARCHY-AUDIT O08); koompi-shell ships the
+#     runner. arch-chroot bind-mounts /sys and /proc, so DMI and lid reads see
+#     the real machine. koompi update reruns it after upgrades.
+apply_hardware() {
+  local tool=/usr/lib/koompi/apply-hardware
+  if [[ ! -x "$tool" ]]; then
+    log "WARNING: $tool missing (koompi-shell not installed?); hardware quirks skipped"
+    return
+  fi
+  log "applying hardware quirks"
+  "$tool" || log "WARNING: a hardware quirk failed; see /var/log/koompi/hardware.log"
+}
+
 # 1. snapper config for root. archinstall's btrfs layout already made @ and a
 #    .snapshots subvol, so `snapper create-config` must not make its own. Create the
 #    config file, then point it at the existing layout.
@@ -198,6 +211,7 @@ EOF
 main() {
   log "KOOMPI OS post-install hook starting (SCAFFOLD)"
   ensure_pkgs
+  apply_hardware      # DMI-gated quirks into the baseline too
   setup_snapper       # snapper config + restore archinstall's @snapshots subvol
   enable_login        # enable sddm BEFORE the baseline so it captures it
   setup_firewall      # rules + ENABLED=yes into the baseline too

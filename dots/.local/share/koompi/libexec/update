@@ -583,6 +583,7 @@ update_packaged() {
     fi
 
     ok "packages up to date (route: packaged)"
+    apply_hardware_quirks
 
     local post_dump=""
     post_dump="$(mktemp "${TMPDIR:-/tmp}/koompi-post.XXXXXX")"

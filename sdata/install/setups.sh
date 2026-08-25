@@ -31,6 +31,7 @@ run_setups() {
     setup_python_venv
     setup_groups_and_modules
     setup_suspend_hook
+    setup_hardware_quirks
     setup_low_ram_defaults
     setup_firewall_defaults
     setup_local_ai

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# koompi-hw-match <pattern>: exit 0 when DMI product_name or product_family
+# matches (grep -i). Port of omarchy bin/omarchy-hw-match:5-6. Gate for vendor
+# quirks under /usr/lib/koompi/hardware. Sibling koompi-hw-laptop reads the lid
+# switch and chassis type; neither needs a compositor, unlike koompi-lid, which
+# handles lid events via hyprctl.
+# KOOMPI_DMI_ROOT replaces /sys/class/dmi/id (tests).
+set -uo pipefail
+
+if [[ $# -ne 1 || -z "$1" ]]; then
+    printf 'usage: koompi-hw-match <pattern>\n' >&2
+    exit 2
+fi
+
+dmi="${KOOMPI_DMI_ROOT:-/sys/class/dmi/id}"
+grep -qi -- "$1" "$dmi/product_name" 2>/dev/null \
+    || grep -qi -- "$1" "$dmi/product_family" 2>/dev/null

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# koompi-hw-laptop: exit 0 on a laptop: an ACPI lid switch, else DMI chassis
+# type 8 Portable, 9 Laptop, 10 Notebook, 14 Sub Notebook, 30 Tablet,
+# 31 Convertible, 32 Detachable. Port of omarchy bin/omarchy-hw-laptop:4-12.
+# Not koompi-lid: that one reacts to lid close/open and asks hyprctl about
+# external panels, so it needs a running Hyprland. This is a plain hardware
+# question, answerable as root, in the install chroot, with no session.
+# KOOMPI_DMI_ROOT replaces /sys/class/dmi/id, KOOMPI_LID_DIR replaces
+# /proc/acpi/button/lid (tests).
+set -uo pipefail
+
+if [[ $# -ne 0 ]]; then
+    printf 'usage: koompi-hw-laptop\n' >&2
+    exit 2
+fi
+
+lid_dir="${KOOMPI_LID_DIR:-/proc/acpi/button/lid}"
+for state in "$lid_dir"/*/state; do
+    [[ -e "$state" ]] && exit 0
+done
+
+chassis_file="${KOOMPI_DMI_ROOT:-/sys/class/dmi/id}/chassis_type"
+chassis=""
+[[ -r "$chassis_file" ]] && read -r chassis < "$chassis_file"
+case "$chassis" in
+    8|9|10|14|30|31|32) exit 0 ;;
+esac
+exit 1

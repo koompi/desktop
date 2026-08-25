@@ -175,6 +175,20 @@ firmware_advice() {
     return 0
 }
 
+# After a packaged upgrade: rerun the DMI-gated quirks (audit O08) so what a
+# kernel or NetworkManager update undid comes back. Never fails the update.
+apply_hardware_quirks() {
+    local tool=/usr/lib/koompi/apply-hardware
+    [[ -x "$tool" ]] || return 0
+    if [[ "$DRY_RUN" == true ]]; then
+        info "would rerun the hardware quirks (sudo $tool)"
+        return 0
+    fi
+    run sudo "$tool" \
+        || warn "a hardware quirk failed; see /var/log/koompi/hardware.log"
+    return 0
+}
+
 # `koompi update --firmware`: fwupdmgr update, interactively, and nothing else.
 cmd_firmware() {
     have fwupdmgr || die "fwupdmgr is not installed; it comes with the fwupd package: sudo pacman -S fwupd"
