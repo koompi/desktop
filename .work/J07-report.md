@@ -178,3 +178,103 @@ Baseline was 79/3/0; the one failure is the block above and nothing else.
 
 - `/tmp/j07-backup.ABiTnp/`: `FeedbackService.qml` (the 1094-line original) and `shell.qml` (identical to what is live). Restore the hub with `cp /tmp/j07-backup.ABiTnp/FeedbackService.qml ~/.config/quickshell/koompi/services/ai/ && rm ~/.config/quickshell/koompi/services/ai/{FeedbackStore,HabitTable,TrustLedger,HallucinationReport}.qml ~/.config/quickshell/koompi/services/ai/feedbackRules.js`.
 - Scratch tree `/tmp/j07-qs` removed.
+
+## Round 2: the lead chose option 1
+
+Rebased onto `main` c4d3c41b first (the allow-list rows had moved; clean rebase).
+Commits on top: `e74a0aec` (the module split), plus this report update.
+
+### What changed
+
+- `feedbackRules.js` (272 lines): reading the user's sentence and auditing the call record, old 66-325 verbatim, plus the two `var` constants. Imports nothing.
+- `feedbackWrites.js` (198 lines, new, owned): `tagsFor`, `provenanceOf`, `draftFrom`, `losesConflict`, `turnFrom`, `sourceKey`, `isMemorySuppressed`, `procedureKey`, `outcomeOf`, `estimateTokens`, `hashOf`. Opens with `.import "feedbackRules.js" as Rules` and calls `Rules.correctionFrom`, `Rules.asStatement`, `Rules.subjectOf`, `Rules.normalise`, `Rules.precedence`, `Rules.correctionSource`; nothing else changed inside the functions.
+- `FeedbackService.qml` imports both (`Rules` for `auditTurn`, `sameValue`, `correctionFrom`, `contradicts` and the two constants; `Writes` for the rest). `HabitTable.qml` imports both (`Rules.callArgs`, `Writes.procedureKey/outcomeOf/estimateTokens`). `HallucinationReport.qml` imports `Writes` only (`hashOf`). `TrustLedger.qml` unchanged (`Rules` constants).
+- `tests/test_ai_correction.sh` loads both: strips each `.pragma library`, rewrites the one `.import` as `import * as Rules from "./rules.mjs"`, exports `RULES` (18) from the first and `WRITES` (11) from the second, asserts each of the 29 is a function in its module, and fails if `feedbackRules.js` gains any `.import` or `feedbackWrites.js` gains one other than that line. The hub grep now looks for `Writes.tagsFor(record)` in the `MemoryService.remember` call.
+
+The QML side of a JS-to-JS `.import` was checked in a scratch instance before the deploy (same method as round 1): `Writes.provenanceOf` reached `Rules.precedence` and printed the same provenance object as before.
+
+### 1. `wc -l`
+
+```
+  385 services/ai/FeedbackService.qml
+  272 services/ai/feedbackRules.js
+  198 services/ai/feedbackWrites.js
+  107 services/ai/FeedbackStore.qml
+   69 services/ai/HabitTable.qml
+  113 services/ai/TrustLedger.qml
+   54 services/ai/HallucinationReport.qml
+ 1198 total
+```
+
+Every file under its cap (QML 400, JS 300).
+
+### 2. Rules test
+
+```
+$ bash tests/test_ai_correction.sh
+found 29/29 rules
+  feedbackRules.js : clausesOf contentWords keyWord overlaps normalise sameValue nameToken ownerNameFrom capitalise asStatement correctionFrom claimsStorage callArgs storageCalls backingCall auditTurn subjectOf contradicts
+  feedbackWrites.js: tagsFor provenanceOf draftFrom losesConflict turnFrom sourceKey isMemorySuppressed procedureKey outcomeOf estimateTokens hashOf
+...
+ok: the owner-name correction sticks, and it is decided by the call record
+rc=0
+```
+
+### 3. Consumer grep
+
+Unchanged from round 1: no file outside `services/ai/` and the two test files is touched (`git diff --stat main..HEAD`).
+
+### 4. Live, round 2
+
+Backups in `/tmp/j07-backup-r2.tVQojI/`: the round-1 `FeedbackService.qml`, `HabitTable.qml`, `HallucinationReport.qml`, `feedbackRules.js` as they were live. Round-1 backup dir `/tmp/j07-backup.ABiTnp/` still holds the 1094-line original.
+
+Deploy at 15:26:44 (`feedbackRules.js`, `feedbackWrites.js`, `HabitTable.qml`, `HallucinationReport.qml`, then the hub; each `mktemp` + `mv`); `diff -rq` branch vs live `services/ai`: identical.
+This time quickshell's own watcher fired: `Reloading configuration...` count 4 → 5 at 15:26:51, seven seconds after the last `mv`, `Configuration Loaded` by 15:27:11. Same PID 702039 since 13:02:21; nothing killed, no sudo, session not locked.
+
+```
+$ qs -c koompi ipc call aifeedback report
+{"windowDays":7,"turns":7,"groundedTurns":7,"corrections":0,"autoRepairs":0,"correctedTurns":0,"statedGrounding":0.4532627590828175,"measuredAccuracy":1,"gap":null,"enough":false,"overconfident":false,"minTurns":10,"minCorrections":2,"needTurns":3,"needCorrections":2}
+$ qs -c koompi ipc call sidebarLeft open; qs -c koompi ipc call aifeedback open   # 15:27:11
+$ hyprctl layers | grep -i aiFeedback
+		Layer 56105f8ca880: xywh: 0 1080 1920 1200, a: 1, namespace: quickshell:aiFeedback, pid: 702039
+$ qs -c koompi ipc call aifeedback close   # 15:27:15
+```
+
+Log after the reload: zero lines matching `feedback|error`, none naming `services/ai`, `FeedbackStore`, `HabitTable`, `TrustLedger`, `HallucinationReport`, `feedbackRules`, `feedbackWrites`, `Rules` or `Writes`.
+The only WARN lines in that slice are the three pre-existing ones from other directories (`services/AgentUsage.qml:73`, `background/Background.qml:373` binding loop, `koompi.clock/Widget.qml` not found).
+The literal `qs log -c koompi | grep -iE 'feedback|error' | tail -20` is the same `StringUtils.qml:92` / `MessageCodeBlock.qml:242` warnings as round 1, one `[J08]` debug line, and one `ERROR qml: [MemoryService:memd] memd: T0 fired after 46.1s idle ...`, all from before the reload and all outside my directory (`MemoryService.qml` is the memd bridge's own log line, not a failure of this job).
+
+State files:
+
+```
+$ ls -la ~/.local/state/quickshell/user/ai/feedback/
+-rw-r--r-- 1 userx userx  4536 2026-08-25 15:26:34 procedures.json
+-rw-r--r-- 1 userx userx 16947 2026-08-25 15:26:34 state.json
+```
+
+Both were rewritten at 15:26:34, ten seconds before the round-2 deploy, while the round-1 split was live: the trust report's turn count went 5 → 7 and `state.json` grew 16553 → 16947 bytes.
+That is a real turn of Rithy's going through `observeTurn` → `habits.recordProcedures` → `ledger.recordTurn` → `store.save` in the split hub, which round 1 could not show.
+Round 2 moved functions between the two JS modules only; the QML write path is the same code.
+No message was injected by me (same reasoning as round 1).
+
+### 5. `./tests/run.sh`
+
+```
+==> test_ai_correction.sh
+  ok test_ai_correction.sh
+==> test_file_length.sh
+  ok test_file_length.sh
+==> test_qml_layering.sh
+  ok test_qml_layering.sh
+
+79 passed, 3 skipped, 0 failed
+skipped: test_globalmenu.sh test_hypridle_logged.sh test_search_bench_parity.sh
+```
+
+Baseline restored: 79 passed, 3 skipped, 0 failed. `tests/test_file_length.sh` alone: `ok: 901 files under cap, 35 allow-listed and not grown`.
+
+### Cleanup state
+
+- Live `services/ai` equals the branch; nothing else under `~/.config` differs from what other jobs left.
+- Restore to pre-J07: `cp /tmp/j07-backup.ABiTnp/FeedbackService.qml ~/.config/quickshell/koompi/services/ai/ && rm ~/.config/quickshell/koompi/services/ai/{FeedbackStore,HabitTable,TrustLedger,HallucinationReport}.qml ~/.config/quickshell/koompi/services/ai/feedback{Rules,Writes}.js`.
+- Scratch trees removed.
