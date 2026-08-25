@@ -423,14 +423,15 @@ setup_agent_memory() {
 # banner is the only check that proves the thing the shell will do actually works,
 # so it is worth the one cold start.
 verify_agent_memory() {
-    local bin="$1" db banner
+    local bin="$1" db_dir banner
     [[ "$DRY_RUN" == true ]] && { info "would run $bin once to check it answers"; return 0; }
 
-    db="$(mktemp -u "${TMPDIR:-/tmp}/koompi-memd-check.XXXXXX.db")"
+    # a private dir, not a predicted name: sqlite also leaves -wal/-shm siblings
+    db_dir="$(mktemp -d "${TMPDIR:-/tmp}/koompi-memd-check.XXXXXX")" || { warn "cannot create a scratch directory to check koompi-agent-memd"; return 0; }
     info "starting it once to see that it answers; a first run also fetches the embedding model (~100 MB)"
-    banner="$(KOOMPI_AGENT_MEMORY_DB="$db" KOOMPI_AGENT_T0_QUIET_SECS=0 KOOMPI_AGENT_T1_IDLE_SECS=0 \
+    banner="$(KOOMPI_AGENT_MEMORY_DB="$db_dir/memory.db" KOOMPI_AGENT_T0_QUIET_SECS=0 KOOMPI_AGENT_T1_IDLE_SECS=0 \
         timeout 600 "$bin" < /dev/null 2>/dev/null | head -n 1)"
-    rm -f "$db"
+    rm -rf -- "${db_dir:?}"
 
     case "$banner" in
         *'"ok":true'*) ok "koompi-agent-memd ready: $banner" ;;
