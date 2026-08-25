@@ -21,30 +21,30 @@ const DEFER_MARKER = "defer-provisioning";
 /// Full pipeline: find the device, mount it read-only, hand the mounted root to
 /// `detectFromRoot`, unmount. Any failure before the mount succeeds is fail-open
 /// (`.none`); once mounted, `detectFromRoot` owns fail-open for its own errors.
-pub fn detect(alloc: std.mem.Allocator, cfg: *InstallConfig) !ProvisionMode {
-    const dev = (try findDevice(alloc)) orelse return .none;
+pub fn detect(alloc: std.mem.Allocator, io: std.Io, cfg: *InstallConfig) !ProvisionMode {
+    const dev = (try findDevice(alloc, io)) orelse return .none;
     defer alloc.free(dev);
 
-    try std.fs.cwd().makePath(MOUNT_POINT);
-    mountReadOnly(alloc, dev) catch |err| {
+    try std.Io.Dir.cwd().createDirPath(io, MOUNT_POINT);
+    mountReadOnly(io, dev) catch |err| {
         std.log.warn("cidata: mount {s} on {s} failed: {s}", .{ dev, MOUNT_POINT, @errorName(err) });
         return .none;
     };
-    defer unmount(alloc);
+    defer unmount(io);
 
-    var dir = std.fs.openDirAbsolute(MOUNT_POINT, .{}) catch |err| {
+    var dir = std.Io.Dir.openDirAbsolute(io, MOUNT_POINT, .{}) catch |err| {
         std.log.warn("cidata: open {s} failed: {s}", .{ MOUNT_POINT, @errorName(err) });
         return .none;
     };
-    defer dir.close();
+    defer dir.close(io);
 
-    return detectFromRoot(alloc, cfg, dir);
+    return detectFromRoot(alloc, io, cfg, dir);
 }
 
 /// The testable core: everything below the mount. `dir` is the cidata root, real
 /// or a fixture standing in for it.
-pub fn detectFromRoot(alloc: std.mem.Allocator, cfg: *InstallConfig, dir: std.fs.Dir) !ProvisionMode {
-    const raw = dir.readFileAlloc(alloc, CONFIG_FILE, 64 * 1024) catch |err| switch (err) {
+pub fn detectFromRoot(alloc: std.mem.Allocator, io: std.Io, cfg: *InstallConfig, dir: std.Io.Dir) !ProvisionMode {
+    const raw = dir.readFileAlloc(io, CONFIG_FILE, alloc, .limited(64 * 1024)) catch |err| switch (err) {
         error.FileNotFound => return .none,
         else => return err,
     };
@@ -55,7 +55,7 @@ pub fn detectFromRoot(alloc: std.mem.Allocator, cfg: *InstallConfig, dir: std.fs
         return .none;
     };
 
-    if (dir.readFileAlloc(alloc, CREDS_FILE, 16 * 1024)) |creds_raw| {
+    if (dir.readFileAlloc(io, CREDS_FILE, alloc, .limited(16 * 1024))) |creds_raw| {
         defer alloc.free(creds_raw);
         parseUserCredentials(alloc, cfg, creds_raw) catch |err| {
             std.log.err("cidata: malformed {s}: {s}", .{ CREDS_FILE, @errorName(err) });
@@ -67,7 +67,7 @@ pub fn detectFromRoot(alloc: std.mem.Allocator, cfg: *InstallConfig, dir: std.fs
         else => return err,
     }
 
-    dir.access(DEFER_MARKER, .{}) catch |err| switch (err) {
+    dir.access(io, DEFER_MARKER, .{}) catch |err| switch (err) {
         error.FileNotFound => {
             std.log.err(
                 "cidata: {s} present but neither {s} nor {s} found - malformed drive, ignoring",
@@ -122,14 +122,13 @@ fn parseUserCredentials(alloc: std.mem.Allocator, cfg: *InstallConfig, raw: []co
     cfg.password = try alloc.dupe(u8, parsed.value.password);
 }
 
-fn findDevice(alloc: std.mem.Allocator) !?[]const u8 {
-    if (try blkidDevice(alloc)) |dev| return dev;
-    return lsblkDevice(alloc);
+fn findDevice(alloc: std.mem.Allocator, io: std.Io) !?[]const u8 {
+    if (try blkidDevice(alloc, io)) |dev| return dev;
+    return lsblkDevice(alloc, io);
 }
 
-fn blkidDevice(alloc: std.mem.Allocator) !?[]const u8 {
-    const result = std.process.Child.run(.{
-        .allocator = alloc,
+fn blkidDevice(alloc: std.mem.Allocator, io: std.Io) !?[]const u8 {
+    const result = std.process.run(alloc, io, .{
         .argv = &.{ "blkid", "-L", "cidata" },
     }) catch return null;
     defer alloc.free(result.stdout);
@@ -149,11 +148,10 @@ const LsblkOutput = struct {
     blockdevices: []const LsblkDevice = &.{},
 };
 
-fn lsblkDevice(alloc: std.mem.Allocator) !?[]const u8 {
-    const result = std.process.Child.run(.{
-        .allocator = alloc,
+fn lsblkDevice(alloc: std.mem.Allocator, io: std.Io) !?[]const u8 {
+    const result = std.process.run(alloc, io, .{
         .argv = &.{ "lsblk", "-J", "-o", "NAME,LABEL" },
-        .max_output_bytes = 256 * 1024,
+        .stdout_limit = .limited(256 * 1024),
     }) catch return null;
     defer alloc.free(result.stdout);
     defer alloc.free(result.stderr);
@@ -176,38 +174,43 @@ fn findCidataName(devices: []const LsblkDevice) ?[]const u8 {
     return null;
 }
 
-fn mountReadOnly(alloc: std.mem.Allocator, dev: []const u8) !void {
-    var child = std.process.Child.init(&.{ "mount", "-o", "ro,nosuid,nodev", dev, MOUNT_POINT }, alloc);
-    const term = try child.spawnAndWait();
+fn mountReadOnly(io: std.Io, dev: []const u8) !void {
+    var child = try std.process.spawn(io, .{ .argv = &.{ "mount", "-o", "ro,nosuid,nodev", dev, MOUNT_POINT } });
+    const term = try child.wait(io);
     switch (term) {
-        .Exited => |code| if (code != 0) return error.MountFailed,
+        .exited => |code| if (code != 0) return error.MountFailed,
         else => return error.MountFailed,
     }
 }
 
-fn unmount(alloc: std.mem.Allocator) void {
-    var child = std.process.Child.init(&.{ "umount", MOUNT_POINT }, alloc);
-    _ = child.spawnAndWait() catch |err| {
+fn unmount(io: std.Io) void {
+    var child = std.process.spawn(io, .{ .argv = &.{ "umount", MOUNT_POINT } }) catch |err| {
+        std.log.warn("cidata: umount {s} failed: {s}", .{ MOUNT_POINT, @errorName(err) });
+        return;
+    };
+    _ = child.wait(io) catch |err| {
         std.log.warn("cidata: umount {s} failed: {s}", .{ MOUNT_POINT, @errorName(err) });
     };
 }
 
 test "no cidata present -> .none" {
     const alloc = std.testing.allocator;
+    const io = std.testing.io;
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
     var cfg = InstallConfig{};
-    const mode = try detectFromRoot(alloc, &cfg, tmp.dir);
+    const mode = try detectFromRoot(alloc, io, &cfg, tmp.dir);
     try std.testing.expectEqual(ProvisionMode.none, mode);
 }
 
 test "user_configuration.json + user_credentials.json -> .configured with parsed fields" {
     const alloc = std.testing.allocator;
+    const io = std.testing.io;
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    try tmp.dir.writeFile(.{
+    try tmp.dir.writeFile(io, .{
         .sub_path = CONFIG_FILE,
         .data =
         \\{
@@ -222,7 +225,7 @@ test "user_configuration.json + user_credentials.json -> .configured with parsed
         \\}
         ,
     });
-    try tmp.dir.writeFile(.{
+    try tmp.dir.writeFile(io, .{
         .sub_path = CREDS_FILE,
         .data =
         \\{ "username": "rithy", "password": "s3cr3t" }
@@ -230,7 +233,7 @@ test "user_configuration.json + user_credentials.json -> .configured with parsed
     });
 
     var cfg = InstallConfig{};
-    const mode = try detectFromRoot(alloc, &cfg, tmp.dir);
+    const mode = try detectFromRoot(alloc, io, &cfg, tmp.dir);
     defer alloc.free(cfg.locale);
     defer alloc.free(cfg.timezone);
     defer alloc.free(cfg.keymap);
@@ -254,19 +257,20 @@ test "user_configuration.json + user_credentials.json -> .configured with parsed
 
 test "user_configuration.json + defer-provisioning marker -> .deferred" {
     const alloc = std.testing.allocator;
+    const io = std.testing.io;
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    try tmp.dir.writeFile(.{
+    try tmp.dir.writeFile(io, .{
         .sub_path = CONFIG_FILE,
         .data =
         \\{ "hostname": "koompi-oem", "disk_path": "/dev/sda" }
         ,
     });
-    try tmp.dir.writeFile(.{ .sub_path = DEFER_MARKER, .data = "" });
+    try tmp.dir.writeFile(io, .{ .sub_path = DEFER_MARKER, .data = "" });
 
     var cfg = InstallConfig{};
-    const mode = try detectFromRoot(alloc, &cfg, tmp.dir);
+    const mode = try detectFromRoot(alloc, io, &cfg, tmp.dir);
     defer alloc.free(cfg.hostname);
     defer alloc.free(cfg.disk_path);
     defer alloc.free(cfg.locale);
@@ -281,13 +285,14 @@ test "user_configuration.json + defer-provisioning marker -> .deferred" {
 
 test "cidata label present but user_configuration.json missing -> .none (fail open)" {
     const alloc = std.testing.allocator;
+    const io = std.testing.io;
     var tmp = std.testing.tmpDir(.{});
     defer tmp.cleanup();
 
     // simulates a drive that mounted fine (right label) but wasn't a real seed.
-    try tmp.dir.writeFile(.{ .sub_path = "README.txt", .data = "not a seed drive" });
+    try tmp.dir.writeFile(io, .{ .sub_path = "README.txt", .data = "not a seed drive" });
 
     var cfg = InstallConfig{};
-    const mode = try detectFromRoot(alloc, &cfg, tmp.dir);
+    const mode = try detectFromRoot(alloc, io, &cfg, tmp.dir);
     try std.testing.expectEqual(ProvisionMode.none, mode);
 }
