@@ -14,6 +14,7 @@ import QtQuick;
  * - api_format: The API format of the model. Can be "openai" or "gemini". Default is "openai".
  * - extraParams: Extra parameters to be passed to the model. This is a JSON object.
  * - toolBlockByteLimit: measured ceiling on the serialised tool array, 0 for none.
+ * - contextWindow: the model's context in tokens when known (ai.extraModels), 0 to guess.
  */
 
 QtObject {
@@ -34,4 +35,5 @@ QtObject {
     // tool array passes ~1.5 KB of compact JSON: clean at 1461 B, first losses at
     // 1965 B, every number wrong at 3900 B, at temperature 0. See .work/J02-report.md.
     property int toolBlockByteLimit: 0
+    property int contextWindow: 0
 }

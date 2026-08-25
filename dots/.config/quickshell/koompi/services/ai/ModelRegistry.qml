@@ -27,6 +27,7 @@ QtObject {
     }
 
     property Component aiModelComponent: AiModel {}
+    readonly property ExtraModels extraModels: ExtraModels { registry: root }
     property Component geminiApiStrategy: GeminiApiStrategy {}
     property Component openaiApiStrategy: OpenAiApiStrategy {}
     property Component mistralApiStrategy: MistralApiStrategy {}
@@ -151,10 +152,7 @@ QtObject {
         root.models = Object.assign({}, root.models, {
             [modelName]: root.aiModelComponent.createObject(root, data)
         });
-        // The Ollama Process imperatively reassigns modelList, breaking its binding
-        // to models. Keep them in sync here so config extraModels (added async, after
-        // that reassignment) still reach the picker regardless of load order.
-        root.modelList = Object.keys(root.models);
+        root.modelList = Object.keys(root.models); // the binding to models is long broken
     }
 
     readonly property Process getOllamaModels: Process {

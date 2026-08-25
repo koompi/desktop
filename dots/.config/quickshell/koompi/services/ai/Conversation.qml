@@ -449,11 +449,7 @@ QtObject {
         }
     }
 
-    readonly property var currentModel: {
-        const models = root.engine ? root.engine.models : null;
-        if (!models) return null;
-        return models[root.engine.currentModelId] ?? null;
-    }
+    readonly property var currentModel: root.engine?.models?.[root.engine.currentModelId] ?? null
 
     readonly property string currentModelName: root.currentModel ? (root.currentModel.model ?? "") : ""
 
@@ -486,26 +482,30 @@ QtObject {
 
     readonly property int modelDefaultWindow: {
         const name = root.currentModelName.toLowerCase();
-        if (name.length === 0) return 0;
-        const keys = Object.keys(root.modelWindows);
-        for (let i = 0; i < keys.length; i++)
-            if (name.indexOf(keys[i]) >= 0) return root.modelWindows[keys[i]];
-        return 0;
+        const key = Object.keys(root.modelWindows).find(k => name.indexOf(k) >= 0);
+        return key ? root.modelWindows[key] : 0;
     }
 
+    readonly property int modelWindow: root.currentModel?.contextWindow ?? 0
     readonly property int configuredWindow: Config.options?.ai?.memory?.contextWindow ?? 0
+    // Hosted models are 128k+ today. Over-estimating delays compaction, under-
+    // estimating throws context away, so an unknown remote model gets the former.
+    readonly property bool localModel: /localhost|127\.0\.0\.1/.test(root.currentModel?.endpoint ?? "")
+    readonly property int fallbackWindow: root.localModel ? 8192 : 131072
 
     readonly property int contextWindow:
         (root.servedByLitert && root.litertWindow > 0) ? root.litertWindow
+        : root.modelWindow > 0 ? root.modelWindow
         : root.modelDefaultWindow > 0 ? root.modelDefaultWindow
         : root.configuredWindow > 0 ? root.configuredWindow
-        : 8192
+        : root.fallbackWindow
 
     readonly property string contextWindowSource:
         (root.servedByLitert && root.litertWindow > 0) ? `litert-lm ${root.litertConfigPath}`
+        : root.modelWindow > 0 ? `ai.extraModels context_window for ${root.currentModelName}`
         : root.modelDefaultWindow > 0 ? `model default for ${root.currentModelName}`
         : root.configuredWindow > 0 ? "Config.options.ai.memory.contextWindow"
-        : "fallback"
+        : root.localModel ? "fallback (local)" : "fallback (hosted)"
 
     readonly property real compactionFraction: {
         const configured = Config.options?.ai?.memory?.compactionFraction ?? 0.6;
@@ -599,7 +599,7 @@ QtObject {
         const noTools = root.engine.tools[model.api_format]["none"] ?? [];
         const data = root.engine.currentApiStrategy.buildRequestData(
             model, [tmpMsg], root.compactionSystemPrompt, 0.3, noTools, "");
-        const authHeader = root.engine.currentApiStrategy.buildAuthorizationHeader(root.engine.apiKeyEnvVarName);
+        const authHeader = root.engine.currentApiStrategy.buildAuthorizationHeader(root.engine.apiKeyEnvVarName, model);
         const scriptBody = `#!/usr/bin/env bash\ncurl --no-buffer "${endpoint}" `
             + `-H 'Content-Type: application/json' `
             + (authHeader ? `${authHeader} ` : "")
@@ -696,7 +696,7 @@ QtObject {
     readonly property FileView compactorScriptFile: FileView {
         path: ""
         blockLoading: true
-        watchChanges: false
+        blockWrites: true // written and run in the same call; an async write races bash
     }
 
     // The summariser's script carries the whole conversation, exactly like the

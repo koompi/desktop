@@ -47,7 +47,10 @@ QtObject {
     }
     readonly property string scriptFilePath: `${root.scriptDirPath}/request.sh`
 
-    readonly property FileView scriptFile: FileView {}
+    // blockWrites: setText is asynchronous by default, and on a fresh runtime dir
+    // bash reached an empty request.sh before the write landed; the turn went nowhere
+    readonly property FileView scriptFile: FileView { blockWrites: true }
+    readonly property KeyGate keyGate: KeyGate { engine: root.engine }
 
     readonly property Timer cooldownTimer: Timer {
         interval: 20000
@@ -131,14 +134,15 @@ QtObject {
     function makeRequest() {
         const model = root.engine.models[root.engine.currentModelId];
 
-        // Fetch API keys if needed
-        if (model?.requires_key && !KeyringStorage.loaded) KeyringStorage.fetchKeyringData();
+        // A keyed model goes out only with a key: a keyring not loaded yet defers the
+        // send, a missing key answers with the /key advice and leaves the turn to retry.
+        if (!root.keyGate.admit(model, () => root.makeRequest())) return;
 
         proc.currentStrategy = root.engine.currentApiStrategy;
         proc.currentStrategy.reset(); // Reset strategy state
 
         /* Put API key in environment variable */
-        if (model.requires_key) proc.environment[`${root.engine.apiKeyEnvVarName}`] = root.engine.apiKeys ? (root.engine.apiKeys[model.key_id] ?? "") : ""
+        if (model?.requires_key) proc.environment[`${root.engine.apiKeyEnvVarName}`] = root.engine.apiKeys?.[model.key_id] ?? "";
 
         /* Build endpoint, request data */
         const endpoint = root.engine.currentApiStrategy.buildEndpoint(model);

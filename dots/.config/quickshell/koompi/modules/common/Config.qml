@@ -173,18 +173,18 @@ Singleton {
                 property int requestTimeoutSec: 180 // curl --max-time and the shell's own deadline; floored at 10
                 property bool restoreSession: true // reopen the last conversation at login
                 property bool debugCommands: false // show the developer slash commands in the composer
-                property list<var> extraModels: [
+                property list<var> extraModels: [ // schema in docs/agents/ai.md; each entry is a /model id
                     {
-                        "api_format": "openai", // Most of the time you want "openai". Use "gemini" for Google's models
+                        "api_format": "openai", // "openai", "gemini" or "mistral"; most endpoints speak openai
                         "description": "This is a custom model. Edit the config to add more! | Anyway, this is 0xAlpha via tokenra",
-                        "endpoint": "https://tokenra.io/v1/chat/completions",
+                        "endpoint": "https://tokenra.io/v1/chat/completions", // required, with "model"
                         "homepage": "https://oxalpha.io/", // Not mandatory
                         "icon": "oxalpha-symbolic", // Not mandatory
-                        "key_get_link": "https://oxalpha.io/ox-alpha-api.html", // Not mandatory
-                        "key_id": "oxalpha",
-                        "model": "stealth/ox-alpha",
+                        "key_get_link": "https://oxalpha.io/ox-alpha-api.html", // Not mandatory; shown by the /key advice
+                        "key_id": "oxalpha", // keyring slot, shared by models that take the same key
+                        "model": "stealth/ox-alpha", // lowercase: /model lowercases what it is given
                         "name": "Custom: 0xAlpha",
-                        "requires_key": true
+                        "requires_key": true // optional "context_window": 131072 pins the compaction budget
                     }
                 ]
                 property JsonObject memory: JsonObject {
