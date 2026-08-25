@@ -115,7 +115,6 @@
   "Use Hyprlock (instead of Quickshell)": "Use Hyprlock (instead of Quickshell)",
   "Crosshair code (in Valorant's format)": "Crosshair code (in Valorant's format)",
   "Silent": "Silent",
-  "Useless buttons": "Useless buttons",
   "Hover to reveal": "Hover to reveal",
   "Wallpaper & Colors": "Wallpaper & Colors",
   "Auto": "Auto",
@@ -611,5 +610,9 @@
   "Use varying shapes for password characters": "Use varying shapes for password characters",
   "Battery full": "Battery full",
   "Pin": "Pin",
-  "Unpin": "Unpin"
+  "Unpin": "Unpin",
+  "Community": "Community",
+  "Source code": "Source code",
+  "Report an issue": "Report an issue",
+  "Support end-4, whose dots this is built on": "Support end-4, whose dots this is built on"
 }

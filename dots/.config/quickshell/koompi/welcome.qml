@@ -463,8 +463,8 @@ ApplicationWindow {
                 }
 
                 ContentSection {
-                    icon: "monitoring"
-                    title: Translation.tr("Useless buttons")
+                    icon: "groups"
+                    title: Translation.tr("Community")
 
                     Flow {
                         Layout.fillWidth: true
@@ -472,14 +472,28 @@ ApplicationWindow {
 
                         RippleButtonWithIcon {
                             nerdIcon: "󰊤"
-                            mainText: Translation.tr("GitHub")
+                            mainText: Translation.tr("Source code")
                             onClicked: {
                                 Qt.openUrlExternally("https://github.com/koompi/desktop");
                             }
                         }
                         RippleButtonWithIcon {
+                            materialIcon: "bug_report"
+                            mainText: Translation.tr("Report an issue")
+                            onClicked: {
+                                Qt.openUrlExternally("https://github.com/koompi/desktop/issues");
+                            }
+                        }
+                        RippleButtonWithIcon {
+                            materialIcon: "forum"
+                            mainText: Translation.tr("Discussions")
+                            onClicked: {
+                                Qt.openUrlExternally("https://github.com/koompi/desktop/discussions");
+                            }
+                        }
+                        RippleButtonWithIcon {
                             materialIcon: "favorite"
-                            mainText: Translation.tr("Support end-4")
+                            mainText: Translation.tr("Support end-4, whose dots this is built on")
                             onClicked: {
                                 Qt.openUrlExternally("https://github.com/sponsors/end-4");
                             }
