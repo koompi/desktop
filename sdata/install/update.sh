@@ -28,18 +28,87 @@ update_pull() {
         return 0
     fi
 
-    local before after
+    local before after pulled=false skipped=false reply
     before="$(git -C "$REPO_ROOT" rev-parse HEAD)"
-    run git -C "$REPO_ROOT" pull --ff-only
-    run git -C "$REPO_ROOT" submodule update --init --recursive
+    # Not routed through run(): its skip answer returns 0, which used to fall
+    # through to a before/after comparison that reported "already up to date"
+    # for an update that never pulled. The pull's real outcome is tracked here
+    # and reported as what it is.
+    printf '%s     $ %s%s\n' "${C_DIM}" "git -C \"$REPO_ROOT\" pull --ff-only" "${C_RST}"
+    if [[ "$DRY_RUN" == true ]]; then
+        printf '  (dry run: nothing is pulled)\n'
+        return 0
+    fi
+    until git -C "$REPO_ROOT" pull --ff-only; do
+        err "command failed: git pull"
+        if [[ "$ASSUME_YES" == true ]]; then
+            die "aborting (--yes means no interactive recovery)"
+        fi
+        read -rp "  [r]etry / [s]kip / [a]bort (default abort): " reply
+        case "$reply" in
+            r|R) continue ;;
+            s|S) warn "skipped: git pull"; skipped=true; break ;;
+            *)   die "aborted" ;;
+        esac
+    done
+
+    if [[ "$skipped" != true ]]; then
+        pulled=true
+        run git -C "$REPO_ROOT" submodule update --init --recursive
+    fi
     after="$(git -C "$REPO_ROOT" rev-parse HEAD)"
 
-    if [[ "$before" == "$after" ]]; then
+    if [[ "$pulled" != true ]]; then
+        warn "not pulled; installing from the tree as it stands (${before:0:8})"
+    elif [[ "$before" == "$after" ]]; then
         ok "already up to date at ${before:0:8}"
     else
         ok "updated ${before:0:8} -> ${after:0:8}"
         info "$(git -C "$REPO_ROOT" log --oneline "$before..$after" | wc -l) new commit(s)"
     fi
+}
+
+# The update engine shipped with this checkout: it owns the defaults dump and
+# the three-way config merge, so both routes (this one and packaged koompi
+# update) run identical logic from one installed place.
+UPDATE_TOOL="$REPO_ROOT/dots/.local/share/koompi/libexec/update"
+
+# Defaults migration for the from-git route. Old = this checkout BEFORE the
+# pull, which is exactly what every installed copy was last written against;
+# new = the same tree now. Dumps run through libexec/update; on any failure to
+# obtain either side we skip loudly rather than guess.
+migrate_config_defaults() {
+    local pre_dump="$1"
+    local post_dump
+
+    if [[ ! -x "$UPDATE_TOOL" ]]; then
+        warn "no update engine at $UPDATE_TOOL; skipping the config merge rather than guessing"
+        return 1
+    fi
+    if [[ ! -s "$pre_dump" ]]; then
+        warn "old defaults were not captured before the pull; skipping the config merge rather than guessing"
+        return 1
+    fi
+
+    # The engine prints its own "Migrating config defaults" step.
+    post_dump="$(mktemp "${TMPDIR:-/tmp}/koompi-post.XXXXXX")"
+    if ! "$UPDATE_TOOL" dump-defaults "$REPO_ROOT/dots/.config/quickshell/koompi" "$post_dump"; then
+        rm -f "$post_dump"
+        warn "new defaults could not be dumped; skipping the config merge rather than guessing"
+        return 1
+    fi
+
+    KOOMPI_UPDATE_DRY_RUN="$DRY_RUN" "$UPDATE_TOOL" apply-defaults-migration \
+        "$pre_dump" "$post_dump" true || { rm -f "$post_dump"; return 1; }
+
+    # Baseline for the next update, whichever route it takes.
+    if [[ "$DRY_RUN" != true ]]; then
+        mkdir -p "$KOOMPI_STATE_DIR"
+        cp -a -- "$post_dump" "${KOOMPI_STATE_DIR}/config-defaults.json.tmp" \
+            && mv -f -- "${KOOMPI_STATE_DIR}/config-defaults.json.tmp" \
+                        "${KOOMPI_STATE_DIR}/config-defaults.json"
+    fi
+    rm -f "$post_dump"
 }
 
 run_update() {
@@ -48,6 +117,17 @@ run_update() {
     # An unrecognised distro can still take the config; only the package step
     # has to stand down. The application set is not offered on an update at all.
     report_distro || DO_DEPS=false
+
+    # Capture the defaults the user is running NOW, before the checkout moves.
+    local pre_defaults=""
+    if have qs && [[ -x "$UPDATE_TOOL" ]]; then
+        pre_defaults="$(mktemp "${TMPDIR:-/tmp}/koompi-pre.XXXXXX")"
+        "$UPDATE_TOOL" dump-defaults \
+            "$REPO_ROOT/dots/.config/quickshell/koompi" "$pre_defaults" \
+            || { warn "could not dump the pre-update defaults"; pre_defaults=""; }
+    elif [[ ! -x "$UPDATE_TOOL" ]]; then
+        warn "no update engine at $UPDATE_TOOL; config default changes cannot be migrated this run"
+    fi
 
     update_pull
 
@@ -70,9 +150,14 @@ run_update() {
     # --only-apps` is still there for anyone who changes their mind.
 
     $DO_SETUPS && run_setups
-    $DO_FILES  && install_files
+    if $DO_FILES; then
+        install_files || die "config file installation failed; not continuing"
+    fi
     # its units ship from dots/, must exist before enabling
     $DO_SETUPS && setup_services
+
+    migrate_config_defaults "$pre_defaults"
+    [[ -n "$pre_defaults" ]] && rm -f "$pre_defaults"
 
     record_repo_path
 
