@@ -9,7 +9,7 @@
     .name = .koompi_installer,
     .fingerprint = 0x07b1b58585e0597d,
     .version = "0.0.0-scaffold",
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.16.0",
 
     .dependencies = .{},
 
