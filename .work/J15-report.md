@@ -184,11 +184,40 @@ auth    sufficient    pam_fprintd.so
    (`LockScreen.qml:113`, set by `LockSurface.qml:460 tryUnlock(root.ctrlHeld)`), which is the likely route.
    Also `states.json` said `{"inhibit":true}` at session start while no inhibitor existed; a second qs instance
    (`qs -p .../welcome.qml`, pid 384956 at the time) shares `Persistent` and can rewrite the file.
-3. I restarted hypridle by PID (old 2336 → new 564060, logging to `/tmp/j15-hypridle-restart.log`) while
-   chasing finding 1, on a hypothesis that turned out wrong (the lock did engage; it just unlocked before my
-   screenshot). Same config, same session; it is running normally. Its log is what produced the trace above.
+3. **Login-time hypridle (pid 2336) ignoring logind Lock: suspected, not proven.** Evidence, in order:
+   - pid 2336 was started by Hyprland (pid 2268) at 09:23:21, two seconds after the compositor, stdout and
+     stderr on `/dev/null`, so it left no log. `busctl --system list` showed it connected as `:1.28` in
+     `session-3.scope`; `dbus-monitor` confirmed logind emitted `Lock` on `/org/freedesktop/login1/session/_33`
+     for every `loginctl lock-session`.
+   - After `koompi-lid close` (exit 0) a screenshot 3 s later showed the desktop, not the lock screen, and
+     `loginctl unlock-session` + `loginctl lock-session` gave the same. Polling `pgrep -P 2336` and
+     `pgrep -f quickshell:lock` during a Lock caught nothing, but the control (a 30 ms `sh -c` marker) was
+     missed too, so those polls prove nothing.
+   - A second hypridle (`hypridle -c /tmp/j15-hypridle.conf`, `lock_cmd = touch /tmp/j15-lock-marker`) run
+     alongside it received the same `loginctl lock-session` and created the marker, so a fresh instance in
+     this session does get the signal.
+   - I then stopped pid 2336 (SIGTERM by pid) and started hypridle with the stock config logging to
+     `/tmp/j15-hypridle-restart.log`. On the next `koompi-lid close` it logged `Got Lock from dbus` →
+     `Executing <lock_cmd>` → `Wayland session got locked` → `Wayland session got unlocked` (the trace under
+     "Lid simulation").
+   - That last line is the catch: finding 1 unlocks every lock after ~2.6 s, which is inside the 3 s I waited
+     before each screenshot with the old hypridle. Every observation that made pid 2336 look deaf is equally
+     explained by it relaying Lock and the shell unlocking before I looked. I did not capture a screenshot
+     inside the 2.6 s window with the old instance, so the finding stands as unproven. Restarting hypridle
+     was on that wrong hypothesis and was not needed; the new instance (pid 564060) runs the same config in
+     the same session.
+   - To settle it at the next login without touching the live session: start hypridle with a log
+     (`execs.lua:17`, e.g. `hypridle > $XDG_RUNTIME_DIR/hypridle.log 2>&1`), run `loginctl lock-session`
+     once, and grep the log for `Got Lock from dbus`. Fix finding 1 first either way; without it a relayed
+     Lock is invisible.
 4. `hyprctl binds -j` is valid JSON on Hyprland 0.56.2; the comment in `services/HyprlandKeybinds.qml:20-23`
    about 0.56.0 may be stale.
+
+## Live session note
+
+Rithy saw the lock screens and the hypridle restart while working on this machine. No further
+`loginctl lock-session`, hypridle restarts or keep-awake toggles were run after that note; everything above is
+from the runs before it.
 
 ## Live machine state
 
