@@ -58,7 +58,7 @@ mkdir -p "$WORK/shell" "$WORK/xdg/config/hypr/hyprland/scripts" "$WORK/xdg/state
 for entry in "$SHELL_ROOT"/*; do
     ln -s "$entry" "$WORK/shell/$(basename -- "$entry")"
 done
-cp "$REPO_ROOT/dots/.config/hypr/hyprland/scripts/fuzzel-emoji.sh" "$WORK/xdg/config/hypr/hyprland/scripts/"
+cp "$REPO_ROOT/dots/.config/hypr/hyprland/scripts/fuzzel-emoji.txt" "$WORK/xdg/config/hypr/hyprland/scripts/"
 
 cat > "$WORK/bin/cliphist" <<'SH'
 #!/usr/bin/env bash
