@@ -1,6 +1,6 @@
 /*
  * KOOMPI OS – SDDM Login Theme
- * Minimal dark theme inspired by silentSDDM and KDE Breeze
+ * Minimal frosted-glass theme inspired by silentSDDM and KDE Breeze
  * Qt 6 / QQC2 – no external component dependencies
  */
 
@@ -18,11 +18,13 @@ Item {
 
     readonly property color accent:      "#5294e2"
     readonly property color textPrimary: "#ffffff"
-    readonly property color textMuted:   Qt.rgba(1, 1, 1, 0.45)
-    readonly property color inputBg:     Qt.rgba(1, 1, 1, 0.05)
-    readonly property color inputBorder: Qt.rgba(1, 1, 1, 0.10)
-    readonly property color cardBg:      Qt.rgba(0.06, 0.06, 0.06, 0.96)
-    readonly property color cardBorder:  Qt.rgba(1, 1, 1, 0.07)
+    readonly property color textMuted:   Qt.rgba(1, 1, 1, 0.60)
+    // The card is clear glass, not a dark slab: the blurred wallpaper behind it
+    // supplies the colour, so the card follows whatever theme is on screen.
+    readonly property color inputBg:     Qt.rgba(1, 1, 1, 0.12)
+    readonly property color inputBorder: Qt.rgba(1, 1, 1, 0.22)
+    readonly property color cardBg:      Qt.rgba(1, 1, 1, 0.15)
+    readonly property color cardBorder:  Qt.rgba(1, 1, 1, 0.28)
 
     property var    now:                 new Date()
     property string notificationMessage: ""
@@ -203,7 +205,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: Qt.rgba(1, 1, 1, 0.06)
+                color: Qt.rgba(1, 1, 1, 0.18)
             }
 
             Item { Layout.preferredHeight: 2 }

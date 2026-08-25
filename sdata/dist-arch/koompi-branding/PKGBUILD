@@ -14,7 +14,7 @@
 groups=(koompi)
 pkgname=koompi-branding
 pkgver=1.0
-pkgrel=5
+pkgrel=6
 pkgdesc='KOOMPI OS branding: wallpapers, logo, plymouth/grub/sddm themes, login enablement'
 arch=(any)
 url='https://github.com/koompi/desktop'
