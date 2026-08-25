@@ -42,32 +42,36 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J26 | claude | verified | Rust cap 600 + libexec bash; 5 rows added (update 695, mpris 898, network 1198, tray service 682 + watcher 683); lead resolved the allow-list rebase conflict as the union (36 rows), test ok 894/36, shellcheck clean, suite 79/3/0; ff-merged `450b5b50`, pushed; cleaned up |
 | J27 | claude | verified | provider table with a stealth/ → tokenra row and an `oxalpha` key slot; default remoteModel stealth/ox-alpha (existing states.json keeps its value); lead: 85 probe assertions, no key material in the tree, 35 rows, suite 80/3/0; ff-merged `377535fe`, pushed; cleaned up |
 | J28 | claude | verified | setModel trims and returns early with the current model + usage; probe shows 7 FAILs before, all PASS after; lead: 4/4 probes, file-length 34 rows, suite 80/3/0; ff-merged `c26605eb`, pushed; cleaned up |
-| J29 | claude | returned | lead: rebased, diff reviewed (notify waits for the server via NameHasOwner, autoreload guard with EXIT trap, refresh with backup+diff, `new` skeleton); gates running in lead-verify. Stop condition hit correctly: the `--exec` hint has no consumer in the shell → J43. Needs a lead PKGBUILD line for `libexec/migrate-lib.sh` (same gap as J24) |
+| J29 | claude | verified | toast waits for the server (NameHasOwner) and carries `--exec` argv, autoreload guard with EXIT trap, `refresh <path>` with backup+diff, `new <slug>`, `docs/agents/migrations.md`; lead: both migrate tests, suite 84/3/0, unit verifies; lead added the shellcheck source directive and the PKGBUILD line for `migrate-lib.sh` (pkgrel 6, package listed); ff-merged `72401b94`, pushed; cleaned up. Finding → J43 |
 | J30 | claude | verified | transcript via `script(1)` re-exec (outer appends the exit line, newest 10 kept), `koompi doctor --last-update` with a fixed diagnosis table, `--firmware` and post-upgrade fwupd advice; lead: test ok, suite 82/3/0, shellcheck clean, `update` 687 ≤ 695, diff reviewed (absolute `$0` from the CLI, duplicate `check_restart_needed` removed); ff-merged `6a1e1333`, pushed; cleaned up |
 | J31 | claude | verified | IpcHandlers `idle`/`nightlight`/`notifications`, `koompi-toggle` (exit 0/1/2/64), `koompi toggle` in the CLI, four `Super+,` chords in `keybinds_notifications.lua` (keybinds.lua stays 447); lead: job test, packaged tools 29, 149 binds described, luac, shellcheck, qmllint 0 errors, `zig build test`, suite 82 pass + the `test_update_route` red that was main's own (locked seat, see Decided); ff-merged `a76a797b`, pushed; cleaned up |
 | J32 | claude | live | |
-| J33 | claude | returned | lead: rebased, diff reviewed (ufw profiles in `koompi-sysdefaults` 1.0-2 which now mirrors `/`, chroot writes rules + ENABLED=yes without `ufw enable`, from-git route raw ports + ssh kept, firewalld hand-off; fwupd in koompi-basic 1.0-7; khm OCR data 1.0-4). LocalSend is AUR-only → not added (stop condition; Rithy: koompi-apps already carries two AUR packages, so allow it or not). Gates queued behind J29 |
+| J33 | claude | verified | ufw profiles in `koompi-sysdefaults` 1.0-2 (files/ mirrors /), chroot rules + ENABLED=yes, from-git raw ports + ssh kept, firewalld hand-off, fwupd in koompi-basic 1.0-7, `fwupd-refresh.timer` enabled, khm OCR 1.0-4; lead: both tests, CI shellcheck lines, three packages build, suite 85/3/0; ff-merged `4aca00ec`, pushed; cleaned up. LocalSend AUR-only → Rithy |
 | J34 | claude | live | |
 | J35 | claude | live | |
-| J36 | — | after J33 J30 | |
+| J36 | claude | live | |
 | J37 | — | after J31 | |
 | J38 | — | blocked-on-user | factory reset semantics: root only / root+home (recommended) / re-provision+LUKS |
-| J39 | — | ready | |
+| J39 | claude | live | |
 | J40 | — | after J31 J33 | |
 | J41 | claude | live | |
-| J42 | — | after J33 J31 J30 | |
+| J42 | claude | live | |
 | J43 | claude | live | |
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 
 ## Live now
 
-Lead is `w5:p11`. Returned, gates pending: J29 (lead-verify, suite running), J33 (next). Live, pane ids in `/tmp/lead-<ID>-pane`:
-J32 owns `OnScreenDisplay.qml` + `indicators/`, `Battery.qml`, `koompi-hook` events, new `koompi-osd`/`koompi-launch-tui`, `koompi-shell/PKGBUILD`, `cli/src/main.zig`, `launch_sysmon.sh`, `rules.lua`, `docs/agents/hooks.md`.
+Lead is `w5:p11`. Eight live, pane ids in `/tmp/lead-<ID>-pane`, all runtimes at nice 10:
+J32 owns `OnScreenDisplay.qml` + `indicators/`, `Battery.qml`, `koompi-hook` events, new `koompi-osd`/`koompi-launch-tui`, `koompi-shell/PKGBUILD` `_tools`, `cli/src/main.zig`, `launch_sysmon.sh`, `rules.lua`, `docs/agents/hooks.md`.
 J34 owns `bar/UpdateBadge.qml` (new), `BarContent.qml`, `Bar.qml`, `bar/*Popup.qml`, `services/Updates.qml`, `keybinds_notifications.lua`→`keybinds_shell_extra.lua`, `hyprland.lua`, `docs/navigation.md`.
 J43 owns `services/Notifications.qml`, `widgets/NotificationItem.qml`, (`hints.rs` if used), `koompi-notify-send` comment.
-J35 owns `modules/koompi/cheatsheet/**`, `services/HyprlandKeybinds.qml`.
+J35 owns `modules/koompi/cheatsheet/**`, `services/HyprlandKeybinds.qml`. Investigating: Lua-config binds all read `__lua N`, so dispatcher/arg replay may not exist.
 J41 owns new `modules/koompi/screensaver/**`, `KoompiFamily.qml`, `GlobalStates.qml`, `hypridle.conf`.
-Watcher: Monitor loop, 45 s, 3-read idle debounce.
+J36 owns new `libexec/hibernation-setup`, `post_install.sh` (one fn+call), `setups/system.sh` (one fn), `koompi-health` (one line), PKGBUILD install line.
+J42 owns new `koompi-hw-match`/`koompi-hw-laptop`, `sdata/hardware/**`, `libexec/apply-hardware`, `post_install.sh` (one call), `setups/system.sh` (one fn), `update-lib.sh` (one call), PKGBUILD rows.
+J39 owns `Appearance.qml` (≤467), `Config.qml` (≤827), `FontsSection.qml`, `koompi-theme`, `wezterm.lua`.
+Contended on purpose (lead unions at merge): `koompi-shell/PKGBUILD` (J32 J42 J36), `post_install.sh` + `setups/system.sh` (J36 J42).
+Watcher: Monitor loop over `/tmp/lead-J*-pane`, 45 s, 3-read idle debounce.
 
 ## Decided
 
@@ -130,4 +134,4 @@ Watcher: Monitor loop, 45 s, 3-read idle debounce.
 
 ## Next action
 
-Read `/tmp/lead-j29-gates.log` (J29) → ff-merge + lead PKGBUILD line for `migrate-lib.sh` (pkgrel 6) → J33 gates (its test, sysdefaults test, CI shellcheck lines, makepkg the three packages, suite) → ff-merge, push. Then J39 dispatch (ready; 5 live is the cap). After J33 verified: J36, J42 ready (J42 also needs J31 ✓ J30 ✓). After J43 verified: nothing else blocked on it (J37/J40 are `after J31`, already met — dispatch them as slots free). J38 waits on Rithy (factory-reset semantics); LocalSend AUR question waits on Rithy. Still waiting on Rithy from wave 1: J12, sudo installs, `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check.
+Verify as they return (one suite at a time in `lead-verify`, nice 19): J32 J34 J43 J35 J41 J36 J42 J39. PKGBUILD/`post_install.sh` conflicts → union, lead bumps pkgrel once per merge. After J31 ✓: J37, J40 are dispatchable when a slot frees (cap 8 now; load 2.6). J38 waits on Rithy (factory-reset semantics); LocalSend AUR question waits on Rithy. Still waiting on Rithy from wave 1: J12, sudo installs (now also `koompi-sysdefaults` 1.0-2 with ufw), `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check.
