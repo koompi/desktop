@@ -407,7 +407,8 @@ main() {
                 ;;
             --noswitch)
                 noswitch_flag="1"
-                imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                # jq prints `null` and exits 0 for a missing key
+                imgpath=$(jq -r '.background.wallpaperPath // empty' "$SHELL_CONFIG_FILE" 2>/dev/null)
                 shift
                 ;;
             *)
