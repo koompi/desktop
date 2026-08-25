@@ -87,7 +87,8 @@ AbstractOverlayWidget {
     opacity: (GlobalStates.overlayOpen || !clickthrough) ? 1.0 : Config.options.overlay.clickthroughOpacity
 
     // Guarded states & registration funcs
-    property bool open: Persistent.states.overlay.open
+    // A list reference is truthy whatever it holds; ask for membership.
+    readonly property bool open: Persistent.states.overlay.open.includes(root.identifier)
     property bool actuallyPinned: pinned && open
     property bool actuallyClickable: !clickthrough && actuallyPinned && open
     onActuallyPinnedChanged: reportPinnedState();
@@ -103,6 +104,13 @@ AbstractOverlayWidget {
     Component.onCompleted: {
         reportPinnedState();
         reportClickableState();
+    }
+    // Closing drops this widget from the Repeater, and a released delegate's
+    // bindings never fire again, so `open` cannot flip to false first. Withdraw
+    // here or the overlay window stays loaded for a widget that no longer exists.
+    Component.onDestruction: {
+        OverlayContext.pin(identifier, false);
+        OverlayContext.registerClickableWidget(contentItem, false);
     }
 
     Connections {
