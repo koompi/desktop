@@ -84,7 +84,12 @@ Singleton {
             onStreamFinished: {
                 const parsedOutput = JSON.parse(devicesCollector.text);
                 const hyprlandKeyboard = parsedOutput["keyboards"].find(kb => kb.main === true);
-                root.layoutCodes = hyprlandKeyboard["layout"].split(",");
+                // "layout:variant", the form base.lst yields below, so a variant layout equals currentLayoutCode
+                const variants = (hyprlandKeyboard["variant"] ?? "").split(",");
+                root.layoutCodes = hyprlandKeyboard["layout"].split(",").map((code, i) => {
+                    const variant = (variants[i] ?? "").trim();
+                    return variant.length > 0 ? `${code.trim()}:${variant}` : code.trim();
+                });
                 root.currentLayoutName = hyprlandKeyboard["active_keymap"];
                 // console.log("[HyprlandXkb] Fetched | Layouts (multiple: " + (root.layoutCodes.length > 1) + "): "
                 //     + root.layoutCodes.join(", ") + " | Active: " + root.currentLayoutName);
