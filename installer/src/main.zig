@@ -43,7 +43,7 @@ fn step(app: *App, ctx: Ctx, raw: ?RawMode) !void {
         // ⚠️ DESTRUCTIVE. Only reachable after the Review screen confirmed.
         if (!app.cfg.isComplete()) return error.IncompleteConfig;
         // TODO/REVIEW: gate this behind the actual Review keypress, not just flow.
-        try archinstall.run(app.alloc, app.cfg);
+        try archinstall.run(app.alloc, ctx.io, app.cfg);
         app.goNext(); // -> done
         return;
     }
@@ -61,24 +61,29 @@ fn step(app: *App, ctx: Ctx, raw: ?RawMode) !void {
     }
 }
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+pub fn main(init: std.process.Init.Minimal) !void {
+    var gpa: std.heap.DebugAllocator(.{}) = .init;
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
+    // One Io for the process: every file, dir, spawn and stdout call takes it.
+    var threaded: std.Io.Threaded = .init(alloc, .{ .environ = init.environ });
+    defer threaded.deinit();
+    const io = threaded.io();
+
     var theme_arena = std.heap.ArenaAllocator.init(alloc);
     defer theme_arena.deinit();
-    const theme = try loadTheme(theme_arena.allocator());
+    const theme = try loadTheme(io, theme_arena.allocator());
 
-    const tier = detectColorTier();
+    const tier = detectColorTier(init.environ);
     const ascii_forced = !theme.nerd_fallback.? or tier == .ansi16;
-    const ctx = Ctx{ .theme = &theme, .tier = tier, .ascii_forced = ascii_forced };
+    const ctx = Ctx{ .io = io, .theme = &theme, .tier = tier, .ascii_forced = ascii_forced };
 
     var app = App{ .alloc = alloc };
 
     // Unattended install: a cidata-labeled seed drive skips (or defers) the wizard.
     // Must fail open - .none leaves app.step at its .welcome default.
-    switch (try cidata.detect(alloc, &app.cfg)) {
+    switch (try cidata.detect(alloc, io, &app.cfg)) {
         .none => {},
         .configured, .deferred => {
             // No interactive Review screen is reached on this path; render its
