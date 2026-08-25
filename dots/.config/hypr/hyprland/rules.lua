@@ -50,6 +50,7 @@ hl.window_rule({match = {class = "^(nm-connection-editor)$" },               flo
 hl.window_rule({match = {class = "^(nm-connection-editor)$" },               size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
 hl.window_rule({match = {class = "^(nm-connection-editor)$" },               center = true})
 hl.window_rule({match = {title = ".*Welcome" },                              float = true})
+hl.window_rule({match = {title = ".*Welcome" },                              center = true})
 -- 1402x951 is the cheatsheet card measured on 1920x1200. Content-sized, so it does
 -- not scale with the monitor; the min() clamps keep it on a smaller panel.
 local overlayW = "(min(1402, monitor_w-64))"
