@@ -224,3 +224,19 @@ rc=0
 - `sdata/install/uninstall.sh` removes only its fixed allowlist, so the `/usr/local/lib` files stay after uninstall, same as the suspend hook it sits next to.
 - The launch-path change that puts apps into `app.slice` (see Finding).
 - The sysctl row from omarchy, if wanted.
+
+## Round 2: shellcheck on the test
+
+`shellcheck tests/test_sysdefaults.sh` (no `-x`) reported SC2154 at line 63: `depends` referenced but not assigned, since the array exists only after the PKGBUILD is sourced.
+Restructured rather than silenced: a `pkgbuild_depends()` helper reads the array in a child `bash -c 'source "$1"; printf ...'`, which also drops the two SC1091 disables the source lines carried.
+Commit `5dd99423`.
+
+```
+$ shellcheck tests/test_sysdefaults.sh && shellcheck -x tests/test_sysdefaults.sh && echo clean
+clean
+$ bash tests/test_sysdefaults.sh
+built koompi-sysdefaults-1.0-1-any.pkg.tar.zst
+ok test_sysdefaults.sh
+$ # with koompi-sysdefaults misspelt in the meta's depends, the check still bites:
+FAIL: koompi-desktop-hyprland does not depend on koompi-sysdefaults
+```
