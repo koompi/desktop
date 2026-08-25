@@ -22,6 +22,33 @@ This governs `dots/.config/quickshell/koompi`, the Quickshell shell.
 A QML file whose name is not a valid type name cannot be instantiated as a component.
 That is why the entry points are the shape they are; see exception 1.
 
+## File and function length
+
+| Kind | File cap | Function cap |
+| --- | --- | --- |
+| QML | 400 | 60 |
+| JavaScript, Lua | 300 | 50 |
+| bash: `*.sh`, `setup`, `install.sh`, everything in `dots/.local/bin/` | 400 | 60 |
+| Zig | 600 | 80 |
+
+A file is read whole: someone opening it to change one thing has to hold all of it to know what that change touches, and past a few hundred lines nobody does.
+A function should fit on one screen, so its control flow can be seen without scrolling and its locals can be counted.
+When a file is over the cap it is doing more than one thing, and the fix is to split it by concern, not to trim comments.
+Data that happens to be in a source file (a defaults schema, an emoji table) belongs in a data file, where no length rule applies.
+
+The file cap is enforced by `tests/test_file_length.sh` as a ratchet.
+Files that were over the cap on the day the rule landed are listed in `tests/file-length-allow.txt` with their line count at the time.
+A listed file may only shrink: the test fails if it grows past its listed count, and the row is removed once it is under the cap.
+A new file over the cap fails outright.
+The function cap is not yet checked by a test; it is the bar for review.
+
+The numbers come from published limits rather than taste:
+ESLint `max-lines` defaults to 300 lines per file and `max-lines-per-function` to 50 (<https://eslint.org/docs/latest/rules/max-lines>);
+the Linux kernel coding style says a function should fit one or two screenfuls, about 48 lines, and do one thing (<https://www.kernel.org/doc/html/latest/process/coding-style.html>);
+the Google Shell Style Guide says a script over about 100 lines with non-trivial control flow belongs in a structured language, which we keep bash for `setup` in spite of, so 400 is the warning line for a single file;
+SonarQube's "files should not have too many lines" defaults to 1000, the ceiling nobody should reach.
+QML and Zig get more room than JavaScript because their declarations are longer per unit of behaviour.
+
 ## Identifiers inside QML
 
 Everything is lowerCamelCase: properties, functions, `id` values, signals, signal handler arguments.
