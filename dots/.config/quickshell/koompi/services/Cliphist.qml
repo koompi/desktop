@@ -82,15 +82,25 @@ Singleton {
 
     Process {
         id: deleteProc
-        property string entry: ""
-        command: ["bash", "-c", `echo '${StringUtils.shellSingleQuoteEscape(deleteProc.entry)}' | ${root.cliphistBinary} delete`]
+        // starts on the event loop and a start while running is dropped: queue, argv built at exec()
+        property list<string> pending: []
+        property bool busy: false
         function deleteEntry(entry) {
-            deleteProc.entry = entry;
-            deleteProc.running = true;
-            deleteProc.entry = "";
+            deleteProc.pending = [...deleteProc.pending, entry];
+            deleteProc.next();
+        }
+        function next() {
+            if (deleteProc.busy || deleteProc.pending.length === 0) return;
+            deleteProc.busy = true;
+            const entry = deleteProc.pending[0];
+            deleteProc.pending = deleteProc.pending.slice(1);
+            deleteProc.exec(["bash", "-c", `echo '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} delete`]);
         }
         onExited: (exitCode, exitStatus) => {
-            root.refresh();
+            deleteProc.busy = false;
+            if (exitCode !== 0) console.error("[Cliphist] Failed to delete entry with code", exitCode, "and status", exitStatus);
+            if (deleteProc.pending.length > 0) deleteProc.next();
+            else root.refresh();
         }
     }
 
