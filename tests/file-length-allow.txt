@@ -2,7 +2,6 @@ audiod/src/engine.zig	698
 docs/brainstorm/js/app.js	391
 dots/.config/hypr/hyprland/general.lua	371
 dots/.config/hypr/hyprland/keybinds.lua	447
-dots/.config/hypr/hyprland/scripts/fuzzel-emoji.sh	1956
 dots/.config/quickshell/koompi-quicklook/shell.qml	667
 dots/.config/quickshell/koompi/modules/common/Appearance.qml	467
 dots/.config/quickshell/koompi/modules/common/Config.qml	827
