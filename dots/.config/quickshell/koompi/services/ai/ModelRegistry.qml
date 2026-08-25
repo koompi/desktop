@@ -35,49 +35,33 @@ QtObject {
         return modelName.replace(/:/g, "_").replace(/ /g, "-").replace(/\//g, "-")
     }
 
-    function inferEndpointForModel(modelName) {
-        const m = modelName.toLowerCase();
-        if (m.includes("/")) return "https://openrouter.ai/api/v1/chat/completions";
-        if (m.startsWith("gemini") || m.startsWith("gemma"))
-            return `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent`;
-        if (m.startsWith("mistral") || m.startsWith("codestral") || m.startsWith("devstral"))
-            return "https://api.mistral.ai/v1/chat/completions";
-        if (m.startsWith("gpt") || m.startsWith("o1") || m.startsWith("o3") || m.startsWith("o4"))
-            return "https://api.openai.com/v1/chat/completions";
-        if (m.startsWith("deepseek"))
-            return "https://api.deepseek.com/chat/completions";
-        if (m.startsWith("kimi") || m.startsWith("moonshot"))
-            return "https://api.moonshot.ai/v1/chat/completions";
-        if (m.startsWith("glm"))
-            return "https://api.z.ai/api/paas/v4/chat/completions";
-        if (m.startsWith("minimax"))
-            return "https://api.minimax.io/v1/chat/completions";
-        return "https://api.openai.com/v1/chat/completions";
-    }
+    // Provider rules by model name, first match wins: [match, endpoint, api
+    // format, key id, key link]. stealth/ is 0xAlpha served by tokenra; any other
+    // name with a "/" is an OpenRouter route. %1 in an endpoint is the model name.
+    readonly property var providers: [
+        [/^stealth\//, "https://tokenra.io/v1/chat/completions", "openai", "oxalpha", "https://oxalpha.io/ox-alpha-api.html"],
+        [/\//, "https://openrouter.ai/api/v1/chat/completions", "openai", "openrouter", ""],
+        [/^(gemini|gemma)/, "https://generativelanguage.googleapis.com/v1beta/models/%1:streamGenerateContent", "gemini", "gemini", ""],
+        [/^(mistral|codestral|devstral)/, "https://api.mistral.ai/v1/chat/completions", "mistral", "mistral", ""],
+        [/^(gpt|o1|o3|o4)/, "https://api.openai.com/v1/chat/completions", "openai", "openai", ""],
+        [/^deepseek/, "https://api.deepseek.com/chat/completions", "openai", "deepseek", ""],
+        [/^(kimi|moonshot)/, "https://api.moonshot.ai/v1/chat/completions", "openai", "moonshot", ""],
+        [/^glm/, "https://api.z.ai/api/paas/v4/chat/completions", "openai", "zai", ""],
+        [/^minimax/, "https://api.minimax.io/v1/chat/completions", "openai", "minimax", ""],
+        [/./, "https://api.openai.com/v1/chat/completions", "openai", "custom", ""],
+    ]
 
-    function inferApiFormatForModel(modelName) {
+    function inferProvider(modelName) {
         const m = modelName.toLowerCase();
-        if (m.includes("/")) return "openai";
-        if (m.startsWith("gemini") || m.startsWith("gemma")) return "gemini";
-        if (m.startsWith("mistral") || m.startsWith("codestral") || m.startsWith("devstral")) return "mistral";
-        return "openai";
+        const p = root.providers.find(rule => rule[0].test(m)) ?? root.providers[root.providers.length - 1];
+        return { endpoint: p[1].replace("%1", modelName), api_format: p[2], key_id: p[3], key_get_link: p[4] };
     }
-
-    function inferKeyIdForModel(modelName) {
-        const m = modelName.toLowerCase();
-        if (m.includes("/")) return "openrouter";
-        if (m.startsWith("gemini") || m.startsWith("gemma")) return "gemini";
-        if (m.startsWith("mistral") || m.startsWith("codestral") || m.startsWith("devstral")) return "mistral";
-        if (m.startsWith("gpt") || m.startsWith("o1") || m.startsWith("o3") || m.startsWith("o4")) return "openai";
-        if (m.startsWith("deepseek")) return "deepseek";
-        if (m.startsWith("kimi") || m.startsWith("moonshot")) return "moonshot";
-        if (m.startsWith("glm")) return "zai";
-        if (m.startsWith("minimax")) return "minimax";
-        return "custom";
-    }
+    function inferEndpointForModel(modelName) { return root.inferProvider(modelName).endpoint; }
+    function inferApiFormatForModel(modelName) { return root.inferProvider(modelName).api_format; }
+    function inferKeyIdForModel(modelName) { return root.inferProvider(modelName).key_id; }
 
     readonly property AiModel remoteModelObj: AiModel {
-        model: Persistent.states?.ai?.remoteModel ?? "gemini-2.5-flash"
+        model: Persistent.states?.ai?.remoteModel ?? "stealth/ox-alpha"
         name: model
         icon: root.guessModelLogo(model)
         description: Translation.tr("Remote | %1").arg(model)
@@ -87,6 +71,7 @@ QtObject {
         }
         requires_key: !endpoint.includes("localhost") && !endpoint.includes("127.0.0.1")
         key_id: root.inferKeyIdForModel(model)
+        key_get_link: root.inferProvider(model).key_get_link
         api_format: {
             const stored = Persistent.states?.ai?.remoteFormat ?? "";
             return stored.length > 0 ? stored : root.inferApiFormatForModel(model);
@@ -135,6 +120,7 @@ QtObject {
 
     function guessModelLogo(model) {
         const m = model.toLowerCase();
+        if (m.startsWith("stealth/")) return "oxalpha-symbolic";
         if (m.includes("/")) return "openrouter-symbolic";
         if (m.startsWith("gemini") || m.startsWith("gemma")) return "google-gemini-symbolic";
         if (m.includes("deepseek")) return "deepseek-symbolic";
@@ -148,6 +134,7 @@ QtObject {
     }
 
     function guessModelName(model) {
+        if (model.toLowerCase().startsWith("stealth/")) return "0xAlpha";
         const replaced = model.replace(/-/g, ' ').replace(/:/g, ' ');
         let words = replaced.split(' ');
         words[words.length - 1] = words[words.length - 1].replace(/(\d+)b$/, (_, num) => `${num}B`)
@@ -329,7 +316,7 @@ QtObject {
         }
 
         const newRemoteModel = (modelId === "remote")
-            ? (Persistent.states?.ai?.remoteModel ?? "gemini-2.5-flash")
+            ? (Persistent.states?.ai?.remoteModel ?? "stealth/ox-alpha")
             : modelId;
         if (setPersistentState) {
             Persistent.states.ai.remoteModel = newRemoteModel;

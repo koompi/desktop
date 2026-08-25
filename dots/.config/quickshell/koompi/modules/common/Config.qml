@@ -176,14 +176,14 @@ Singleton {
                 property list<var> extraModels: [
                     {
                         "api_format": "openai", // Most of the time you want "openai". Use "gemini" for Google's models
-                        "description": "This is a custom model. Edit the config to add more! | Anyway, this is DeepSeek R1 Distill LLaMA 70B",
-                        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-                        "homepage": "https://openrouter.ai/deepseek/deepseek-r1-distill-llama-70b:free", // Not mandatory
-                        "icon": "spark-symbolic", // Not mandatory
-                        "key_get_link": "https://openrouter.ai/settings/keys", // Not mandatory
-                        "key_id": "openrouter",
-                        "model": "deepseek/deepseek-r1-distill-llama-70b:free",
-                        "name": "Custom: DS R1 Dstl. LLaMA 70B",
+                        "description": "This is a custom model. Edit the config to add more! | Anyway, this is 0xAlpha via tokenra",
+                        "endpoint": "https://tokenra.io/v1/chat/completions",
+                        "homepage": "https://oxalpha.io/", // Not mandatory
+                        "icon": "oxalpha-symbolic", // Not mandatory
+                        "key_get_link": "https://oxalpha.io/ox-alpha-api.html", // Not mandatory
+                        "key_id": "oxalpha",
+                        "model": "stealth/ox-alpha",
+                        "name": "Custom: 0xAlpha",
                         "requires_key": true
                     }
                 ]

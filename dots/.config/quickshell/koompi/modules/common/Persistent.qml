@@ -62,7 +62,7 @@ Singleton {
                 property string model: "remote"
                 property real temperature: 0.5
                 property string ownerName: ""
-                property string remoteModel: "gemini-2.5-flash"
+                property string remoteModel: "stealth/ox-alpha"
                 property string remoteEndpoint: ""
                 property string remoteFormat: ""
                 property string localModel: "gemma4-e2b"
