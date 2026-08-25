@@ -33,9 +33,12 @@ the packaged defaults into your user config. Without --apply this is a dry
 run that only reports what would change.
 
 --apply backs up the affected trees to ~/.local/state/koompi/backups/ as a
-tarball before changing anything. Your settings (~/.config/koompi/), Hyprland
-overrides (~/.config/hypr/custom/), and machine-local files (monitors.lua,
+tarball before changing anything. Your Hyprland overrides
+(~/.config/hypr/custom/) and machine-local files (monitors.lua,
 workspaces.conf, hyprlock.conf, hypridle.conf) are never touched.
+~/.config/koompi/config.json keeps every value you set; only defaults you
+never changed are brought up to the packaged ones (backed up first as
+config.json.bak-<timestamp>), using the snapshot saved by the last update.
 
 --pending lists point-fix migrations (sdata/migrations/) not yet applied for
 this user; exits 0 if any are pending, 1 if none.
@@ -181,9 +184,55 @@ if $apply && [[ "$changes" -gt 0 ]]; then
     done
 fi
 
+# Config defaults migration (B2): code trees above are synced wholesale, but a
+# user's config.json keeps whatever defaults their first run wrote. Merge the
+# packaged defaults over it three-way, exactly like the packaged update route:
+# user values win, untouched defaults follow the package. Old defaults come
+# from ~/.local/state/koompi/config-defaults.json - the snapshot every update
+# saves; without one there is no honest baseline, so this run only starts
+# tracking. The engine lives in libexec/update so both routes cannot drift.
+migrate_config_defaults() {
+    local self tool new_dump snapshot had_snapshot=false
+    self="$(readlink -f -- "$0" 2>/dev/null || echo "$0")"
+    for tool in \
+        "$(dirname -- "$self")/../share/koompi/libexec/update" \
+        /usr/lib/koompi/update \
+        "${XDG_DATA_HOME:-$HOME/.local/share}/koompi/libexec/update"; do
+        [[ -x "$tool" ]] && break
+        tool=""
+    done
+    if [[ -z "$tool" ]]; then
+        echo "  skip  config defaults migration (koompi's update engine not found)" >&2
+        return 0
+    fi
+    [[ -d "$XDG_SYS/quickshell/koompi" ]] || return 0
+
+    new_dump="$(mktemp)"
+    if ! "$tool" dump-defaults "$XDG_SYS/quickshell/koompi" "$new_dump"; then
+        echo "  skip  config defaults migration (defaults could not be dumped)" >&2
+        rm -f "$new_dump"
+        return 1
+    fi
+
+    snapshot="$STATE_DIR/config-defaults.json"
+    [[ -s "$snapshot" ]] && had_snapshot=true
+    local dry="true"; $apply && dry="false"
+    if $had_snapshot; then
+        KOOMPI_UPDATE_DRY_RUN="$dry" "$tool" apply-defaults-migration \
+            "$snapshot" "$new_dump" true || { rm -f "$new_dump"; return 1; }
+    else
+        KOOMPI_UPDATE_DRY_RUN="$dry" "$tool" apply-defaults-migration \
+            "" "$new_dump" false || { rm -f "$new_dump"; return 1; }
+    fi
+    rm -f "$new_dump"
+    return 0
+}
+
+migrate_config_defaults
+
 if [[ -f "$CONFIG_FILE" ]] && command -v jq >/dev/null; then
     ver="$(jq -r '.configVersion // "unset"' "$CONFIG_FILE" 2>/dev/null || echo unreadable)"
-    echo "  config.json untouched (configVersion: $ver)"
+    echo "  config.json settings kept as the merge left them (configVersion: $ver)"
 fi
 
 mkdir -p "$(dirname "$LOG_FILE")"
