@@ -50,6 +50,7 @@ The horizontal bar and the vertical bar are alternative bars, so a given session
 | Window actions | none, by decision | left-click the app identity in the left section | none | none | no |
 | Snap preview | none of its own, rides `Super+drag` | none | none | none | no |
 | Workspace hint | none | shown under the workspaces widget on a first run | none | none | no |
+| Screensaver | none | none | none | none | yes, called by hypridle at 120 s idle and closed on resume; any key or pointer motion on it also closes it, and the lock replaces it |
 
 Getting to one bar button per sidebar took a change on 2026-07-30.
 Three bar sections were left-click toggles for a sidebar on top of the dedicated button inside that same section: the right section of the horizontal bar, and both the top and bottom sections of the vertical bar.

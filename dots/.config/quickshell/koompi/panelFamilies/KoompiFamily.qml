@@ -18,6 +18,7 @@ import qs.modules.koompi.overview
 import qs.modules.koompi.polkit
 import qs.modules.koompi.regionSelector
 import qs.modules.koompi.screenCorners
+import qs.modules.koompi.screensaver
 import qs.modules.koompi.screenTranslator
 import qs.modules.koompi.sessionScreen
 import qs.modules.koompi.sidebarLeft
@@ -51,6 +52,7 @@ Scope {
     PanelLoader { component: Polkit {} }
     PanelLoader { component: RegionSelector {} }
     PanelLoader { component: ScreenCorners {} }
+    PanelLoader { component: Screensaver {} }
     PanelLoader { component: ScreenTranslator {} }
     PanelLoader { component: SessionScreen {} }
     PanelLoader { component: SidebarLeft {} }

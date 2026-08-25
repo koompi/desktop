@@ -27,6 +27,7 @@ Singleton {
     property bool screenLocked: false
     property bool screenLockContainsCharacters: false
     property bool screenUnlockFailed: false
+    property bool screensaverOpen: false
     property bool screenTranslatorOpen: false
     property bool sessionOpen: false
     property bool tourOpen: false
