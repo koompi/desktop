@@ -1,26 +1,36 @@
-# KOOMPI OS — GRUB theme (skeleton; replace with Naga art, see docs/naming.md).
-title-text: "KOOMPI OS"
-desktop-color: "#000000"
-terminal-font: "Unifont Regular 16"
+# KOOMPI GRUB theme — star mark on dark, mono menu, words big and legible.
+# Palette: installer/themes/koompi.toml [colors] — bg #0B0E14, textDim #8B98A5,
+# accent #56C2E6; the mark in background.png is brand #1793D1. Font:
+# JetBrainsMono NF Regular 24, pre-built from ttf-jetbrains-mono-nerd via
+# grub-mkfont into koompi-jetbrainsmono-nerd-regular-24.pf2 (00_header
+# loadfonts every .pf2 next to theme.txt once GRUB_THEME points here — see
+# 10-koompi.cfg). background.png is background.svg rasterized: the real brand
+# mark (dots/.config/quickshell/koompi/assets/icons/koompi-symbolic.svg)
+# recolored to brand on a flat bg field.
+
+desktop-image: "background.png"
+desktop-color: "#0B0E14"
+title-text: ""
+terminal-font: "JetBrainsMono NF Regular 24"
 
 + boot_menu {
-  left = 30%
-  top = 35%
-  width = 40%
-  height = 40%
-  item_font = "Unifont Regular 16"
-  item_color = "#bbbbbb"
-  selected_item_color = "#ffffff"
-  item_height = 32
+  left = 15%
+  top = 38%
+  width = 70%
+  height = 45%
+  item_font = "JetBrainsMono NF Regular 24"
+  item_color = "#8B98A5"
+  selected_item_color = "#56C2E6"
+  item_height = 42
   item_spacing = 8
 }
 
 + label {
-  top = 90%
+  top = 92%
   left = 0
   width = 100%
   align = "center"
-  color = "#666666"
-  font = "Unifont Regular 16"
+  color = "#8B98A5"
+  font = "JetBrainsMono NF Regular 24"
   text = "KOOMPI OS — Naga"
 }
