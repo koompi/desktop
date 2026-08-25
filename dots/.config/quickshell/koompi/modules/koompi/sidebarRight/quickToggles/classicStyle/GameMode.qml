@@ -7,7 +7,6 @@ import Quickshell.Io
 QuickToggleButton {
     id: root
     buttonIcon: "gamepad"
-    toggled: toggled
 
     onClicked: {
         root.toggled = !root.toggled

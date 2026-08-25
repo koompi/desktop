@@ -262,11 +262,11 @@ OverlayBackground {
         id: noteFile
         path: Qt.resolvedUrl(Directories.notesPath)
         onLoaded: {
-            root.content = noteFile.text();
-            if (root.content !== root.content) {
+            const loaded = noteFile.text();
+            if (root.content !== loaded) {
                 const previousCursor = textInput.cursorPosition;
                 const previousAnchor = textInput.selectionStart;
-                root.content = root.content;
+                root.content = loaded;
                 applySelection(previousCursor, previousAnchor);
             }
             if (pendingReload) {
