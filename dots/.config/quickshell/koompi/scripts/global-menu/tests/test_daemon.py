@@ -338,6 +338,20 @@ def test_no_menu(daemon):
     check(payload["items"] == [], "an app that does not answer yields an empty menu, not a stall: %r" % payload)
 
 
+def test_register_window_answers_promptly(daemon):
+    print("RegisterWindow answers without stalling the application")
+    # Qt's QDBusMenuBar makes this call synchronously from QMenuBar's
+    # constructor, so every millisecond spent here is a millisecond the
+    # window is not on screen. The registrar looks up the caller's pid on the
+    # same connection it is answering on; if that lookup blocks the executor,
+    # its reply is never read and the call sits on the 3 s method timeout.
+    started = time.monotonic()
+    gdbus("com.canonical.AppMenu.Registrar", "RegisterWindow", 4300, "/MenuBar/1")
+    elapsed = time.monotonic() - started
+    check(elapsed < 1.0, "RegisterWindow returned in %.3fs" % elapsed)
+    gdbus("com.canonical.AppMenu.Registrar", "UnregisterWindow", 4300)
+
+
 def gdbus(dest, method, *args):
     return subprocess.run(
         [
@@ -607,6 +621,7 @@ def main():
             test_dbusmenu(daemon, log)
             test_patch_names_the_generation_it_was_asked_for(daemon, log)
             test_no_menu(daemon)
+            test_register_window_answers_promptly(daemon)
             # Kills `daemon` and runs its own replacement, so nothing may use the
             # shared one after this.
             test_restart_recovery(daemon)

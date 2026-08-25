@@ -195,6 +195,21 @@ pub fn pid_of(conn: &Connection, service: &str) -> u32 {
         .unwrap_or(0)
 }
 
+/// `pid_of` for code that already runs on the connection's executor, where a
+/// blocking call would starve the reader that has to deliver its reply.
+async fn pid_of_async(conn: &zbus::Connection, service: &str) -> u32 {
+    let Ok(name) = BusName::try_from(service) else {
+        return 0;
+    };
+    let Ok(proxy) = zbus::fdo::DBusProxy::new(conn).await else {
+        return 0;
+    };
+    proxy
+        .get_connection_unix_process_id(name)
+        .await
+        .unwrap_or(0)
+}
+
 fn dbus_proxy(conn: &Connection) -> zbus::Result<zbus::blocking::fdo::DBusProxy<'_>> {
     zbus::blocking::fdo::DBusProxy::new(conn)
 }
@@ -217,7 +232,7 @@ impl Registrar {
 
 #[zbus::interface(name = "com.canonical.AppMenu.Registrar")]
 impl Registrar {
-    fn register_window(
+    async fn register_window(
         &mut self,
         window_id: u32,
         menu_object_path: OwnedObjectPath,
@@ -225,9 +240,12 @@ impl Registrar {
     ) {
         let Some(sender) = header.sender() else { return };
         let service = sender.to_string();
-        // Resolved before the lock: it is a blocking round trip to the bus and
-        // the interface is dispatched on the connection's own task.
-        let pid = pid_of(&self.conn, &service);
+        // Resolved before the lock, and awaited rather than blocked on: this
+        // handler runs on the connection's own executor, so a blocking round
+        // trip here can never see its reply and sits on the method timeout
+        // instead. Qt's QMenuBar constructor waits for RegisterWindow to
+        // return, so that timeout was 3 s in front of every Qt window.
+        let pid = pid_of_async(self.conn.inner(), &service).await;
 
         if let Ok(mut state) = self.state.lock() {
             state.insert(window_id, service, menu_object_path.to_string(), pid);
