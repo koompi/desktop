@@ -23,21 +23,11 @@ function getMonthDays(month, year) {
 }
 
 function getNextMonthDays(month, year) {
-    const leapYear = checkLeapYear(year);
-    if (month == 1 && leapYear) return 29;
-    if (month == 1 && !leapYear) return 28;
-    if (month == 12) return 31;
-    if ((month <= 7 && month % 2 == 1) || (month >= 8 && month % 2 == 0)) return 30;
-    return 31;
+    return month == 12 ? getMonthDays(1, year + 1) : getMonthDays(month + 1, year);
 }
 
 function getPrevMonthDays(month, year) {
-    const leapYear = checkLeapYear(year);
-    if (month == 3 && leapYear) return 29;
-    if (month == 3 && !leapYear) return 28;
-    if (month == 1) return 31;
-    if ((month <= 7 && month % 2 == 1) || (month >= 8 && month % 2 == 0)) return 30;
-    return 31;
+    return month == 1 ? getMonthDays(12, year - 1) : getMonthDays(month - 1, year);
 }
 
 function getDateInXMonthsTime(x) {
