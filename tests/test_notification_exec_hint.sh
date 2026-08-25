@@ -23,6 +23,9 @@ grep -qE 'sh", *"-c' "$SERVICE" \
     && fail "Notifications runs something through sh -c"
 grep -q 'Notifications.invokeExec(notificationObject.notificationId)' "$ITEM" \
     || fail "NotificationItem's left-click does not call Notifications.invokeExec"
+GROUP="$SHELL_ROOT/modules/common/widgets/NotificationGroup.qml"
+grep -q 'Notifications.invokeExec(root.notifications\[0\].notificationId)' "$GROUP" \
+    || fail "NotificationGroup's title-row click does not run the exec hint of a single collapsed toast"
 grep -q 'interactive: expanded || root.hasExec' "$ITEM" \
     || fail "NotificationItem lets the left press fall through to the group when the hint is set"
 grep -q 'invokeExec(notif.notificationId)' "$SERVICE" \
@@ -153,9 +156,26 @@ ShellRoot {
 }
 QML
 
+# A bus with no service directories: the stock session config would activate
+# xdg-desktop-portal for the probe's quickshell, and its Hyprland backend
+# segfaults on a bus that is not the session's (a coredump koompi-crash-watch
+# would announce on every suite run).
+cat > "$WORK/bus.conf" <<'CONF'
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <listen>unix:tmpdir=/tmp</listen>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+CONF
 out="$(cd "$WORK/shell" && PROBE_WORK="$WORK" \
     XDG_CONFIG_HOME="$WORK/xdg/config" XDG_STATE_HOME="$WORK/xdg/state" XDG_CACHE_HOME="$WORK/xdg/cache" \
-    timeout 60 dbus-run-session -- qs -p exec_hint_probe.qml 2>&1)"
+    timeout 60 dbus-run-session --config-file="$WORK/bus.conf" -- qs -p exec_hint_probe.qml 2>&1)"
 echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ DEBUG qml: //p' | grep -E '^(PASS|FAIL|PROBE)' || true
 
 if ! grep -q "PROBE OK" <<< "$out"; then

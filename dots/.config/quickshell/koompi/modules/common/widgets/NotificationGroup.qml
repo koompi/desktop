@@ -81,6 +81,10 @@ MouseArea { // Notification group area
     TapHandler { // Touchpad tap and left-click expand/collapse
         acceptedButtons: Qt.LeftButton
         onSingleTapped: (eventPoint, button) => {
+            // A single collapsed toast draws its summary in this group's title row, outside
+            // the NotificationItem that runs the exec hint: a click there runs it too.
+            if (!root.expanded && root.notifications.length === 1
+                && Notifications.invokeExec(root.notifications[0].notificationId)) return;
             root.toggleExpanded();
         }
     }
