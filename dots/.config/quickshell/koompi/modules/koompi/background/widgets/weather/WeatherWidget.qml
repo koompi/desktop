@@ -33,7 +33,10 @@ AbstractBackgroundWidget {
                 weight: Font.Medium
             }
             color: Appearance.colors.colPrimary
-            text: Weather.data?.temp.substring(0,Weather.data?.temp.length - 1) ?? "--°"
+            // The service starts with temp: 0 (a number) and only stores the
+            // "25°C" string after a successful fetch; (0).substring throws and
+            // ?? cannot catch a throw.
+            text: typeof Weather.data?.temp === "string" ? Weather.data.temp.substring(0, Weather.data.temp.length - 1) : "--°"
             anchors {
                 right: parent.right
                 top: parent.top
