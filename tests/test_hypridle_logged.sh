@@ -6,8 +6,9 @@
 # instance per session. This checks each half of that wiring stays in place,
 # and, inside a session where the unit is running, that a Lock reaches it.
 #
-# The live check calls `loginctl lock-session`, so it locks the screen. Outside
-# a session with hypridle.service active it says so and skips.
+# The live check calls `loginctl lock-session`, so it locks the screen: it is
+# opt-in with KOOMPI_TEST_LIVE_LOCK=1, and also needs a logind session with
+# hypridle.service active. Otherwise it says so and skips after the static checks.
 #
 # The stubs below are called from inside setup_services, never via sudo here.
 # shellcheck disable=SC2329,SC2032
@@ -80,8 +81,13 @@ grep -qx 'PartOf=graphical-session.target' "$UNIT"  || fail "$UNIT is not PartOf
 grep -qx 'WantedBy=graphical-session.target' "$UNIT" || fail "$UNIT is not WantedBy=graphical-session.target"
 grep -qE '^Restart=(on-failure|always)' "$UNIT"      || fail "$UNIT does not restart on crash"
 
-# 5. Live: a logind Lock reaches the unit within 2 s. Needs the unit running
-#    under this user's manager inside an active logind session.
+# 5. Live: a logind Lock reaches the unit within 2 s. Opt-in, because it locks
+#    the screen of whoever runs the suite; needs the unit running under this
+#    user's manager inside an active logind session.
+if [[ "${KOOMPI_TEST_LIVE_LOCK:-}" != 1 ]]; then
+    echo "skip: live Lock check needs KOOMPI_TEST_LIVE_LOCK=1 (it locks the screen)"
+    exit 0
+fi
 if [[ -z "${XDG_SESSION_ID:-}" ]] \
    || [[ "$(loginctl show-session "$XDG_SESSION_ID" -p State --value 2>/dev/null)" != active ]] \
    || [[ "$(command systemctl --user is-active hypridle.service 2>/dev/null)" != active ]]; then
