@@ -1,5 +1,7 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -7,6 +9,47 @@ import qs.modules.common.widgets
 ContentSection {
     icon: "text_format"
     title: Translation.tr("Fonts")
+
+    ContentSubsection {
+        title: Translation.tr("Text size")
+        tooltip: Translation.tr("One size for the shell, GTK apps and the terminal, in px. 16 is the shipped size.")
+
+        RowLayout {
+            spacing: 10
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+
+            StyledText {
+                Layout.preferredWidth: 48
+                text: `${Math.round(textSizeSlider.value)} px`
+                color: Appearance.colors.colOnSecondaryContainer
+            }
+            StyledSlider {
+                id: textSizeSlider
+                Layout.fillWidth: true
+                configuration: StyledSlider.Configuration.XS
+                usePercentTooltip: false
+                from: 9
+                to: 24
+                stepSize: 1
+                snapMode: Slider.SnapAlways
+                // Dragging would break a plain `value:` binding; this one survives
+                // it, so `koompi-theme text-size` run from a terminal moves the knob too.
+                Binding on value {
+                    value: Config.options.appearance.fonts.baseSize
+                }
+                onMoved: textSizeApply.restart()
+            }
+        }
+        // The tool owns the side effects (config key, GTK factor, terminal
+        // size, hook); the shell reflows when config.json comes back through
+        // Config's file watch. One run per settled drag, not one per step.
+        Timer {
+            id: textSizeApply
+            interval: Appearance.animationDuration.normal
+            onTriggered: Quickshell.execDetached(["koompi-theme", "text-size", String(Math.round(textSizeSlider.value))])
+        }
+    }
 
     ContentSubsection {
         title: Translation.tr("Main font")

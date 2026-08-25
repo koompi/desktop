@@ -2,8 +2,9 @@
 # koompi-theme - apply/regenerate the KOOMPI desktop theme.
 #
 # Thin, KOOMPI-owned front end over the shell's existing color pipeline
-# (switchwall.sh -> matugen + compatibility outputs). This is theme only; use
-# koompi-wallpaper to change the wallpaper image.
+# (switchwall.sh -> matugen + compatibility outputs), plus the one text-size
+# knob that moves the shell, GTK apps and the terminal together. This is
+# theme only; use koompi-wallpaper to change the wallpaper image.
 set -euo pipefail
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -12,6 +13,20 @@ XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SHELL_DIR="$XDG_CONFIG_HOME/quickshell/koompi"
 [[ -d "$SHELL_DIR" ]] || SHELL_DIR="/etc/xdg/quickshell/koompi"
 SWITCHWALL="${KOOMPI_SWITCHWALL:-$SHELL_DIR/scripts/colors/switchwall.sh}"
+CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$XDG_CONFIG_HOME/koompi/config.json}"
+
+# Text size. Three settings anchored to what the desktop ships today, so the
+# default leaves every app exactly as it was:
+#   shell    appearance.fonts.baseSize in config.json   16 px  (Appearance.qml's `normal`)
+#   GTK      org.gnome.desktop.interface text-scaling-factor   1.0
+#   terminal ~/.config/koompi/text-size, read by wezterm.lua  11.5 pt
+TEXT_PX_DEFAULT=16
+TEXT_PX_MIN=9
+TEXT_PX_MAX=24
+TERM_PT_DEFAULT=11.5
+TEXT_SIZE_FILE="$XDG_CONFIG_HOME/koompi/text-size"
+GSCHEMA=org.gnome.desktop.interface
+GKEY=text-scaling-factor
 
 usage() {
     cat <<'USAGE'
@@ -22,51 +37,161 @@ Commands:
   mode <dark|light>     Switch light/dark mode, keeping the current wallpaper.
   scheme <name>         Switch Material scheme (e.g. scheme-tonal-spot, auto).
   color <hex|clear>     Set the accent color (e.g. 00A859) or clear it.
+  text-size <N|reset|show>
+                        Text size in px (9-24) for the shell, GTK apps and the
+                        terminal together; `reset` is 16 px, `show` prints all three.
 
-All commands regenerate colors for the shell, GTK, Qt, and terminal via the
-existing pipeline. They do not change the wallpaper image.
+The color commands regenerate colors for the shell, GTK, Qt, and terminal via
+the existing pipeline. They do not change the wallpaper image.
 USAGE
 }
 
-if [[ ! -x "$SWITCHWALL" ]]; then
-    echo "koompi-theme: theme engine not found or not executable: $SWITCHWALL" >&2
-    exit 1
-fi
+fail() { echo "koompi-theme: $*" >&2; exit 1; }
 
-# matugen is an implementation detail, not a hard dependency: without it the
-# desktop keeps its current (or shipped) colors, it just cannot regenerate.
-if ! command -v matugen >/dev/null; then
-    echo "koompi-theme: matugen not installed; keeping current colors (theme regeneration disabled)" >&2
-    exit 0
-fi
+# The color commands need the engine; text-size does not, so the guards live
+# here instead of at the top. Without matugen the desktop keeps its current
+# (or shipped) colors, it just cannot regenerate: exit 0, not an error.
+need_engine() {
+    [[ -x "$SWITCHWALL" ]] || fail "theme engine not found or not executable: $SWITCHWALL"
+    if ! command -v matugen >/dev/null; then
+        echo "koompi-theme: matugen not installed; keeping current colors (theme regeneration disabled)" >&2
+        exit 0
+    fi
+}
+
+# After a successful change, tell user hooks what changed (env=value args).
+# The command -v guard keeps theming working where koompi-hook isn't
+# installed (or not yet symlinked) at all.
+fire_hook() {
+    command -v koompi-hook >/dev/null 2>&1 || return 0
+    env "$@" koompi-hook theme-set
+}
+
+# ---- text size ----
+
+# Same write path as koompi-wallpaper's json_update/commit_config: jq sets one
+# key in the existing file, the result is checked to still be an object, and a
+# tmp beside the target is renamed over it. Never a raw overwrite.
+config_set_text_size() {
+    local px="$1" tmp
+    [[ -f "$CONFIG_FILE" ]] || fail "config not found: $CONFIG_FILE (the shell writes it on first start)"
+    jq -e 'type == "object"' "$CONFIG_FILE" >/dev/null 2>&1 || fail "config is not valid JSON, refusing to touch it: $CONFIG_FILE"
+    tmp="$(mktemp -- "$CONFIG_FILE.XXXXXX")"
+    # shellcheck disable=SC2016 # jq program; $px is jq's variable, not the shell's
+    jq --argjson px "$px" '.appearance.fonts.baseSize = $px' "$CONFIG_FILE" > "$tmp" \
+        || { rm -f "$tmp"; fail "jq failed updating $CONFIG_FILE"; }
+    jq -e 'type == "object"' "$tmp" >/dev/null 2>&1 || { rm -f "$tmp"; fail "refusing to write invalid config: $CONFIG_FILE"; }
+    chmod --reference="$CONFIG_FILE" "$tmp"
+    mv "$tmp" "$CONFIG_FILE"
+}
+
+config_get_text_size() {
+    [[ -f "$CONFIG_FILE" ]] || return 0
+    jq -r '.appearance.fonts.baseSize // empty' "$CONFIG_FILE" 2>/dev/null || true
+}
+
+# Point size of the GTK interface font, used to quantise the scaling factor.
+# font-name may carry font variations after the size ("... 11 @opsz=11,wght=500"),
+# which is why the last word is taken only after that suffix is dropped.
+# Falls back to GNOME's default when unreadable.
+gtk_font_pt() {
+    local name pt
+    name="$(gsettings get "$GSCHEMA" font-name 2>/dev/null || true)"
+    pt="${name%\'}"
+    pt="${pt%% @*}"
+    pt="${pt##* }"
+    if [[ $pt =~ ^[0-9]+(\.[0-9]+)?$ ]]; then echo "$pt"; else echo 11; fi
+}
+
+# 16 px == factor 1.0, quantised so the GTK interface font lands on a whole
+# point size (omarchy-display-text-size does the same at its 12 px anchor):
+# a raw ratio gives fractional points, which GTK4 menus clip at the ascenders.
+gtk_factor_for() {
+    awk -v px="$1" -v base="$TEXT_PX_DEFAULT" -v pt="$(gtk_font_pt)" \
+        'BEGIN { printf "%.4f", int(pt * px / base + 0.5) / pt }'
+}
+
+# 16 px == 11.5 pt (wezterm's shipped size), to the nearest half point.
+term_pt_for() {
+    awk -v px="$1" -v base="$TEXT_PX_DEFAULT" -v pt="$TERM_PT_DEFAULT" \
+        'BEGIN { printf "%.1f", int(px * pt / base * 2 + 0.5) / 2 }'
+}
+
+# wezterm watches this file, so it is renamed into place, never truncated.
+write_term_size() {
+    local tmp
+    mkdir -p "$(dirname -- "$TEXT_SIZE_FILE")"
+    tmp="$(mktemp -- "$TEXT_SIZE_FILE.XXXXXX")"
+    printf '%s\n' "$1" > "$tmp"
+    mv "$tmp" "$TEXT_SIZE_FILE"
+}
+
+text_size_show() {
+    local px factor term
+    px="$(config_get_text_size)"
+    if command -v gsettings >/dev/null 2>&1; then
+        factor="$(gsettings get "$GSCHEMA" "$GKEY" 2>/dev/null || echo n/a)"
+    else
+        factor="n/a (no gsettings)"
+    fi
+    [[ -f "$TEXT_SIZE_FILE" ]] && term="$(head -n1 "$TEXT_SIZE_FILE")" || term=""
+    printf 'text size: %s px\ngtk text-scaling-factor: %s\nterminal font: %s pt\n' \
+        "${px:-$TEXT_PX_DEFAULT (default)}" "$factor" "${term:-$TERM_PT_DEFAULT (default)}"
+}
+
+text_size_set() {
+    local px="$1" factor
+    [[ "$px" =~ ^[0-9]+$ && px -ge TEXT_PX_MIN && px -le TEXT_PX_MAX ]] \
+        || fail "text-size must be an integer from $TEXT_PX_MIN to $TEXT_PX_MAX (px), or 'reset' or 'show'"
+    config_set_text_size "$px"
+    if command -v gsettings >/dev/null 2>&1; then
+        if (( px == TEXT_PX_DEFAULT )); then
+            gsettings reset "$GSCHEMA" "$GKEY"
+        else
+            factor="$(gtk_factor_for "$px")"
+            gsettings set "$GSCHEMA" "$GKEY" "$factor"
+        fi
+    fi
+    write_term_size "$(term_pt_for "$px")"
+    fire_hook "KOOMPI_HOOK_TEXT_SIZE=$px"
+}
 
 cmd="${1:-regenerate}"
-# Every branch below used to tail-call `exec $SWITCHWALL`; now it runs the
-# switchwall, propagates its exit code, and on success fires the theme-set
-# hook with whatever changed as env vars. The command -v guard keeps theming
-# working where koompi-hook isn't installed (or not yet symlinked) at all.
+# Every color branch runs the switchwall, propagates its exit code, and on
+# success fires the theme-set hook with whatever changed as env vars.
 case "$cmd" in
     regenerate|apply)
+        need_engine
         "$SWITCHWALL" --noswitch || exit $?
-        command -v koompi-hook >/dev/null 2>&1 && koompi-hook theme-set
+        fire_hook
         ;;
     mode)
         m="${2:-}"
-        [[ "$m" == dark || "$m" == light ]] || { echo "koompi-theme: mode must be 'dark' or 'light'" >&2; exit 1; }
+        [[ "$m" == dark || "$m" == light ]] || fail "mode must be 'dark' or 'light'"
+        need_engine
         "$SWITCHWALL" --noswitch --mode "$m" || exit $?
-        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_MODE="$m" koompi-hook theme-set
+        fire_hook "KOOMPI_HOOK_MODE=$m"
         ;;
     scheme)
         s="${2:-}"
-        [[ -n "$s" ]] || { echo "koompi-theme: scheme name required" >&2; exit 1; }
+        [[ -n "$s" ]] || fail "scheme name required"
+        need_engine
         "$SWITCHWALL" --noswitch --type "$s" || exit $?
-        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_SCHEME="$s" koompi-hook theme-set
+        fire_hook "KOOMPI_HOOK_SCHEME=$s"
         ;;
     color)
         c="${2:-}"
-        [[ -n "$c" ]] || { echo "koompi-theme: color hex or 'clear' required" >&2; exit 1; }
+        [[ -n "$c" ]] || fail "color hex or 'clear' required"
+        need_engine
         "$SWITCHWALL" --color "$c" || exit $?
-        command -v koompi-hook >/dev/null 2>&1 && KOOMPI_HOOK_COLOR="$c" koompi-hook theme-set
+        fire_hook "KOOMPI_HOOK_COLOR=$c"
+        ;;
+    text-size)
+        case "${2-show}" in
+            show) text_size_show ;;
+            reset|default) text_size_set "$TEXT_PX_DEFAULT" ;;
+            *) text_size_set "$2" ;;
+        esac
         ;;
     -h|--help|help)
         usage

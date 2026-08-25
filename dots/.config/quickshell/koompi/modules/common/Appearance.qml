@@ -260,16 +260,16 @@ Singleton {
                 "wght": 550, // Weight (Lowered to compensate for increased grade)
             })
         }
-        property QtObject pixelSize: QtObject {
-            property int smallest: 10
-            property int smaller: 12
-            property int smallie: 13
-            property int small: 15
-            property int normal: 16
-            property int large: 17
-            property int larger: 19
-            property int huge: 22
-            property int hugeass: 23
+        property QtObject pixelSize: QtObject { // one knob: every step scales from `normal`, which is the config's baseSize
+            property int normal: Config.options.appearance.fonts.baseSize
+            property int smallest: Math.round(normal * 0.625)
+            property int smaller: Math.round(normal * 0.75)
+            property int smallie: Math.round(normal * 0.8125)
+            property int small: Math.round(normal * 0.9375)
+            property int large: Math.round(normal * 1.0625)
+            property int larger: Math.round(normal * 1.1875)
+            property int huge: Math.round(normal * 1.375)
+            property int hugeass: Math.round(normal * 1.4375)
             property int title: huge
         }
     }

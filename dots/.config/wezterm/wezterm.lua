@@ -13,7 +13,23 @@ config.enable_kitty_keyboard = false
 config.window_background_opacity = 0.80
 config.text_background_opacity = 1.0
 config.window_decorations = 'NONE'
-config.font_size = 11.5
+
+-- One text-size knob: `koompi-theme text-size` writes the point size to
+-- ~/.config/koompi/text-size (16 px shell == 11.5 pt here). No file, an
+-- unreadable one, or a non-number all mean the shipped 11.5.
+local text_size_file = (os.getenv('XDG_CONFIG_HOME') or (os.getenv('HOME') .. '/.config')) .. '/koompi/text-size'
+local function text_size()
+  local ok, f = pcall(io.open, text_size_file, 'r')
+  if not ok or not f then return 11.5 end
+  local n = tonumber(f:read('*l'))
+  f:close()
+  return n or 11.5
+end
+config.font_size = text_size()
+-- So a running wezterm reflows when the knob moves, not only on restart.
+if wezterm.add_to_config_reload_watch_list then
+  wezterm.add_to_config_reload_watch_list(text_size_file)
+end
 
 config.colors = {
   foreground = '#00ff66',

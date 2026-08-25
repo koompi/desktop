@@ -216,6 +216,7 @@ Singleton {
                 property bool extraBackgroundTint: true
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
                 property JsonObject fonts: JsonObject {
+                    property int baseSize: 16 // px; the shell's `normal` step, set by `koompi-theme text-size` together with GTK and the terminal
                     property string main: "Google Sans Flex"
                     property string numbers: "Google Sans Flex"
                     property string title: "Google Sans Flex"
@@ -803,9 +804,8 @@ Singleton {
             }
 
             property JsonObject waffles: JsonObject {
-                // Some spots are kinda janky/awkward. Setting the following to
-                // false will make (some) stuff also be like that for accuracy. 
-                // Example: the right-click menu of the Start button
+                // Some spots are kinda janky/awkward. Setting these to false makes
+                // (some) stuff also be like that for accuracy, e.g. the Start button's right-click menu
                 property JsonObject tweaks: JsonObject {
                     property bool switchHandlePositionFix: true
                     property bool smootherMenuAnimations: true
