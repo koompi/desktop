@@ -19,7 +19,7 @@ Item { // Notification item area
     property real summaryElideRatio: 0.85
     // koompi-notify-send --exec: a left-click runs the argv (Notifications.invokeExec)
     // instead of reaching the group's expand tap. A swipe that started here is not a click.
-    property bool hasExec: (notificationObject?.execArgv?.length ?? 0) > 0
+    property bool hasExec: (root.notificationObject?.execArgv?.length ?? 0) > 0
     property bool dragged: false
 
     property real dragConfirmThreshold: 70 // Drag further to discard notification

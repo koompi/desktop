@@ -34,7 +34,7 @@ Singleton {
         property double time
         property string urgency: notification?.urgency.toString() ?? "normal"
         // koompi-notify-send --exec; [] when absent, malformed, or restored from disk
-        property var execArgv: root.parseExecArgv(notification?.hints?.["koompi-exec-argv"])
+        property var execArgv: root.parseExecArgv(notification?.hints["koompi-exec-argv"])
         property Timer timer
 
         onNotificationChanged: {

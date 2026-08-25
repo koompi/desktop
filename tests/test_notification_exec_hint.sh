@@ -17,7 +17,7 @@ fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
 grep -qF 'return ["bash", "-lc", '"'"'exec "$@"'"'"', "--"].concat(argv);' "$SERVICE" \
     || fail "Notifications.execCommand is not the exact bash -lc 'exec \"\$@\"' -- form"
-grep -qE 'hints\?\.\["koompi-exec-argv"\]' "$SERVICE" \
+grep -qE 'notification\?\.hints\["koompi-exec-argv"\]' "$SERVICE" \
     || fail "Notifications.Notif does not read the koompi-exec-argv hint"
 grep -qE 'sh", *"-c' "$SERVICE" \
     && fail "Notifications runs something through sh -c"
