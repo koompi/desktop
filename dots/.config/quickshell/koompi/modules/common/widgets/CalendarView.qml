@@ -79,7 +79,7 @@ Item {
         // The last day of 3rd week shown is considered the focused month
         const addedTime = (root.paddingWeeks + root.focusedWeekIndex) * root.millisPerWeek
         const dateInTargetWeek = new Date(root.dateInFirstWeek.getTime() + addedTime);
-        return DateUtils.getIthDayDateOfSameWeek(dateInTargetWeek, root.focusDayOfWeekIndex - root.locale.firstDayOfWeek, root.locale.firstdayOfWeek); // 4 = Thursday
+        return DateUtils.getIthDayDateOfSameWeek(dateInTargetWeek, root.focusDayOfWeekIndex - root.locale.firstDayOfWeek, root.locale.firstDayOfWeek); // 4 = Thursday
     }
     property int focusedMonth: focusedDate.getMonth() + 1 // 0-indexed -> 1-indexed
 
