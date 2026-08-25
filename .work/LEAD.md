@@ -112,4 +112,4 @@ Watcher: Monitor loop, 45 s.
 
 ## Next action
 
-Wave 2 live (J29 J30 J31 J33). When one returns: rebase onto main, gates in `lead-verify` at nice 19 (job test, file-length, shellcheck CI lines, qmllint, suite — never two suites at once), ff-merge, push, close tab/worktree/branch. J31 verified → dispatch J32 and J34 (write J32/J34 contracts first; BACKLOG rows exist). Still waiting on Rithy: J12, sudo installs, `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check after J20.
+Wave 2 live (J29 J30 J31 J33). When one returns: rebase onto main, gates in `lead-verify` at nice 19 (job test, file-length, shellcheck CI lines, qmllint, suite — never two suites at once), ff-merge, push, close tab/worktree/branch. J31 verified → dispatch J32 and J34 (contracts written, `.work/jobs/J32-*.md`, `J34-*.md`). Still waiting on Rithy: J12, sudo installs, `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check after J20.
