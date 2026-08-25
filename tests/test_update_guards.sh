@@ -97,6 +97,7 @@ printf '%s\n' no > "$T/locked"
 
 export PATH="$T/bin:$PATH"
 export HOME="$T/home" XDG_STATE_HOME="$T/home/.local/state" XDG_RUNTIME_DIR="$T/runtime"
+export XDG_DATA_HOME="$ROOT/dots/.local/share"   # koompi-reload finds update-lib.sh the way the CLI finds libexec
 export KOOMPI_UPDATE_MODULES_DIR="$T/modules" NO_COLOR=1
 unset HYPRLAND_INSTANCE_SIGNATURE
 
@@ -198,6 +199,9 @@ printf '%s\n' no > "$T/locked"
 : > "$T/order"
 out="$(bash "$RELOAD" 2>&1 < /dev/null)" || fail "koompi-reload failed while unlocked: $out"
 grep -qx 'qs' "$T/killall-log" || fail "koompi-reload did not stop qs while unlocked"
+for _ in $(seq 20); do   # the restart is backgrounded; the shim may still be writing
+    grep -q '^setsid env QT_QPA_PLATFORM=wayland qs -c koompi' "$T/order" && break; sleep 0.1
+done
 grep -q '^setsid env QT_QPA_PLATFORM=wayland qs -c koompi' "$T/order" \
     || fail "koompi-reload did not restart the shell: $(cat "$T/order")"
 grep -qE 'global-menu-daemon|quickshell' "$T/killall-log" \
