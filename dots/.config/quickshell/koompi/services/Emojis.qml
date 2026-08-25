@@ -14,6 +14,8 @@ Singleton {
     id: root
     property string emojiScriptPath: `${Directories.config}/hypr/hyprland/scripts/fuzzel-emoji.sh`
 	property string lineBeforeData: "### DATA ###"
+    property bool sloppySearch: Config.options?.search.sloppy ?? false
+    property real scoreThreshold: 0.2
     property list<var> list
     readonly property var preparedEntries: list.map(a => ({
         name: Fuzzy.prepare(`${a}`),
@@ -21,7 +23,7 @@ Singleton {
     }))
     function fuzzyQuery(search: string): var {
         if (root.sloppySearch) {
-            const results = entries.slice(0, 100).map(str => ({
+            const results = root.list.slice(0, 100).map(str => ({
                 entry: str,
                 score: Levendist.computeTextMatchScore(str.toLowerCase(), search.toLowerCase())
             })).filter(item => item.score > root.scoreThreshold)
