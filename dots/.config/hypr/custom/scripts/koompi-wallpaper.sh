@@ -67,11 +67,14 @@ commit_config() {
     mv "$tmp" "$CONFIG_FILE"
 }
 
+# tmp beside the target: a fixed .tmp name raced concurrent writers, and a
+# mktemp on another filesystem makes the mv a copy, not a rename
 json_update() {
     local filter="$1"
+    shift
     local tmp
-    tmp="$(mktemp)"
-    jq "$filter" "$CONFIG_FILE" > "$tmp"
+    tmp="$(mktemp -- "$CONFIG_FILE.XXXXXX")"
+    jq "$@" "$filter" "$CONFIG_FILE" > "$tmp" || { rm -f "$tmp"; fail "jq failed updating $CONFIG_FILE"; }
     commit_config "$tmp"
 }
 
@@ -142,11 +145,11 @@ cmd_mode() {
     valid_mode "$mode" || fail "Mode must be inherit or static"
 
     local key="ws$workspace"
-    jq --arg key "$key" --arg mode "$mode" '
+    # shellcheck disable=SC2016 # jq program; $key is jq's variable, not the shell's
+    json_update '
       .background.workspaceWallpapers.workspaces[$key].mode = $mode |
       if $mode == "inherit" then .background.workspaceWallpapers.workspaces[$key].path = "" else . end
-    ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
-    commit_config "$CONFIG_FILE.tmp"
+    ' --arg key "$key" --arg mode "$mode"
     log "mode $key -> $mode"
     printf 'Set %s mode to %s (workspaces %s, %s, %s, ...).\n' \
         "$key" "$mode" "$workspace" "$((workspace + 10))" "$((workspace + 20))"
@@ -171,11 +174,11 @@ cmd_set() {
     esac
 
     local key="ws$workspace"
-    jq --arg key "$key" --arg path "$path" '
+    # shellcheck disable=SC2016 # jq program; $key is jq's variable, not the shell's
+    json_update '
       .background.workspaceWallpapers.workspaces[$key].mode = "static" |
       .background.workspaceWallpapers.workspaces[$key].path = $path
-    ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
-    commit_config "$CONFIG_FILE.tmp"
+    ' --arg key "$key" --arg path "$path"
     log "set $key static path -> $path"
     printf 'Set %s static wallpaper to %s (workspaces %s, %s, %s, ...).\n' \
         "$key" "$path" "$workspace" "$((workspace + 10))" "$((workspace + 20))"
@@ -209,11 +212,11 @@ cmd_seed() {
     local i path
     for i in {1..10}; do
         path="${shuffled[$(( (i - 1) % ${#shuffled[@]} ))]}"
-        jq --arg key "ws$i" --arg path "$path" '
+        # shellcheck disable=SC2016 # jq program; $key is jq's variable, not the shell's
+        json_update '
           .background.workspaceWallpapers.workspaces[$key].mode = "static" |
           .background.workspaceWallpapers.workspaces[$key].path = $path
-        ' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
-        commit_config "$CONFIG_FILE.tmp"
+        ' --arg key "ws$i" --arg path "$path"
         log "seed ws$i -> $path"
     done
     printf 'Seeded 10 slots from %s image(s). Workspaces past 10 reuse them.\n' "${#shuffled[@]}"
