@@ -17,6 +17,7 @@ fi
 
 KOOMPI_STATE_DIR="${XDG_STATE_HOME}/koompi"
 MANIFEST="${KOOMPI_STATE_DIR}/installed-files"
+# shellcheck disable=SC2034  # read by setups.sh and uninstall.sh, which source this file
 SYSTEM_MANIFEST="${KOOMPI_STATE_DIR}/installed-system-files"
 # Read by the `koompi update` helper, which has no other way to find the
 # checkout. Keep the two in step if this ever moves.

@@ -165,6 +165,9 @@ setup_suspend_hook() {
     systemd_running || { info "no running systemd; skipping"; return 0; }
 
     local hook=/usr/lib/systemd/system-sleep/koompi-btintel-pcie
+    # The body is the hook script itself: $1 and $STAMP must reach /bin/sh
+    # unexpanded, so the single quotes are the point.
+    # shellcheck disable=SC2016
     sudo_write "$hook" '#!/bin/sh
 # Installed by KOOMPI. See setup_suspend_hook in sdata/install/setups.sh.
 STAMP=/run/koompi-btintel-pcie-off
