@@ -211,6 +211,8 @@ set_thumbnail_path() {
 categorize_wallpaper() {
     img_cat=$("$SCRIPT_DIR/../ai/gemini-categorize-wallpaper.sh" "$1")
     # notify-send "Wallpaper category" "$img_cat"
+    # runs in the background before matugen, which is what creates this dir
+    mkdir -p "$STATE_DIR/user/generated/wallpaper"
     echo "$img_cat" > "$STATE_DIR/user/generated/wallpaper/category.txt"
 }
 
