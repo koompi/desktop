@@ -27,7 +27,7 @@ GPG_KEY_ID="${GPG_KEY_ID:-TODO_KOOMPI_SIGNING_KEY_ID}"
 PUBLISH_URL="${PUBLISH_URL:-TODO_PUBLISH_BASE_URL}"
 
 build_packages() {
-  echo ">> Building every sdata/dist-arch/koompi-*/PKGBUILD into $OUTDIR"
+  echo ">> Building every sdata/dist-arch/*/PKGBUILD into $OUTDIR"
   install -dm755 "$OUTDIR"
 
   # A naive `for d in koompi-*; do makepkg; done` aborts: the metas depend on other
@@ -36,7 +36,8 @@ build_packages() {
   # For CI prefer a clean chroot: build in dependency order and repo-add each result
   # into a local [koompi] before the metas that need it.
   # makepkg also refuses to run as root - the CI workflow makes a build user.
-  for pkgdir in "$DIST_ARCH"/koompi-*/; do
+  # Every directory with a PKGBUILD, not koompi-*/: ttf-koompi-star lives here too.
+  for pkgdir in "$DIST_ARCH"/*/; do
     [[ -f "$pkgdir/PKGBUILD" ]] || continue
     echo "   - $(basename "$pkgdir")"
     # --nodeps   : skeleton builds the artifact only (strategy a above)

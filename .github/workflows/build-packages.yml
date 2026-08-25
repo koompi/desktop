@@ -51,14 +51,15 @@ jobs:
       - name: Build koompi-* packages
         run: |
           set -euo pipefail
-          # Build every sdata/dist-arch/koompi-*/PKGBUILD as the build user.
+          # Build every sdata/dist-arch/*/PKGBUILD as the build user (not koompi-*/:
+          # ttf-koompi-star lives here too).
           # --nodeps: the meta packages (koompi-base, koompi-desktop-*) depend on
           # other koompi-* not yet in any repo, so dep-checking would abort. We
           # only need the .pkg.tar.zst artifacts here; resolution is a client-side
           # / install-time concern. PRODUCTION builds in dependency order inside a
           # clean chroot, repo-add-ing each result before building the metas.
           install -dm755 "$GITHUB_WORKSPACE/sdata/dist-arch/repo/packages"
-          for pkgdir in "$GITHUB_WORKSPACE"/sdata/dist-arch/koompi-*/; do
+          for pkgdir in "$GITHUB_WORKSPACE"/sdata/dist-arch/*/; do
             [ -f "$pkgdir/PKGBUILD" ] || continue
             echo "::group::build $(basename "$pkgdir")"
             sudo -u builder bash -c "cd '$pkgdir' && \
