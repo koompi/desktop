@@ -15,15 +15,58 @@
 groups=(koompi)
 pkgname=koompi-shell
 pkgver=1.1
-pkgrel=1
+pkgrel=2
 pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
 arch=(x86_64 aarch64)
 license=(GPL-3.0-only)
 # xorg-xprop and xorg-xwayland are not optional: Qt exports its menubar over
 # D-Bus only on X11, so the global menu reads the menu address off XWayland
 # window properties with xprop. Without either one the bar is silently empty.
-depends=(koompi-quickshell-git rsync jq xorg-xprop xorg-xwayland)
+# python-gobject: koompi-remotedesktop-portal is a Python script on Gio/GLib.
+depends=(koompi-quickshell-git rsync jq xorg-xprop xorg-xwayland python-gobject)
 makedepends=(zig)
+
+# Every dots/.local/bin/koompi-* executable ships, by name, so what the package
+# puts in /usr/bin can be read off this file. tests/test_packaged_tools.sh
+# fails when this list and the directory disagree in either direction: five
+# tools were missing on 2026-08-25 and `koompi hook` / `koompi plugin` failed on
+# every KOOMPI OS install (OMARCHY-AUDIT O01). koompi-wallpaper is a symlink
+# into the hypr tree in dots/; install(1) follows it, so system-wide it is the
+# real script.
+_tools=(
+  koompi-agent-usage-claude
+  koompi-agent-usage-codex
+  koompi-agent-usage-pi
+  koompi-displays
+  koompi-flatpak-open
+  koompi-health
+  koompi-hook
+  koompi-launch-webapp
+  koompi-litert-lm-watchdog
+  koompi-logout
+  koompi-migrate
+  koompi-notify-send
+  koompi-plugin
+  koompi-quicklook
+  koompi-reload
+  koompi-remotedesktop-portal
+  koompi-settings
+  koompi-signature
+  koompi-snapshot
+  koompi-stacking
+  koompi-theme
+  koompi-useradd
+  koompi-wallpaper
+  koompi-webapp-install
+  koompi-webapp-remove
+  koompi-workbench
+)
+# Left out on purpose. Each name must still exist in dots/.local/bin, and each
+# carries the reason on its own line; the test checks both.
+_tools_excluded=(
+  koompi-session  # owned by the koompi-session package, same /usr/bin path
+  koompi-update   # replaced by the koompi-update -> koompi symlink in package()
+)
 
 build() {
   local _repo_root
@@ -57,15 +100,9 @@ package() {
   ln -s koompi "$pkgdir/usr/bin/koompi-update"
 
   local tool
-  for tool in koompi-health koompi-theme koompi-settings koompi-displays koompi-migrate \
-              koompi-useradd koompi-stacking koompi-quicklook koompi-flatpak-open \
-              koompi-workbench koompi-reload koompi-signature koompi-snapshot; do
+  for tool in "${_tools[@]}"; do
     install -Dm755 "$_repo_root/dots/.local/bin/$tool" "$pkgdir/usr/bin/$tool"
   done
-  # In dots/ this is a symlink into the hypr tree; installed system-wide it is
-  # the real script.
-  install -Dm755 "$_repo_root/dots/.config/hypr/custom/scripts/koompi-wallpaper.sh" \
-    "$pkgdir/usr/bin/koompi-wallpaper"
 
   # KDE apps (Dolphin's Open With) need an XDG menu to index applications;
   # Plasma's menu left with the plasma removal.
