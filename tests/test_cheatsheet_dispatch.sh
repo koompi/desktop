@@ -72,7 +72,7 @@ LUA
 cat > "$WORK/hypr/custom/keybinds.lua" <<'LUA'
 hl.bind("SUPER + K", hl.dsp.exec_cmd("kiri voice", { float = true }), { description = "Kiri: Voice" })
 LUA
-printf '-- entry file; the recorder loads bind modules, not this\n' > "$WORK/hypr/hyprland.lua"
+printf '%s\n' '-- entry file; the recorder loads bind modules, not this' > "$WORK/hypr/hyprland.lua"
 
 # hyprland.keybinds_notifications does not exist in the fixture: skipped, like hyprland.lua would.
 rec="$(lua "$RECORDER" "$WORK/hypr" hyprland.keybinds hyprland.keybinds_notifications custom.keybinds 2> "$WORK/rec.err")"
@@ -247,7 +247,10 @@ TXT
 cat > "$WORK/bin/hyprctl" <<'SH'
 #!/usr/bin/env bash
 if [[ "${1:-}" == binds ]]; then cat "$SHIM_BINDS"; exit 0; fi
-{ printf '%s' "$1"; shift; printf '\t%s' "$@"; printf '\n'; } >> "$SHIM_LOG"
+# one write per call: two dispatches land at once and O_APPEND keeps whole
+# lines apart, not fragments
+line="$1"; shift; for a in "$@"; do line+=$'\t'"$a"; done
+printf '%s\n' "$line" >> "$SHIM_LOG"
 exit 0
 SH
 chmod +x "$WORK/bin/hyprctl"
