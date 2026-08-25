@@ -1,10 +1,6 @@
 // KOOMPI installer — package manifest (Zig 0.14.x).
 //
-// No dependencies: vaxis was imported but never actually wired to any rendering
-// (confirmed dead import) and its only pinned version needs Zig >=0.16, which
-// breaks archinstall.zig/cidata.zig's pre-Writergate stdlib usage on this
-// toolchain. Rendering is direct ANSI (see main.zig) instead — no fetch, no
-// version coupling. See .work/P3-report.md for the full reasoning.
+// No dependencies: rendering is direct ANSI (see main.zig), so nothing is fetched.
 .{
     // Zig 0.14+ uses the enum-literal name form `.name = .koompi_installer`
     // plus a required `.fingerprint` field. (Pre-0.14 / 0.13.x used a quoted
