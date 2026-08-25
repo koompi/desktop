@@ -11,11 +11,6 @@ Item {
     required property list<point> points
     property int strokeWidth: Config.options.regionSelector.circle.strokeWidth
 
-    function updatePoints() {
-        if (!root.dragging) return;
-        root.points.push({ x: root.mouseX, y: root.mouseY });
-    }
-
     Rectangle {
         id: darkenOverlay
         z: 1
