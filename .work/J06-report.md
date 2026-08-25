@@ -196,3 +196,15 @@ A first full run had `test_shell_services.sh` fail once (it runs the Rust worksp
 - The 0.16 std port (sized above).
 - The `TODO`/`PLACEHOLDER`/`REVIEW` comments in `app.zig`'s handlers moved as they were; they mark scaffold the audits track and pruning them is not a split.
 - `tests/file-length-allow.txt` row for main.zig (one-liner above, lead's file).
+
+## Round 2: allow-list row for main.zig
+
+Lead confirmed the row is this job's to remove.
+Commit `d3f3a245` deletes the single row `installer/src/main.zig	931` from `tests/file-length-allow.txt` (35 → 34 rows; nothing else in the file changed, `git diff --stat`: `1 file changed, 1 deletion(-)`).
+main.zig is 112 lines, so it now falls under the plain 600-line Zig cap instead of a ratchet row that would have let it regrow to 931 silently.
+
+```
+$ ./tests/test_file_length.sh; echo exit=$?
+ok: 783 files under cap, 34 allow-listed and not grown
+exit=0
+```
