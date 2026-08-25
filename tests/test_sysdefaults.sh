@@ -75,8 +75,8 @@ pkgbuild_depends() {
 # writer still printing gets SIGPIPE, which pipefail reports as a failure.
 grep -Fxq zram-generator <<< "$(pkgbuild_depends "$PKG_DIR/PKGBUILD")" \
     || fail "koompi-sysdefaults does not depend on zram-generator"
-grep -Fxq koompi-sysdefaults <<< "$(pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-desktop-hyprland/PKGBUILD")" \
-    || fail "koompi-desktop-hyprland does not depend on koompi-sysdefaults"
+grep -Fxq koompi-sysdefaults <<< "$(pkgbuild_depends "$ROOT/sdata/dist-arch/koompi-base/PKGBUILD")" \
+    || fail "koompi-base does not depend on koompi-sysdefaults, so the KDE edition misses it"
 
 setups="$ROOT/sdata/install/setups.sh"
 fn="$(sed -n '/^setup_low_ram_defaults() {/,/^}/p' "$ROOT/sdata/install/setups/system.sh")"

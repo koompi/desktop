@@ -7,7 +7,7 @@
 groups=(koompi)
 pkgname=koompi-base
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc='KOOMPI Base Dependencies (DE-agnostic foundation shared by all editions)'
 arch=(any)
 license=(None)
@@ -15,6 +15,10 @@ depends=(
   koompi-audio
   koompi-backlight
   koompi-basic
+  # Swap on zram, systemd-oomd allowed to kill only user app scopes, 5 s stop
+  # timeout: the defaults that keep a 4 GB machine's session alive. DE-agnostic,
+  # so both editions get them from here.
+  koompi-sysdefaults
   koompi-fonts-themes
   # KDE app + system-integration layer (Dolphin, systemsettings, plasma-nm,
   # bluedevil, polkit-kde-agent, NetworkManager, gnome-keyring) — used by BOTH

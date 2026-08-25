@@ -6,7 +6,7 @@
 groups=(koompi)
 pkgname=koompi-desktop-hyprland
 pkgver=1.0
-pkgrel=1
+pkgrel=2
 pkgdesc='KOOMPI OS — Hyprland edition (metapackage)'
 arch=(any)
 license=(None)
@@ -14,9 +14,6 @@ depends=(
   # DE-agnostic foundation (audio, fonts/themes, KDE apps layer, portals, python,
   # cursor, branding, sddm — see koompi-base).
   koompi-base
-  # Swap on zram, systemd-oomd allowed to kill only user app scopes, 5 s stop
-  # timeout: the defaults that keep a 4 GB machine's session alive.
-  koompi-sysdefaults
   # Hyprland compositor + Quickshell shell + widgets + MicroTeX.
   koompi-hyprland
   # Swipe progress on the event socket, so the wallpaper follows the finger.
