@@ -35,6 +35,12 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J26 | length walk: Rust (cap 600) and libexec/update | J01 finding | `tests/test_file_length.sh`, allow-list (add rows), `docs/conventions.md` table | ready | J09 after it (same allow-list) |
 | J27 | 0xAlpha is the default remote AI model | Rithy 15:20 | `ModelRegistry.qml`, `Persistent.qml` (default), `Config.qml` sample, new test | ready | — |
 | J28 | `/model` with no argument wipes remote state | J08 finding | `ModelRegistry.qml` setModel, probe test | ready | — |
+| J29 | migrations delivered: clickable toast, reload guard, per-file refresh, authoring guide | O03 O22 O26 O27 | `koompi-migrate` (+ optional `libexec/migrate-lib.sh`), `koompi-migrate-notify.service`, `docs/agents/migrations.md`, new test | ready | — |
+| J30 | `koompi update` transcript + `doctor --last-update` diagnosis + firmware advice | O28 O31 | `libexec/update` (≤695), `update-lib.sh`, `koompi-health`, new test | ready | J33 ships fwupd (no file overlap) |
+| J31 | `koompi toggle` with predicate + notification keybinds | O24 O12 | `services/{Idle,Hyprsunset,Notifications}.qml`, new `koompi-toggle`, `cli/src/main.zig`, `koompi-shell/PKGBUILD`, `keybinds.lua` (≤447) + `keybinds_notifications.lua` + `hyprland.lua`, new test | ready | J32/J34 after it (PKGBUILD `_tools`, keybinds) |
+| J32 | OSD from the command line + battery-low hook + TUI launch convention | O23 O29, ALREADY BUILT battery row | `OnScreenDisplay.qml`, new `koompi-osd`, `koompi-shell/PKGBUILD`, `services/Battery.qml`, `hyprland/scripts/launch_*.sh`, `rules.lua` | after J31 | — |
+| J33 | packages: ufw default-deny (+KDE Connect, LocalSend ports), localsend, fwupd, tesseract-data-khm | O25 O17 O31 khm | `koompi-sysdefaults/**`, `koompi-apps`/`koompi-basic`/`koompi-screencapture` PKGBUILDs, `setups/system.sh`, `post_install.sh`, tests | ready | — |
+| J34 | update badge on the KOOMPI bar + bar popups by keyboard | O09 O34 | `services/Updates.qml`, `modules/koompi/bar/**`, `keybinds_*.lua` | after J31 | — |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
 
