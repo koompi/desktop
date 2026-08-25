@@ -108,7 +108,7 @@ FocusScope {
             return;
         root.launchingId = entry.id;
         LaunchpadUsage.record(entry.id);
-        entry.execute();
+        LauncherSearch.launch(entry);
         launchCloseTimer.restart();
     }
 

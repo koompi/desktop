@@ -238,6 +238,16 @@ Singleton {
         }));
     }
 
+    // DesktopEntry.execute() cannot be wrapped; koompi-launch puts the app in app.slice for oomd
+    function launch(entry, command = entry.command) {
+        const argv = ["koompi-launch", "--id", entry.id];
+        if (entry.workingDirectory)
+            argv.push("--cwd", entry.workingDirectory);
+        if (entry.runInTerminal)
+            argv.push("--terminal", Config.options.apps.terminal);
+        Quickshell.execDetached([...argv, "--", ...command]);
+    }
+
     function appResult(entry, type): var {
         return resultComp.createObject(null, {
             type: type,
@@ -250,12 +260,7 @@ Singleton {
                 // Shared with the Launchpad, so what is reached for here also
                 // orders that grid, and comes back as a recent result below.
                 LaunchpadUsage.record(entry.id);
-                if (!entry.runInTerminal)
-                    entry.execute();
-                else {
-                    // Probably needs more proper escaping, but this will do for now
-                    Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(entry.command.join(' '))}'`]);
-                }
+                root.launch(entry);
             },
             comment: entry.comment,
             runInTerminal: entry.runInTerminal,
@@ -266,13 +271,7 @@ Singleton {
                     name: action.name,
                     iconName: action.icon,
                     iconType: LauncherSearchResult.IconType.System,
-                    execute: () => {
-                        if (!action.runInTerminal)
-                            action.execute();
-                        else {
-                            Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(action.command.join(' '))}'`]);
-                        }
-                    }
+                    execute: () => root.launch(entry, action.command)
                 });
             })
         });
@@ -425,7 +424,7 @@ Singleton {
                     cleanedCommand = cleanedCommand.slice(Config.options.search.prefix.shellCommand.length);
                 }
                 // query still carries the shell prefix; test what runs
-                Quickshell.execDetached(["bash", "-c", cleanedCommand.trim().startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
+                Quickshell.execDetached(["koompi-launch", "--id", cleanedCommand.trim().split(/\s+/)[0].split("/").pop(), "--", "bash", "-c", cleanedCommand.trim().startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
             }
         });
         const webSearchResultObject = resultComp.createObject(null, {
@@ -440,7 +439,7 @@ Singleton {
                 for (let site of Config.options.search.excludedSites) {
                     url += ` -site:${site}`;
                 }
-                Qt.openUrlExternally(url);
+                Quickshell.execDetached(["koompi-launch", "xdg-open", url]);
             }
         });
         const launcherActionObjects = root.allActions.map(action => {
