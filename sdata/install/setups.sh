@@ -278,6 +278,19 @@ setup_services() {
         run systemctl --user enable touch-gestures
     fi
 
+    # The idle daemon (idle lock, dpms, suspend; relays logind Lock to the
+    # shell). The packaged unit is WantedBy=graphical-session.target, which
+    # execs.lua starts once WAYLAND_DISPLAY is in the manager environment, so
+    # it logs to the journal and restarts on crash. Enabled without --now: a
+    # session that still runs the old exec-started hypridle would get two.
+    if [[ ! -e /usr/lib/systemd/user/hypridle.service ]]; then
+        warn "hypridle is not installed; the session will not lock on idle or lid close"
+    elif ! systemd_user_running; then
+        warn "no user systemd manager here; enable hypridle after your next login"
+    else
+        run systemctl --user enable hypridle
+    fi
+
     # Notifies at login if a per-user migration is pending. Enabled without
     # --now, same as touch-gestures: the unit is WantedBy=graphical-session.target
     # and starts with the next session.

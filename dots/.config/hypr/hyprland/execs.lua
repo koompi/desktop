@@ -14,7 +14,9 @@ hl.on("hyprland.start", function ()
     -- Core components (authentication, lock screen, notification daemon)
     -- gnome-keyring is started by PAM at login and by its systemd user socket,
     -- so starting it a third time here only duplicated work.
-    hl.exec_cmd("hypridle")
+    -- hypridle is the packaged user unit (WantedBy=graphical-session.target),
+    -- pulled in when hyprland-session.target starts below: its log lands in
+    -- the journal, it restarts on crash, and a reload cannot start a second one.
     hl.exec_cmd("dbus-update-activation-environment --all")
     hl.exec_cmd("sleep 1 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP") -- Some fix idk
 
