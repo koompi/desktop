@@ -15,7 +15,7 @@
 groups=(koompi)
 pkgname=koompi-shell
 pkgver=1.1
-pkgrel=3
+pkgrel=4
 pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
 arch=(x86_64 aarch64)
 license=(GPL-3.0-only)
@@ -109,6 +109,9 @@ package() {
   install -Dm755 "$srcdir/koompi-cli-out/bin/koompi" "$pkgdir/usr/bin/koompi"
   install -Dm755 "$_repo_root/dots/.local/share/koompi/libexec/update" \
     "$pkgdir/usr/lib/koompi/update"
+  # update sources this from its own directory and exits if it is missing.
+  install -Dm644 "$_repo_root/dots/.local/share/koompi/libexec/update-lib.sh" \
+    "$pkgdir/usr/lib/koompi/update-lib.sh"
   ln -s koompi "$pkgdir/usr/bin/koompi-update"
 
   local tool
