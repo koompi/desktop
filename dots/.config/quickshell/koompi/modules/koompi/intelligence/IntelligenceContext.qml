@@ -48,27 +48,34 @@ Singleton {
 
     function restoreMemory(memoryId) {
         root.droppedMemoryIds = root.droppedMemoryIds.filter(id => id !== memoryId);
+        root.enforce();
     }
 
     function restoreAll() {
         root.droppedMemoryIds = [];
+        root.enforce();
     }
 
     property bool _rewriting: false
+    // Set while the engine has emptied the block for a fresh recall and that
+    // recall has not landed. Rebuilding from the previous recall in that window
+    // would hand a request that times out last turn's memories.
+    property bool _engineCleared: true
 
+    // The block is always the last recall minus the drops, so a memory put back
+    // returns to the next request now, not after the next recall.
     function enforce() {
-        if (root._rewriting)
-            return;
-        if (root.droppedMemoryIds.length === 0)
-            return;
-        if ((Ai.recalledMemories ?? "").length === 0)
+        if (root._rewriting || root._engineCleared)
             return;
         const recalled = MemoryService.lastRecall ?? [];
+        if (recalled.length === 0)
+            return;
         const kept = recalled.filter(memory => !root.isDropped(memory.id));
-        if (kept.length === recalled.length)
+        const block = Ai.formatMemories(kept);
+        if (block === Ai.recalledMemories)
             return;
         root._rewriting = true;
-        Ai.recalledMemories = Ai.formatMemories(kept);
+        Ai.recalledMemories = block;
         root._rewriting = false;
         console.log(`[intelligence] ${recalled.length - kept.length} memor(ies) held out of the next request: ${root.droppedMemoryIds.join(", ")}`);
     }
@@ -76,6 +83,8 @@ Singleton {
     Connections {
         target: Ai
         function onRecalledMemoriesChanged() {
+            if (!root._rewriting)
+                root._engineCleared = (Ai.recalledMemories ?? "").length === 0;
             root.enforce();
         }
     }
