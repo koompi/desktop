@@ -1,11 +1,12 @@
 import "feedbackRules.js" as Rules
+import "feedbackWrites.js" as Writes
 import QtQuick
 
 /**
  * The habit table (docs/neuromorphic-memory-design.md:224-247): one row per
  * tool and input pattern, counting what succeeded and what failed. Rows live
  * in `store.procedures`; the keying and the outcome rules are in
- * feedbackRules.js. `engine` is the Ai facade, read for the session id and
+ * feedbackWrites.js. `engine` is the Ai facade, read for the session id and
  * the approval rule of a tool.
  */
 QtObject {
@@ -25,12 +26,12 @@ QtObject {
         for (const call of calls) {
             const name = call?.name ?? "";
             if (name.length === 0) continue;
-            const pattern = Rules.procedureKey(name, Rules.callArgs(call));
+            const pattern = Writes.procedureKey(name, Rules.callArgs(call));
             const result = byId[call.id ?? ""] ?? null;
             // A call with no result never ran: the user rejected it, or the turn
             // ended first. Neither is evidence about the tool.
             if (!result) continue;
-            const outcome = Rules.outcomeOf(name, result.response);
+            const outcome = Writes.outcomeOf(name, result.response);
             const index = rows.findIndex(row => row.tool_name === name && row.input_pattern === pattern);
             const base = index >= 0 ? rows[index] : {
                 "id": rows.length + 1,
@@ -46,7 +47,7 @@ QtObject {
             const updated = Object.assign({}, base, {
                 "success_count": base.success_count + (outcome === "success" ? 1 : 0),
                 "failure_count": base.failure_count + (outcome === "failure" ? 1 : 0),
-                "total_tokens_est": base.total_tokens_est + Rules.estimateTokens(result.response),
+                "total_tokens_est": base.total_tokens_est + Writes.estimateTokens(result.response),
                 "last_used": Date.now(),
                 "session_id": root.engine?.sessionId ?? "",
                 "approved": base.approved || ((root.engine?.approvalOf(name) ?? "never") !== "never" && outcome === "success" ? 1 : 0)

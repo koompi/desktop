@@ -1,5 +1,5 @@
 import qs.services
-import "feedbackRules.js" as Rules
+import "feedbackWrites.js" as Writes
 import "../../modules/koompi/sidebarLeft/aiChat/grounding.js" as Grounding
 import Quickshell.Io
 import QtQuick
@@ -22,7 +22,7 @@ QtObject {
     function buildReport(turn, note) {
         const grounding = Grounding.computeGrounding(root.ledger.sourcesOf(turn), turn?.assistantText ?? "");
         return {
-            "prompt_hash": Rules.hashOf(root.engine?.systemPrompt ?? ""),
+            "prompt_hash": Writes.hashOf(root.engine?.systemPrompt ?? ""),
             "model": root.engine?.currentModelId ?? "",
             "retrieved": root.ledger.sourcesOf(turn).map(source => ({
                 "type": source.type,

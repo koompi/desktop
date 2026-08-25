@@ -6,18 +6,21 @@
 # called, and the next request still carried Owner: Nimmit. The reply itself was then
 # stored as a durable memory and read back on every turn afterwards.
 #
-# This runs the real functions out of feedbackRules.js over that transcript twice: once
-# with the audit off, which is the shipped behaviour, and once with it on. No mock
-# service, no hand-written copy of the rules. No network, no daemon, no shell.
+# This runs the real functions out of feedbackRules.js and feedbackWrites.js over that
+# transcript twice: once with the audit off, which is the shipped behaviour, and once
+# with it on. No mock service, no hand-written copy of the rules. No network, no
+# daemon, no shell.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE="$REPO_ROOT/dots/.config/quickshell/koompi/services/ai/FeedbackService.qml"
 RULES="$REPO_ROOT/dots/.config/quickshell/koompi/services/ai/feedbackRules.js"
+WRITES="$REPO_ROOT/dots/.config/quickshell/koompi/services/ai/feedbackWrites.js"
 FEEDBACK_UI="$REPO_ROOT/dots/.config/quickshell/koompi/modules/koompi/sidebarLeft/aiChat/feedback"
 
 [[ -f "$SERVICE" ]] || { echo "missing $SERVICE" >&2; exit 1; }
 [[ -f "$RULES" ]] || { echo "missing $RULES" >&2; exit 1; }
+[[ -f "$WRITES" ]] || { echo "missing $WRITES" >&2; exit 1; }
 command -v bun >/dev/null || { echo "bun not installed; skipping" >&2; exit 0; }
 
 fail=0
@@ -28,7 +31,7 @@ grep -q 'const backing = backingCall(calls, correction);' "$RULES" \
     || { echo "FAIL: auditTurn no longer decides on the call record" >&2; fail=1; }
 grep -q 'const correction = correctionFrom(turn?.userText ?? "");' "$RULES" \
     || { echo "FAIL: the stored fact no longer comes from the user's own turn" >&2; fail=1; }
-grep -q 'MemoryService.remember(record.statement, record.mtype, Rules.tagsFor(record), root.correctionSource' "$SERVICE" \
+grep -q 'MemoryService.remember(record.statement, record.mtype, Writes.tagsFor(record), root.correctionSource' "$SERVICE" \
     || { echo "FAIL: a correction no longer goes to memory as an asserted correction" >&2; fail=1; }
 
 # Precedence has no column in memd, so it rides the fields memd does store. If either
@@ -57,29 +60,45 @@ trap 'rm -rf "$tmp"' EXIT
 cat > "$tmp/run.mjs" <<'EOF'
 import { readFileSync, writeFileSync } from "node:fs";
 
-const source = readFileSync(process.argv[2], "utf8");
+const rulesSource = readFileSync(process.argv[2], "utf8");
+const writesSource = readFileSync(process.argv[3], "utf8");
 
-// feedbackRules.js is a QML JavaScript library: plain functions and `var`s under a
-// `.pragma library` line. Drop that one directive and it is a module node can load,
-// so the test runs the shipped source rather than a copy that can drift away from it.
-if (!/^\.pragma library$/m.test(source)) throw new Error("feedbackRules.js is not a .pragma library file");
-if (/^\.import /m.test(source)) throw new Error("feedbackRules.js imports a QML module; the rules must stay pure");
+// Both are QML JavaScript libraries: plain functions and `var`s under a `.pragma
+// library` line, and feedbackWrites.js pulls the rules in with one `.import`. Drop the
+// pragma, rewrite that one directive as an ESM import, and they are modules node can
+// load, so the test runs the shipped source rather than a copy that can drift from it.
+for (const [name, source] of [["feedbackRules.js", rulesSource], ["feedbackWrites.js", writesSource]]) {
+    if (!/^\.pragma library$/m.test(source)) throw new Error(`${name} is not a .pragma library file`);
+    if (/^\.import (?!"feedbackRules\.js" as Rules$)/m.test(source)) throw new Error(`${name} imports a QML module; the rules must stay pure`);
+}
+if (/^\.import /m.test(rulesSource)) throw new Error("feedbackRules.js must not import anything");
+if (!/^\.import "feedbackRules\.js" as Rules$/m.test(writesSource)) throw new Error("feedbackWrites.js no longer builds on feedbackRules.js");
 
-const PURE = [
+const RULES = [
     "clausesOf", "contentWords", "keyWord", "overlaps", "normalise", "sameValue",
     "nameToken", "ownerNameFrom", "capitalise", "asStatement", "correctionFrom",
     "claimsStorage", "callArgs", "storageCalls", "backingCall", "auditTurn",
-    "subjectOf", "contradicts", "losesConflict", "procedureKey", "outcomeOf", "estimateTokens",
-    "tagsFor", "provenanceOf", "draftFrom", "hashOf",
-    "turnFrom", "sourceKey", "isMemorySuppressed",
+    "subjectOf", "contradicts",
 ];
+const WRITES = [
+    "tagsFor", "provenanceOf", "draftFrom", "losesConflict", "turnFrom", "sourceKey",
+    "isMemorySuppressed", "procedureKey", "outcomeOf", "estimateTokens", "hashOf",
+];
+const PURE = [...RULES, ...WRITES];
 
 writeFileSync("./rules.mjs", `
-${source.replace(/^\.pragma library$/m, "")}
-export { precedence, correctionSource, ${PURE.join(", ")} };
+${rulesSource.replace(/^\.pragma library$/m, "")}
+export { precedence, correctionSource, ${RULES.join(", ")} };
+`);
+writeFileSync("./writes.mjs", `
+import * as Rules from "./rules.mjs";
+${writesSource.replace(/^\.pragma library$/m, "").replace(/^\.import "feedbackRules\.js" as Rules$/m, "")}
+export { ${WRITES.join(", ")} };
 `);
 
-const root = await import("./rules.mjs");
+const rules = await import("./rules.mjs");
+const writes = await import("./writes.mjs");
+const root = Object.assign({}, rules, writes);
 
 let failed = 0;
 const check = (name, cond, extra = "") => {
@@ -88,8 +107,11 @@ const check = (name, cond, extra = "") => {
     failed++;
 };
 
-for (const name of PURE) check(`${name} is a function exported by feedbackRules.js`, typeof root[name] === "function");
-console.log(`found ${PURE.filter(name => typeof root[name] === "function").length}/${PURE.length} rules: ${PURE.join(" ")}`);
+for (const name of RULES) check(`${name} is a function exported by feedbackRules.js`, typeof rules[name] === "function");
+for (const name of WRITES) check(`${name} is a function exported by feedbackWrites.js`, typeof writes[name] === "function");
+console.log(`found ${PURE.filter(name => typeof root[name] === "function").length}/${PURE.length} rules`);
+console.log(`  feedbackRules.js : ${RULES.join(" ")}`);
+console.log(`  feedbackWrites.js: ${WRITES.join(" ")}`);
 
 /* ------------------------------------------------------------------ *
  * The transcript. Every line is verbatim from the live system: the two
@@ -335,6 +357,6 @@ if (failed > 0) { console.error(`${failed} check(s) failed`); process.exit(1); }
 console.log("ok: the owner-name correction sticks, and it is decided by the call record");
 EOF
 
-cd "$tmp" && bun run run.mjs "$RULES" || fail=1
+cd "$tmp" && bun run run.mjs "$RULES" "$WRITES" || fail=1
 
 exit "$fail"

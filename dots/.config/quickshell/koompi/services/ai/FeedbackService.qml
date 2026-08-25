@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.services
 import "feedbackRules.js" as Rules
+import "feedbackWrites.js" as Writes
 import Quickshell.Io
 import QtQuick
 
@@ -30,8 +31,8 @@ QtObject {
     signal claimUnbacked(var audit)
     signal conflictRaised(var conflict)
 
-    // The parts. The rules are feedbackRules.js; the state is the store; the
-    // ledger, the habit table and the report each own one concern.
+    // The parts. The rules are feedbackRules.js and feedbackWrites.js; the state
+    // is the store; the ledger, the habit table and the report each own one concern.
     readonly property FeedbackStore store: FeedbackStore {}
     readonly property HabitTable habits: HabitTable { engine: root.engine; store: root.store }
     readonly property TrustLedger ledger: TrustLedger { engine: root.engine; store: root.store }
@@ -77,7 +78,7 @@ QtObject {
     }
 
     // Everything since the last thing the user typed, read off the conversation.
-    function currentTurn() { return Rules.turnFrom(root.engine?.conversation); }
+    function currentTurn() { return Writes.turnFrom(root.engine?.conversation); }
 
     function observeTurn() {
         const turn = root.currentTurn();
@@ -139,10 +140,10 @@ QtObject {
     // uses. The store's label is the one string in the rules that is shown to
     // the user, so it is translated here and handed in.
     function provenanceOf(record) {
-        return Rules.provenanceOf(record, Translation.tr("the assistant's memory store"));
+        return Writes.provenanceOf(record, Translation.tr("the assistant's memory store"));
     }
 
-    function draftFrom(text, claim) { return Rules.draftFrom(text, claim); }
+    function draftFrom(text, claim) { return Writes.draftFrom(text, claim); }
 
     function applyCorrection(input, callback) {
         const record = {
@@ -178,7 +179,7 @@ QtObject {
             return record;
         }
 
-        MemoryService.remember(record.statement, record.mtype, Rules.tagsFor(record), root.correctionSource, (response, error) => {
+        MemoryService.remember(record.statement, record.mtype, Writes.tagsFor(record), root.correctionSource, (response, error) => {
             const index = root.store.corrections.findIndex(entry => entry.id === record.id);
             if (index >= 0) {
                 const updated = root.store.corrections.slice();
@@ -302,7 +303,7 @@ QtObject {
      * Suppression: excluded from retrieval, never deleted
      * ------------------------------------------------------------------ */
 
-    function sourceKey(source) { return Rules.sourceKey(source); }
+    function sourceKey(source) { return Writes.sourceKey(source); }
 
     function suppressSource(source) {
         const key = root.sourceKey(source);
@@ -349,7 +350,7 @@ QtObject {
     function filterRecall(results) {
         const rows = Array.isArray(results) ? results : [];
         if (root.recallPaused) return [];
-        return rows.filter(row => !Rules.isMemorySuppressed(row, root.store.suppressed) && !Rules.losesConflict(row, root.store.conflicts));
+        return rows.filter(row => !Writes.isMemorySuppressed(row, root.store.suppressed) && !Writes.losesConflict(row, root.store.conflicts));
     }
 
     readonly property var activeSuppressions: root.store.suppressed.filter(entry => entry.active)
