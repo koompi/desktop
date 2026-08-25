@@ -50,27 +50,28 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J34 | claude | live | |
 | J35 | claude | live | |
 | J36 | claude | live | |
-| J37 | — | after J31 | |
+| J37 | claude | live | |
 | J38 | — | blocked-on-user | factory reset semantics: root only / root+home (recommended) / re-provision+LUKS |
 | J39 | claude | live | |
-| J40 | — | after J31 J33 | |
+| J40 | claude | live | |
 | J41 | claude | live | |
 | J42 | claude | live | |
-| J43 | claude | live | |
+| J43 | claude | verified | `Notif.execArgv` from the `koompi-exec-argv` hint (strict parse, malformed → [] + one warn), `invokeExec` runs `bash -lc 'exec "$@"' --` + argv via execDetached, left-click on toast/history row, `invokeLast` falls back to it, not persisted on purpose; lead: real-bus probe under dbus-run-session, services test, qmllint 0 errors, Notifications.qml 394 ≤ 400, suite 86/3/0; ff-merged `dad5bab7`, pushed; cleaned up. Finding: the collapsed group title row (`NotificationGroup.qml`, not owned) still expands instead of running — one-condition follow-up, folded into the next notifications job |
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 
 ## Live now
 
-Lead is `w5:p11`. Eight live, pane ids in `/tmp/lead-<ID>-pane`, all runtimes at nice 10:
+Lead is `w5:p11`. Nine live, pane ids in `/tmp/lead-<ID>-pane`, all runtimes at nice 10:
 J32 owns `OnScreenDisplay.qml` + `indicators/`, `Battery.qml`, `koompi-hook` events, new `koompi-osd`/`koompi-launch-tui`, `koompi-shell/PKGBUILD` `_tools`, `cli/src/main.zig`, `launch_sysmon.sh`, `rules.lua`, `docs/agents/hooks.md`.
 J34 owns `bar/UpdateBadge.qml` (new), `BarContent.qml`, `Bar.qml`, `bar/*Popup.qml`, `services/Updates.qml`, `keybinds_notifications.lua`→`keybinds_shell_extra.lua`, `hyprland.lua`, `docs/navigation.md`.
-J43 owns `services/Notifications.qml`, `widgets/NotificationItem.qml`, (`hints.rs` if used), `koompi-notify-send` comment.
+J37 owns new `koompi-hw-fingerprint`/`koompi-setup-fingerprint`, `pam/fprintd.conf`, `FirstRunExperience.qml`, `LockScreenSection.qml`, `test_lock_pam.sh` (one assertion), PKGBUILD rows.
+J40 owns new `koompi-crash-watch`/`koompi-crash-diagnose`, `koompi-crash-watch.service`, `docs/agents/crash.md`, one enable line in `setups/system.sh`, PKGBUILD rows.
 J35 owns `modules/koompi/cheatsheet/**`, `services/HyprlandKeybinds.qml`. Investigating: Lua-config binds all read `__lua N`, so dispatcher/arg replay may not exist.
 J41 owns new `modules/koompi/screensaver/**`, `KoompiFamily.qml`, `GlobalStates.qml`, `hypridle.conf`.
 J36 owns new `libexec/hibernation-setup`, `post_install.sh` (one fn+call), `setups/system.sh` (one fn), `koompi-health` (one line), PKGBUILD install line.
 J42 owns new `koompi-hw-match`/`koompi-hw-laptop`, `sdata/hardware/**`, `libexec/apply-hardware`, `post_install.sh` (one call), `setups/system.sh` (one fn), `update-lib.sh` (one call), PKGBUILD rows.
 J39 owns `Appearance.qml` (≤467), `Config.qml` (≤827), `FontsSection.qml`, `koompi-theme`, `wezterm.lua`.
-Contended on purpose (lead unions at merge): `koompi-shell/PKGBUILD` (J32 J42 J36), `post_install.sh` + `setups/system.sh` (J36 J42).
+Contended on purpose (lead unions at merge): `koompi-shell/PKGBUILD` (J32 J42 J36 J37 J40), `post_install.sh` (J36 J42), `setups/system.sh` (J36 J42 J40).
 Watcher: Monitor loop over `/tmp/lead-J*-pane`, 45 s, 3-read idle debounce.
 
 ## Decided
@@ -134,4 +135,4 @@ Watcher: Monitor loop over `/tmp/lead-J*-pane`, 45 s, 3-read idle debounce.
 
 ## Next action
 
-Verify as they return (one suite at a time in `lead-verify`, nice 19): J32 J34 J43 J35 J41 J36 J42 J39. PKGBUILD/`post_install.sh` conflicts → union, lead bumps pkgrel once per merge. After J31 ✓: J37, J40 are dispatchable when a slot frees (cap 8 now; load 2.6). J38 waits on Rithy (factory-reset semantics); LocalSend AUR question waits on Rithy. Still waiting on Rithy from wave 1: J12, sudo installs (now also `koompi-sysdefaults` 1.0-2 with ufw), `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check.
+Verify as they return (one suite at a time in `lead-verify`, nice 19): J32 J34 J35 J41 J36 J42 J39 J37 J40. PKGBUILD/`post_install.sh`/`system.sh` conflicts → union, lead bumps pkgrel once per merge (now 6). Nothing left in BACKLOG to dispatch except J38 (Rithy: factory-reset semantics). Also for Rithy: LocalSend AUR-only (J33), J12, sudo installs (`koompi-shell` -6, `koompi-sysdefaults` 1.0-2 with ufw, `koompi-basic` -7), `koompi update` here, 0xAlpha credit + `/key`, Bluetooth symptom, fingerprint check.
