@@ -100,7 +100,7 @@ Scope {
                             Brightness.decreaseBrightness()
                         else {
                             const currentVolume = Audio.value;
-                            const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
+                            const step = currentVolume < 0.1 ? 0.01 : 0.02;
                             Audio.sink.audio.volume -= step;
                         }
                     }
@@ -111,7 +111,7 @@ Scope {
                             Brightness.increaseBrightness()
                         else {
                             const currentVolume = Audio.value;
-                            const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
+                            const step = currentVolume < 0.1 ? 0.01 : 0.02;
                             Audio.sink.audio.volume = Math.min(1, Audio.sink.audio.volume + step);
                         }
                     }
