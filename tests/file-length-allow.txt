@@ -22,7 +22,6 @@ dots/.config/quickshell/koompi/scripts/colors/switchwall.sh	526
 dots/.config/quickshell/koompi/services/LauncherSearch.qml	508
 dots/.config/quickshell/koompi/services/MemoryService.qml	475
 dots/.config/quickshell/koompi/services/ai/Conversation.qml	729
-dots/.config/quickshell/koompi/services/ai/FeedbackService.qml	1094
 dots/.config/quickshell/koompi/services/ai/ModelRegistry.qml	403
 dots/.config/quickshell/koompi/services/ai/ToolRunner.qml	449
 dots/.config/quickshell/koompi/welcome.qml	511
