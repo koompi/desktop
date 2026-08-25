@@ -170,3 +170,23 @@ The desktop is packaged into `/etc/skel` (`sdata/dist-arch/koompi-hyprland-confi
 The OS build chain - signed `[koompi]` repo, archiso profile, installer - lives
 under [`sdata/dist-arch/`](sdata/dist-arch/): the `koompi-*` PKGBUILDs, `repo/`
 for the signed repository, and `iso/koompi/` for the archiso profile.
+
+## Status
+
+Where the project stands, so a reader or a new session starts from here rather than from the commit log.
+Update this section when a stage changes hands, not per commit.
+
+| Area | State |
+|---|---|
+| Desktop (`./setup`) | Shipping. Installs on Arch, Fedora, Debian and Ubuntu; `koompi update` keeps it current. |
+| `koompi` CLI | Shipping. Zig front door over the `koompi-*` tools: update, doctor, settings, theme, wallpaper, reload, hooks, webapps, plugins, snapshots. |
+| Boot look | Done. Plymouth splash with logo and progress bar, GRUB theme, both wired into `koompi-branding`. |
+| Login screen | Done. SDDM theme is a frosted-glass card over the blurred wallpaper (`sdata/dist-arch/koompi-branding/files/sddm/theme/Main.qml`). |
+| Live ISO | v1 builds in CI (`build-iso.yml`, manual dispatch) and publishes to GitHub Releases. Stock-Arch package set; the `[koompi]` repo is disabled in its `pacman.conf`. First release: `iso-koompi-2026.08.25-x86_64`. |
+| Signed `[koompi]` repo | Skeleton only (`build-packages.yml`). Signing key and publish target are not decided, so the sign and publish steps stay commented out. |
+| Installer | Zig TUI renders with the ANSI theme; not yet autostarted from the live ISO, and the branded pacstrap path waits on the signed repo. |
+| Quickshell package | `koompi-quickshell-git` pins `qt6-base`/`qt6-declarative` to exact versions because it links Qt's private ABI; every Qt bump means rebuild and re-pin. |
+| Quickwork drawer | Not built. `Super+O` is reserved; the left sidebar still carries the inherited AI and translator tabs. |
+
+Blocked on decisions: the `[koompi]` repo signing key and where the repo is hosted.
+Everything after that in the chain (branded ISO, installer autostart) is waiting on it.
