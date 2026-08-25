@@ -1,0 +1,30 @@
+# koompi-sysdefaults — system defaults for small machines: swap on zram, a
+# systemd-oomd that may kill only user app scopes, and a 5 s stop timeout.
+# Pure configuration, no code. Every file is a vendor drop-in under /usr/lib,
+# so an admin overrides any of them with a same-named file under /etc.
+#
+# files/ mirrors /usr/lib/: files/systemd/oomd.conf.d/10-koompi.conf installs
+# to /usr/lib/systemd/oomd.conf.d/10-koompi.conf. sdata/install/setups.sh
+# (setup_low_ram_defaults) installs the same tree under /usr/local/lib for
+# from-git installs, where pacman owns nothing.
+#
+# Enabling systemd-oomd is left to the preset, the installer and ./setup: a
+# package that starts services on install is not how Arch does it.
+groups=(koompi)
+pkgname=koompi-sysdefaults
+pkgver=1.0
+pkgrel=1
+pkgdesc='KOOMPI OS system defaults: zram swap, systemd-oomd scoped to apps, 5 s stop timeout'
+arch=(any)
+url='https://github.com/koompi/desktop'
+license=(GPL-3.0-only)
+# zram-generator reads the zram drop-in; without it the file is inert. systemd
+# owns every other path this package writes under.
+depends=(systemd zram-generator)
+
+package() {
+  local _src="$startdir/files" _file
+  while IFS= read -r -d '' _file; do
+    install -Dm644 "$_file" "$pkgdir/usr/lib/${_file#"$_src/"}"
+  done < <(find "$_src" -type f -print0)
+}

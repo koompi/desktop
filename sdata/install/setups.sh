@@ -183,6 +183,64 @@ exit 0'
     run sudo chmod 755 "$hook"
 }
 
+# Swap on zram, systemd-oomd allowed to kill only user app scopes, and a 5 s
+# stop timeout: what keeps a 4 GB machine's session alive under pressure. The
+# ISO gets them from the koompi-sysdefaults package; this installs the same
+# files under /usr/local/lib, which systemd and zram-generator read with the
+# same precedence as /usr/lib and which pacman never owns, so installing the
+# package later cannot collide. The reasons live in the files themselves.
+setup_low_ram_defaults() {
+    step "Low-RAM defaults (zram, oomd, fast shutdown)"
+    systemd_running || { info "no running systemd; skipping"; return 0; }
+
+    # Collected first: run() prompts on stdin when a command fails, and inside
+    # a `find | while read` loop that prompt would eat the file list.
+    local src="$REPO_ROOT/sdata/dist-arch/koompi-sysdefaults/files" file files=()
+    mapfile -d '' files < <(find "$src" -type f -print0)
+    (( ${#files[@]} )) || die "no files under $src"
+    for file in "${files[@]}"; do
+        run sudo install -Dm644 "$file" "/usr/local/lib/${file#"$src/"}"
+    done
+
+    # The package declares zram-generator as a dependency; from git it has to
+    # be asked for by name. Without it the zram drop-in is inert.
+    if [[ ! -x /usr/lib/systemd/system-generators/zram-generator ]]; then
+        case "$OS_GROUP_ID" in
+            arch)   run sudo pacman -S --needed --noconfirm zram-generator ;;
+            fedora) run sudo dnf install -y zram-generator ;;
+            debian) run sudo apt-get install -y systemd-zram-generator ;;
+            *)      warn "zram-generator is not installed; no zram swap until it is" ;;
+        esac
+    fi
+
+    # daemon-reload re-runs the generators and re-reads system.conf.d, so the
+    # zram unit and the 5 s default exist now. The swap device itself is only
+    # started where no zram swap exists yet: resizing a live one means swapoff
+    # first, which on a loaded machine is the one thing this step must not do.
+    run sudo systemctl daemon-reload
+    if ! grep -q '^/dev/zram' /proc/swaps; then
+        try sudo systemctl start systemd-zram-setup@zram0.service \
+            || warn "could not start zram swap now; it starts at the next boot"
+    fi
+
+    # oomd reads its thresholds at startup only: restart, not just enable, or a
+    # daemon that was already running keeps the stock 60% / 30 s until reboot.
+    # It needs cgroup v2 with PSI; where it cannot run, say so and carry on.
+    if try sudo systemctl enable systemd-oomd.service \
+        && try sudo systemctl restart systemd-oomd.service; then
+        ok "systemd-oomd running with the KOOMPI thresholds"
+    else
+        warn "could not start systemd-oomd; memory pressure can still take the session down"
+    fi
+    # app.slice candidacy is reported by the user manager; reload it so oomd
+    # sees it now rather than at the next login.
+    if systemd_user_running; then
+        run systemctl --user daemon-reload
+    else
+        warn "no user systemd manager here; oomd sees app.slice from your next login"
+    fi
+}
+
 # ydotool ships a system unit on most distros but the shell drives it as a user
 # service; link it into the user manager where the distro has not.
 setup_services() {
@@ -622,6 +680,7 @@ run_setups() {
     setup_python_venv
     setup_groups_and_modules
     setup_suspend_hook
+    setup_low_ram_defaults
     setup_local_ai
     setup_agent_memory
     setup_portals
