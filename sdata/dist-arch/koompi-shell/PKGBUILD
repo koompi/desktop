@@ -37,6 +37,8 @@ _tools=(
   koompi-agent-usage-claude
   koompi-agent-usage-codex
   koompi-agent-usage-pi
+  koompi-crash-diagnose
+  koompi-crash-watch
   koompi-displays
   koompi-flatpak-open
   koompi-health

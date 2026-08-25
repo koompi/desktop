@@ -275,4 +275,12 @@ setup_services() {
     else
         run systemctl --user enable koompi-snapshot-notify
     fi
+
+    # Follows this user's coredumps and offers a local diagnosis (O30). Without
+    # --now, same as the two above: WantedBy=graphical-session.target.
+    if ! systemd_user_running; then
+        warn "no user systemd manager here; enable koompi-crash-watch after your next login"
+    else
+        run systemctl --user enable koompi-crash-watch
+    fi
 }

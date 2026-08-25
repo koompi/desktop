@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+# koompi-crash-diagnose - write a crash report and ask the local model about it
+# (OMARCHY-AUDIT O30; docs/agents/crash.md).
+#
+#   koompi-crash-diagnose <pid> [comm] [exe] [signal]
+#   koompi-crash-diagnose --ask <report>     what the opened terminal runs
+#
+# Clicked from koompi-crash-watch's toast, or run by hand against any PID in
+# `coredumpctl list`. Gathers `coredumpctl info` and the process's last 200
+# journal lines into a 0600 report under $XDG_STATE_HOME/koompi/crash/, then
+# opens a terminal that streams the local model's reading of it and appends
+# that to the same file.
+#
+# The model is LiteRT-LM on 127.0.0.1:<port>, the engine the AI sidebar uses
+# (scripts/ai/show-installed-litert-lm-models.sh). Kiri is voice-to-text and
+# herdr, what koompi-workbench opens, fronts cloud coding agents, so neither is
+# a place for a crash report. Without a running local model this is a Consented
+# refusal (CONTEXT.md): a toast that says so and where the report is, never a
+# request to anything but localhost.
+#
+# Exit: 0 report written and the terminal opened; 3 no local model (report
+# still written); 64 bad arguments; 1 anything else.
+#
+#   KOOMPI_LITERT_PORT         the server's port (9379)
+#   KOOMPI_CRASH_MODEL         model id to ask; default: the first the server lists
+#   KOOMPI_CRASH_PROMPT_BYTES  how much of the report the model is sent (24000)
+set -euo pipefail
+
+SELF="$(realpath -- "${BASH_SOURCE[0]}")"
+readonly SELF
+readonly port="${KOOMPI_LITERT_PORT:-9379}"
+readonly base="http://127.0.0.1:$port/v1"
+readonly prompt_bytes="${KOOMPI_CRASH_PROMPT_BYTES:-24000}"
+readonly state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/koompi/crash"
+
+usage() {
+    echo "usage: koompi-crash-diagnose <pid> [comm] [exe] [signal]   (see: coredumpctl list)" >&2
+    echo "       koompi-crash-diagnose --ask <report>" >&2
+    exit 64
+}
+
+die() {
+    printf 'koompi-crash-diagnose: %s\n' "$1" >&2
+    exit 1
+}
+
+sibling() {
+    local name=$1 here
+    here="$(dirname -- "$SELF")/$name"
+    if [[ -x "$here" ]]; then printf '%s\n' "$here"; else command -v "$name"; fi
+}
+
+notify() {
+    local sender
+    sender="$(sibling koompi-notify-send)" || { printf 'koompi-crash-diagnose: %s: %s\n' "$1" "$2" >&2; return 0; }
+    "$sender" -a KOOMPI -u critical "$@" || true
+}
+
+# The first model the server lists, or the one asked for. The GET is what wakes
+# the socket-activated server, hence 10s (show-installed-litert-lm-models.sh:7-10).
+local_model() {
+    local wanted="${KOOMPI_CRASH_MODEL:-}" listed
+    listed="$(curl -sf -m 10 "$base/models" 2>/dev/null | jq -r '.data[].id' 2>/dev/null)" || return 1
+    [[ -n "$listed" ]] || return 1
+    if [[ -n "$wanted" ]]; then
+        grep -qxF -- "$wanted" <<<"$listed" || return 1
+        printf '%s\n' "$wanted"
+    else
+        head -n1 <<<"$listed"
+    fi
+}
+
+# Terminal order and spelling from koompi-workbench:22-31, which opens the
+# agent workspace the same way. One argv word per element, no shell string.
+terminal_argv() {
+    if command -v wezterm >/dev/null 2>&1; then printf '%s\n' wezterm start --
+    elif command -v kitty >/dev/null 2>&1; then printf '%s\n' kitty
+    elif command -v konsole >/dev/null 2>&1; then printf '%s\n' konsole -e
+    elif command -v foot >/dev/null 2>&1; then printf '%s\n' foot
+    else return 1
+    fi
+}
+
+# --- the terminal half: stream the answer, append it to the report ----------
+
+answer_file=""
+ask() {
+    local report=$1 model body line delta
+    [[ -r "$report" ]] || die "cannot read $report"
+    model="$(local_model)" || die "no local model on 127.0.0.1:$port; the report is at $report"
+
+    printf 'KOOMPI crash diagnosis (%s, local, nothing leaves this machine)\n' "$model"
+    printf 'Report: %s\n\n' "$report"
+    sed -n '/^## What systemd-coredump recorded/,/^## coredumpctl/{/^- /p}' "$report"
+    printf '\n'
+
+    # The report is facts first, journal last, so a cut keeps the stack and
+    # loses the oldest log lines. The model is told when that happened.
+    body="$(head -c "$prompt_bytes" -- "$report")"
+    if (( $(stat -c %s -- "$report") > prompt_bytes )); then
+        body+=$'\n\n[report cut at '"$prompt_bytes"$' bytes for the model; the full text is in the file above]'
+    fi
+
+    # Global, not local: the trap runs after this function has returned.
+    answer_file="$(mktemp)"
+    trap 'rm -f -- "$answer_file"' EXIT
+    # SSE: one `data: {json}` per chunk, `data: [DONE]` last. -N so chunks show
+    # as they arrive; the server serves one request at a time, so a sidebar
+    # turn in flight means this waits behind it. The `|| true`s: under -e and
+    # pipefail a curl cut short by the break (SIGPIPE) or one chunk jq cannot
+    # read would otherwise end the script with the answer half shown.
+    curl -sN -m 600 -X POST "$base/chat/completions" \
+        -H 'Content-Type: application/json' \
+        -d "$(jq -n --arg model "$model" --arg body "$body" \
+            '{model: $model, stream: true, messages: [{role: "user", content: $body}]}')" |
+        while IFS= read -r line; do
+            [[ $line == data:* ]] || continue
+            delta=${line#data:}
+            [[ ${delta# } == "[DONE]" ]] && break
+            # -j, and no command substitution: a chunk that is only "\n"
+            # must survive, and $(...) would strip it.
+            jq -j '.choices[0].delta.content // empty' <<<"$delta" 2>/dev/null | tee -a "$answer_file" || true
+        done || true
+    printf '\n'
+
+    if [[ -s "$answer_file" ]]; then
+        { printf '\n## Diagnosis (%s, %s)\n\n' "$model" "$(date -Is)"; cat -- "$answer_file"; printf '\n'; } >> "$report"
+        printf '\nSaved to %s\n' "$report"
+    else
+        printf 'The model returned nothing. Its log: journalctl --user -u litert-lm.service\n' >&2
+    fi
+    printf 'Press Enter to close.\n'
+    read -r _ || true
+}
+
+# --- the click half: gather, write, hand to a terminal ----------------------
+
+case "${1:-}" in
+    -h|--help) sed -n '2,26p' "$SELF" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --ask) [[ $# -eq 2 ]] || usage; ask "$2"; exit 0 ;;
+esac
+
+pid="${1:-}"
+[[ $pid =~ ^[0-9]+$ ]] || usage
+[[ $# -le 4 ]] || usage
+comm="${2:-unknown}"
+exe="${3:-unknown}"
+signal="${4:-unknown}"
+
+# Read-only. A core rotated away only costs this section, so the failure is
+# kept as a line in the report rather than ending it.
+info="$(coredumpctl info --no-pager "$pid" 2>&1)" || info="coredumpctl info $pid: ${info:-no such entry (rotated away? see coredumpctl list)}"
+# A hand run gives only the pid; the rest is on the info's first lines.
+if [[ $exe == unknown ]]; then
+    exe="$(sed -n 's/^ *Executable: //p' <<<"$info" | head -n1)"
+    exe="${exe:-unknown}"
+fi
+if [[ $comm == unknown ]]; then
+    comm="$(sed -n 's/^ *PID: [0-9]* (\(.*\))$/\1/p' <<<"$info" | head -n1)"
+    comm="${comm:-unknown}"
+fi
+if [[ $signal == unknown ]]; then
+    signal="$(sed -n 's/^ *Signal: [0-9]* (\([A-Z0-9]*\)).*/SIG\1/p' <<<"$info" | head -n1)"
+    signal="${signal:-unknown}"
+fi
+name=$comm
+[[ $exe == /* ]] && name=${exe##*/}
+unit="$(sed -n 's/^ *Unit: //p' <<<"$info" | head -n1)"
+user_unit="$(sed -n 's/^ *User Unit: //p' <<<"$info" | head -n1)"
+
+# The process's own lines (its comm or its pid) from both journals; then the
+# user unit's, when it ran under one (koompi-launch scopes, user services).
+# `+` is journalctl's OR.
+journal="$(journalctl --no-pager --output=short-iso --lines=200 "_COMM=$comm" + "_PID=$pid" 2>&1 || true)"
+unit_journal=""
+if [[ -n "$user_unit" ]]; then
+    unit_journal="$(journalctl --user --no-pager --output=short-iso --lines=200 --unit="$user_unit" 2>&1 || true)"
+fi
+
+mkdir -p -- "$state_dir"
+chmod 700 -- "$state_dir"
+report="$state_dir/$(date +%Y%m%d-%H%M%S)-${name//[^A-Za-z0-9._-]/_}-$pid.md"
+tmp="$(mktemp -- "$state_dir/.report.XXXXXX")"
+{
+    cat <<PROMPT
+A program crashed on this KOOMPI OS machine. Explain it to the person using the machine, in plain words:
+1. What most likely went wrong: name the signal and what it usually means.
+2. Whether this looks like the program's own bug, a missing file or library, memory pressure, or something the user did.
+3. One or two concrete things to try next.
+4. Whether it is worth reporting to the program's authors, and which lines to paste.
+Say so when the evidence below is not enough to tell. Do not invent stack frames or log lines that are not below.
+
+## What systemd-coredump recorded
+
+- process: $comm
+- PID: $pid
+- binary: $exe
+- signal: $signal
+- unit: ${unit:-unknown}${user_unit:+ (user unit: $user_unit)}
+- report written: $(date -Is)
+
+## coredumpctl info $pid
+
+\`\`\`
+$info
+\`\`\`
+
+## Journal: the process's own lines (_COMM=$comm or _PID=$pid, last 200)
+
+\`\`\`
+${journal:-(none)}
+\`\`\`
+PROMPT
+    if [[ -n "$user_unit" ]]; then
+        # shellcheck disable=SC2016  # the backticks are a Markdown fence
+        printf '\n## Journal: user unit %s (last 200)\n\n```\n%s\n```\n' "$user_unit" "${unit_journal:-(none)}"
+    fi
+} > "$tmp"
+chmod 600 -- "$tmp"
+mv -- "$tmp" "$report"
+
+if ! local_model >/dev/null; then
+    # Consented refusal: the report exists, the reading of it is the user's.
+    notify "No local model to diagnose the crash of $name" \
+        "LiteRT-LM is not serving on 127.0.0.1:$port. The report is written; open it yourself at $report" \
+        --exec xdg-open "$report"
+    echo "koompi-crash-diagnose: no local model on 127.0.0.1:$port; report at $report" >&2
+    exit 3
+fi
+
+mapfile -t term < <(terminal_argv || true)
+if [[ ${#term[@]} -eq 0 ]]; then
+    notify "No terminal to show the crash diagnosis of $name" \
+        "Run in any terminal: koompi-crash-diagnose --ask $report" \
+        --exec xdg-open "$report"
+    die "no supported terminal found (wezterm, kitty, konsole, foot); run: koompi-crash-diagnose --ask $report"
+fi
+exec "${term[@]}" "$SELF" --ask "$report"

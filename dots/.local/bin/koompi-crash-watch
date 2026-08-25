@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# koompi-crash-watch - announce this user's process crashes and offer a local
+# diagnosis (OMARCHY-AUDIT O30; docs/agents/crash.md).
+#
+# systemd-coredump journals every crash it handles, core kept or not, under one
+# MESSAGE_ID with COREDUMP_* fields (systemd.journal-fields(7)). This follows
+# them and raises one critical toast per crashed program whose click runs
+# koompi-crash-diagnose with the facts as argv words, never a reparsed string
+# (omarchy bin/omarchy-crash-watch). The diagnosis is the local model's or
+# nobody's; nothing here or there talks to the network.
+#
+# Readable without privileges: systemd-coredump (261 here) runs its worker as
+# the crashing user, so journald files this user's crash entries in the
+# user-<uid>.journal it already has an ACL on; the wheel/adm ACL on the system
+# journal is only needed to see other users' crashes, which this never
+# announces. COREDUMP_UID=$UID is matched in the journal, not just checked
+# after, so a follow never wakes for a daemon's core.
+#
+#   koompi-crash-watch [--once] [--dry-run]
+#     --once     handle the newest crash on record instead of following
+#     --dry-run  print what would be sent; send nothing, wait for nothing
+#
+#   KOOMPI_CRASH_IGNORE          extended regex of program names never announced
+#   KOOMPI_CRASH_DEDUPE_SECONDS  one toast per program per window (60)
+#   KOOMPI_CRASH_NOTIFY_WAIT     seconds to wait for a notification server (30)
+set -uo pipefail
+
+readonly COREDUMP_MESSAGE_ID=fc2e22bc6ee647b6b90729ab34a250b1
+SELF="$(realpath -- "${BASH_SOURCE[0]}")"
+readonly SELF
+readonly dedupe_seconds="${KOOMPI_CRASH_DEDUPE_SECONDS:-60}"
+readonly ignore_pattern="${KOOMPI_CRASH_IGNORE:-}"
+readonly notify_wait="${KOOMPI_CRASH_NOTIFY_WAIT:-30}"
+
+once=0
+dry_run=0
+for arg in "$@"; do
+    case "$arg" in
+        --once) once=1 ;;
+        --dry-run) dry_run=1 ;;
+        -h|--help) sed -n '2,25p' "$SELF" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) echo "koompi-crash-watch: unknown argument '$arg' (want --once, --dry-run)" >&2; exit 64 ;;
+    esac
+done
+
+# Siblings first: run from the dots tree this must not pick up an older
+# packaged copy in /usr/bin, and the toast's argv has to name a real path.
+sibling() {
+    local name=$1 here
+    here="$(dirname -- "$SELF")/$name"
+    if [[ -x "$here" ]]; then printf '%s\n' "$here"; else command -v "$name"; fi
+}
+diagnose="$(sibling koompi-crash-diagnose)" || { echo "koompi-crash-watch: koompi-crash-diagnose not found" >&2; exit 1; }
+sender="$(sibling koompi-notify-send)" || { echo "koompi-crash-watch: koompi-notify-send not found" >&2; exit 1; }
+
+# NameHasOwner, not a Notify probe: the shell owns org.freedesktop.Notifications
+# and a shell crash takes the server down with it, so the toast least likely to
+# be delivered is the one most worth waiting for. A Notify call would D-Bus-
+# activate whatever daemon claims the name (libexec/migrate-lib.sh:8-11).
+notification_server_ready() {
+    [[ "$(busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
+        org.freedesktop.DBus NameHasOwner s org.freedesktop.Notifications 2>/dev/null)" == "b true" ]]
+}
+
+announce() {
+    local name=$1 pid=$2 comm=$3 exe=$4 signal=$5 tries
+    local -a argv=(
+        "$sender" -a KOOMPI -u critical
+        "Process crashed: $name"
+        "$signal. Click to diagnose with the local model."
+        --exec "$diagnose" "$pid" "$comm" "$exe" "$signal"
+    )
+    if (( dry_run )); then
+        printf 'dry-run: would send:'; printf ' %q' "${argv[@]}"; printf '\n'
+        return 0
+    fi
+    tries=$(( notify_wait * 10 ))
+    until notification_server_ready; do
+        if (( tries-- <= 0 )); then
+            echo "koompi-crash-watch: no notification server after ${notify_wait}s; crash of $name (pid $pid) not announced" >&2
+            return 1
+        fi
+        sleep 0.1
+    done
+    "${argv[@]}"
+}
+
+declare -A last_notified=()
+
+# --lines=0 on the follow so a restart does not re-announce crashes already
+# dealt with (the tree's idiom, koompi-litert-lm-watchdog:21).
+# --quiet drops the "not seeing messages from other users" hint a non-wheel
+# user would otherwise log at every start.
+journal=(journalctl --quiet --output=json "MESSAGE_ID=$COREDUMP_MESSAGE_ID" "COREDUMP_UID=$UID")
+if (( once )); then
+    journal+=(--lines=1)
+else
+    journal+=(--follow --lines=0)
+fi
+
+"${journal[@]}" |
+    while IFS= read -r entry; do
+        # A field that is not valid UTF-8 comes as a byte array and @tsv refuses
+        # it; the read then fails the pid check and the entry is reported, not
+        # silently dropped.
+        IFS=$'\t' read -r uid comm pid exe signal < <(
+            jq -r '[(.COREDUMP_UID // ._UID // "-"),
+                    (.COREDUMP_COMM // "-"),
+                    (.COREDUMP_PID // "-"),
+                    (.COREDUMP_EXE // "-"),
+                    (.COREDUMP_SIGNAL_NAME // "-")] | @tsv' <<<"$entry" 2>/dev/null
+        )
+        if [[ ! ${pid:-} =~ ^[0-9]+$ ]]; then
+            echo "koompi-crash-watch: journal entry without a usable COREDUMP_PID, skipped" >&2
+            continue
+        fi
+
+        # Matched in the journal already; kept so a fixture or a hand-fed
+        # entry cannot announce another user's crash either.
+        [[ $uid =~ ^[0-9]+$ ]] || continue
+        (( uid == UID )) || continue
+
+        # comm is truncated to 15 characters; the executable's basename is not.
+        name=$comm
+        [[ $exe == /* ]] && name=${exe##*/}
+
+        [[ -n $ignore_pattern && $name =~ $ignore_pattern ]] && continue
+        # Never announce our own machinery, or it notifies about itself.
+        [[ $name == koompi-crash-* ]] && continue
+
+        now=$EPOCHSECONDS
+        (( now - ${last_notified[$name]:-0} < dedupe_seconds )) && continue
+
+        # Only a delivered toast starts the window. A failed send that counted
+        # would hide the rest of a crash loop for a minute, and --lines=0
+        # never replays what was missed.
+        announce "$name" "$pid" "$comm" "$exe" "$signal" && last_notified[$name]=$now
+    done

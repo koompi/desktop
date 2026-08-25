@@ -1,0 +1,24 @@
+[Unit]
+Description=Announce this user's process crashes and offer a local diagnosis
+# Needs the session bus to notify and a Wayland session for the terminal the
+# toast opens; both are up only after graphical-session.target
+# (omarchy default/systemd/user/omarchy-crash-watch.service:3-6).
+After=graphical-session.target
+PartOf=graphical-session.target
+ConditionEnvironment=WAYLAND_DISPLAY
+# Checked here so a disabled watcher stays disabled across logins without the
+# unit being disabled. Nothing writes the flag yet; the koompi-toggle family
+# (J31) is where a `crash-watch` switch would go.
+ConditionPathExists=!%h/.local/state/koompi/toggles/crash-watch-off
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/koompi-crash-watch
+# on-failure, not always: the follow only ends when journalctl dies, and a
+# clean exit is a stop.
+Restart=on-failure
+RestartSec=5
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target
