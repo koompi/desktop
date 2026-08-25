@@ -62,7 +62,12 @@ setup_agent_memory() {
     fi
     info "building from $MEMD_SRC"
 
-    run_in_dir "$MEMD_SRC" cargo build --release --locked --target-dir "$build_root"
+    # dry run: the clone above was only printed, so the dir may not exist yet
+    if [[ "$DRY_RUN" == true && ! -d "$MEMD_SRC" ]]; then
+        info "would build in $MEMD_SRC once it is cloned"
+    else
+        run_in_dir "$MEMD_SRC" cargo build --release --locked --target-dir "$build_root"
+    fi
     if [[ "$DRY_RUN" != true && ! -x "$binary" ]]; then
         warn "koompi-agent-memd did not build; the assistant will have no long-term memory"
         return 0
