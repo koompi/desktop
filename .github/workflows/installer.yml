@@ -38,7 +38,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Lint the installer
         run: |
-          shellcheck -x setup install.sh sdata/install/*.sh
+          shellcheck -x setup install.sh sdata/install/*.sh sdata/install/setups/*.sh
           shellcheck -x -s bash sdata/lib/*.sh
       - name: Lint the per-distro recipes
         # Sourced, not executed, so shellcheck needs to be told the dialect.
