@@ -92,14 +92,14 @@ fn parseStringArray(alloc: std.mem.Allocator, raw: []const u8) ![]const []const 
     const inner_start = std.mem.indexOfScalar(u8, raw, '[') orelse return &.{};
     const inner_end = std.mem.lastIndexOfScalar(u8, raw, ']') orelse return &.{};
     const inner = raw[inner_start + 1 .. inner_end];
-    var out = std.ArrayList([]const u8).init(alloc);
+    var out: std.ArrayList([]const u8) = .empty;
     var it = std.mem.splitScalar(u8, inner, ',');
     while (it.next()) |tok| {
         const trimmed = std.mem.trim(u8, tok, " \t");
         if (trimmed.len == 0) continue;
-        try out.append(stripQuotes(trimmed));
+        try out.append(alloc, stripQuotes(trimmed));
     }
-    return out.toOwnedSlice();
+    return out.toOwnedSlice(alloc);
 }
 
 /// Reads `[section] key = value` pairs from `koompi.toml`'s fixed schema.
@@ -108,7 +108,7 @@ pub fn parseTheme(alloc: std.mem.Allocator, raw: []const u8) !Theme {
     var theme = Theme{};
     var section: []const u8 = "";
     var current_profile: ?*Profile = null;
-    var profiles = std.ArrayList(Profile).init(alloc);
+    var profiles: std.ArrayList(Profile) = .empty;
 
     var lines = std.mem.splitScalar(u8, raw, '\n');
     while (lines.next()) |raw_line| {
@@ -117,7 +117,7 @@ pub fn parseTheme(alloc: std.mem.Allocator, raw: []const u8) !Theme {
 
         if (std.mem.startsWith(u8, line, "[[") and std.mem.endsWith(u8, line, "]]")) {
             section = line[2 .. line.len - 2];
-            try profiles.append(.{});
+            try profiles.append(alloc, .{});
             current_profile = &profiles.items[profiles.items.len - 1];
             continue;
         }
@@ -200,7 +200,7 @@ pub fn parseTheme(alloc: std.mem.Allocator, raw: []const u8) !Theme {
         }
     }
 
-    theme.profiles = try profiles.toOwnedSlice();
+    theme.profiles = try profiles.toOwnedSlice(alloc);
     try validateTheme(theme);
     return theme;
 }
@@ -231,26 +231,19 @@ pub fn validateTheme(t: Theme) !void {
 /// AUDIT.md V3 — so this is forward-looking), then dev-build fallbacks: cwd-relative
 /// (matches `zig build run` from `installer/`) and exe-relative (matches a copied
 /// `zig-out/bin/koompi-installer` run from elsewhere).
-pub fn loadThemeRaw(alloc: std.mem.Allocator) ![]u8 {
-    if (std.fs.openFileAbsolute("/usr/share/koompi/installer/theme.toml", .{})) |f| {
-        defer f.close();
-        return f.readToEndAlloc(alloc, 1 << 20);
-    } else |_| {}
+pub fn loadThemeRaw(io: std.Io, alloc: std.mem.Allocator) ![]u8 {
+    const cwd = std.Io.Dir.cwd();
+    const limit: std.Io.Limit = .limited(1 << 20);
+    if (cwd.readFileAlloc(io, "/usr/share/koompi/installer/theme.toml", alloc, limit)) |raw| return raw else |_| {}
+    if (cwd.readFileAlloc(io, "themes/koompi.toml", alloc, limit)) |raw| return raw else |_| {}
 
-    if (std.fs.cwd().openFile("themes/koompi.toml", .{})) |f| {
-        defer f.close();
-        return f.readToEndAlloc(alloc, 1 << 20);
-    } else |_| {}
-
-    const exe_dir = std.fs.selfExeDirPathAlloc(alloc) catch return ThemeError.ThemeNotFound;
+    const exe_dir = std.process.executableDirPathAlloc(io, alloc) catch return ThemeError.ThemeNotFound;
     const rel = try std.fs.path.join(alloc, &.{ exe_dir, "..", "..", "themes", "koompi.toml" });
-    var f = std.fs.cwd().openFile(rel, .{}) catch return ThemeError.ThemeNotFound;
-    defer f.close();
-    return f.readToEndAlloc(alloc, 1 << 20);
+    return cwd.readFileAlloc(io, rel, alloc, limit) catch return ThemeError.ThemeNotFound;
 }
 
-pub fn loadTheme(alloc: std.mem.Allocator) !Theme {
-    const raw = try loadThemeRaw(alloc);
+pub fn loadTheme(io: std.Io, alloc: std.mem.Allocator) !Theme {
+    const raw = try loadThemeRaw(io, alloc);
     return parseTheme(alloc, raw);
 }
 
@@ -266,7 +259,7 @@ test "parseHexColor parses valid and rejects invalid" {
 test "parseTheme loads the shipped koompi.toml" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
-    const raw = try loadThemeRaw(arena.allocator());
+    const raw = try loadThemeRaw(std.testing.io, arena.allocator());
     const theme = try parseTheme(arena.allocator(), raw);
     try std.testing.expectEqualStrings("KOOMPI OS", theme.brand_name);
     try std.testing.expectEqualStrings("Naga", theme.brand_edition);
