@@ -71,14 +71,34 @@ cmd_rollback() {
 }
 
 cmd_pre_update() {
-    if command -v paccache >/dev/null 2>&1; then
-        paccache -rk2
-    else
-        echo "koompi-snapshot: paccache not found (install pacman-contrib); skipping cache prune" >&2
+    # The rollback point is created FIRST. This used to prune the pacman cache
+    # before snapshotting, but /var/cache/pacman/pkg is root-owned, so an
+    # unprivileged paccache exits 1 and set -e aborted the whole command
+    # before snapper ever ran - every packaged update then upgraded with no
+    # snapshot while the caller printed the command as if it had one.
+    if ! snapper -c root create --type pre --cleanup-algorithm number \
+            --userdata "important=no" \
+            --description "pre-update $(date -Iseconds)"; then
+        echo "koompi-snapshot: could not create the pre-update snapshot" >&2
+        return 1
     fi
-    snapper -c root create --type pre --cleanup-algorithm number \
-        --userdata "important=no" \
-        --description "pre-update $(date -Iseconds)"
+
+    # Cache pruning is housekeeping that must never undo the snapshot above,
+    # so it runs after and its failure is only reported. The cache directory
+    # is root-owned, so this needs root; a cold sudo ticket may prompt here.
+    if ! command -v paccache >/dev/null 2>&1; then
+        echo "koompi-snapshot: paccache not found (install pacman-contrib); skipping cache prune" >&2
+        return 0
+    fi
+    local pruned=false
+    if command -v sudo >/dev/null 2>&1; then
+        sudo -n paccache -rk2 2>/dev/null && pruned=true \
+            || { sudo paccache -rk2 && pruned=true; }
+    else
+        paccache -rk2 && pruned=true
+    fi
+    $pruned || echo "koompi-snapshot: cache prune failed; continuing without it" >&2
+    return 0
 }
 
 [[ $# -ge 1 ]] || { usage >&2; exit 1; }
