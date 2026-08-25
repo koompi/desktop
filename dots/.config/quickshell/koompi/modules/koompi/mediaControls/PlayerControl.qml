@@ -80,9 +80,13 @@ Item { // Player instance
         id: coverArtDownloader
         property string targetFile: root.artUrl
         property string artFilePath: root.artFilePath
-        command: [ "bash", "-c", `[ -f ${artFilePath} ] || curl -4 -sSL '${targetFile}' -o '${artFilePath}'` ]
+        command: [ "bash", "-c", `[ -f '${artFilePath}' ] || curl -4 -sSLf '${StringUtils.shellSingleQuoteEscape(targetFile)}' -o '${artFilePath}'` ]
         onExited: (exitCode, exitStatus) => {
-            root.downloaded = true
+            // Without -f a 404 page lands in the cache file with exit 0 and is
+            // then served as the cover forever.
+            root.downloaded = exitCode === 0
+            if (exitCode !== 0)
+                console.warn(`[PlayerControl] Cover art download failed (exit ${exitCode}): ${targetFile}`)
         }
     }
 
