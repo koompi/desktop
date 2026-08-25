@@ -308,9 +308,12 @@ def rows($pre):
 [rows([])][] | @tsv
 '
 
-# Number of leaves whose value differs between two JSON documents.
+# Number of leaves whose value differs between two JSON documents. A missing
+# side counts as empty, which is what "nothing there yet" means for a preview.
 diff_leaf_count() {
     local a="$1" b="$2"
+    [[ -f "$a" ]] || a=/dev/null
+    [[ -f "$b" ]] || b=/dev/null
     diff <(jq -r "$_rows_jq" "$a" | sort) <(jq -r "$_rows_jq" "$b" | sort) | grep -c '^[<>]' || true
 }
 
@@ -447,6 +450,10 @@ apply_defaults_migration() {
     local config="${XDG_CONFIG_HOME:-$HOME/.config}/koompi/config.json"
     step "Migrating config defaults"
     if [[ "$DRY_RUN" == true ]]; then
+        if [[ ! -f "$config" ]]; then
+            info "dry run: no config at ${config/#$HOME/\~} yet; the first shell start writes these defaults"
+            return 0
+        fi
         local preview
         preview="$(mktemp "${TMPDIR:-/tmp}/koompi-preview.XXXXXX")"
         if cmd_merge_config "$old_dump" "$new_dump" "$config" > "$preview" 2>/dev/null; then
