@@ -70,9 +70,17 @@ jobs:
         run: |
           set -euo pipefail
           iso="$(ls -- *.iso)"
-          tag="iso-${iso%.iso}"
-          gh release create "$tag" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "KOOMPI OS — ${iso%.iso}" \
-            --notes "Automated live/install ISO build from commit ${GITHUB_SHA}." \
-            "$iso" SHA256SUMS
+          # profiledef.sh's iso_version is date-only, so the tag carries the
+          # commit too: a second build the same day must not die at release
+          # creation after a full mkarchiso run. A re-run of the same commit
+          # replaces its own release assets instead of failing on the tag.
+          tag="iso-${iso%.iso}-${GITHUB_SHA::7}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber "$iso" SHA256SUMS
+          else
+            gh release create "$tag" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "KOOMPI OS — ${iso%.iso}" \
+              --notes "Automated live/install ISO build from commit ${GITHUB_SHA}." \
+              "$iso" SHA256SUMS
+          fi
