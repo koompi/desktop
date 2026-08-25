@@ -92,7 +92,7 @@ jobs:
             test_shell_services.sh       builds, unit-tests and lints; the conformance suites need a live bus and PipeWire
             test_app_slice.sh            the cgroup half needs a user manager; a container has none
             test_config_merge.sh         the dump smoke test needs a running quickshell (qs)
-            test_hypridle_logged.sh      needs hypridle's unit and a live session for the Lock check; static checks run
+            test_hypridle_logged.sh      needs the hypridle unit and a live session for the Lock check; static checks run
             test_lock_pam.sh             the PamContext probe needs a running quickshell (qs); static checks run
           '
           bad=0
