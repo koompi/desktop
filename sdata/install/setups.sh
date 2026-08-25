@@ -27,11 +27,11 @@ setup_koompi_cli() {
     run mkdir -p "$build_root"
     # Keep generated objects and the install prefix out of the checkout. A
     # user's KOOMPI source tree should stay clean after every install/update.
-    ( cd "$src" && run zig build \
+    run_in_dir "$src" zig build \
         --cache-dir "$build_root/cache" \
         --global-cache-dir "$XDG_CACHE_HOME/zig" \
         --prefix "$build_root/out" \
-        -Doptimize=ReleaseSafe )
+        -Doptimize=ReleaseSafe
     run install -Dm755 "$binary" "$XDG_BIN_HOME/koompi"
     manifest_add "$XDG_BIN_HOME/koompi"
     ok "koompi CLI installed"
@@ -79,7 +79,11 @@ setup_global_menu() {
         warn "Install one, then re-run: ./setup install --only-setups"
         return 0
     fi
-    ( cd "$src" && run zig build -Doptimize=ReleaseSafe )
+    # prefix stays zig-out/ in $src (the QML resolves it there); only the cache moves out
+    run_in_dir "$src" zig build \
+        --cache-dir "$XDG_CACHE_HOME/koompi/build/global-menu/cache" \
+        --global-cache-dir "$XDG_CACHE_HOME/zig" \
+        -Doptimize=ReleaseSafe
     ok "global-menu-daemon built"
 }
 
