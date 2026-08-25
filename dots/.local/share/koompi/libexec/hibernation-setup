@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+# hibernation-setup: btrfs swapfile + fstab + resume hook + resume= cmdline, so
+# logind says CanHibernate=yes (what SessionScreen's Hibernate button waits on).
+# callers: installer/src/post_install.sh, sdata/install/setups/system.sh, koompi doctor.
+# refusals exit 0 with a reason so callers run it unconditionally; rerunnable.
+# KOOMPI_HIB_ROOT=<dir>: test hook, prefixes every path and stands in for root.
+set -euo pipefail
+
+R="${KOOMPI_HIB_ROOT:-}"
+SWAP_DIR_PATH=/swap
+SWAPFILE_PATH=$SWAP_DIR_PATH/swapfile
+DROPIN_PATH=/etc/mkinitcpio.conf.d/koompi-resume.conf
+IMAGE_SIZE="$R/sys/power/image_size"
+MEMINFO="$R/proc/meminfo"
+PROC_SWAPS="$R/proc/swaps"
+PROC_CMDLINE="$R/proc/cmdline"
+SWAP_DIR="$R$SWAP_DIR_PATH"
+SWAPFILE="$R$SWAPFILE_PATH"
+FSTAB="$R/etc/fstab"
+MKINITCPIO_CONF="$R/etc/mkinitcpio.conf"
+DROPIN="$R$DROPIN_PATH"
+GRUB_DEFAULT="$R/etc/default/grub"
+GRUB_CFG="$R/boot/grub/grub.cfg"
+FSTAB_LINE="$SWAPFILE_PATH none swap defaults,pri=0 0 0"
+HOOK_LINE='HOOKS+=(resume)'
+
+DRY=0
+
+usage() {
+    cat <<'EOF'
+Usage: hibernation-setup [setup] [--dry-run]
+       hibernation-setup status
+
+  setup      Create /swap + swapfile, fstab entry, resume hook, resume= cmdline
+             (root; rerunnable; --dry-run prints the plan and changes nothing)
+  status     Print each precondition, each artifact, and logind's CanHibernate;
+             exits 0 only when logind says hibernation is available
+EOF
+}
+
+say()    { printf 'hibernation-setup: %s\n' "$*"; }
+fail()   { say "ERROR: $*" >&2; exit 1; }
+refuse() { say "not setting up hibernation: $*"; exit 0; }
+have()   { command -v "$1" >/dev/null 2>&1; }
+human()  { numfmt --to=iec --suffix=B "$1" 2>/dev/null || printf '%s' "$1"; }
+
+act() {
+    local what="$1"; shift
+    if (( DRY )); then say "would $what"; return 0; fi
+    say "$what"
+    "$@"
+}
+
+# tmp+mv: a half-written fstab is a boot that stops
+write_file() {
+    local path="$1" content="$2" tmp
+    mkdir -p -- "$(dirname -- "$path")"
+    tmp="$(mktemp -- "$path.XXXXXX")"
+    printf '%s\n' "$content" >"$tmp"
+    if [[ -e "$path" ]]; then chmod --reference="$path" "$tmp"; else chmod 0644 "$tmp"; fi
+    mv -f -- "$tmp" "$path"
+}
+
+is_subvol()  { have btrfs && btrfs subvolume show "$SWAP_DIR" >/dev/null 2>&1; }
+hooks_line() { grep -m1 '^HOOKS=' "$MKINITCPIO_CONF" 2>/dev/null || true; }
+has_hook()   { [[ "$(hooks_line)" =~ [\(\ ]"$1"[\ \)] ]]; }
+grub_line()  { grep -m1 '^GRUB_CMDLINE_LINUX_DEFAULT=' "$GRUB_DEFAULT" 2>/dev/null || true; }
+swap_active() { grep -q "^${SWAPFILE_PATH}[[:space:]]" "$PROC_SWAPS" 2>/dev/null; }
+in_chroot() {
+    # swapon under arch-chroot pins the target disk and blocks its unmount
+    [[ -r /proc/1/root/. ]] && [[ "$(stat -c %d:%i /)" != "$(stat -c %d:%i /proc/1/root/.)" ]]
+}
+logind_answer() {
+    local out
+    out="$(busctl call org.freedesktop.login1 /org/freedesktop/login1 \
+        org.freedesktop.login1.Manager CanHibernate 2>/dev/null)" || { echo unreachable; return; }
+    out="${out#s \"}"; echo "${out%\"}"
+}
+
+pre_kernel() {
+    [[ -f "$IMAGE_SIZE" ]] || { echo "no /sys/power/image_size: this kernel or firmware cannot hibernate"; return 1; }
+    echo "kernel supports hibernation (image up to $(human "$(<"$IMAGE_SIZE")"))"
+}
+pre_btrfs() {
+    local fs; fs="$(findmnt -no FSTYPE -T "${R:-/}" 2>/dev/null || true)"
+    [[ "$fs" == btrfs ]] || { echo "root filesystem is ${fs:-unknown}; a swapfile with a resume offset needs btrfs"; return 1; }
+    echo "root filesystem is btrfs"
+}
+pre_tools() {
+    local t
+    for t in btrfs mkinitcpio grub-mkconfig findmnt swaplabel; do
+        have "$t" || { echo "$t is not installed"; return 1; }
+    done
+    [[ -f "$MKINITCPIO_CONF" ]] || { echo "no /etc/mkinitcpio.conf"; return 1; }
+    [[ -f "$GRUB_DEFAULT" ]] || { echo "no /etc/default/grub (GRUB is the only bootloader this knows)"; return 1; }
+    echo "btrfs-progs, mkinitcpio and GRUB present"
+}
+pre_swapdir() {
+    if [[ -e "$SWAP_DIR" ]] && ! is_subvol; then
+        echo "$SWAP_DIR_PATH exists and is not a btrfs subvolume; move it aside first"; return 1
+    fi
+    echo "$SWAP_DIR_PATH is $(is_subvol && echo "a subvolume" || echo "free to create")"
+}
+
+ensure_subvol() {
+    if is_subvol; then say "$SWAP_DIR_PATH subvolume present"; return 0; fi
+    # refusal, not failure: a read-only or snapshot-booted root is not a hibernation target
+    act "create btrfs subvolume $SWAP_DIR_PATH" btrfs subvolume create "$SWAP_DIR" \
+        || refuse "could not create the $SWAP_DIR_PATH subvolume"
+    act "mark $SWAP_DIR_PATH no-CoW (chattr +C)" chattr +C "$SWAP_DIR" || fail "chattr +C $SWAP_DIR_PATH failed"
+}
+
+ensure_swapfile() {
+    local kb
+    if [[ -e "$SWAPFILE" ]]; then
+        if swaplabel "$SWAPFILE" >/dev/null 2>&1; then
+            say "$SWAPFILE_PATH present ($(human "$(stat -c %s "$SWAPFILE")"))"; return 0
+        fi
+        (( DRY )) && (( EUID != 0 )) && { say "$SWAPFILE_PATH present (signature not checked without root)"; return 0; }
+        fail "$SWAPFILE_PATH exists but carries no swap signature; remove it and rerun"
+    fi
+    kb="$(awk '/^MemTotal:/ {print $2}' "$MEMINFO")"
+    [[ "$kb" =~ ^[0-9]+$ ]] || fail "could not read MemTotal from /proc/meminfo"
+    # MemTotal (as omarchy): image_size plus whatever was already paged out
+    act "create $SWAPFILE_PATH of ${kb}k (MemTotal)" btrfs filesystem mkswapfile -s "${kb}k" "$SWAPFILE" \
+        || fail "btrfs filesystem mkswapfile failed"
+}
+
+ensure_fstab() {
+    if grep -q "^${SWAPFILE_PATH}[[:space:]]" "$FSTAB" 2>/dev/null; then say "fstab entry present"; return 0; fi
+    (( DRY )) && { say "would append to /etc/fstab: $FSTAB_LINE"; return 0; }
+    cp -a -- "$FSTAB" "$FSTAB.koompi-hibernation.bak"
+    act "append to /etc/fstab: $FSTAB_LINE (pri=0: zram at 100 fills first)" write_file "$FSTAB" \
+        "$(cat "$FSTAB")
+# KOOMPI hibernation swapfile; pri=0 so zram (pri=100, koompi-sysdefaults 90-koompi.conf) fills first
+$FSTAB_LINE"
+}
+
+ensure_swapon() {
+    if swap_active; then say "$SWAPFILE_PATH already active"; return 0; fi
+    if in_chroot; then say "in a chroot: swap activates from fstab at first boot"; return 0; fi
+    act "activate swap on $SWAPFILE_PATH" swapon -p 0 "$SWAPFILE" \
+        || say "WARNING: swapon failed; fstab activates it at the next boot"
+}
+
+# drop-in, not sed: mkinitcpio concatenates conf then conf.d/*.conf before sourcing,
+# so HOOKS+=(resume) lands after filesystems (and udev, block, lvm2) as resume needs
+ensure_resume_hook() {
+    [[ -n "$(hooks_line)" ]] || fail "no HOOKS= line in /etc/mkinitcpio.conf"
+    if has_hook systemd; then say "mkinitcpio uses the systemd hook, which resumes on its own; no resume hook needed"; return 0; fi
+    if has_hook resume; then say "resume hook already in HOOKS"; return 0; fi
+    has_hook filesystems || fail "HOOKS has no filesystems hook; not guessing where resume goes"
+    if [[ -f "$DROPIN" ]] && grep -Fxq "$HOOK_LINE" "$DROPIN"; then say "resume hook drop-in present"; return 0; fi
+    act "write $DROPIN_PATH: $HOOK_LINE" write_file "$DROPIN" \
+        "# KOOMPI hibernation (hibernation-setup); appended after /etc/mkinitcpio.conf HOOKS
+$HOOK_LINE"
+    act "regenerate the initramfs (mkinitcpio -P)" mkinitcpio -P || fail "mkinitcpio -P failed"
+}
+
+# existing resume= words replaced, rest of the line kept: a recreated swapfile
+# moves the offset and a rerun must fix it, not add a second pair
+ensure_cmdline() {
+    local uuid off='' line val words=() kept=() w new
+    uuid="$(findmnt -no UUID -T "$SWAPFILE" 2>/dev/null || true)"
+    if [[ -z "$uuid" ]] && [[ -e "$SWAPFILE" ]]; then
+        # no udev db in a chroot: findmnt has no UUID, blkid probes the device
+        uuid="$(blkid -s UUID -o value "$(findmnt -no SOURCE -T "$SWAPFILE" | sed 's/\[.*\]//')" 2>/dev/null || true)"
+    fi
+    [[ -e "$SWAPFILE" ]] && off="$(btrfs inspect-internal map-swapfile -r "$SWAPFILE" 2>/dev/null || true)"
+    if (( DRY )) && [[ ! "${off:-}" =~ ^[0-9]+$ ]]; then
+        # offset exists once the swapfile does, and reading it needs root
+        say "would set resume=UUID=${uuid:-<root fs uuid>} resume_offset=<btrfs inspect-internal map-swapfile -r> in GRUB_CMDLINE_LINUX_DEFAULT, then grub-mkconfig"
+        return 0
+    fi
+    [[ -n "$uuid" ]] || fail "could not find the UUID of the filesystem holding $SWAPFILE_PATH"
+    [[ "${off:-}" =~ ^[0-9]+$ ]] || fail "btrfs could not map $SWAPFILE_PATH to a resume offset (got '${off:-nothing}')"
+    line="$(grub_line)"
+    val="${line#GRUB_CMDLINE_LINUX_DEFAULT=}"; val="${val#[\"\']}"; val="${val%[\"\']}"
+    read -ra words <<<"$val"
+    for w in "${words[@]}"; do
+        case "$w" in resume=*|resume_offset=*) ;; *) kept+=("$w") ;; esac
+    done
+    new="GRUB_CMDLINE_LINUX_DEFAULT=\"${kept[*]}${kept[*]:+ }resume=UUID=$uuid resume_offset=$off\""
+    if [[ "$line" == "$new" ]]; then say "kernel cmdline already carries resume=UUID=$uuid resume_offset=$off"; return 0; fi
+    if [[ -n "$line" ]]; then
+        act "set $new in /etc/default/grub" write_file "$GRUB_DEFAULT" \
+            "$(NEW="$new" awk '!done && /^GRUB_CMDLINE_LINUX_DEFAULT=/ {print ENVIRON["NEW"]; done=1; next} {print}' "$GRUB_DEFAULT")"
+    else
+        act "add $new to /etc/default/grub" write_file "$GRUB_DEFAULT" "$(cat "$GRUB_DEFAULT")
+$new"
+    fi
+    act "regenerate GRUB config (grub-mkconfig -o /boot/grub/grub.cfg)" grub-mkconfig -o "$GRUB_CFG" \
+        || fail "grub-mkconfig failed"
+}
+
+cmd_setup() {
+    local p msg
+    if (( ! DRY )) && (( EUID != 0 )) && [[ -z "$R" ]]; then
+        fail "root required: sudo ${BASH_SOURCE[0]} (or --dry-run to see the plan)"
+    fi
+    for p in pre_kernel pre_btrfs pre_tools pre_swapdir; do
+        if msg="$($p)"; then say "$msg"
+        elif (( DRY )); then say "would refuse: $msg"; exit 0
+        else refuse "$msg"; fi
+    done
+    ensure_subvol
+    ensure_swapfile
+    ensure_fstab
+    ensure_swapon
+    ensure_resume_hook
+    ensure_cmdline
+    if (( ! DRY )); then say "done; reboot to make hibernation available"
+    elif (( EUID != 0 )); then say "dry run: nothing changed; root required to apply: sudo ${BASH_SOURCE[0]}"
+    else say "dry run: nothing changed"; fi
+}
+
+cmd_status() {
+    local p msg answer
+    printf 'hibernation status\n'
+    for p in pre_kernel pre_btrfs pre_tools pre_swapdir; do
+        if msg="$($p)"; then printf '  ok  %s\n' "$msg"; else printf '  --  %s\n' "$msg"; fi
+    done
+    if [[ -e "$SWAPFILE" ]]; then
+        printf '  ok  %s present (%s)%s\n' "$SWAPFILE_PATH" "$(human "$(stat -c %s "$SWAPFILE")")" \
+            "$(swap_active && echo ", active" || echo ", not active")"
+    else
+        printf '  --  %s missing\n' "$SWAPFILE_PATH"
+    fi
+    if grep -q "^${SWAPFILE_PATH}[[:space:]]" "$FSTAB" 2>/dev/null; then printf '  ok  fstab entry present\n'; else printf '  --  no fstab entry\n'; fi
+    if has_hook systemd; then printf '  ok  resume: systemd hook (built in)\n'
+    elif has_hook resume; then printf '  ok  resume hook in HOOKS\n'
+    elif [[ -f "$DROPIN" ]] && grep -Fxq "$HOOK_LINE" "$DROPIN"; then printf '  ok  resume hook drop-in %s\n' "$DROPIN_PATH"
+    else printf '  --  no resume hook\n'; fi
+    if [[ "$(grub_line)" == *resume=* && "$(grub_line)" == *resume_offset=* ]]; then
+        printf '  ok  cmdline: %s\n' "$(grub_line | grep -oE 'resume=[^ "]+ resume_offset=[^ "]+')"
+        grep -qw 'resume_offset=' "$PROC_CMDLINE" 2>/dev/null || printf '  --  running kernel booted without resume=; reboot pending\n'
+    else
+        printf '  --  no resume= on GRUB_CMDLINE_LINUX_DEFAULT\n'
+    fi
+    answer="$(logind_answer)"
+    printf '  %s  logind CanHibernate: %s\n' "$([[ "$answer" == yes || "$answer" == challenge ]] && echo ok || echo --)" "$answer"
+    [[ "$answer" == yes || "$answer" == challenge ]]
+}
+
+cmd=setup
+for arg in "$@"; do
+    case "$arg" in
+        setup|status) cmd="$arg" ;;
+        -n|--dry-run) DRY=1 ;;
+        -h|--help)    usage; exit 0 ;;
+        *) usage >&2; fail "unknown argument: $arg" ;;
+    esac
+done
+"cmd_$cmd"

@@ -154,6 +154,21 @@ setup_low_ram_defaults() {
     fi
 }
 
+# refuses with exit 0 where it cannot apply (ext4, no mkinitcpio), so runs everywhere;
+# its own --dry-run needs no root and prints the plan for this machine
+setup_hibernation() {
+    step "Hibernation (btrfs swapfile, resume hook, kernel cmdline)"
+    systemd_running || { info "no running systemd; skipping"; return 0; }
+    local script="$REPO_ROOT/dots/.local/share/koompi/libexec/hibernation-setup"
+    [[ -x "$script" ]] || { warn "$script missing or not executable; skipping hibernation"; return 0; }
+    if [[ "$DRY_RUN" == true ]]; then
+        "$script" --dry-run || warn "hibernation dry run failed; see above"
+        return 0
+    fi
+    try sudo "$script" \
+        || warn "hibernation setup failed; Hibernate stays off the session screen until 'sudo $script' succeeds"
+}
+
 # Raw ports rather than the package's profile names: ufw reads profiles from
 # /etc/ufw/applications.d only (config_dir in ufw/common.py), and a file put
 # there from git makes a later package install fail on "exists in filesystem".

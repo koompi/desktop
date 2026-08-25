@@ -34,6 +34,7 @@ run_setups() {
     setup_hardware_quirks
     setup_low_ram_defaults
     setup_firewall_defaults
+    setup_hibernation
     setup_local_ai
     setup_agent_memory
     setup_portals

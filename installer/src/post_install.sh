@@ -151,6 +151,15 @@ setup_snapshot_boot() {
   mkinitcpio -P || log "WARNING: mkinitcpio regen failed; snapshot boot may be read-only"
 }
 
+# 4c. Hibernation: swapfile + resume hook + cmdline, so logind says CanHibernate=yes.
+#     Refuses with exit 0 on ext4 or without kernel support; skips swapon in the chroot.
+setup_hibernation() {
+  local script="${KOOMPI_HIBERNATION_SETUP:-/usr/lib/koompi/hibernation-setup}"
+  [ -x "$script" ] || { log "no $script (koompi-shell not installed?) — skipping hibernation"; return; }
+  log "setting up hibernation (swapfile, resume hook, kernel cmdline)"
+  "$script" || log "WARNING: hibernation setup failed; run 'sudo $script' on the installed system"
+}
+
 # 5. Login manager. koompi-branding ships a systemd preset that enables
 #    sddm.service; we enable explicitly too (idempotent belt-and-suspenders).
 enable_login() {
@@ -218,6 +227,7 @@ main() {
   enable_firmware_refresh
   write_os_release    # bake KOOMPI identity into the baseline too
   setup_snapshot_boot # grub-btrfs-overlayfs initramfs hook (bootable snapshots)
+  setup_hibernation   # swapfile + resume hook + cmdline; refuses cleanly on ext4
   pin_baseline        # snapshot the FINISHED install (un-prunable factory reset)
   setup_grub_btrfs    # LAST: grub-mkconfig enumerates @baseline into the 1st menu
   log "post-install hook done"
