@@ -1,0 +1,291 @@
+#!/usr/bin/env bash
+# apps in the session scope are invisible to systemd-oomd; a scope in app.slice is not
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-launch [--id ID] [--cwd DIR] [--terminal CMD] [--] COMMAND [ARG...]
+       koompi-launch [--id ID] [--cwd DIR] [--terminal CMD] [--] APP.desktop [FILE|URL...]
+
+Runs COMMAND as a transient app-ID-<random>.scope in the user manager's
+app.slice, with this environment and working directory. Without a user
+manager the command runs directly and one line goes to stderr and the journal.
+
+  --id ID          scope name; defaults to the desktop-entry id or COMMAND's basename
+  --cwd DIR        working directory; overrides the entry's Path=
+  --terminal CMD   run inside terminal CMD (word-split): CMD -e COMMAND...
+
+APP.desktop is found in $XDG_DATA_HOME/applications and $XDG_DATA_DIRS, or
+given as a path. Its Exec line is expanded per the Desktop Entry spec
+(%f %F %u %U %i %c %k %%), Path= sets the working directory, Terminal=true
+wraps it in $TERMINAL or the first terminal installed. DBusActivatable is not
+used: the Exec line always runs as a process.
+USAGE
+}
+
+die() {
+    printf 'koompi-launch: %s\n' "$1" >&2
+    exit 1
+}
+
+warn() {
+    printf 'koompi-launch: %s\n' "$1" >&2
+}
+
+find_desktop() {
+    local name=$1 dir
+    if [[ $name == */* ]]; then
+        [[ -f $name ]] || return 1
+        REPLY=$name
+        return 0
+    fi
+    local IFS=:
+    for dir in "${XDG_DATA_HOME:-$HOME/.local/share}" ${XDG_DATA_DIRS:-/usr/local/share:/usr/share}; do
+        if [[ -f $dir/applications/$name ]]; then
+            REPLY=$dir/applications/$name
+            return 0
+        fi
+    done
+    return 1
+}
+
+e_exec='' e_path='' e_terminal='' e_name='' e_icon=''
+read_entry() {
+    local line key value in_group=0
+    while IFS= read -r line || [[ -n $line ]]; do
+        line=${line%"${line##*[![:space:]]}"}
+        case $line in
+            '['*']')
+                if [[ $line == '[Desktop Entry]' ]]; then in_group=1; else in_group=0; fi
+                continue ;;
+            '#'* | '') continue ;;
+        esac
+        if ((in_group == 0)); then continue; fi
+        key=${line%%=*}
+        value=${line#*=}
+        key=${key%"${key##*[![:space:]]}"}
+        value=${value#"${value%%[![:space:]]*}"}
+        case $key in
+            Exec) e_exec=$value ;;
+            Path) e_path=$value ;;
+            Terminal) e_terminal=$value ;;
+            Name) e_name=$value ;;
+            Icon) e_icon=$value ;;
+        esac
+    done <"$1"
+}
+
+# spec: string unescape (\s \n \t \r \\) happens before quote parsing, one pass
+unescape_string() {
+    local s=$1 out='' i c
+    for ((i = 0; i < ${#s}; i++)); do
+        c=${s:i:1}
+        if [[ $c == \\ ]] && ((i + 1 < ${#s})); then
+            i=$((i + 1))
+            c=${s:i:1}
+            case $c in
+                s) out+=' ' ;;
+                n) out+=$'\n' ;;
+                t) out+=$'\t' ;;
+                r) out+=$'\r' ;;
+                \\) out+=\\ ;;
+                *) out+="\\$c" ;;
+            esac
+        else
+            out+=$c
+        fi
+    done
+    REPLY=$out
+}
+
+split_exec() {
+    local s=$1 word='' inq=0 have=0 i c
+    words=()
+    for ((i = 0; i < ${#s}; i++)); do
+        c=${s:i:1}
+        if ((inq)); then
+            case $c in
+                '"') inq=0 ;;
+                \\)
+                    i=$((i + 1))
+                    word+=${s:i:1} ;;
+                *) word+=$c ;;
+            esac
+        else
+            case $c in
+                '"')
+                    inq=1
+                    have=1 ;;
+                ' ')
+                    if ((have)); then
+                        words+=("$word")
+                        word=''
+                        have=0
+                    fi ;;
+                *)
+                    word+=$c
+                    have=1 ;;
+            esac
+        fi
+    done
+    if ((have)); then words+=("$word"); fi
+}
+
+expand_inline() {
+    local s=$1 first=$2 out='' i c
+    for ((i = 0; i < ${#s}; i++)); do
+        c=${s:i:1}
+        if [[ $c == % ]] && ((i + 1 < ${#s})); then
+            i=$((i + 1))
+            c=${s:i:1}
+            case $c in
+                %) out+=% ;;
+                f | u | F | U) out+=$first ;;
+                c) out+=$e_name ;;
+                k) out+=$file ;;
+                *) ;;
+            esac
+        else
+            out+=$c
+        fi
+    done
+    REPLY=$out
+}
+
+expand_exec() {
+    local w
+    unescape_string "$e_exec"
+    split_exec "$REPLY"
+    argv=()
+    for w in "${words[@]}"; do
+        case $w in
+            %f | %u)
+                if (($# > 1)); then warn "$file takes one file, ignoring $(($# - 1)) more"; fi
+                if (($#)); then argv+=("$1"); fi ;;
+            %F | %U) argv+=("$@") ;;
+            %i) if [[ -n $e_icon ]]; then argv+=(--icon "$e_icon"); fi ;;
+            %c) argv+=("$e_name") ;;
+            %k) argv+=("$file") ;;
+            %d | %D | %n | %N | %v | %m) ;;
+            *)
+                expand_inline "$w" "${1:-}"
+                argv+=("$REPLY") ;;
+        esac
+    done
+}
+
+default_terminal() {
+    local t
+    if [[ -n ${TERMINAL:-} ]]; then
+        REPLY=$TERMINAL
+        return 0
+    fi
+    for t in wezterm foot kitty alacritty konsole kgx uxterm xterm; do
+        if command -v "$t" >/dev/null 2>&1; then
+            REPLY=$t
+            return 0
+        fi
+    done
+    die "Terminal=true but no terminal is installed; set TERMINAL or pass --terminal"
+}
+
+# systemd-escape rules: alnum : _ . pass, the rest becomes \xHH, so a - in the id
+# cannot be read as the separator
+escape_id() {
+    local LC_ALL=C s=$1 out='' hex i c
+    for ((i = 0; i < ${#s}; i++)); do
+        c=${s:i:1}
+        case $c in
+            [A-Za-z0-9:_.]) out+=$c ;;
+            *)
+                printf -v hex '\\x%02x' "'$c"
+                out+=$hex ;;
+        esac
+    done
+    REPLY=$out
+}
+
+id='' cwd='' terminal=''
+while (($#)); do
+    case $1 in
+        --id)
+            [[ $# -ge 2 ]] || die "--id needs a value"
+            id=$2
+            shift 2 ;;
+        --id=*)
+            id=${1#--id=}
+            shift ;;
+        --cwd)
+            [[ $# -ge 2 ]] || die "--cwd needs a value"
+            cwd=$2
+            shift 2 ;;
+        --cwd=*)
+            cwd=${1#--cwd=}
+            shift ;;
+        --terminal)
+            [[ $# -ge 2 ]] || die "--terminal needs a value"
+            terminal=$2
+            shift 2 ;;
+        --terminal=*)
+            terminal=${1#--terminal=}
+            shift ;;
+        -h | --help)
+            usage
+            exit 0 ;;
+        --)
+            shift
+            break ;;
+        -*) die "unknown option $1 (see --help)" ;;
+        *) break ;;
+    esac
+done
+(($#)) || { usage >&2; exit 1; }
+
+file=''
+if [[ $1 == *.desktop ]]; then
+    find_desktop "$1" || die "no desktop entry named $1"
+    file=$REPLY
+    shift
+    read_entry "$file"
+    [[ -n $e_exec ]] || die "$file has no Exec= line"
+    expand_exec "$@"
+    ((${#argv[@]})) || die "$file has an empty Exec= line"
+    set -- "${argv[@]}"
+    if [[ -z $id ]]; then
+        id=${file##*/}
+    fi
+    if [[ -z $cwd ]]; then
+        cwd=$e_path
+    fi
+    if [[ $e_terminal == true && -z $terminal ]]; then
+        default_terminal
+        terminal=$REPLY
+    fi
+fi
+
+if [[ -z $id ]]; then
+    id=${1##*/}
+fi
+id=${id%.desktop}
+[[ -n $id ]] || die "cannot name a scope after '$1'; pass --id"
+
+if [[ -n $cwd ]]; then
+    cd -- "$cwd" 2>/dev/null || warn "cannot enter $cwd, $1 starts in $PWD"
+fi
+
+if [[ -n $terminal ]]; then
+    read -ra term <<<"$terminal"
+    set -- "${term[@]}" -e "$@"
+fi
+
+escape_id "$id"
+unit="app-${REPLY}-${SRANDOM:-$RANDOM$RANDOM}.scope"
+
+if command -v systemd-run >/dev/null 2>&1 && [[ -S ${XDG_RUNTIME_DIR:-/run/user/$UID}/systemd/private ]]; then
+    exec systemd-run --user --scope --quiet --collect --expand-environment=no --slice=app.slice --unit="$unit" -- "$@"
+fi
+
+msg="no user manager, $1 runs outside app.slice"
+warn "$msg"
+logger -t koompi-launch -- "$msg" 2>/dev/null || true
+exec "$@"

@@ -232,6 +232,10 @@ The `XF86Audio*` and `XF86MonBrightness*` keys carry the same actions and are ma
 App binds are the one group that may grow, because they name what the user installed rather than what the shell owns.
 Anything opened as a scratchpad panel rather than a normal window is a shell surface and belongs to a role above.
 
+Every app bind, and every launch from Search, the Launchpad and the dock, goes through `koompi-launch`, which starts the app as its own `app-<id>-<n>.scope` in the user manager's `app.slice` with the session environment intact.
+That is what lets `systemd-oomd` kill one app under memory pressure instead of the whole session, because the session scope that holds Hyprland, the shell, hypridle and the wallpaper pipeline is never a candidate.
+A bind for something the session cannot lose keeps `hl.dsp.exec_cmd` and stays out of `app.slice`.
+
 ### Kiri
 
 Kiri's voice binds live in `dots/.config/hypr/custom/keybinds.lua`, which is user-owned and never overwritten by an update.

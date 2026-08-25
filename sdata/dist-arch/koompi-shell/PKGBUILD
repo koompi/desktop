@@ -41,6 +41,7 @@ _tools=(
   koompi-flatpak-open
   koompi-health
   koompi-hook
+  koompi-launch
   koompi-launch-webapp
   koompi-lid
   koompi-litert-lm-watchdog
