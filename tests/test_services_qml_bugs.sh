@@ -53,6 +53,11 @@ fi
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/shell" "$WORK/xdg/config/hypr/hyprland/scripts" "$WORK/xdg/state" "$WORK/xdg/cache" "$WORK/bin" "$WORK/out"
+# LatexRenderer's failure branch runs against this, not against a missing output
+# dir: MicroTeX aborts on an unwritable path (uncaught ios_base::failure), and
+# that coredump is one koompi-crash-watch would announce on every suite run.
+printf '#!/usr/bin/env bash\nexit 3\n' > "$WORK/bin/LaTeX"
+chmod +x "$WORK/bin/LaTeX"
 
 # symlinks, the real tree carries the assets
 for entry in "$SHELL_ROOT"/*; do
@@ -155,9 +160,13 @@ ShellRoot {
         Emojis.load();
 
         LatexRenderer.latexOutputPath = probe.work + "/out";
-        LatexRenderer.requestRender('\\text{"hi"}\n\\frac{1}{2}');
-        LatexRenderer.latexOutputPath = probe.work + "/out/missing";
+        // The shim (exit 3) first: Process.workingDirectory is a live binding to
+        // microtexBinaryDir and the process starts after createObject returns, so the
+        // real render must be the last one requested or it starts outside /opt/MicroTeX.
+        LatexRenderer.microtexBinaryDir = probe.work + "/bin";
         LatexRenderer.requestRender('\\frac{3}{4}');
+        LatexRenderer.microtexBinaryDir = "/opt/MicroTeX";
+        LatexRenderer.requestRender('\\text{"hi"}\n\\frac{1}{2}');
     }
 
     Timer {
