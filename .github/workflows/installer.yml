@@ -126,10 +126,15 @@ jobs:
         run: |
           set -euo pipefail
           fake="$(mktemp -d)"
+          # A config of the user's own that the install overwrites, so the
+          # backup path has something to prove at the end.
+          mkdir -p "$fake/.config/hypr"
+          echo '-- theirs' > "$fake/.config/hypr/hyprland.lua"
           env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_STATE_HOME \
               -u XDG_BIN_HOME -u XDG_CACHE_HOME \
               HOME="$fake" ./setup install --only-files -y
           test -f "$fake/.config/hypr/hyprland.lua"
+          grep -qx -- '-- theirs' "$fake"/.koompi-dots-backup/*/.config/hypr/hyprland.lua
           test -d "$fake/.config/quickshell/koompi"
           test -x "$fake/.local/bin/koompi-session"
           test -s "$fake/.local/state/koompi/installed-files"
@@ -168,4 +173,5 @@ jobs:
               HOME="$fake" ./setup uninstall -y
           test ! -e "$fake/.config/quickshell/koompi"
           test ! -e "$fake/.local/bin/koompi-session"
-          test -d "$fake/.koompi-dots-backup" || true
+          # ...and the backup of what was there before us is not ours to remove.
+          grep -qx -- '-- theirs' "$fake"/.koompi-dots-backup/*/.config/hypr/hyprland.lua
