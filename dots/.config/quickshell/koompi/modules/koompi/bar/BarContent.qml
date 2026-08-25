@@ -254,6 +254,13 @@ Item { // Bar content region
                             }
                         }
                     }
+                    // Modes the user switched on and may have forgotten: keep
+                    // awake, night light, dictation. Click turns the mode off.
+                    ModeIndicators {
+                        Layout.fillHeight: true
+                        realSpacing: indicatorsRowLayout.realSpacing
+                        color: rightSidebarButton.colText
+                    }
                     Revealer {
                         reveal: Audio.sink?.audio?.muted ?? false
                         Layout.fillHeight: true
