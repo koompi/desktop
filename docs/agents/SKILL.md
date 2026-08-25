@@ -27,6 +27,10 @@ files or call `matugen`/`switchwall.sh` directly from a new script. See
 Planned, not yet implemented — see `docs/agents/hooks.md`. Until it lands, don't invent
 a hook call site; the event you want probably needs a real feature request instead.
 
+**Is it a fix for state an existing user already has (a renamed path, a stale file)?**
+A default change reaches only new users. Read `docs/agents/migrations.md` before writing
+one under `sdata/migrations/`; `koompi-migrate new <slug>` writes the skeleton.
+
 **Is it a self-contained extension someone shouldn't have to fork the shell for?**
 Check `docs/agents/plugins.md` — there's a real (unrelated) Hyprland gesture plugin
 tree at `plugins/`, and a separate, not-yet-built shell-widget plugin convention.
