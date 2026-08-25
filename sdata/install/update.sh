@@ -71,6 +71,8 @@ run_update() {
 
     $DO_SETUPS && run_setups
     $DO_FILES  && install_files
+    # its units ship from dots/, must exist before enabling
+    $DO_SETUPS && setup_services
 
     record_repo_path
 
