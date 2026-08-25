@@ -18,7 +18,6 @@ dots/.config/quickshell/koompi/modules/koompi/sidebarRight/SidebarRightContent.q
 dots/.config/quickshell/koompi/modules/koompi/wallpaperSelector/WallpaperSelectorContent.qml	453
 dots/.config/quickshell/koompi/modules/settings/AiConfig.qml	510
 dots/.config/quickshell/koompi/modules/settings/BackgroundConfig.qml	683
-dots/.config/quickshell/koompi/modules/settings/InterfaceConfig.qml	932
 dots/.config/quickshell/koompi/scripts/colors/switchwall.sh	526
 dots/.config/quickshell/koompi/services/LauncherSearch.qml	508
 dots/.config/quickshell/koompi/services/MemoryService.qml	475

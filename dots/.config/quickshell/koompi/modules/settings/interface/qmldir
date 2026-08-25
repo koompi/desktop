@@ -1,0 +1,15 @@
+# Needed: InterfaceConfig.qml is loaded by path (services/SettingsPages.qml), so
+# quickshell's import scanner never reads its imports and does not generate a
+# qmldir for this directory the way it does for directories reached from shell.qml.
+module qs.modules.settings.interface
+CheatSheetSection CheatSheetSection.qml
+DockSection DockSection.qml
+FontsSection FontsSection.qml
+LockScreenSection LockScreenSection.qml
+NotificationsSection NotificationsSection.qml
+OsdSection OsdSection.qml
+OverlaySection OverlaySection.qml
+OverviewSection OverviewSection.qml
+RegionSelectorSection RegionSelectorSection.qml
+SidebarsSection SidebarsSection.qml
+WallpaperSelectorSection WallpaperSelectorSection.qml
