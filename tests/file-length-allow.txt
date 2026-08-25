@@ -28,4 +28,9 @@ dots/.config/quickshell/koompi/services/ai/ToolRunner.qml	449
 dots/.config/quickshell/koompi/welcome.qml	511
 dots/.local/bin/koompi-quicklook	426
 dots/.local/bin/koompi-remotedesktop-portal	526
+dots/.local/share/koompi/libexec/update	695
 sdata/dist-arch/koompi-branding/files/sddm/theme/Main.qml	437
+shell-services/mpris/src/service.rs	898
+shell-services/network/src/service.rs	1198
+shell-services/tray/src/service.rs	682
+shell-services/tray/src/watcher.rs	683

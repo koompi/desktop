@@ -2,11 +2,12 @@
 # The file-length cap from docs/conventions.md ("File and function length"),
 # enforced as a ratchet. On 2026-08-25 the tree had 35 source files over cap,
 # two of them past 1000 lines (AUDIT D3), and nothing stopped the next one.
-# Every *.qml *.js *.lua *.sh *.zig in git, plus setup, install.sh and the
-# tools in dots/.local/bin, is counted; vendored, generated and test trees are
-# not. A file over its cap fails unless tests/file-length-allow.txt lists it
-# with a line count, and a listed file that has grown past that count fails
-# too, so the list can only shrink. Function length is review, not this test.
+# Every *.qml *.js *.lua *.sh *.zig *.rs in git, plus setup, install.sh and
+# the tools in dots/.local/bin and dots/.local/share/koompi/libexec, is
+# counted; vendored, generated and test trees are not. A file over its cap
+# fails unless tests/file-length-allow.txt lists it with a line count, and a
+# listed file that has grown past that count fails too, so the list can only
+# shrink. Function length is review, not this test.
 #
 # Hooks for exercising the test itself:
 #   FILE_LENGTH_FILES=<file>  one repo-relative path per line, used instead of
@@ -31,7 +32,8 @@ cap_for() {
         *.qml) echo 400 ;;
         *.js|*.lua) echo 300 ;;
         *.sh|setup|dots/.local/bin/*) echo 400 ;;  # install.sh is *.sh
-        *.zig) echo 600 ;;
+        dots/.local/share/koompi/libexec/*) echo 400 ;;  # bash, no extension
+        *.zig|*.rs) echo 600 ;;
         *) return 1 ;;
     esac
 }
