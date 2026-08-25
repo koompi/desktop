@@ -20,6 +20,9 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J10 | Qt apps take ~6 s to open (xcb) | B4 | `hypr/hyprland/env.lua`, `execs.lua`, global-menu daemon | ready | — |
 | J11 | `koompi update` delivers nothing / config defaults never migrate | B1 B2 B3 | `libexec/update`, `sdata/install/update.sh`, `files.sh`, `koompi-migrate`, new tests | ready | — |
 | J12 | published ISO cannot install the desktop | B5 | ISO profile, CI | blocked-on-user | — |
+| J13 | packaged tools list + agent docs | O01 O20 | `koompi-shell/PKGBUILD`, `docs/agents/{hooks,plugins}.md`, new test | ready | — |
+| J14 | low-RAM defaults (zram, oomd, shutdown) | O06 | new sysdefaults package, meta depends, `setups.sh` one fn | ready | — |
+| J15 | lid lock, bar mode indicators, keybind descriptions | O07 O11 O04 | `keybinds.lua`, bar QML, new `koompi-lid`, new test | ready | — |
 
 Contended: `tests/file-length-allow.txt` is written by J01 and later trimmed by J09 only; refactor jobs never touch it (a shrunk file still passes). `tests/run.sh` is not owned by anyone: it auto-discovers `test_*.sh` (`tests/run.sh:21`).
 
