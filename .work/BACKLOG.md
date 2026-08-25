@@ -28,6 +28,7 @@ Gate for every job: those three stay green, the job's own acceptance demonstrati
 | J18 | Quickshell services bugs | H7 M6 M7 M8 M13 M14 M16 L2-L5 L7 L11 L12 L13 | 17 files under `services/` | ready | — |
 | J19 | Quickshell modules bugs | H8 M9-M12 M15 M17-M19 L1 L6 L8-L17 | ~30 files under `modules/` | after J15 | — |
 | J20 | lock screen unlocks itself after 2.6 s | J15 finding | `modules/koompi/lock/*`, `common/panels/lock/pam/*`, new test | ready | — |
+| J22 | hypridle output to the journal / packaged unit; prove Lock handling | J15 finding 3 | `execs.lua` (one line), optional user unit + `setup_services`, new test | ready | — |
 | — | C1 (start-hyprland) | FALSE: owned by stock hyprland 0.56.2 | — | closed | — |
 | — | H1 H2 M21 | folded into J11 (addendum sent) | — | — | — |
 
