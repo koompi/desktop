@@ -225,12 +225,20 @@ Variants {
         Process {
             id: getWallpaperSizeProc
             property string path: bgRoot.wallpaperPath
-            command: ["magick", "identify", "-format", "%w %h", path]
+            // [0]: first frame only. On an animated image identify prints one
+            // "%w %h" per frame, back to back, and the second number comes out wrong.
+            command: ["magick", "identify", "-format", "%w %h", `${path}[0]`]
             stdout: StdioCollector {
                 id: wallpaperSizeOutputCollector
                 onStreamFinished: {
-                    const output = wallpaperSizeOutputCollector.text;
+                    const output = wallpaperSizeOutputCollector.text.trim();
                     const [width, height] = output.split(" ").map(Number);
+                    if (!(Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0)) {
+                        // Nothing or garbage from identify: keep the previous size
+                        // rather than feeding NaN/Infinity into every offset below.
+                        console.warn(`[Background] Could not read the size of ${getWallpaperSizeProc.path}: identify printed "${output}"`);
+                        return;
+                    }
                     const [screenWidth, screenHeight] = [bgRoot.screen.width, bgRoot.screen.height];
                     bgRoot.wallpaperWidth = width;
                     bgRoot.wallpaperHeight = height;
