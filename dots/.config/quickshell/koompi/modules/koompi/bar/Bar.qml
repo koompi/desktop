@@ -14,7 +14,22 @@ Scope {
     id: bar
     property bool showBarBackground: Config.options.bar.showBackground
 
+    // The bar on the focused monitor, or the first one when Hyprland has no
+    // answer (a nested test instance under cage).
+    function focusedBarWindow() {
+        const name = Hyprland.focusedMonitor?.name ?? "";
+        let first = null;
+        for (let i = 0; i < barVariants.instances.length; i++) {
+            const win = barVariants.instances[i].item;
+            if (!win) continue;
+            if (win.screen?.name === name) return win;
+            first = first ?? win;
+        }
+        return first;
+    }
+
     Variants {
+        id: barVariants
         // For each monitor
         model: {
             const screens = Quickshell.screens;
@@ -52,6 +67,8 @@ Scope {
                 }
                 property bool superShow: false
                 property bool mustShow: hoverRegion.containsMouse || superShow
+                // Which right-section popup the keyboard holds open (StyledPopup.keyIndex), 0 for none
+                property int keyboardPopup: 0
 
                 // The bar arrives rather than appears. One frame off screen, then
                 // the autohide slide brings it down - reusing that Behavior rather
@@ -242,6 +259,25 @@ Scope {
 
         function open(): void {
             GlobalStates.barOpen = true
+        }
+
+        // Super+Ctrl+N (hyprland/keybinds_shell_extra.lua). The right-section
+        // popups, left to right as the bar renders them; one int per bar
+        // window, so opening one closes the others and Escape clears it:
+        //   1 agent usage   2 battery   3 pomodoro   4 clock
+        // 5-9 do nothing today. Media (Super+M) and the indicator cluster (the
+        // right sidebar, Super+N) have keys of their own and are not counted.
+        function popup(n: int): void {
+            const win = bar.focusedBarWindow();
+            if (!win) return;
+            win.keyboardPopup = (win.keyboardPopup === n) ? 0 : n;
+        }
+
+        function popupClose(): void {
+            for (let i = 0; i < barVariants.instances.length; i++) {
+                const win = barVariants.instances[i].item;
+                if (win) win.keyboardPopup = 0;
+            }
         }
     }
 

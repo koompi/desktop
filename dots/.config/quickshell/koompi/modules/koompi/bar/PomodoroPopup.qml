@@ -6,6 +6,7 @@ import QtQuick.Layouts
 
 StyledPopup {
     id: root
+    keyIndex: 3 // Super+Ctrl+3; the order is listed in Bar.qml
     property bool isBreak: TimerService.pomodoroBreak
     property bool isLongBreak: TimerService.pomodoroLongBreak
 

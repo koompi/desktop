@@ -6,6 +6,7 @@ import QtQuick.Layouts
 
 StyledPopup {
     id: root
+    keyIndex: 4 // Super+Ctrl+4; the order is listed in Bar.qml
     property string formattedDate: Qt.locale().toString(DateTime.clock.date, "dddd, MMMM dd, yyyy")
     property string formattedTime: DateTime.time
     property string formattedUptime: DateTime.uptime

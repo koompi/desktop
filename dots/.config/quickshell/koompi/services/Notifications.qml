@@ -294,7 +294,7 @@ Singleton {
     }
 
     // `qs -c koompi ipc call notifications ...`, the keyboard's way at a toast
-    // (hyprland/keybinds_notifications.lua) and koompi-toggle's `silent`.
+    // (hyprland/keybinds_shell_extra.lua) and koompi-toggle's `silent`.
     // dismiss* take toasts off the popup layer the way their timeout does; the
     // history in the right sidebar keeps them, so a chord cannot lose one.
     IpcHandler {

@@ -8,6 +8,7 @@ import QtQuick.Layouts
 
 StyledPopup {
     id: root
+    keyIndex: 1 // Super+Ctrl+1; the order is listed in Bar.qml
 
     // Fixed display order for the providers we know about; anything else
     // AgentUsage.providers might carry in future (unlikely, but the JSON

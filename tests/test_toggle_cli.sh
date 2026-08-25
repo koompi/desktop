@@ -4,7 +4,7 @@
 # shim here that logs its argv and plays a shell whose switch is on, off,
 # missing, or too old to know the target, so every cell of the table (three
 # switches x four verbs) is driven without an IPC call reaching the session.
-# The notification chords (O12) are three files wide, keybinds_notifications.lua
+# The notification chords (O12) are three files wide, keybinds_shell_extra.lua
 # -> hyprland.lua -> Notifications.qml, so their names are pinned to each other
 # the way test_sidebar_drawer_binds.sh pins the drawer binds.
 set -uo pipefail
@@ -14,7 +14,7 @@ TOOL="$REPO_ROOT/dots/.local/bin/koompi-toggle"
 SHELL_ROOT="$REPO_ROOT/dots/.config/quickshell/koompi"
 SERVICES="$SHELL_ROOT/services"
 HYPR="$REPO_ROOT/dots/.config/hypr"
-BINDS="$HYPR/hyprland/keybinds_notifications.lua"
+BINDS="$HYPR/hyprland/keybinds_shell_extra.lua"
 
 failed=0
 fail() { printf 'FAIL: %s\n' "$1" >&2; failed=1; }
@@ -100,15 +100,15 @@ echo "ok   koompi-toggle: 3 switches x 4 verbs, exit 0/1/2/64 as documented"
 # The chords: four binds, each described (the cheatsheet is built from the
 # description), each naming an IPC function Notifications.qml defines; the
 # loader requires the file right after keybinds.lua.
-count="$(grep -c '^hl.bind(' "$BINDS")"
-(( count == 4 )) || fail "expected 4 hl.bind( in keybinds_notifications.lua, found $count"
-(( $(grep -c 'description = "' "$BINDS") == 4 )) || fail "not every notification bind has a description"
+count="$(grep -c '^hl.bind(.*notifications \.\. ' "$BINDS")"
+(( count == 4 )) || fail "expected 4 notification hl.bind( in keybinds_shell_extra.lua, found $count"
+(( $(grep -c 'description = "Shell: Notifications - ' "$BINDS") == 4 )) || fail "not every notification bind has a description"
 while read -r fn; do
     grep -q "function $fn(): string" "$SERVICES/Notifications.qml" \
-        || fail "keybinds_notifications.lua calls notifications $fn but Notifications.qml has no such IPC function"
+        || fail "keybinds_shell_extra.lua calls notifications $fn but Notifications.qml has no such IPC function"
 done < <(grep -oE 'notifications \.\. " [a-zA-Z]+"' "$BINDS" | awk '{print $4}' | tr -d '"' | sort -u)
-grep -A2 'require("hyprland.keybinds")' "$HYPR/hyprland.lua" | grep -q 'require("hyprland.keybinds_notifications")' \
-    || fail "hyprland.lua does not require hyprland.keybinds_notifications right after hyprland.keybinds"
+grep -A2 'require("hyprland.keybinds")' "$HYPR/hyprland.lua" | grep -q 'require("hyprland.keybinds_shell_extra")' \
+    || fail "hyprland.lua does not require hyprland.keybinds_shell_extra right after hyprland.keybinds"
 grep -qE '\+ Comma"' "$HYPR/hyprland/keybinds.lua" && fail "keybinds.lua now binds Comma too; the notification chords collide"
 for f in "$BINDS" "$HYPR/hyprland.lua"; do
     if command -v luac >/dev/null 2>&1; then

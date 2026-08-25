@@ -20,10 +20,21 @@ LazyLoader {
     property bool clickToShow: Config.options.bar.tooltips.clickToShow
     property bool pinned: false
 
-    active: clickToShow ? pinned : (hoverTarget && hoverTarget.containsMouse)
+    // Keyboard: `qs ipc call bar popup N` (Bar.qml) sets keyboardPopup on the
+    // bar window of the focused monitor; the popup whose keyIndex matches opens.
+    // A widget that is not on the bar right now has no place to hang from.
+    property int keyIndex: 0
+    readonly property var barWindow: root.QsWindow?.window ?? null
+    readonly property bool keyboardOpen: root.keyIndex > 0 && (root.barWindow?.keyboardPopup ?? 0) === root.keyIndex
+        && (root.hoverTarget?.visible ?? false)
+
+    active: keyboardOpen || (clickToShow ? pinned : (hoverTarget && hoverTarget.containsMouse))
 
     function toggle() { root.pinned = !root.pinned; }
-    function close() { root.pinned = false; }
+    function close() {
+        root.pinned = false;
+        if (root.keyboardOpen) root.barWindow.keyboardPopup = 0;
+    }
 
     // Named property so it isn't captured by the `contentItem` default property.
     property Connections clickWatcher: Connections {
@@ -79,18 +90,27 @@ LazyLoader {
         }
         WlrLayershell.namespace: "quickshell:popup"
         WlrLayershell.layer: WlrLayer.Overlay
+        // Only a keyboard-opened popup takes the keyboard, and only OnDemand:
+        // Exclusive breaks click-outside-to-close (docs/navigation.md).
+        WlrLayershell.keyboardFocus: root.keyboardOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-        // Click mode: register with the shared focus grab so a click anywhere
-        // outside the popup dismisses it.
+        // Click and keyboard modes: register with the shared focus grab so a
+        // click anywhere outside the popup dismisses it. A hover popup that is
+        // then keyboard-opened joins the grab late, through the Connections.
+        readonly property bool dismissable: root.clickToShow || root.keyboardOpen
         Component.onCompleted: {
-            if (root.clickToShow) GlobalFocusGrab.addDismissable(popupWindow);
+            if (popupWindow.dismissable) GlobalFocusGrab.addDismissable(popupWindow);
         }
         Component.onDestruction: {
-            if (root.clickToShow) GlobalFocusGrab.removeDismissable(popupWindow);
+            GlobalFocusGrab.removeDismissable(popupWindow);
+        }
+        onDismissableChanged: {
+            if (popupWindow.dismissable) GlobalFocusGrab.addDismissable(popupWindow);
+            else GlobalFocusGrab.removeDismissable(popupWindow);
         }
         Connections {
             target: GlobalFocusGrab
-            enabled: root.clickToShow
+            enabled: popupWindow.dismissable
             function onDismissed() { root.close(); }
         }
 
@@ -113,6 +133,9 @@ LazyLoader {
             color: Appearance.m3colors.m3surfaceContainer
             radius: Appearance.rounding.small
             children: [root.contentItem]
+
+            focus: root.keyboardOpen
+            Keys.onEscapePressed: root.close()
 
             border.width: 1
             border.color: Appearance.colors.colLayer0Border

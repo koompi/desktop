@@ -51,6 +51,8 @@ The horizontal bar and the vertical bar are alternative bars, so a given session
 | Snap preview | none of its own, rides `Super+drag` | none | none | none | no |
 | Workspace hint | none | shown under the workspaces widget on a first run | none | none | no |
 | Screensaver | none | none | none | none | yes, called by hypridle at 120 s idle and closed on resume; any key or pointer motion on it also closes it, and the lock replaces it |
+| Bar popups: 1 agent usage, 2 battery, 3 pomodoro, 4 clock | `Super+Ctrl+1`..`4`, again or `Escape` to close | hover the widget | none | none | yes, `bar popup N`, `bar popupClose` |
+| Update badge | none | in the indicator cluster while updates are pending; click runs `koompi update`, middle-click rechecks | none | none | no |
 
 Getting to one bar button per sidebar took a change on 2026-07-30.
 Three bar sections were left-click toggles for a sidebar on top of the dedicated button inside that same section: the right section of the horizontal bar, and both the top and bottom sections of the vertical bar.
@@ -286,6 +288,7 @@ Conformance as of 2026-07-30:
 | Left sidebar | dismissable | unconditional `OnDemand`, harmless because the window is gated on `sidebarLeftOpen` |
 | Wallpaper selector | dismissable | unconditional `OnDemand`, window gated by its loader |
 | Media controls | dismissable | not set |
+| Bar popups | dismissable while keyboard-opened or click-pinned | `OnDemand` while keyboard-opened, so `Escape` reaches it |
 | Cheatsheet | dismissable | gated on `cheatsheetOpen` |
 | On-screen keyboard | persistent, correctly | commented out |
 | Global menu | own `HyprlandFocusGrab` over the bar and every open popup | bar takes focus only while a menu is open |

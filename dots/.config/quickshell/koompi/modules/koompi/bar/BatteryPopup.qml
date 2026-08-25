@@ -6,6 +6,7 @@ import QtQuick.Layouts
 
 StyledPopup {
     id: root
+    keyIndex: 2 // Super+Ctrl+2; the order is listed in Bar.qml
     
     ColumnLayout {
         id: columnLayout
