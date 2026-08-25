@@ -126,6 +126,9 @@ configure_stack() {
         say "$file already accepts the finger; left as is."
         return 0
     fi
+    # a sudo stack edited wrong locks the user out of sudo: keep the original
+    sudo cp -a -- "$file" "$file.koompi-fingerprint.bak"
+    say "$file: backup at $file.koompi-fingerprint.bak"
     if grep -q "$gate_marker" "$file"; then
         # A gate whose module went missing is dropped and re-added with it.
         sudo sed -i "/$gate_marker/d" "$file"
