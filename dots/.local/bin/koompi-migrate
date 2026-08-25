@@ -6,27 +6,40 @@
 # (shell QML, shipped Hyprland modules) from the packaged defaults into the
 # user config, taking a tar backup first.
 #
-# Never touched, by design:
+# Never touched by the sync, by design:
 #   ~/.config/koompi/            user data; config.json is the source of truth
 #   ~/.config/hypr/custom/       user overrides
 #   ~/.config/hypr/monitors.lua, workspaces.conf   machine-local
 #   ~/.config/hypr/hyprlock.conf, hypridle.conf    machine-tuned
+# `refresh <path>` is the one deliberate exception: it puts the packaged copy
+# of the single file you name back, after backing yours up.
 #
-# Dry run by default; nothing changes without --apply.
+# Dry run by default; the sync changes nothing without --apply.
 set -euo pipefail
 
+SELF="$(readlink -f -- "$0" 2>/dev/null || echo "$0")"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 STATE_DIR="${KOOMPI_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/koompi}"
 BACKUP_DIR="$STATE_DIR/backups"
 LOG_FILE="$STATE_DIR/logs/migrate.log"
 CONFIG_FILE="${KOOMPI_CONFIG_FILE:-$XDG_CONFIG_HOME/koompi/config.json}"
 MIGRATIONS_MARKER_DIR="$STATE_DIR/migrations"
+# Packaged defaults, best source first: the koompi-shell package tree, then
+# the /etc/skel seed shipped by koompi-hyprland-config. The env overrides
+# exist so the flow is testable without installed packages.
+SKEL="${KOOMPI_MIGRATE_SKEL:-/etc/skel}"
+XDG_SYS="${KOOMPI_MIGRATE_XDG:-/etc/xdg}"
+
+die() { echo "koompi-migrate: $*" >&2; exit 1; }
 
 usage() {
     cat <<'USAGE'
 Usage: koompi-migrate [--apply]
        koompi-migrate --pending
-       koompi-migrate run
+       koompi-migrate run [--hold]
+       koompi-migrate notify
+       koompi-migrate refresh <path-under-~>
+       koompi-migrate new <slug>
 
 Sync the KOOMPI-owned code trees (shell QML, shipped Hyprland modules) from
 the packaged defaults into your user config. Without --apply this is a dry
@@ -35,9 +48,10 @@ run that only reports what would change.
 --apply backs up the affected trees to ~/.local/state/koompi/backups/ as a
 tarball before changing anything. Your Hyprland overrides
 (~/.config/hypr/custom/) and machine-local files (monitors.lua,
-workspaces.conf, hyprlock.conf, hypridle.conf) are never touched.
-~/.config/koompi/config.json keeps every value you set; only defaults you
-never changed are brought up to the packaged ones (backed up first as
+workspaces.conf, hyprlock.conf, hypridle.conf) are never touched. Hyprland's
+config autoreload is paused while hyprland/ is written and reloaded once
+after. ~/.config/koompi/config.json keeps every value you set; only defaults
+you never changed are brought up to the packaged ones (backed up first as
 config.json.bak-<timestamp>), using the snapshot saved by the last update.
 
 --pending lists point-fix migrations (sdata/migrations/) not yet applied for
@@ -45,7 +59,19 @@ this user; exits 0 if any are pending, 1 if none.
 
 run applies every pending migration in order, recording completion per user
 under ~/.local/state/koompi/migrations/. A failing migration stops the run
-and later ones are left pending.
+and later ones are left pending. --hold waits for Enter afterwards, for the
+terminal the notification opens.
+
+notify is what koompi-migrate-notify.service runs at login: with migrations
+pending, it waits for the shell's notification server and sends a toast whose
+click opens a terminal running `koompi-migrate run --hold`.
+
+refresh <path> puts the packaged default back for one file, e.g.
+`refresh .config/hypr/hypridle.conf`. Your copy is saved under
+~/.local/state/koompi/backups/ first and the diff between them is printed.
+
+new <slug> writes a migration skeleton, sdata/migrations/<unix-ts>-<slug>.sh,
+into this checkout (refuses elsewhere). See docs/agents/migrations.md.
 USAGE
 }
 
@@ -58,9 +84,8 @@ migrations_dir() {
         printf '%s\n' /usr/share/koompi/migrations
         return 0
     fi
-    local self repo_root
-    self="$(readlink -f -- "$0" 2>/dev/null || echo "$0")"
-    repo_root="$(cd -- "$(dirname -- "$self")/../../.." 2>/dev/null && pwd)" || return 1
+    local repo_root
+    repo_root="$(cd -- "$(dirname -- "$SELF")/../../.." 2>/dev/null && pwd)" || return 1
     [[ -d "$repo_root/sdata/migrations" ]] || return 1
     printf '%s\n' "$repo_root/sdata/migrations"
 }
@@ -76,15 +101,39 @@ pending_migrations() {
     done
 }
 
+# The non-sync subcommands live next door, the way libexec/update sources
+# update-lib.sh: /usr/lib/koompi when packaged, ../share/koompi/libexec in the
+# dots tree. Fail loud rather than run with half the commands missing.
+migrate_lib=""
+for candidate in \
+    "$(dirname -- "$SELF")/../share/koompi/libexec/migrate-lib.sh" \
+    /usr/lib/koompi/migrate-lib.sh \
+    "${XDG_DATA_HOME:-$HOME/.local/share}/koompi/libexec/migrate-lib.sh"; do
+    [[ -f "$candidate" ]] && { migrate_lib="$candidate"; break; }
+done
+[[ -n "$migrate_lib" ]] || die "migrate-lib.sh not found next to this script or in /usr/lib/koompi; reinstall koompi-shell"
+# shellcheck source=../share/koompi/libexec/migrate-lib.sh
+source "$migrate_lib"
+
 mode=resync
 apply=false
+arg="${2:-}"
 case "${1:-}" in
     --apply) apply=true ;;
     --pending) mode=pending ;;
     run) mode=run ;;
+    notify) mode=notify ;;
+    refresh) mode=refresh; [[ -n "$arg" ]] || die "refresh needs a path, e.g. refresh .config/hypr/hypridle.conf" ;;
+    new) mode=new; [[ -n "$arg" ]] || die "new needs a slug, e.g. new relink-nvim-theme" ;;
     -h|--help|help) usage; exit 0 ;;
     "") ;;
     *) echo "koompi-migrate: unknown argument '$1'" >&2; usage >&2; exit 1 ;;
+esac
+
+case "$mode" in
+    notify) notify_pending; exit 0 ;;
+    refresh) refresh_file "$arg"; exit 0 ;;
+    new) new_migration "$arg"; exit 0 ;;
 esac
 
 if [[ "$mode" == pending ]]; then
@@ -93,6 +142,14 @@ if [[ "$mode" == pending ]]; then
     [[ ${#pending[@]} -gt 0 ]] || exit 1
     printf '%s\n' "${pending[@]}"
     exit 0
+fi
+
+if [[ "$mode" == run && "$arg" == --hold ]]; then
+    rc=0
+    "$SELF" run || rc=$?
+    printf '\nPress Enter to close this window.'
+    [[ ! -t 0 ]] || read -rs
+    exit "$rc"
 fi
 
 if [[ "$mode" == run ]]; then
@@ -116,13 +173,8 @@ if [[ "$mode" == run ]]; then
     exit 0
 fi
 
-command -v rsync >/dev/null || { echo "koompi-migrate: rsync required" >&2; exit 1; }
+command -v rsync >/dev/null || die "rsync required"
 
-# Packaged defaults, best source first: the koompi-shell package tree, then
-# the /etc/skel seed shipped by koompi-hyprland-config. The env overrides
-# exist so the flow is testable without installed packages.
-SKEL="${KOOMPI_MIGRATE_SKEL:-/etc/skel}"
-XDG_SYS="${KOOMPI_MIGRATE_XDG:-/etc/xdg}"
 shell_src=""
 for d in "$XDG_SYS/quickshell/koompi" "$SKEL/.config/quickshell/koompi"; do
     [[ -d "$d" ]] && { shell_src="$d"; break; }
@@ -131,8 +183,7 @@ hypr_src=""
 [[ -d "$SKEL/.config/hypr/hyprland" ]] && hypr_src="$SKEL/.config/hypr"
 
 if [[ -z "$shell_src" && -z "$hypr_src" ]]; then
-    echo "koompi-migrate: no packaged defaults found (install koompi-shell or koompi-hyprland-config)" >&2
-    exit 1
+    die "no packaged defaults found (install koompi-shell or koompi-hyprland-config)"
 fi
 
 # Each pair is "src|dst|extra rsync args". A missing dst is skipped: that tree
@@ -148,6 +199,7 @@ echo "koompi-migrate: $($apply && echo applying || echo 'dry run (use --apply to
 
 changes=0
 dirty=()
+hypr_dirty=false
 for pair in "${pairs[@]}"; do
     IFS='|' read -r src dst extra <<<"$pair"
     if [[ ! -e "$dst" ]]; then
@@ -164,6 +216,7 @@ for pair in "${pairs[@]}"; do
         echo "  sync  ${dst/#$HOME/\~}  ($delta changes from $src)"
         changes=$((changes + delta))
         dirty+=("$pair")
+        [[ "$dst" != "$XDG_CONFIG_HOME/hypr/"* ]] || hypr_dirty=true
     fi
 done
 
@@ -177,11 +230,19 @@ if $apply && [[ "$changes" -gt 0 ]]; then
     done
     tar -C "$HOME" -czf "$tarball" "${rels[@]}"
     echo "  backup written: ${tarball/#$HOME/\~}"
+    ! $hypr_dirty || pause_autoreload
     for pair in "${dirty[@]}"; do
         IFS='|' read -r src dst extra <<<"$pair"
         # shellcheck disable=SC2086
         rsync -ac --delete $extra "$src" "$dst"
     done
+    # Reload while the watcher is still off, then hand the option back: the
+    # reload records the new mtimes, so re-enabling does not trigger a second one.
+    if [[ -n "$autoreload_prev" ]]; then
+        hyprctl reload >/dev/null && echo "  hyprland config reloaded" \
+            || echo "  note  hyprctl reload failed; run 'koompi reload'" >&2
+        resume_autoreload
+    fi
 fi
 
 # Config defaults migration (B2): code trees above are synced wholesale, but a
@@ -192,10 +253,9 @@ fi
 # saves; without one there is no honest baseline, so this run only starts
 # tracking. The engine lives in libexec/update so both routes cannot drift.
 migrate_config_defaults() {
-    local self tool new_dump snapshot had_snapshot=false
-    self="$(readlink -f -- "$0" 2>/dev/null || echo "$0")"
+    local tool new_dump snapshot had_snapshot=false
     for tool in \
-        "$(dirname -- "$self")/../share/koompi/libexec/update" \
+        "$(dirname -- "$SELF")/../share/koompi/libexec/update" \
         /usr/lib/koompi/update \
         "${XDG_DATA_HOME:-$HOME/.local/share}/koompi/libexec/update"; do
         [[ -x "$tool" ]] && break

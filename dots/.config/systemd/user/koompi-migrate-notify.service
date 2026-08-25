@@ -1,11 +1,22 @@
 [Unit]
 Description=Notify when per-user KOOMPI migrations are pending
+# Login-only, on purpose. A .path unit watching /usr/share/koompi/migrations
+# would fire on every package upgrade, including `koompi update`, which runs
+# koompi-migrate itself a step later, so it would announce migrations that are
+# already being applied in the visible update terminal. Once per login is the
+# only trigger that cannot collide with a running update
+# (omarchy default/systemd/user/omarchy-migrate-notify.service:2-13).
 PartOf=graphical-session.target
+# After, never Before: `notify` waits for the shell to own
+# org.freedesktop.Notifications, and must not hold the target open doing so.
 After=graphical-session.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'if %h/.local/bin/koompi-migrate --pending >/dev/null; then notify-send -a KOOMPI "Desktop update available" "Run koompi-migrate run to finish applying it."; fi'
+# Waits (bounded) for the notification server, then sends through
+# koompi-notify-send with --exec so the toast opens a terminal running
+# `koompi-migrate run --hold`. Exits 0 with nothing pending.
+ExecStart=%h/.local/bin/koompi-migrate notify
 
 [Install]
 WantedBy=graphical-session.target
