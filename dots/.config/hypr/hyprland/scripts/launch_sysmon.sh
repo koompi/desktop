@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-# Unique app_id so rules.lua can pin it to special:sysmon.
-exec wezterm start --class sysmon-scratch -- sh -c 'btop || htop || top'
+# rules.lua pins TUI.sysmon-scratch to special:sysmon
+exec koompi-launch-tui sysmon-scratch sh -c 'btop || htop || top'

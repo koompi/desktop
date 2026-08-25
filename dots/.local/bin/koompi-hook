@@ -26,8 +26,11 @@ order. Each hook inherits your environment, the given env=value pairs,
 and KOOMPI_HOOK_EVENT=<event>.
 
 Events KOOMPI fires today:
-  theme-set     after koompi-theme applies a change successfully
-  post-update   after `koompi update` finishes
+  theme-set         after koompi-theme applies a change successfully
+  post-update       after `koompi update` finishes
+  battery-low       the battery fell to battery.low unplugged (shell)
+  battery-critical  the same at battery.critical; both carry
+                    KOOMPI_HOOK_BATTERY_PERCENT
 
 A missing event directory is a silent no-op. A failing hook is logged to
 ~/.local/state/koompi/logs/hooks.log and never aborts the caller.

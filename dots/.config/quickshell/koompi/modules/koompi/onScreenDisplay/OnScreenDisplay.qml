@@ -9,10 +9,16 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import qs.modules.koompi.onScreenDisplay.indicators
 
 Scope {
     id: root
     property string protectionMessage: ""
+    // koompi-osd's last request, shown while currentIndicator is "message"
+    property string messageIcon: ""
+    property string messageText: ""
+    property real messageProgress: -1 // -1: no bar
+    property int messageDuration: 0 // 0: Config.options.osd.timeout
     property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
 
     property string currentIndicator: "volume"
@@ -31,14 +37,15 @@ Scope {
         },
     ]
 
-    function triggerOsd() {
+    function triggerOsd(duration) {
+        root.messageDuration = duration > 0 ? duration : 0;
         GlobalStates.osdVolumeOpen = true;
         osdTimeout.restart();
     }
 
     Timer {
         id: osdTimeout
-        interval: Config.options.osd.timeout
+        interval: root.messageDuration > 0 ? root.messageDuration : Config.options.osd.timeout
         repeat: false
         running: false
         onTriggered: {
@@ -156,7 +163,17 @@ Scope {
 
                         Loader {
                             id: osdIndicatorLoader
-                            source: root.indicators.find(i => i.id === root.currentIndicator)?.sourceUrl
+                            active: root.currentIndicator !== "message"
+                            source: root.indicators.find(i => i.id === root.currentIndicator)?.sourceUrl ?? ""
+                        }
+                        // inline, not a table row: a URL-loaded file cannot see root
+                        Loader {
+                            active: root.currentIndicator === "message"
+                            sourceComponent: OsdMessage {
+                                icon: root.messageIcon
+                                message: root.messageText
+                                progress: root.messageProgress
+                            }
                         }
 
                         Item {
@@ -203,6 +220,25 @@ Scope {
         }
     }
 
+    IpcHandler {
+        // koompi-osd; progress 0..100 or negative for no bar, duration 0 = timeout
+        target: "osd"
+
+        function show(icon: string, message: string, progress: int, duration: int): string {
+            root.protectionMessage = "";
+            root.messageIcon = icon;
+            root.messageText = message;
+            root.messageProgress = progress < 0 ? -1 : Math.min(progress, 100) / 100;
+            root.currentIndicator = "message";
+            root.triggerOsd(duration);
+            return "ok";
+        }
+
+        function hide(): string {
+            GlobalStates.osdVolumeOpen = false;
+            return "ok";
+        }
+    }
     IpcHandler {
         target: "osdVolume"
 

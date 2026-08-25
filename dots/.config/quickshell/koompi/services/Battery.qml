@@ -46,6 +46,12 @@ Singleton {
     readonly property real health: root.pack?.health ?? 0
     readonly property int cycleCount: root.pack?.cycle_count ?? 0
 
+    // docs/agents/hooks.md; a machine without koompi-hook gets one shell-log warning
+    function fireHook(event) {
+        Quickshell.execDetached(["koompi-hook", event, "--",
+            "KOOMPI_HOOK_BATTERY_PERCENT=" + Math.round(root.percentage * 100)]);
+    }
+
     onIsLowAndNotChargingChanged: {
         if (!root.available || !isLowAndNotCharging) return;
         Quickshell.execDetached([
@@ -58,6 +64,7 @@ Singleton {
         ])
 
         if (root.soundEnabled) Audio.playSystemSound("dialog-warning");
+        root.fireHook("battery-low");
     }
 
     onIsCriticalAndNotChargingChanged: {
@@ -72,6 +79,7 @@ Singleton {
         ]);
 
         if (root.soundEnabled) Audio.playSystemSound("suspend-error");
+        root.fireHook("battery-critical");
     }
 
     onIsSuspendingAndNotChargingChanged: {

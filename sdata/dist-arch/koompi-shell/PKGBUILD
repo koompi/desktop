@@ -42,12 +42,14 @@ _tools=(
   koompi-health
   koompi-hook
   koompi-launch
+  koompi-launch-tui
   koompi-launch-webapp
   koompi-lid
   koompi-litert-lm-watchdog
   koompi-logout
   koompi-migrate
   koompi-notify-send
+  koompi-osd
   koompi-plugin
   koompi-quicklook
   koompi-reload

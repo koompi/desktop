@@ -89,11 +89,14 @@ hl.window_rule({match = {class = "^(term-scratch)$" },                       flo
 -- the size rule and fall back to centered.
 hl.window_rule({match = {class = "^(term-scratch)$" },                       size = {"(monitor_w*0.42)", "(monitor_h-52)"} })
 hl.window_rule({match = {class = "^(term-scratch)$" },                       move = {"(monitor_w*0.58-16)", "(46)"} })
--- System monitor: SUPER + SHIFT + Escape (btop, falling back to htop/top)
-hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     workspace = "special:sysmon silent"})
-hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     float = true})
-hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     size = {"(monitor_w*0.7)", "(min(monitor_w*0.45, monitor_h*0.8))"} })
-hl.window_rule({match = {class = "^(sysmon-scratch)$" },                     center = true})
+-- koompi-launch-tui windows (class TUI.<app-id>): floated like the portal chooser;
+-- a named rule below still wins for its own app-id, later rules apply last.
+hl.window_rule({match = {class = "^TUI\\." },                                 float = true})
+hl.window_rule({match = {class = "^TUI\\." },                                 center = true})
+hl.window_rule({match = {class = "^TUI\\." },                                 size = {"(monitor_w*0.60)", "(monitor_h*0.65)"} })
+-- System monitor: SUPER + backslash (scripts/launch_sysmon.sh, via koompi-launch-tui)
+hl.window_rule({match = {class = "^(TUI\\.sysmon-scratch)$" },                workspace = "special:sysmon silent"})
+hl.window_rule({match = {class = "^(TUI\\.sysmon-scratch)$" },                size = {"(monitor_w*0.7)", "(min(monitor_w*0.45, monitor_h*0.8))"} })
 
 -- Normal browser classes only, never the chrome --app widget class, so the
 -- WhatsApp/Telegram/Discord widgets stay on their special workspaces.

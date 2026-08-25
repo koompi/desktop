@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# koompi-launch-tui - a terminal program in a window classed TUI.<app-id>,
+# so one rule in hyprland/rules.lua floats every TUI and a named one can still
+# be pinned. Terminal order is `terminal` in hyprland/variables.lua; the
+# scope comes from koompi-launch (dots/.local/bin/koompi-launch, app.slice).
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-launch-tui <app-id> <command> [args...]
+
+Runs COMMAND in a floating terminal whose window class is TUI.<app-id>.
+Exit status: 64 usage, 69 no supported terminal installed, else koompi-launch's.
+USAGE
+}
+
+case "${1:-}" in
+    -h|--help|help) usage; exit 0 ;;
+esac
+[[ $# -ge 2 ]] || { echo "koompi-launch-tui: app-id and command required" >&2; usage >&2; exit 64; }
+app_id="$1"; shift
+[[ "$app_id" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || {
+    echo "koompi-launch-tui: invalid app-id '$app_id' (letters, digits, . _ -)" >&2
+    exit 64
+}
+class="TUI.$app_id"
+
+term=""
+for t in wezterm foot kitty alacritty; do
+    if command -v "$t" >/dev/null 2>&1; then term="$t"; break; fi
+done
+case "$term" in
+    wezterm)   set -- wezterm start --class "$class" -- "$@" ;;
+    foot)      set -- foot --app-id "$class" -- "$@" ;;
+    kitty)     set -- kitty --class "$class" -- "$@" ;;
+    alacritty) set -- alacritty --class "$class" -e "$@" ;;
+    *) echo "koompi-launch-tui: none of wezterm, foot, kitty, alacritty is installed" >&2; exit 69 ;;
+esac
+
+exec koompi-launch --id "$app_id" -- "$@"
