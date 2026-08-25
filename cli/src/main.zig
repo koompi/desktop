@@ -24,6 +24,7 @@ const commands = [_]Command{
     .{ .name = "signature", .helper = "koompi-signature", .usage = "koompi signature <capture|from|install-okular|list> ...", .summary = "Capture and install document signatures" },
     .{ .name = "migrate", .helper = "koompi-migrate", .usage = "koompi migrate [--apply]", .summary = "Preview or apply packaged-default migration" },
     .{ .name = "hook", .helper = "koompi-hook", .usage = "koompi hook <event> [-- env=value ...]", .summary = "Run lifecycle hooks for an event" },
+    .{ .name = "toggle", .helper = "koompi-toggle", .usage = "koompi toggle <keep-awake|night-light|silent> [on|off|toggle|status]", .summary = "Flip keep-awake, night light or notification silencing" },
     .{ .name = "webapp", .helper = "@webapp", .usage = "koompi webapp <install|remove> ...", .summary = "Install or remove a website as a desktop app" },
     .{ .name = "plugin", .helper = "koompi-plugin", .usage = "koompi plugin <list|clone|enable|disable|remove|validate> ...", .summary = "Manage bar widget plugins" },
     .{ .name = "snapshot", .helper = "koompi-snapshot", .usage = "koompi snapshot <create|list|rollback> ...", .summary = "Manage btrfs snapshots" },
@@ -58,6 +59,7 @@ const help_text =
     \\  wallpaper    Manage workspace wallpapers
     \\  display      Arrange displays
     \\  windows      Control tiling and stacking mode
+    \\  toggle       Flip keep-awake, night light or notification silencing
     \\
     \\Tools:
     \\  preview      Open or configure Quick Look
@@ -75,13 +77,13 @@ const help_text =
     \\
 ;
 
-const command_names = "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help";
+const command_names = "update doctor health reload paths version settings theme wallpaper display windows toggle preview workbench signature migrate hook webapp plugin snapshot completion help";
 
 const bash_completion =
     \\_koompi() {
     \\    local current="${COMP_WORDS[COMP_CWORD]}"
     \\    if (( COMP_CWORD == 1 )); then
-    \\        COMPREPLY=( $(compgen -W "update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help" -- "$current") )
+    \\        COMPREPLY=( $(compgen -W "update doctor health reload paths version settings theme wallpaper display windows toggle preview workbench signature migrate hook webapp plugin snapshot completion help" -- "$current") )
     \\    fi
     \\}
     \\complete -F _koompi koompi
@@ -90,13 +92,13 @@ const bash_completion =
 
 const zsh_completion =
     \\#compdef koompi
-    \\_arguments '1:command:(update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help)' '*::argument:->args'
+    \\_arguments '1:command:(update doctor health reload paths version settings theme wallpaper display windows toggle preview workbench signature migrate hook webapp plugin snapshot completion help)' '*::argument:->args'
     \\
 ;
 
 const fish_completion =
     \\complete -c koompi -f
-    \\complete -c koompi -n '__fish_use_subcommand' -a 'update doctor health reload paths version settings theme wallpaper display windows preview workbench signature migrate hook webapp plugin snapshot completion help'
+    \\complete -c koompi -n '__fish_use_subcommand' -a 'update doctor health reload paths version settings theme wallpaper display windows toggle preview workbench signature migrate hook webapp plugin snapshot completion help'
     \\
 ;
 
@@ -336,6 +338,7 @@ test "command lookup includes aliases" {
     try std.testing.expectEqualStrings("display", findCommand("displays").?.name);
     try std.testing.expectEqualStrings("windows", findCommand("stacking").?.name);
     try std.testing.expectEqualStrings("preview", findCommand("quicklook").?.name);
+    try std.testing.expectEqualStrings("koompi-toggle", findCommand("toggle").?.helper);
     try std.testing.expect(findCommand("not-a-command") == null);
 }
 

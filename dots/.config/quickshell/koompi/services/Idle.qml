@@ -44,6 +44,21 @@ Singleton {
         Persistent.states.idle.inhibit = root.inhibit;
     }
 
+    // `qs -c koompi ipc call idle inhibit on|off|toggle|status`. Every verb
+    // answers with the resulting state as the literal on/off, so koompi-toggle
+    // (and anything scripted on it) can exit on the word without a second call.
+    IpcHandler {
+        target: "idle"
+
+        function inhibit(verb: string): string {
+            if (verb === "on") root.toggleInhibit(true);
+            else if (verb === "off") root.toggleInhibit(false);
+            else if (verb === "toggle") root.toggleInhibit();
+            else if (verb !== "status") return "usage: inhibit on|off|toggle|status";
+            return root.inhibit ? "on" : "off";
+        }
+    }
+
     // The Wayland inhibitor below only works while its surface is mapped, which
     // is unreliable on Hyprland (the 1x1 window often never maps). Back it with a
     // systemd idle inhibitor, which hypridle honors directly.

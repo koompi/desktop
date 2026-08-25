@@ -161,6 +161,33 @@ Singleton {
         }
     }
 
+    // `qs -c koompi ipc call nightlight on|off|toggle|status`. on/off/toggle go
+    // through toggleTemperature, so they are the same manual override the
+    // sidebar switch sets (manualActive, cleared again at the next schedule
+    // edge); status is what the screen is doing now, schedule or override.
+    IpcHandler {
+        target: "nightlight"
+
+        function on(): string {
+            root.toggleTemperature(true);
+            return root.temperatureActive ? "on" : "off";
+        }
+
+        function off(): string {
+            root.toggleTemperature(false);
+            return root.temperatureActive ? "on" : "off";
+        }
+
+        function toggle(): string {
+            root.toggleTemperature();
+            return root.temperatureActive ? "on" : "off";
+        }
+
+        function status(): string {
+            return root.temperatureActive ? "on" : "off";
+        }
+    }
+
     // Change temp
     Connections {
         target: Config.options.light.night

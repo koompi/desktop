@@ -122,6 +122,10 @@ Many shell binds have a second copy guarded by `qs ipc call TEST_ALIVE ||` that 
 | `Super+A` | left sidebar |
 | `Super+Alt+A` | detach left sidebar |
 | `Super+N` | right sidebar |
+| `Super+,` | dismiss the newest notification toast (it stays in the right sidebar's history) |
+| `Super+Shift+,` | dismiss every toast |
+| `Super+Alt+,` | open the newest toast: its default action, then dismissed |
+| `Super+Shift+Alt+,` | notification history, the right sidebar |
 | `Super+O` | reserved for Quickwork, unbound |
 | `Super+V` | clipboard history |
 | `Super+.` | emoji |

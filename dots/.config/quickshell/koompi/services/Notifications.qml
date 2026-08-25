@@ -257,6 +257,56 @@ Singleton {
         root.discardNotification(id);
     }
 
+    // The newest toast still on screen; list is appended in arrival order.
+    function newestPopup() {
+        return root.popupList.length > 0 ? root.popupList[root.popupList.length - 1] : null;
+    }
+
+    // `qs -c koompi ipc call notifications ...`, the keyboard's way at a toast
+    // (hyprland/keybinds_notifications.lua) and koompi-toggle's `silent`.
+    // dismiss* take toasts off the popup layer the way their timeout does; the
+    // history in the right sidebar keeps them, so a chord cannot lose one.
+    IpcHandler {
+        target: "notifications"
+
+        function silent(verb: string): string {
+            if (verb === "on") root.silent = true;
+            else if (verb === "off") root.silent = false;
+            else if (verb === "toggle") root.silent = !root.silent;
+            else if (verb !== "status") return "usage: silent on|off|toggle|status";
+            return root.silent ? "on" : "off";
+        }
+
+        function dismissOne(): string {
+            const notif = root.newestPopup();
+            if (!notif) return "none";
+            root.timeoutNotification(notif.notificationId);
+            return "ok";
+        }
+
+        function dismissAll(): string {
+            if (root.popupList.length === 0) return "none";
+            root.timeoutAll();
+            return "ok";
+        }
+
+        // The freedesktop "default" action when the sender registered one,
+        // else its first action; attemptInvokeAction discards the toast after.
+        function invokeLast(): string {
+            const notif = root.newestPopup();
+            if (!notif) return "none";
+            const action = notif.actions.find((a) => a.identifier === "default") ?? notif.actions[0];
+            if (!action) return "none";
+            root.attemptInvokeAction(notif.notificationId, action.identifier);
+            return "ok";
+        }
+
+        function showHistory(): string {
+            GlobalStates.sidebarRightOpen = true;
+            return "ok";
+        }
+    }
+
     function triggerListChange() {
         root.list = root.list.slice(0)
     }

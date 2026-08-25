@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# koompi-toggle - flip one of the shell's switches, or ask which way it is.
+#
+# The state lives in the running shell (services/Idle.qml, Hyprsunset.qml,
+# Notifications.qml); this is the command line to it over Quickshell IPC, the
+# same switch the sidebar and the keybinds flip. Nothing is written on disk.
+#
+# `status` answers in the exit code so a hook or a Search row can branch on it:
+#   koompi-toggle silent status && echo "do not disturb"
+# 0 = on, 1 = off, 2 = the shell is not running or does not answer, 64 = bad
+# arguments. Every verb also prints the resulting state, on or off.
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-toggle <keep-awake|night-light|silent> [on|off|toggle|status]
+
+  keep-awake   idle inhibitor (no lock, no sleep)
+  night-light  hyprsunset colour temperature
+  silent       no notification toasts
+
+With no verb the switch is toggled. The new state (on/off) is printed.
+Exit status: 0 on, 1 off, 2 shell not running, 64 usage.
+USAGE
+}
+
+thing="${1:-}"
+verb="${2:-toggle}"
+
+case "$thing" in
+    -h|--help|help) usage; exit 0 ;;
+    "") usage >&2; exit 64 ;;
+esac
+(( $# <= 2 )) || { echo "koompi-toggle: too many arguments" >&2; usage >&2; exit 64; }
+
+case "$thing" in
+    keep-awake)  call=(idle inhibit "$verb") ;;
+    night-light) call=(nightlight "$verb") ;;
+    silent)      call=(notifications silent "$verb") ;;
+    *) echo "koompi-toggle: unknown switch '$thing'" >&2; usage >&2; exit 64 ;;
+esac
+case "$verb" in
+    on|off|toggle|status) ;;
+    *) echo "koompi-toggle: unknown verb '$verb'" >&2; usage >&2; exit 64 ;;
+esac
+
+# qs exits non-zero (255) with its own line on stderr when no instance answers.
+# A running shell that predates these handlers says "Target not found." on
+# stdout and exits 0, which is the other way to not get an answer.
+if ! state="$(qs -c koompi ipc --any-display call "${call[@]}")"; then
+    echo "koompi-toggle: the shell is not running" >&2
+    exit 2
+fi
+case "$state" in
+    on|off) ;;
+    *)
+        echo "koompi-toggle: no answer from the shell for '${call[*]}': ${state:-<empty>} (shell older than this tool?)" >&2
+        exit 2 ;;
+esac
+
+printf '%s\n' "$state"
+[[ "$state" == on ]] || exit 1
