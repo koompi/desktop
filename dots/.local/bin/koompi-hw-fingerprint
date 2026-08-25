@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# koompi-hw-fingerprint - exit 0 when a fingerprint reader is plugged in.
+#
+# Reads sysfs only, so it answers before fprintd is installed and never wakes
+# the reader. Ported from omarchy's bin/omarchy-hw-fingerprint (vendor list,
+# product-string match, usbfs exception). The rules:
+#   - a device whose product descriptor says fingerprint or biometric, or
+#     carries Elan's "ELAN:ARM-M4" or Fingerprint Cards' "FPC ..." family
+#     string, is a reader, whatever its vendor;
+#   - otherwise a device from a vendor that ships readers (Goodix 27c6,
+#     Validity 138a, Synaptics 06cb, AuthenTec 08ff, LighTuning 1c7a,
+#     Upek 147e) counts only while no kernel driver is bound to any of its
+#     interfaces: libfprint drives every reader from userspace over libusb,
+#     so a bound driver means the same vendor's webcam bridge, touchpad or
+#     camera. usbfs is the exception, that is libusb holding the claim while
+#     fprintd enrols or verifies.
+# Multi-purpose vendors (Elan, STMicro) stay off the list on purpose; their
+# readers match on the product string.
+#
+# --verbose prints the matching device and the rule that matched, or why
+# nothing did. Without it nothing is printed either way.
+# KOOMPI_USB_DEVICES_PATH points the scan at another tree (tests).
+set -euo pipefail
+
+verbose=0
+case "${1:-}" in
+    "") ;;
+    -v|--verbose) verbose=1 ;;
+    -h|--help)
+        printf 'usage: koompi-hw-fingerprint [--verbose]\nexit 0 when sysfs shows a fingerprint reader, 1 when it does not\n'
+        exit 0 ;;
+    *) printf 'usage: koompi-hw-fingerprint [--verbose]\n' >&2; exit 64 ;;
+esac
+
+vendors=" 27c6 138a 06cb 08ff 1c7a 147e "
+devices="${KOOMPI_USB_DEVICES_PATH:-/sys/bus/usb/devices}"
+
+found() {
+    if (( verbose )); then
+        printf 'koompi-hw-fingerprint: %s: %s\n' "$1" "$2"
+    fi
+    exit 0
+}
+
+# True when any interface of the device has a kernel driver other than usbfs.
+has_kernel_driver() {
+    local intf driver
+    for intf in "$1"/*:*; do
+        [[ -e "$intf/driver" ]] || continue
+        driver="$(readlink -f "$intf/driver")"
+        [[ "${driver##*/}" == usbfs ]] || return 0
+    done
+    return 1
+}
+
+for dev in "$devices"/*; do
+    [[ -d "$dev" ]] || continue
+    if [[ -r "$dev/product" ]]; then
+        product="$(< "$dev/product")"
+        lower="${product,,}"
+        if [[ "$lower" == *fingerprint* || "$lower" == *biometric* \
+              || "$lower" == *elan:arm-m4* || "$lower" == "fpc "* ]]; then
+            found "$dev" "product string '$product'"
+        fi
+    fi
+    if [[ -r "$dev/idVendor" ]]; then
+        vendor="$(< "$dev/idVendor")"
+        if [[ "$vendors" == *" $vendor "* ]] && ! has_kernel_driver "$dev"; then
+            product_id="$(cat "$dev/idProduct" 2> /dev/null || echo '????')"
+            found "$dev" "vendor $vendor:$product_id ships fingerprint readers and no kernel driver is bound to it"
+        fi
+    fi
+done
+
+if (( verbose )); then
+    printf 'koompi-hw-fingerprint: no fingerprint reader under %s\n' "$devices"
+fi
+exit 1

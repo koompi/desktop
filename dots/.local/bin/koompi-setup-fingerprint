@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# koompi-setup-fingerprint - enrol a finger, then offer it to sudo and polkit.
+#
+# Interactive, for a terminal. Enrols with fprintd-enroll for the current user
+# (right index finger unless --finger says otherwise; fprintd's polkit policy,
+# net.reactivated.fprint.device.enroll = auth_self_keep, lets a user enrol
+# their own prints with their own password), then asks, y/N each, whether
+# sudo and polkit should accept the finger. Those two edits are the only sudo
+# this script uses. Each inserts two lines above the stack's first auth line,
+# and a stack that already has them is left alone, so a second run changes
+# nothing:
+#
+#   auth  [success=1 default=ignore]  pam_exec.so quiet /usr/bin/koompi-lid --closed
+#   auth  sufficient                  pam_fprintd.so
+#
+# The first line is the clamshell gate, omarchy's idea (bin/omarchy-setup-
+# security-fingerprint): with the lid shut the reader is unreachable, so a
+# lid-closed answer skips pam_fprintd and PAM goes straight to the password
+# instead of holding the prompt for fprintd's 30 s timeout. The path is
+# absolute because pam_exec expands nothing, and /usr/bin because that is
+# where koompi-shell installs it; where the file is missing pam_exec fails and
+# default=ignore falls through to the reader, the same as no gate.
+#
+# The lock screen needs nothing here: its stack is the shell's own
+# pam/fprintd.conf (J20), which runs the reader beside the password field,
+# not in front of it.
+#
+# Modes for the shell:
+#   --invite    first run: if a reader is present, fprintd is installed and no
+#               finger is enrolled, send a toast whose click opens this setup
+#               in a terminal. Exit 0 silently otherwise.
+#   --terminal  open a terminal running the interactive setup (the toast's
+#               click, and the Settings button).
+# KOOMPI_PAM_ROOT prefixes /etc/pam.d and /usr/lib/pam.d (tests).
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-setup-fingerprint [--finger NAME]
+       koompi-setup-fingerprint --invite | --terminal
+
+  --finger NAME  finger to enrol, in fprintd's names (left-thumb,
+                 right-index-finger, ...); default right-index-finger
+  --invite       send the first-run toast when a reader has no finger enrolled
+  --terminal     run the setup in a terminal window
+USAGE
+}
+
+finger=right-index-finger
+mode=setup
+hold=0
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --finger)
+            [[ $# -ge 2 ]] || { echo "koompi-setup-fingerprint: --finger needs a name" >&2; exit 64; }
+            finger="$2"; shift 2 ;;
+        --finger=*) finger="${1#--finger=}"; shift ;;
+        --invite) mode=invite; shift ;;
+        --terminal) mode=terminal; shift ;;
+        --hold) hold=1; shift ;;  # internal: the terminal window waits for Enter before closing
+        -h|--help) usage; exit 0 ;;
+        *) echo "koompi-setup-fingerprint: unknown argument '$1'" >&2; usage >&2; exit 64 ;;
+    esac
+done
+
+self="$(readlink -f "${BASH_SOURCE[0]}")"
+user="${USER:-$(id -un)}"
+pam_root="${KOOMPI_PAM_ROOT:-}"
+gate_marker='koompi-lid --closed'
+gate="auth      [success=1 default=ignore]  pam_exec.so quiet /usr/bin/$gate_marker"
+module='auth      sufficient                  pam_fprintd.so'
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'koompi-setup-fingerprint: %s\n' "$1" >&2; exit 1; }
+
+hold_open() {
+    (( hold )) || return 0
+    printf '\nPress Enter to close this window. '
+    read -r _ || true
+}
+trap hold_open EXIT
+
+# One " - #N: finger" row per enrolled print. No fprintd, or a user with
+# none, both count as zero.
+enrolled_count() {
+    fprintd-list "$user" 2> /dev/null | grep -c '^ - #' || true
+}
+
+# The terminal and its own "run this command" spelling, in variables.lua's
+# order; the same table as migrate-lib.sh's terminal_argv.
+terminal_argv() {
+    local t
+    for t in wezterm foot kitty alacritty konsole kgx uxterm xterm; do
+        command -v "$t" > /dev/null 2>&1 || continue
+        case "$t" in
+            wezterm) printf '%s\n' wezterm start -- ;;
+            foot)    printf '%s\n' foot ;;
+            kitty)   printf '%s\n' kitty -1 ;;
+            kgx)     printf '%s\n' kgx -- ;;
+            *)       printf '%s\n' "$t" -e ;;
+        esac
+        return 0
+    done
+    return 1
+}
+
+# The shell's NotificationServer owns the bus name once the shell is up; on a
+# first run this can be called before that (migrate-lib.sh waits the same way).
+notification_server_ready() {
+    [[ "$(busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
+        org.freedesktop.DBus NameHasOwner s org.freedesktop.Notifications 2> /dev/null)" == "b true" ]]
+}
+
+ask() {
+    local reply
+    read -r -p "$1 [y/N] " reply || reply=n
+    [[ "$reply" == [Yy]* ]]
+}
+
+# Inserts the gate and pam_fprintd above the first auth line of a stack. A
+# stack that already carries pam_fprintd (added by hand, or by an earlier
+# version) keeps its line and gets the gate directly above it.
+configure_stack() {
+    local file="$1"
+    if grep -q "$gate_marker" "$file" && grep -q 'pam_fprintd\.so' "$file"; then
+        say "$file already accepts the finger; left as is."
+        return 0
+    fi
+    if grep -q "$gate_marker" "$file"; then
+        # A gate whose module went missing is dropped and re-added with it.
+        sudo sed -i "/$gate_marker/d" "$file"
+    fi
+    if grep -q 'pam_fprintd\.so' "$file"; then
+        sudo sed -i "0,/pam_fprintd\.so/s#^.*pam_fprintd\.so.*#${gate}\n&#" "$file"
+    else
+        sudo sed -i "0,/^auth[[:space:]]/s#^auth[[:space:]].*#${gate}\n${module}\n&#" "$file"
+    fi
+    grep -q 'pam_fprintd\.so' "$file" \
+        || die "$file: nothing was inserted (no auth line to put the module above); the file is unchanged"
+    say "$file: fingerprint accepted, skipped while the lid is shut."
+}
+
+configure_polkit() {
+    local file="$pam_root/etc/pam.d/polkit-1" vendor="$pam_root/usr/lib/pam.d/polkit-1"
+    if [[ ! -f "$file" ]]; then
+        # Arch's polkit ships its stack in pam's vendor directory, and a file
+        # in /etc/pam.d replaces it whole, so start from a copy of that file
+        # rather than a stack written here.
+        [[ -f "$vendor" ]] || die "$file and $vendor are both missing; is polkit installed?"
+        sudo install -m 644 "$vendor" "$file"
+    fi
+    configure_stack "$file"
+}
+
+case "$mode" in
+    terminal)
+        mapfile -t term < <(terminal_argv) || true
+        (( ${#term[@]} )) || die "no terminal found (looked for wezterm foot kitty alacritty konsole kgx uxterm xterm)"
+        exec "${term[@]}" "$self" --hold --finger "$finger"
+        ;;
+    invite)
+        koompi-hw-fingerprint || exit 0
+        command -v fprintd-enroll > /dev/null 2>&1 || exit 0
+        [[ "$(enrolled_count)" -eq 0 ]] || exit 0
+        for _ in $(seq 1 30); do
+            notification_server_ready && break
+            sleep 1
+        done
+        # Critical, as omarchy's setup-fingerprint.hook sends it: a toast that
+        # times out on a first run is one nobody saw.
+        exec koompi-notify-send -a "KOOMPI" -i fingerprint -u critical \
+            "This laptop has a fingerprint reader" \
+            "Click to enrol a finger for the lock screen, sudo and admin prompts." \
+            --exec "$self" --terminal
+        ;;
+esac
+
+koompi-hw-fingerprint || die "no fingerprint reader found (koompi-hw-fingerprint --verbose shows what was scanned)"
+command -v fprintd-enroll > /dev/null 2>&1 || die "fprintd is not installed: sudo pacman -S fprintd"
+
+say "Enrolling your $finger for $user."
+say "Lift and place the finger on the reader, a little differently each time, until fprintd says it is done."
+say
+fprintd-enroll -f "$finger" "$user" || die "enrolment failed; nothing was changed. Run koompi-setup-fingerprint to try again."
+say
+say "Enrolled. The lock screen accepts this finger from the next lock on."
+say
+if ask "Let sudo accept the finger too?"; then
+    configure_stack "$pam_root/etc/pam.d/sudo"
+else
+    say "sudo left as is."
+fi
+if ask "Let admin prompts (polkit) accept the finger?"; then
+    configure_polkit
+else
+    say "polkit left as is."
+fi
+say
+say "Done. fprintd-list $user shows what is enrolled; fprintd-delete $user removes it."

@@ -10,10 +10,13 @@
 # on its own, so that inhibitor keeps winning.
 # open: nothing. Restoring a clamshell layout is a separate job; the bind is
 # here so the hook has one obvious place to grow.
+# --closed: a query, exit 0 when the lid is shut. It is the clamshell gate in
+# the sudo and polkit PAM stacks koompi-setup-fingerprint writes (pam_exec runs
+# it as root with no session, so it reads /proc, never hyprctl).
 set -euo pipefail
 
 usage() {
-    printf 'usage: koompi-lid close|open\n' >&2
+    printf 'usage: koompi-lid close|open|--closed\n' >&2
     exit 2
 }
 
@@ -39,5 +42,16 @@ case "${1:-}" in
         }
         ;;
     open) ;;
+    --closed)
+        # ACPI reports "state: closed" or "state: open"; no lid switch at all
+        # (a desktop) answers open, so the gate never hides the reader there.
+        for state in "${KOOMPI_LID_STATE_DIR:-/proc/acpi/button/lid}"/*/state; do
+            [[ -r "$state" ]] || continue
+            if [[ "$(< "$state")" == *closed* ]]; then
+                exit 0
+            fi
+        done
+        exit 1
+        ;;
     *) usage ;;
 esac

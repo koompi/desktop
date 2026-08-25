@@ -41,6 +41,7 @@ _tools=(
   koompi-flatpak-open
   koompi-health
   koompi-hook
+  koompi-hw-fingerprint
   koompi-hw-laptop
   koompi-hw-match
   koompi-launch
@@ -57,6 +58,7 @@ _tools=(
   koompi-reload
   koompi-remotedesktop-portal
   koompi-settings
+  koompi-setup-fingerprint
   koompi-signature
   koompi-snapshot
   koompi-stacking

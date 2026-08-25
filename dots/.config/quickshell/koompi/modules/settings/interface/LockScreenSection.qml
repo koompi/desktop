@@ -1,12 +1,46 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 
 ContentSection {
+    id: root
     icon: "lock"
     title: Translation.tr("Lock screen")
+
+    // koompi-hw-fingerprint answers from sysfs (exit 0 = a reader is there);
+    // fprintd-list prints one " - #N: finger" row per enrolled print.
+    property bool readerChecked: false
+    property bool readerPresent: false
+    property int enrolledCount: 0
+    property string fingerprintStatus: {
+        if (!root.readerChecked) return Translation.tr("Looking for a fingerprint reader...");
+        if (!root.readerPresent) return Translation.tr("No fingerprint reader found");
+        if (root.enrolledCount === 0) return Translation.tr("Fingerprint reader found; no finger enrolled yet");
+        return Translation.tr("Fingerprint reader found; fingers enrolled: %1").arg(root.enrolledCount);
+    }
+
+    Process {
+        running: true
+        command: ["koompi-hw-fingerprint"]
+        onExited: (exitCode, exitStatus) => {
+            root.readerPresent = exitCode === 0;
+            root.readerChecked = true;
+        }
+    }
+    Process {
+        running: true
+        command: ["bash", "-c", 'fprintd-list "$(id -un)"']
+        stdout: StdioCollector {
+            id: printsCollector
+            onStreamFinished: {
+                root.enrolledCount = (printsCollector.text.match(/^ - #/gm) ?? []).length;
+            }
+        }
+    }
 
     ConfigSwitch {
         buttonIcon: "water_drop"
@@ -14,9 +48,6 @@ ContentSection {
         checked: Config.options.lock.useHyprlock
         onCheckedChanged: {
             Config.options.lock.useHyprlock = checked;
-        }
-        StyledToolTip {
-            text: Translation.tr("If you want to somehow use fingerprint unlock...")
         }
     }
 
@@ -26,6 +57,33 @@ ContentSection {
         checked: Config.options.lock.launchOnStartup
         onCheckedChanged: {
             Config.options.lock.launchOnStartup = checked;
+        }
+    }
+
+    ContentSubsection {
+        title: Translation.tr("Fingerprint")
+
+        RowLayout {
+            StyledText {
+                Layout.leftMargin: 10
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                color: Appearance.colors.colSubtext
+                font.pixelSize: Appearance.font.pixelSize.smallie
+                text: root.fingerprintStatus
+            }
+            RippleButtonWithIcon {
+                buttonRadius: Appearance.rounding.full
+                materialIcon: "fingerprint"
+                mainText: Translation.tr("Enrol fingerprint")
+                enabled: root.readerPresent
+                onClicked: {
+                    Quickshell.execDetached(["koompi-setup-fingerprint", "--terminal"]);
+                }
+                StyledToolTip {
+                    text: Translation.tr("Opens a terminal running koompi-setup-fingerprint: enrol a finger, then choose whether sudo and admin prompts accept it")
+                }
+            }
         }
     }
 

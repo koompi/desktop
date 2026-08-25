@@ -33,6 +33,10 @@ Singleton {
         if (Config.options.background.wallpaperPath.length === 0)
             Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, root.defaultWallpaperPath])
         Quickshell.execDetached(["bash", "-c", `qs -p '${root.welcomeQmlPath}'`])
+        // A reader with no finger enrolled earns one toast, whose click opens
+        // the enrolment in a terminal. The script does the checking (sysfs,
+        // fprintd-list) and sends nothing when there is nothing to set up.
+        Quickshell.execDetached(["koompi-setup-fingerprint", "--invite"])
     }
 
     FileView {
