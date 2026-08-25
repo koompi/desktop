@@ -45,29 +45,28 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J29 | claude | verified | toast waits for the server (NameHasOwner) and carries `--exec` argv, autoreload guard with EXIT trap, `refresh <path>` with backup+diff, `new <slug>`, `docs/agents/migrations.md`; lead: both migrate tests, suite 84/3/0, unit verifies; lead added the shellcheck source directive and the PKGBUILD line for `migrate-lib.sh` (pkgrel 6, package listed); ff-merged `72401b94`, pushed; cleaned up. Finding → J43 |
 | J30 | claude | verified | transcript via `script(1)` re-exec (outer appends the exit line, newest 10 kept), `koompi doctor --last-update` with a fixed diagnosis table, `--firmware` and post-upgrade fwupd advice; lead: test ok, suite 82/3/0, shellcheck clean, `update` 687 ≤ 695, diff reviewed (absolute `$0` from the CLI, duplicate `check_restart_needed` removed); ff-merged `6a1e1333`, pushed; cleaned up |
 | J31 | claude | verified | IpcHandlers `idle`/`nightlight`/`notifications`, `koompi-toggle` (exit 0/1/2/64), `koompi toggle` in the CLI, four `Super+,` chords in `keybinds_notifications.lua` (keybinds.lua stays 447); lead: job test, packaged tools 29, 149 binds described, luac, shellcheck, qmllint 0 errors, `zig build test`, suite 82 pass + the `test_update_route` red that was main's own (locked seat, see Decided); ff-merged `a76a797b`, pushed; cleaned up |
-| J32 | claude | live | |
+| J32 | claude | returned | lead: rebased, diff reviewed (`osd` IpcHandler + `OsdMessage.qml`, `koompi-osd`, `koompi-launch-tui` → `TUI.<id>` rule, battery-low/critical hooks with percent, `koompi osd` in the CLI); gates running |
 | J33 | claude | verified | ufw profiles in `koompi-sysdefaults` 1.0-2 (files/ mirrors /), chroot rules + ENABLED=yes, from-git raw ports + ssh kept, firewalld hand-off, fwupd in koompi-basic 1.0-7, `fwupd-refresh.timer` enabled, khm OCR 1.0-4; lead: both tests, CI shellcheck lines, three packages build, suite 85/3/0; ff-merged `4aca00ec`, pushed; cleaned up. LocalSend AUR-only → Rithy |
 | J34 | claude | live | |
 | J35 | claude | live | |
 | J36 | claude | live | |
 | J37 | claude | live | |
 | J38 | — | blocked-on-user | factory reset semantics: root only / root+home (recommended) / re-provision+LUKS |
-| J39 | claude | live | |
+| J39 | claude | returned | lead: rebased, diff reviewed (ladder = round(base·k) reproducing the ten values, `koompi-theme text-size` with a jq-validated tmp+mv config write, GTK factor quantised to whole points at the 16 px anchor, wezterm reads `~/.config/koompi/text-size` with reload watch, Settings slider); gates queued |
 | J40 | claude | live | |
-| J41 | claude | live | |
-| J42 | claude | live | |
+| J41 | claude | verified | `Screensaver` layer (Overlay, black, drifting mark, small clock, no brightness writes), IPC `screensaver` open/close/toggle, closes on lock and on input, hypridle listener at 120 s before the 300 s lock; lead: job test, layering, keep-awake-lid, qmllint 0 errors, headless capture viewed, throwaway hypridle at 3 s proved on-timeout and was killed, suite 87/3/0; ff-merged `5ac0053a`, pushed; cleaned up. Live IPC unverified until Rithy reloads the shell |
+| J42 | claude | returned | lead: rebased, diff reviewed (`koompi-hw-match`/`koompi-hw-laptop`, `apply-hardware` runner with per-quirk subprocess + log, `sdata/hardware/{all,lib,fix-fkeys,wifi-powersave}.sh` + koompi/README template, hooks in post_install/setup/update-lib); gates queued |
 | J43 | claude | verified | `Notif.execArgv` from the `koompi-exec-argv` hint (strict parse, malformed → [] + one warn), `invokeExec` runs `bash -lc 'exec "$@"' --` + argv via execDetached, left-click on toast/history row, `invokeLast` falls back to it, not persisted on purpose; lead: real-bus probe under dbus-run-session, services test, qmllint 0 errors, Notifications.qml 394 ≤ 400, suite 86/3/0; ff-merged `dad5bab7`, pushed; cleaned up. Finding: the collapsed group title row (`NotificationGroup.qml`, not owned) still expands instead of running — one-condition follow-up, folded into the next notifications job |
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 
 ## Live now
 
-Lead is `w5:p11`. Nine live, pane ids in `/tmp/lead-<ID>-pane`, all runtimes at nice 10:
+Lead is `w5:p11`. Returned, gates pending: J32 (running), J39, J42. Live, pane ids in `/tmp/lead-<ID>-pane`, all runtimes at nice 10:
 J32 owns `OnScreenDisplay.qml` + `indicators/`, `Battery.qml`, `koompi-hook` events, new `koompi-osd`/`koompi-launch-tui`, `koompi-shell/PKGBUILD` `_tools`, `cli/src/main.zig`, `launch_sysmon.sh`, `rules.lua`, `docs/agents/hooks.md`.
 J34 owns `bar/UpdateBadge.qml` (new), `BarContent.qml`, `Bar.qml`, `bar/*Popup.qml`, `services/Updates.qml`, `keybinds_notifications.lua`→`keybinds_shell_extra.lua`, `hyprland.lua`, `docs/navigation.md`.
 J37 owns new `koompi-hw-fingerprint`/`koompi-setup-fingerprint`, `pam/fprintd.conf`, `FirstRunExperience.qml`, `LockScreenSection.qml`, `test_lock_pam.sh` (one assertion), PKGBUILD rows.
 J40 owns new `koompi-crash-watch`/`koompi-crash-diagnose`, `koompi-crash-watch.service`, `docs/agents/crash.md`, one enable line in `setups/system.sh`, PKGBUILD rows.
 J35 owns `modules/koompi/cheatsheet/**`, `services/HyprlandKeybinds.qml`. Investigating: Lua-config binds all read `__lua N`, so dispatcher/arg replay may not exist.
-J41 owns new `modules/koompi/screensaver/**`, `KoompiFamily.qml`, `GlobalStates.qml`, `hypridle.conf`.
 J36 owns new `libexec/hibernation-setup`, `post_install.sh` (one fn+call), `setups/system.sh` (one fn), `koompi-health` (one line), PKGBUILD install line.
 J42 owns new `koompi-hw-match`/`koompi-hw-laptop`, `sdata/hardware/**`, `libexec/apply-hardware`, `post_install.sh` (one call), `setups/system.sh` (one fn), `update-lib.sh` (one call), PKGBUILD rows.
 J39 owns `Appearance.qml` (≤467), `Config.qml` (≤827), `FontsSection.qml`, `koompi-theme`, `wezterm.lua`.
