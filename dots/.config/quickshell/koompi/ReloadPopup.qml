@@ -19,6 +19,7 @@ Scope {
 
 		function onReloadCompleted() {
 			root.failed = false;
+			root.errorString = "";
 			popupLoader.loading = true;
 		}
 
