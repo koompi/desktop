@@ -1,0 +1,102 @@
+# Runs ./tests/run.sh, the suite AGENTS.md calls "the checks", on every push and
+# pull request. Nothing in CI ran it before, so sixty tests blocked nothing.
+#
+# An Arch container because the suite targets KOOMPI OS (Arch): the scripts
+# under test shadow pacman and makepkg by name, PKGBUILDs are sourced, and the
+# tools the tests need (bun, python-evdev, zig, dbus-run-session) are one
+# pacman line away.
+#
+# What cannot run here, and how it is skipped honestly: no step here has a
+# Wayland session, a running quickshell, or the local AI backend, and quickshell
+# itself is not in the Arch repos (koompi-quickshell-git builds it from source,
+# a Qt build this job does not attempt). The tests that need those check for
+# them (`command -v qs`, HYPRLAND_INSTANCE_SIGNATURE, the LiteRT-LM port) and
+# print a "skip:" line for the part they could not run; run.sh counts such a
+# test as skipped, not passed. The last step names each expected skip with its
+# reason and fails the job on any other, so a tool missing from the install
+# line below is a red run rather than a quietly smaller one.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install what the tests need
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm --needed \
+            base-devel git sudo rsync jq nodejs bun python python-evdev python-yaml \
+            qt6-declarative dbus pipewire zig rust
+          # base-devel   : makepkg's helpers (fakeroot) for the sourced PKGBUILDs, gcc for cargo
+          # sudo         : to run the suite as the unprivileged user created below
+          # rsync        : ./setup's files step and the two PKGBUILDs under test
+          # bun, nodejs  : the QML-flavoured JS tests
+          # python-evdev : test_touch_gestures.sh
+          # python-yaml  : the tests that read a step out of a workflow file
+          # qt6-declarative : qmllint for the QML static checks
+          # dbus         : dbus-run-session for the global-menu conformance suite
+          # pipewire     : libpipewire-0.3, which audiod links
+          # zig, rust    : the cli/, audiod/ and shell-services/ builds and their tests
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # The archlinux container runs as root; ./setup refuses to ("it installs
+      # into $HOME"), and the tests that drive it inherit that refusal.
+      - name: Create an unprivileged user to run as
+        run: |
+          set -euo pipefail
+          useradd -m tester
+          chown -R tester:tester "$GITHUB_WORKSPACE"
+          # `systemd-analyze --user verify` (test_sysdefaults.sh) needs a runtime
+          # dir to look up; logind would make /run/user/<uid> on a real login.
+          install -dm700 -o tester -g tester /run/user/tester
+          # timezone-coords.sh reads the system zone out of /etc/localtime and the
+          # image ships none; give it the zone the product is built in.
+          ln -sf /usr/share/zoneinfo/Asia/Phnom_Penh /etc/localtime
+          # setups.sh gates its systemd work on `[[ -d /run/systemd/system ]]`
+          # (systemd_running) and returns early without it; the tests of those
+          # functions stub every command they would run and expect the gate open.
+          # No systemd runs here: the directory alone is the whole shim.
+          mkdir -p /run/systemd/system
+
+      - name: Run the suite
+        run: |
+          set -euo pipefail
+          sudo -u tester -H env XDG_RUNTIME_DIR=/run/user/tester ./tests/run.sh 2>&1 \
+            | tee "$RUNNER_TEMP/tests.log"
+
+      - name: Only the tests that need a live desktop skipped
+        run: |
+          set -euo pipefail
+          # One name per line with the reason. A test skipping for any other
+          # reason means the install step above is missing a tool.
+          allowed='
+            test_ai_e2e.sh               needs the LiteRT-LM server and the memory daemon on the machine
+            test_ai_threads.sh           needs a running quickshell (qs); runs its static checks
+            test_services_qml_bugs.sh    needs a running quickshell (qs); qmllint half runs
+            test_search_bench_parity.sh  only tests a bench-enabled live quickshell
+            test_globalmenu.sh           the daemons it drives are built by ./setup, not here
+            test_shell_services.sh       builds, unit-tests and lints; the conformance suites need a live bus and PipeWire
+          '
+          bad=0
+          skipped_tests=()
+          read -ra skipped_tests < <(sed -n 's/^skipped: //p' "$RUNNER_TEMP/tests.log") || true
+          for name in "${skipped_tests[@]}"; do
+            if ! grep -qE "^[[:space:]]*${name}[[:space:]]" <<< "$allowed"; then
+              echo "::error::$name skipped in CI: install what it needs above, or list it here with the reason"
+              bad=1
+            fi
+          done
+          exit "$bad"

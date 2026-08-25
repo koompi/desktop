@@ -14,6 +14,8 @@ WORKFLOW="$REPO_ROOT/.github/workflows/build-iso.yml"
 failed=0
 fail() { printf 'FAIL: %s\n' "$1" >&2; failed=1; }
 
+python3 -c 'import yaml' 2>/dev/null || { echo "python-yaml not installed; skipping" >&2; exit 0; }
+
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
