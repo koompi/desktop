@@ -129,3 +129,30 @@ It ran live in the demo above.
 - Step 5 locks the screen on every `./tests/run.sh` once the unit is enabled and the lead is logged in; that is what the contract asked ("skip honestly outside a session"). If that is too much for a per-job gate, an opt-in env guard on that block is a two-line change.
 - Packaged (`/etc/skel`) installs never run `setup_services`, so on the ISO nothing enables `hypridle.service` (same gap `touch-gestures` and `koompi-migrate-notify` already have). A `/usr/lib/systemd/user-preset/*.preset` with `enable hypridle.service` in `koompi-hyprland-config` would close it; that package is outside this job's files.
 - Pid 564060 (J15's hand-started hypridle, logging to `/tmp/j15-hypridle-restart.log`) is still running; it goes away at logout.
+
+## Round 2: live Lock check is opt-in (`65c98a99`)
+
+The lead's gap: step 5 would lock the screen on every `./tests/run.sh` once the unit is enabled.
+It now runs only with `KOOMPI_TEST_LIVE_LOCK=1`; the static checks 1-4 stay unconditional.
+The first "Decisions for the lead" bullet above is closed by this.
+
+```
+$ bash tests/test_hypridle_logged.sh; echo exit=$?
+skip: live Lock check needs KOOMPI_TEST_LIVE_LOCK=1 (it locks the screen)
+exit=0
+$ KOOMPI_TEST_LIVE_LOCK=1 bash tests/test_hypridle_logged.sh; echo exit=$?     # unit not running here
+skip: no active logind session with hypridle.service running; the live Lock check needs a login
+exit=0
+$ # same test pointed at an execs.lua containing hl.exec_cmd("hypridle"): the static half still fails
+1:hl.exec_cmd("hypridle")
+FAIL: execs.lua starts hypridle by hand again; the packaged unit owns it
+exit=1
+$ shellcheck -x tests/test_hypridle_logged.sh && echo clean
+clean
+$ ./tests/run.sh | tail -3
+72 passed, 3 skipped, 0 failed
+skipped: test_globalmenu.sh test_hypridle_logged.sh test_search_bench_parity.sh
+```
+
+No screen lock was triggered in this round (`hypridle.service` inactive, `pgrep -a hypridle` → `564060 hypridle` only).
+The live run in Acceptance 2 was done before the guard existed; to repeat it after the next login: `KOOMPI_TEST_LIVE_LOCK=1 bash tests/test_hypridle_logged.sh`.
