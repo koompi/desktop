@@ -223,6 +223,13 @@ backup_existing() {
 }
 
 # rsync, recording every path it actually wrote into the manifest.
+#
+# rsync used to run inside a process substitution, which threw its exit status
+# away: a partial sync (disk full, permission, dropped tree) still ended with
+# "config files installed" and a manifest claiming every printed path was
+# written - so uninstall would later delete files that were never replaced.
+# The listing is captured to a file instead, the status checked, and the
+# manifest touched only after a clean run; install_files fails otherwise.
 sync_tree() {
     local src="$1" dest="$2"
     shift 2
@@ -231,11 +238,20 @@ sync_tree() {
         printf '%s     $ rsync -a %s %s/ %s/%s\n' "${C_DIM}" "$*" "$src" "$dest" "${C_RST}"
         return 0
     fi
-    local rel
+    local listing status=0 rel
+    listing="$(mktemp "${TMPDIR:-/tmp}/koompi-rsync.XXXXXX")"
+    rsync -a "$@" --out-format='%n' "$src"/ "$dest"/ > "$listing" || status=$?
+    if (( status != 0 )); then
+        rm -f "$listing"
+        err "rsync failed for $src -> $dest (exit $status)"
+        return 1
+    fi
     while IFS= read -r rel; do
         [[ -n "$rel" && "$rel" != "./" ]] || continue
         manifest_add "${dest%/}/${rel%/}"
-    done < <(rsync -a "$@" --out-format='%n' "$src"/ "$dest"/)
+    done < "$listing"
+    rm -f "$listing"
+    return 0
 }
 
 install_files() {
@@ -280,19 +296,25 @@ install_files() {
         --exclude='*.pyc' --exclude='.qmlls.ini'
     )
 
+    # A failed sync must stop the install with the stage cleaned up: carrying
+    # on would reload a half-old desktop and describe it as fresh.
     for rel in "${SYNC_DIRS[@]}"; do
         [[ -d "$stage/$rel" ]] || continue
         info "sync  ~/$rel"
-        sync_tree "$stage/$rel" "$HOME/$rel" --delete "${excludes[@]}"
+        sync_tree "$stage/$rel" "$HOME/$rel" --delete "${excludes[@]}" \
+            || { run rm -rf "$stage"; return 1; }
         run rm -rf "$stage/$rel"
     done
 
     info "merge ~/.config"
-    sync_tree "$stage/.config" "$XDG_CONFIG_HOME" "${excludes[@]}"
+    sync_tree "$stage/.config" "$XDG_CONFIG_HOME" "${excludes[@]}" \
+        || { run rm -rf "$stage"; return 1; }
     info "merge ~/.local/share"
-    sync_tree "$stage/.local/share" "$XDG_DATA_HOME" "${excludes[@]}"
+    sync_tree "$stage/.local/share" "$XDG_DATA_HOME" "${excludes[@]}" \
+        || { run rm -rf "$stage"; return 1; }
     info "merge ~/.local/bin"
-    sync_tree "$stage/.local/bin" "$XDG_BIN_HOME" "${excludes[@]}"
+    sync_tree "$stage/.local/bin" "$XDG_BIN_HOME" "${excludes[@]}" \
+        || { run rm -rf "$stage"; return 1; }
 
     run rm -rf "$stage"
 

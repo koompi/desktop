@@ -16,8 +16,9 @@ grep -q 'reload_session' "$SETUP" \
     || fail "setup never calls reload_session; an install leaves the old shell running"
 
 # It has to follow install_files: reloading before the files land restarts the
-# shell onto exactly what it was already running.
-files_line="$(grep -n 'DO_FILES *&& install_files' "$SETUP" | head -1 | cut -d: -f1)"
+# shell onto exactly what it was already running. (The call may guard a die:
+# since H2 a failed files step must stop the install instead of reloading.)
+files_line="$(grep -n 'DO_FILES *&& install_files\|install_files || die' "$SETUP" | head -1 | cut -d: -f1)"
 reload_line="$(grep -n 'DO_FILES *&& reload_session' "$SETUP" | head -1 | cut -d: -f1)"
 [[ -n "$files_line" ]] || fail "cannot find the install_files call"
 [[ -n "$reload_line" ]] || fail "reload_session is not gated on DO_FILES"

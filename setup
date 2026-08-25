@@ -222,9 +222,11 @@ main() {
     if $DO_DEPS; then
         install_deps || die "dependency installation failed; not continuing"
     fi
-    $DO_APPS   && install_apps
+    if $DO_APPS; then install_apps; fi
     $DO_SETUPS && run_setups
-    $DO_FILES  && install_files
+    if $DO_FILES; then
+        install_files || die "config file installation failed; not continuing"
+    fi
 
     # After the files step, not inside run_setups. The daemon builds inside the
     # installed config and the shell loads it from there by relative path, so on
