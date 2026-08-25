@@ -18,7 +18,8 @@ ColumnLayout {
     property bool active: true
     signal stopRequested()
     signal retryRequested()
-    signal settingsRequested()
+    signal modelPickerRequested()
+    signal keyRequested()
 
     readonly property var currentModel: Ai.getModel()
     readonly property string endpoint: root.currentModel?.endpoint ?? ""
@@ -160,7 +161,7 @@ ColumnLayout {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.settingsRequested()
+                onClicked: root.modelPickerRequested()
                 StyledToolTip {
                     extraVisibleCondition: false
                     alternativeVisibleCondition: modelArea.containsMouse
@@ -168,7 +169,7 @@ ColumnLayout {
                             ? Translation.tr("Runs on this machine. Nothing you type leaves it.")
                             : Translation.tr("Runs on someone else's machine. What you type is sent there."))
                         + "\n" + root.endpoint
-                        + "\n" + Translation.tr("Change it in Settings > AI")
+                        + "\n" + Translation.tr("Click to switch model")
                 }
             }
         }
@@ -274,8 +275,11 @@ ColumnLayout {
         }
         ApiCommandButton {
             visible: root.trouble === "nokey"
-            buttonText: Translation.tr("Settings")
-            onClicked: root.settingsRequested()
+            buttonText: Translation.tr("Set key")
+            onClicked: root.keyRequested()
+            StyledToolTip {
+                text: Translation.tr("Puts /key in the composer. The key is stored in the keyring, not in a file.")
+            }
         }
     }
 }

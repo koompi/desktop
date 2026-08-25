@@ -11,6 +11,7 @@ import "testMessage.js" as TestMessage
 QtObject {
     id: root
     property string prefix: "/"
+    signal modelPickerRequested() // `/model` with nothing after it
 
     readonly property var commandGroups: [
         { id: "chat", title: Translation.tr("This conversation") },
@@ -312,12 +313,14 @@ QtObject {
             name: "model",
             group: "config",
             argType: "model",
-            moved: true,
-            usage: Translation.tr("%1model MODEL").arg(root.prefix),
-            description: Translation.tr("Choose which model answers."),
+            usage: Translation.tr("%1model [MODEL]").arg(root.prefix),
+            description: Translation.tr("Choose which model answers. Alone, it opens the picker."),
             execute: args => {
-                root.noteThatItMoved("model");
-                Ai.setModel(args[0]);
+                const modelId = (args[0] ?? "").trim();
+                if (modelId.length === 0)
+                    root.modelPickerRequested();
+                else
+                    Ai.setModel(modelId);
             }
         },
         {
@@ -340,16 +343,14 @@ QtObject {
             name: "key",
             group: "config",
             argType: "text",
-            moved: true,
             usage: Translation.tr("%1key API_KEY").arg(root.prefix),
-            description: Translation.tr("Set the API key a remote model needs."),
+            description: Translation.tr("Set the API key a remote model needs. It goes to the keyring."),
             execute: args => {
-                if (args[0] == "get") {
+                const key = args.join(" ").trim();
+                if (key === "get")
                     Ai.printApiKey();
-                } else {
-                    root.noteThatItMoved("key");
-                    Ai.setApiKey(args[0]);
-                }
+                else
+                    Ai.setApiKey(key);
             }
         },
         {

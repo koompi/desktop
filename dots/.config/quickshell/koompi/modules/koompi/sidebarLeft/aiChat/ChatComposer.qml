@@ -25,12 +25,12 @@ ColumnLayout {
     property alias text: messageInputField.text
     property bool helpShown: false
     property bool attachMenuShown: false
+    property bool modelPickerShown: false
     readonly property bool suggestionsVisible: suggestions.visible
 
     signal submitted(string text)
     signal transcriptFocusRequested()
     signal pageScrollRequested(string dir) // "up", "down", "home" or "end"
-    signal settingsRequested()
     signal retryRequested()
 
     property var inputHistory: []
@@ -261,9 +261,10 @@ ColumnLayout {
                             event.accepted = false; // No image, let text pasting proceed
                         } else if (event.key === Qt.Key_Escape) {
                             // Esc: close a sheet > cancel request > detach file > propagate (close sidebar)
-                            if (root.helpShown || root.attachMenuShown) {
+                            if (root.helpShown || root.attachMenuShown || root.modelPickerShown) {
                                 root.helpShown = false;
                                 root.attachMenuShown = false;
+                                root.modelPickerShown = false;
                                 event.accepted = true;
                             } else if (Ai.requestActive) {
                                 Ai.cancelRequest();
@@ -327,8 +328,8 @@ ColumnLayout {
                 // Model indicator
                 icon: "api"
                 text: Ai.getModel().name
-                tooltipText: Translation.tr("Answering: %1\nChange it in Settings > AI").arg(Ai.getModel().name)
-                onClickedAction: () => root.settingsRequested()
+                tooltipText: Translation.tr("Answering: %1\nClick to switch model").arg(Ai.getModel().name)
+                onClickedAction: () => root.modelPickerShown = !root.modelPickerShown
             }
 
             ApiInputBoxIndicator {

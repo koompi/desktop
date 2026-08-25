@@ -101,6 +101,7 @@ jobs:
             test_notification_exec_hint.sh  the hint probe needs a running quickshell (qs); static checks run
             test_bar_keys.sh             the headless bar capture needs qs and kwin_wayland; qmllint and lua checks run
             test_cheatsheet_dispatch.sh  the HyprlandKeybinds probe needs a running quickshell (qs); recorder checks run
+            test_ai_model_picker.sh      the ModelPicker probe needs a running quickshell (qs); static checks and qmllint run
           '
           bad=0
           skipped_tests=()

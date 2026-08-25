@@ -20,7 +20,8 @@ Item {
     property bool stallDetected: false
 
     signal starterChosen(string text)
-    signal settingsRequested()
+    signal modelPickerRequested()
+    signal keyRequested()
     signal composerFocusRequested()
 
     // True when the transcript took focus; false when there is nothing to focus.
@@ -117,7 +118,8 @@ Item {
                 Ai.retryRequest();
                 root.stallDetected = false;
             }
-            onSettingsRequested: root.settingsRequested()
+            onModelPickerRequested: root.modelPickerRequested()
+            onKeyRequested: root.keyRequested()
         }
     }
 

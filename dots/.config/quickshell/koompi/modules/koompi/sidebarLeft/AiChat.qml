@@ -46,12 +46,6 @@ Item {
         }
     }
 
-    function openAiSettings() {
-        const page = SettingsPages.list.find(entry => entry.component.endsWith("AiConfig.qml"));
-        if (page)
-            SettingsPages.open(page);
-    }
-
     // A slash line goes to the command table, anything else to the model.
     function submit(inputText) {
         recallStrip.reset();
@@ -70,11 +64,30 @@ Item {
     ChatCommands {
         id: commandTable
         prefix: root.commandPrefix
+        onModelPickerRequested: composer.modelPickerShown = true
     }
 
     CommandCompletion {
         id: completionSource
         commands: commandTable
+    }
+
+    // While the picker is open, a press anywhere else closes it and stops there,
+    // the way a popup swallows the click that dismisses it.
+    MouseArea {
+        id: outsidePicker
+        anchors.fill: parent
+        z: 1
+        visible: composer.modelPickerShown
+        acceptedButtons: Qt.AllButtons
+        onPressed: mouse => {
+            const point = outsidePicker.mapToItem(modelPicker, mouse.x, mouse.y);
+            if (modelPicker.contains(Qt.point(point.x, point.y))) {
+                mouse.accepted = false;
+                return;
+            }
+            modelPicker.dismissed();
+        }
     }
 
     ColumnLayout {
@@ -95,7 +108,8 @@ Item {
                 composer.text = "";
                 composer.submit(text);
             }
-            onSettingsRequested: root.openAiSettings()
+            onModelPickerRequested: composer.modelPickerShown = true
+            onKeyRequested: composer.prefill(root.commandPrefix + "key ")
             onComposerFocusRequested: composer.focusInput()
         }
 
@@ -151,6 +165,24 @@ Item {
             }
         }
 
+        ModelPicker {
+            id: modelPicker
+            Layout.fillWidth: true
+            visible: composer.modelPickerShown
+            onVisibleChanged: if (visible) Qt.callLater(modelPicker.focusFirst)
+            models: Ai.modelList.map(id => ({
+                id: id,
+                name: Ai.models[id]?.name ?? id,
+                description: Ai.models[id]?.description ?? ""
+            }))
+            currentId: Ai.currentModelId
+            onPicked: id => {
+                composer.modelPickerShown = false;
+                Ai.setModel(id);
+            }
+            onDismissed: composer.modelPickerShown = false
+        }
+
         ChatComposer {
             id: composer
             Layout.fillWidth: true
@@ -159,6 +191,9 @@ Item {
             prefix: root.commandPrefix
             completion: completionSource
             onTextChanged: recallStrip.noteTyping(composer.text)
+            // However the picker closed (a pick, Escape, a click outside, the
+            // chip again), typing carries on in the composer.
+            onModelPickerShownChanged: if (!composer.modelPickerShown) composer.focusInput()
             onSubmitted: text => root.submit(text)
             onTranscriptFocusRequested: {
                 if (!transcript.focusTranscript())
@@ -174,7 +209,6 @@ Item {
                 else
                     transcript.positionAtEnd();
             }
-            onSettingsRequested: root.openAiSettings()
             onRetryRequested: {
                 Ai.retryRequest();
                 transcript.stallDetected = false;
