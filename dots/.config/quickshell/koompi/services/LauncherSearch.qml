@@ -424,7 +424,8 @@ Singleton {
                 if (cleanedCommand.startsWith(Config.options.search.prefix.shellCommand)) {
                     cleanedCommand = cleanedCommand.slice(Config.options.search.prefix.shellCommand.length);
                 }
-                Quickshell.execDetached(["bash", "-c", root.query.startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
+                // query still carries the shell prefix; test what runs
+                Quickshell.execDetached(["bash", "-c", cleanedCommand.trim().startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
             }
         });
         const webSearchResultObject = resultComp.createObject(null, {
