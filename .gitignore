@@ -34,3 +34,4 @@ plugins/koompi-swipe-progress/*.so
 .work/
 
 globalmenu/target/
+/cli/.zig-cache/
