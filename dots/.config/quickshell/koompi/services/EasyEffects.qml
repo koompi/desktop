@@ -26,11 +26,21 @@ Singleton {
     function disable() {
         root.active = false
         Quickshell.execDetached(["bash", "-c", "pkill easyeffects || flatpak pkill com.github.wwmm.easyeffects"])
+        settleTimer.restart()
     }
 
     function enable() {
         root.active = true
         Quickshell.execDetached(["bash", "-c", "easyeffects --hide-window --service-mode || flatpak run com.github.wwmm.easyeffects --hide-window --service-mode"])
+        settleTimer.restart()
+    }
+
+    // launch/kill is detached and can fail; read the real state back
+    Timer {
+        id: settleTimer
+        interval: 1000
+        repeat: false
+        onTriggered: root.fetchActiveState()
     }
 
     function toggle() {
