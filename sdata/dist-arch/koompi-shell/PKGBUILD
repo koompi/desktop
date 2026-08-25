@@ -15,7 +15,7 @@
 groups=(koompi)
 pkgname=koompi-shell
 pkgver=1.1
-pkgrel=5
+pkgrel=6
 pkgdesc='KOOMPI desktop shell (Quickshell config) and koompi-* tools'
 arch=(x86_64 aarch64)
 license=(GPL-3.0-only)
@@ -113,6 +113,10 @@ package() {
   # update sources this from its own directory and exits if it is missing.
   install -Dm644 "$_repo_root/dots/.local/share/koompi/libexec/update-lib.sh" \
     "$pkgdir/usr/lib/koompi/update-lib.sh"
+  # koompi-migrate sources this from /usr/lib/koompi when its own libexec copy
+  # is absent, and exits if neither is there.
+  install -Dm644 "$_repo_root/dots/.local/share/koompi/libexec/migrate-lib.sh" \
+    "$pkgdir/usr/lib/koompi/migrate-lib.sh"
   ln -s koompi "$pkgdir/usr/bin/koompi-update"
 
   local tool

@@ -113,6 +113,8 @@ for candidate in \
 done
 [[ -n "$migrate_lib" ]] || die "migrate-lib.sh not found next to this script or in /usr/lib/koompi; reinstall koompi-shell"
 # shellcheck source=../share/koompi/libexec/migrate-lib.sh
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=../share/koompi/libexec/migrate-lib.sh
 source "$migrate_lib"
 
 mode=resync
