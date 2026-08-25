@@ -14,7 +14,9 @@
 # ever happens. Any consumer of this hint must invoke it as
 # `bash -lc 'exec "$@"' -- "${argv[@]}"` (argv array) and must NEVER do
 # `sh -c "$joined_string"` — that reopens the exact injection class this script exists
-# to close.
+# to close. The consumer is the shell: services/Notifications.qml parses the hint into
+# Notif.execArgv and runs it (execCommand/invokeExec) on a left-click of the toast or
+# its history row, or via `qs -c koompi ipc call notifications invokeLast`.
 
 set -euo pipefail
 

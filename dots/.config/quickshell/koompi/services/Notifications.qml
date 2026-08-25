@@ -33,6 +33,8 @@ Singleton {
         property string summary: notification?.summary ?? ""
         property double time
         property string urgency: notification?.urgency.toString() ?? "normal"
+        // koompi-notify-send --exec; [] when absent, malformed, or restored from disk
+        property var execArgv: root.parseExecArgv(notification?.hints?.["koompi-exec-argv"])
         property Timer timer
 
         onNotificationChanged: {
@@ -57,6 +59,35 @@ Singleton {
     }
     function notifToString(notif) {
         return JSON.stringify(notifToJSON(notif), null, 2);
+    }
+
+    // The "koompi-exec-argv" hint is a JSON array of argv strings (koompi-notify-send
+    // --exec). A malformed hint costs one log line and yields [], never the toast.
+    function parseExecArgv(hint) {
+        if (hint === undefined || hint === null || hint === "") return [];
+        try {
+            const argv = JSON.parse(hint);
+            if (Array.isArray(argv) && argv.length > 0 && argv.every((arg) => typeof arg === "string")) return argv;
+        } catch (e) {}
+        console.warn("[Notifications] Ignoring malformed koompi-exec-argv hint: " + JSON.stringify(hint));
+        return [];
+    }
+
+    // The invocation koompi-notify-send's contract requires: the argv reaches exec as
+    // an array, so no element is ever parsed by a shell (never `sh -c "$joined"`).
+    function execCommand(argv) {
+        return ["bash", "-lc", 'exec "$@"', "--"].concat(argv);
+    }
+
+    // Left-click on a toast or history row carrying the hint, and invokeLast's
+    // fallback. Discards the notification after, like attemptInvokeAction.
+    function invokeExec(id) {
+        const notif = root.list.find((notif) => notif.notificationId === id);
+        if (!notif || notif.execArgv.length === 0) return false;
+        console.log("[Notifications] Running exec hint for notification ID: " + id + ": " + JSON.stringify(notif.execArgv));
+        Quickshell.execDetached(root.execCommand(notif.execArgv));
+        root.discardNotification(id);
+        return true;
     }
 
     component NotifTimer: Timer {
@@ -290,14 +321,14 @@ Singleton {
             return "ok";
         }
 
-        // The freedesktop "default" action when the sender registered one,
-        // else its first action; attemptInvokeAction discards the toast after.
+        // The freedesktop "default" action when the sender registered one, else its
+        // first action, else the koompi-notify-send --exec hint; discards the toast after.
         function invokeLast(): string {
             const notif = root.newestPopup();
             if (!notif) return "none";
             const action = notif.actions.find((a) => a.identifier === "default") ?? notif.actions[0];
-            if (!action) return "none";
-            root.attemptInvokeAction(notif.notificationId, action.identifier);
+            if (action) root.attemptInvokeAction(notif.notificationId, action.identifier);
+            else if (!root.invokeExec(notif.notificationId)) return "none";
             return "ok";
         }
 
@@ -328,6 +359,9 @@ Singleton {
                 return notifComponent.createObject(root, {
                     "notificationId": notif.notificationId,
                     "actions": [], // Notification actions are meaningless if they're not tracked by the server or the sender is dead
+                    // execArgv is not saved or restored either (notifToJSON omits it, the
+                    // binding yields [] without a notification): the argv was for the toast
+                    // it arrived on, and re-running it after a shell restart is a surprise.
                     "appIcon": notif.appIcon,
                     "appName": notif.appName,
                     "body": notif.body,

@@ -17,6 +17,10 @@ Item { // Notification item area
     property real fontSize: Appearance.font.pixelSize.small
     property real padding: onlyNotification ? 0 : 8
     property real summaryElideRatio: 0.85
+    // koompi-notify-send --exec: a left-click runs the argv (Notifications.invokeExec)
+    // instead of reaching the group's expand tap. A swipe that started here is not a click.
+    property bool hasExec: (notificationObject?.execArgv?.length ?? 0) > 0
+    property bool dragged: false
 
     property real dragConfirmThreshold: 70 // Drag further to discard notification
     property real dismissOvershoot: notificationIcon.implicitWidth + 20 // Account for gaps and bouncy animations
@@ -66,18 +70,26 @@ Item { // Notification item area
         id: dragManager
         anchors.fill: root
         anchors.leftMargin: root.expanded ? -notificationIcon.implicitWidth : 0
-        interactive: expanded
+        interactive: expanded || root.hasExec
         automaticallyReset: false
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+        cursorShape: root.hasExec ? Qt.PointingHandCursor : Qt.ArrowCursor
+
+        onPressed: () => {
+            root.dragged = false;
+        }
 
         onClicked: (mouse) => {
             if (mouse.button === Qt.MiddleButton) {
                 root.destroyWithAnimation();
+            } else if (mouse.button === Qt.LeftButton && root.hasExec && !root.dragged) {
+                Notifications.invokeExec(notificationObject.notificationId);
             }
         }
 
         onDraggingChanged: () => {
             if (dragging) {
+                root.dragged = true;
                 root.qmlParent.dragIndex = root.index ?? root.parent.children.indexOf(root);
             }
         }
