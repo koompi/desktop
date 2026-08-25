@@ -10,6 +10,11 @@
 #                  the file overrides the QML default; koompi-migrate merges
 #                  config.json only and never touches states.json)
 #   key absent  -> the new default fills the gap
+# A fourth run (J28) starts from a stored deepseek-chat + remoteEndpoint and
+# calls setModel("") and setModel("   "), which is what `/model` with no
+# argument reaches ModelRegistry as: the state must survive both, in memory and
+# in the states.json written back, and each call answers with the current
+# model and the usage line.
 set -uo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -54,6 +59,8 @@ ShellRoot {
     property int failures: 0
     property string expectRemote: Quickshell.env("PROBE_EXPECT_REMOTE")
     property string expectEndpoint: Quickshell.env("PROBE_EXPECT_ENDPOINT")
+    property bool emptyArg: Quickshell.env("PROBE_EMPTY_ARG") === "1"
+    property var messages: []
 
     function check(label, got, want) {
         const ok = got === want;
@@ -66,7 +73,10 @@ ShellRoot {
         id: engine
         property string interfaceRole: "interface"
         property bool requestActive: false
-        function addMessage(text, role) { console.log("engine message: " + text.split("\n")[0]); }
+        function addMessage(text, role) {
+            probe.messages.push(text);
+            console.log("engine message: " + text.replace(/\n+/g, " | "));
+        }
     }
     ModelRegistry { id: registry; engine: engine }
 
@@ -111,9 +121,38 @@ ShellRoot {
                 probe.check("remote slot logo", registry.remoteModelObj.icon, "oxalpha-symbolic");
             }
             probe.check("current model id", registry.currentModelId, "remote");
-            console.log(probe.failures === 0 ? "PROBE OK" : "PROBE FAILED " + probe.failures);
-            Qt.quit();
+            if (probe.emptyArg) probe.emptyArgCase();
+            else probe.finish();
         }
+    }
+
+    // `/model` with no argument: the command passes args[0] (undefined) on,
+    // and a line of spaces trims to the same thing
+    function emptyArgCase() {
+        const ai = Persistent.states.ai;
+        const before = { model: ai.model, remoteModel: ai.remoteModel, remoteEndpoint: ai.remoteEndpoint, remoteFormat: ai.remoteFormat };
+        probe.messages = [];
+        registry.setModel("");
+        registry.setModel("   ");
+        probe.check("empty arg: ai.model kept", ai.model, before.model);
+        probe.check("empty arg: remoteModel kept", ai.remoteModel, before.remoteModel);
+        probe.check("empty arg: remoteEndpoint kept", ai.remoteEndpoint, before.remoteEndpoint);
+        probe.check("empty arg: remoteFormat kept", ai.remoteFormat, before.remoteFormat);
+        probe.check("empty arg: remote slot endpoint kept", registry.remoteModelObj.endpoint, before.remoteEndpoint);
+        probe.check("empty arg: one reply per call", probe.messages.length, 2);
+        for (let i = 0; i < probe.messages.length; i++) {
+            probe.check("empty arg: reply " + i + " names the current model", probe.messages[i].includes(before.remoteModel), true);
+            probe.check("empty arg: reply " + i + " carries the usage line",
+                ["/model remote NAME", "/model local:NAME", "/model local"].every(u => probe.messages[i].includes(u)), true);
+        }
+        // Persistent writes 100ms after an adapter change; give a wipe time to land
+        settle.start();
+    }
+    Timer { id: settle; interval: 500; repeat: false; onTriggered: probe.finish() }
+
+    function finish() {
+        console.log(probe.failures === 0 ? "PROBE OK" : "PROBE FAILED " + probe.failures);
+        Qt.quit();
     }
 }
 QML
@@ -127,9 +166,10 @@ run_probe() {
     echo "--- states.json: ${states:-(none)}"
     local out
     out="$(cd "$WORK/shell" && PATH="$WORK/bin:$PATH" PROBE_EXPECT_REMOTE="$expect_remote" PROBE_EXPECT_ENDPOINT="$expect_endpoint" \
+        PROBE_EMPTY_ARG="${PROBE_EMPTY_ARG:-}" \
         XDG_CONFIG_HOME="$xdg/config" XDG_STATE_HOME="$xdg/state" XDG_CACHE_HOME="$xdg/cache" \
         timeout 60 qs -p remote_default_probe.qml 2>&1)"
-    echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ DEBUG qml: //p' | grep -E '^(PASS|FAIL|PROBE)' || true
+    echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ DEBUG qml: //p' | grep -E '^(PASS|FAIL|PROBE|engine message)' || true
     if ! grep -q "PROBE OK" <<< "$out"; then
         echo "--- probe output ($label) ---" >&2
         echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -vE "qmlscanner|^\s*$" >&2
@@ -139,11 +179,23 @@ run_probe() {
     local written
     written="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["ai"]["remoteModel"])' "$xdg/state/quickshell/states.json" 2>/dev/null || echo "?")"
     [[ "$written" == "$expect_remote" ]] || fail "states.json written back with remoteModel=$written, want $expect_remote"
+    # every ai key the input named comes back with the same value
+    [[ -z "$states" ]] || python3 - "$xdg/state/quickshell/states.json" "$states" <<'PY' || fail "states.json written back differs from the one read ($label)"
+import json, sys
+written = json.load(open(sys.argv[1]))["ai"]
+given = json.loads(sys.argv[2])["ai"]
+diff = {k: (v, written.get(k)) for k, v in given.items() if written.get(k) != v}
+for k, (want, got) in diff.items():
+    print(f"  ai.{k}: read {want!r}, written {got!r}")
+sys.exit(1 if diff else 0)
+PY
 }
 
 run_probe fresh "stealth/ox-alpha" "$OXALPHA_ENDPOINT"
 run_probe kept "deepseek-chat" "https://api.deepseek.com/chat/completions" \
     '{"ai":{"model":"remote","remoteModel":"deepseek-chat","remoteEndpoint":"","remoteFormat":""}}'
 run_probe gap "stealth/ox-alpha" "$OXALPHA_ENDPOINT" '{"ai":{"model":"remote","temperature":0.5}}'
+PROBE_EMPTY_ARG=1 run_probe empty "deepseek-chat" "https://example.test/v1/chat/completions" \
+    '{"ai":{"model":"remote","remoteModel":"deepseek-chat","remoteEndpoint":"https://example.test/v1/chat/completions","remoteFormat":""}}'
 
-echo "ok   remote default: stealth/ox-alpha infers tokenra/openai/oxalpha with its key link, regressions hold, a stored remoteModel survives, a missing one takes the default"
+echo "ok   remote default: stealth/ox-alpha infers tokenra/openai/oxalpha with its key link, regressions hold, a stored remoteModel survives, a missing one takes the default, /model with no argument keeps the state"

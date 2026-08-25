@@ -262,8 +262,19 @@ QtObject {
     }
 
     function setModel(modelId, feedback = true, setPersistentState = true) {
-        if (!modelId) modelId = ""
-        modelId = modelId.toLowerCase()
+        modelId = (modelId ?? "").trim().toLowerCase()
+
+        // "/model" with nothing after it asks which model answers; it must not
+        // fall through to the remote branch, which would store "" as the name
+        // and drop the stored endpoint
+        if (modelId.length === 0) {
+            if (feedback) root.engine.addMessage(
+                Translation.tr("Current model: **%1**\n\n%2\n\nChange with `/model remote NAME`, `/model local:NAME` or `/model local`")
+                    .arg(root.getModel().name).arg(root.getModel().description),
+                root.engine.interfaceRole
+            );
+            return;
+        }
 
         // "local:<name>" - set local model name and switch to local slot
         if (modelId.startsWith("local:")) {
