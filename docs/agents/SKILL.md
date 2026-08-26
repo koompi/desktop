@@ -49,8 +49,9 @@ without updating them first is a defect, not a variant.
 Installed machines track `prod-hd`, not `main`.
 `prod-hd` is only ever fast-forwarded from `main` and nothing is authored on it, so its
 history is a prefix of `main`'s: a school laptop lands only on a commit somebody blessed.
-`install.sh` clones it by default (`KOOMPI_REF` still overrides), and `./setup update`
-moves a checkout onto it — but only a *managed* one.
+`install.sh` clones it when the remote has it and falls back to `main` when it does not — a
+mirror without the branch still installs — saying which line it took; `KOOMPI_REF` overrides
+both. `./setup update` moves an existing checkout onto it, but only a *managed* one.
 
 Managed means the checkout carries nothing of its own: a clean tree, on `main`, an
 `origin` that is the KOOMPI repo, and no commit `origin/main` does not already have.

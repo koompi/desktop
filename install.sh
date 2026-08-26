@@ -5,7 +5,8 @@
 set -euo pipefail
 
 REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/koompi-hd.git}"
-REPO_REF="${KOOMPI_REF:-prod-hd}"
+PROD_REF='prod-hd'
+REPO_REF="${KOOMPI_REF:-}"
 DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-hd}"
 
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
@@ -32,6 +33,19 @@ bootstrap_git() {
 }
 
 bootstrap_git
+
+# prod-hd is the release line, main is where it comes from. A mirror that
+# carries only main, or this repo before the branch was ever pushed, must still
+# install rather than die on "Remote branch prod-hd not found".
+if [[ -n "$REPO_REF" ]]; then
+    say "tracking $REPO_REF (KOOMPI_REF)"
+elif git ls-remote --exit-code --heads "$REPO_URL" "$PROD_REF" >/dev/null 2>&1; then
+    REPO_REF="$PROD_REF"
+    say "tracking $PROD_REF, the line KOOMPI releases from"
+else
+    REPO_REF=main
+    say "$REPO_URL has no $PROD_REF branch; tracking main"
+fi
 
 if [[ -d "$DEST/.git" ]]; then
     say "updating $DEST"

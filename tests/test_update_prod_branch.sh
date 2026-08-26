@@ -2,6 +2,10 @@
 # J51: `koompi update` follows prod-hd, the line releases are cut from, but only
 # where moving the branch takes nothing from anyone. Every other checkout - a
 # dev's, a fork's, one with work in it - has to come out exactly as it went in.
+# Every bare global assigned below is one ./setup sets and the sourced update.sh
+# reads - REPO_ROOT, DRY_RUN, ASSUME_YES, DO_*, SKIP_BACKUP - so SC2034 fires on
+# all of them by design; nothing in this file reads them itself.
+# shellcheck disable=SC2034
 # shellcheck source-path=SCRIPTDIR
 set -uo pipefail
 
@@ -27,10 +31,7 @@ cat > "$HOME/.gitconfig" <<'GITCONFIG'
 	diverging = false
 GITCONFIG
 
-# Consumed by the sourced common.sh / update.sh, not by this file directly.
-# shellcheck disable=SC2034
 DRY_RUN=false
-# shellcheck disable=SC2034
 ASSUME_YES=false
 # shellcheck source=../sdata/lib/common.sh disable=SC1091
 source "$ROOT/sdata/lib/common.sh"
@@ -169,7 +170,6 @@ REPO_ROOT="$work"
 before="$(head_of "$work")"
 DRY_RUN=true
 out="$(update_pull < /dev/null 2>&1)"
-# shellcheck disable=SC2034
 DRY_RUN=false
 [[ "$(branch_of "$work")" == main ]] || fail "a dry run switched the branch: $out"
 [[ "$(head_of "$work")" == "$before" ]] || fail "a dry run moved HEAD: $out"
@@ -217,7 +217,6 @@ git clone -q "$origin" "$work"
 git -C "$work" checkout -q -b "$PROD_BRANCH"
 echo mine > "$work/mine"; git -C "$work" add .; git -C "$work" commit -qm "my own $PROD_BRANCH"
 git -C "$work" checkout -q main
-# shellcheck disable=SC2034
 REPO_ROOT="$work"
 out="$(update_pull < /dev/null 2>&1)"
 [[ "$(branch_of "$work")" == main ]] \
@@ -299,5 +298,63 @@ for opt in "${setup_opts[@]}"; do
         || fail "./setup update takes $opt but the re-exec would drop it"
 done
 pass "every option setup takes survives the re-exec"
+
+# --- install.sh takes prod-hd when it is there, main when it is not ------------
+# The one-liner is piped from the internet: on a mirror that carries only main,
+# or on this repo before prod-hd was ever pushed, it has to install, not die.
+INSTALL="$ROOT/install.sh"
+install_into() {
+    local url="$1" dest="$2"; shift 2
+    ( cd "$T" && env "$@" KOOMPI_REPO="$url" KOOMPI_DEST="$dest" \
+        bash "$INSTALL" 2>&1 < /dev/null )
+}
+# a repo whose ./setup is a stub: install.sh hands over to it and stops there
+stub_repo() {
+    local dir="$1" with_prod="$2" origin="$1/koompi/koompi-hd.git" seed="$1/seed"
+    mkdir -p "$dir/koompi"; git init -q --bare "$origin"
+    git clone -q "$origin" "$seed" 2>/dev/null
+    printf '#!/usr/bin/env bash\nprintf "stub setup ran: %%s\\n" "$*"\n' > "$seed/setup"
+    chmod +x "$seed/setup"
+    git -C "$seed" add setup; git -C "$seed" commit -qm setup
+    git -C "$seed" push -q origin HEAD:main
+    [[ "$with_prod" == true ]] && git -C "$seed" push -q origin HEAD:refs/heads/prod-hd
+    printf 'file://%s\n' "$origin"
+}
+
+url="$(stub_repo "$T/e" true)"
+dest="$T/e/dest"
+out="$(install_into "$url" "$dest")"
+[[ "$(branch_of "$dest")" == "$PROD_BRANCH" ]] \
+    || fail "install.sh did not clone $PROD_BRANCH when the remote has it: $out"
+grep -q "tracking $PROD_BRANCH" <<<"$out" || fail "install.sh did not say which line it took: $out"
+grep -q 'stub setup ran: install' <<<"$out" || fail "install.sh did not hand over to setup: $out"
+pass "install.sh clones $PROD_BRANCH when the remote has it"
+
+url="$(stub_repo "$T/f" false)"
+dest="$T/f/dest"
+out="$(install_into "$url" "$dest")"
+[[ "$(branch_of "$dest")" == main ]] \
+    || fail "install.sh did not fall back to main on a remote with no $PROD_BRANCH: $out"
+grep -q "no $PROD_BRANCH branch; tracking main" <<<"$out" \
+    || fail "install.sh did not say it fell back: $out"
+grep -q 'stub setup ran: install' <<<"$out" || fail "the fallback did not reach setup: $out"
+grep -qi 'not found\|error:\|fatal' <<<"$out" \
+    && fail "the fallback printed a failure at the user: $out"
+pass "install.sh falls back to main when the remote has no $PROD_BRANCH"
+
+url="$(stub_repo "$T/g" true)"
+dest="$T/g/dest"
+out="$(install_into "$url" "$dest" KOOMPI_REF=main)"
+[[ "$(branch_of "$dest")" == main ]] || fail "KOOMPI_REF=main was overridden: $out"
+grep -q 'tracking main (KOOMPI_REF)' <<<"$out" || fail "the override was not reported: $out"
+pass "KOOMPI_REF still overrides the choice"
+
+# --- and the second run, on a checkout install.sh already made ----------------
+out="$(install_into "$url" "$T/e/dest")"
+[[ "$(branch_of "$T/e/dest")" == "$PROD_BRANCH" ]] \
+    || fail "a re-run of install.sh moved an existing checkout off $PROD_BRANCH: $out"
+grep -q 'stub setup ran: install' <<<"$out" || fail "the re-run did not reach setup: $out"
+pass "a re-run over an existing checkout stays on $PROD_BRANCH"
+
 
 exit 0
