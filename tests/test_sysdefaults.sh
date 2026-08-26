@@ -135,6 +135,12 @@ grep -Fq 'systemctl restart systemd-oomd.service' <<< "$fn" \
     || fail "oomd reads its thresholds at startup only; without a restart a running daemon keeps 60% / 30 s"
 grep -Fq 'systemctl --user daemon-reload' <<< "$fn" \
     || fail "the user manager reports app.slice candidacy only after a reload"
+# systemd-sysctl.service is a boot-time oneshot: without a restart the sysctl
+# drop-in this function just installed does nothing until the machine reboots,
+# while the packaged route applies it at install time from Arch's
+# 25-systemd-sysctl.hook.
+grep -Fq 'systemctl restart systemd-sysctl.service' <<< "$fn" \
+    || fail "setup_low_ram_defaults installs the sysctl drop-in without applying it; it would wait for a reboot"
 
 # 4. The built package: the eight files at their /usr/lib paths, the ufw
 #    profile at its /etc path, nothing else, and the dependency recorded in
