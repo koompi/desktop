@@ -240,7 +240,16 @@ setup_services() {
     if systemctl list-unit-files bluetooth.service >/dev/null 2>&1; then
         run sudo systemctl enable --now bluetooth
     fi
-    # fwupd's timer (koompi-basic dependency); no package, no unit
+    # koompi-basic dep, so packaged users have it and the preset enables this
+    # timer; from git nothing pulls fwupd in
+    if ! have fwupdmgr; then
+        case "$OS_GROUP_ID" in
+            arch)   run sudo pacman -S --needed --noconfirm fwupd ;;
+            fedora) run sudo dnf install -y fwupd ;;
+            debian) run sudo apt-get install -y fwupd ;;
+            *)      warn "no fwupd recipe for this distro; firmware updates stay manual" ;;
+        esac
+    fi
     if systemctl list-unit-files fwupd-refresh.timer >/dev/null 2>&1; then
         run sudo systemctl enable fwupd-refresh.timer
     else
