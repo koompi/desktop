@@ -30,11 +30,10 @@ QtObject {
         const localOnly = Config.options?.policies?.ai === 2;
         const models = Object.assign({}, root.registry.models);
         // Only what this loader put there is taken back. An id a discovered
-        // Ollama/LiteRT model has taken since stays theirs.
+        // Ollama/LiteRT model has taken since stays theirs; ours goes either way.
         for (const id in root._added) {
-            if (models[id] !== root._added[id]) continue;
-            models[id].destroy();
-            delete models[id];
+            root._added[id].destroy();
+            if (models[id] === root._added[id]) delete models[id];
         }
         // The registry's own binding on policies.ai dies with the first assignment
         // below, so the remote slot is applied here from then on.

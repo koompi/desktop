@@ -22,9 +22,13 @@
 #            modelList with their fields, a malformed one is skipped with a
 #            warning; the context window is 131072 for an unknown hosted model,
 #            8192 for an unknown local one, the entry's context_window when set
-#   retry -> a send deferred on the keyring is dropped when the model changes;
-#            then the same refusal, then /key and a plain retry send for real:
-#            the log carries the endpoint and the bearer with the fake key
+#   retry -> the keyring answers late (shim sleeps 2 s): a deferred send survives
+#            a `models` reassignment (same id, re-emitted signal), is dropped
+#            with a visible note on a clear and on a real model switch, is not
+#            displaced by a compaction (which displaces nothing) while a deferred
+#            compaction is displaced by a send; then the refusal, then /key and a
+#            plain retry send for real: the log carries the endpoint and the
+#            bearer with the fake key
 #   locked-> the keyring never answers (secret-tool empty, busctl says locked):
 #            the wait ends with a message, nothing is sent
 # Static half: neither OpenAI nor Mistral strategy can emit an empty bearer.
@@ -77,7 +81,7 @@ printf '#!/usr/bin/env bash\nexit 1\n' > "$WORK/bin/ollama"
 cat > "$WORK/bin/secret-tool" <<'SH'
 #!/usr/bin/env bash
 case "${1:-}" in
-    lookup) [[ "${PROBE_KEYRING_LOCKED:-}" == "1" ]] && exit 1; printf '%s\n' "${PROBE_KEYRING:-{\"apiKeys\":{}}}" ;;
+    lookup) [[ "${PROBE_KEYRING_LOCKED:-}" == "1" ]] && exit 1; sleep "${PROBE_KEYRING_DELAY:-0}"; printf '%s\n' "${PROBE_KEYRING:-{\"apiKeys\":{}}}" ;;
     *) cat > /dev/null ;;
 esac
 SH
@@ -120,7 +124,7 @@ ShellRoot {
         property var apiKeys: registry.apiKeys
         property var apiKeysLoaded: registry.apiKeysLoaded
         property var models: registry.models
-        property string currentModelId: registry.currentModelId
+        property var currentModelId: registry.currentModelId // var, as on Ai: re-emits on every models reassignment
         property var currentApiStrategy: registry.apiStrategies[engine.models[engine.currentModelId]?.api_format || "openai"]
         property Component aiMessageComponent: AiMessageData {}
         property var conversation: conversation
@@ -156,6 +160,9 @@ ShellRoot {
     Conversation { id: conversation; engine: engine }
 
     Timer { id: step; repeat: false; property var fn: null; onTriggered: { const f = step.fn; step.fn = null; f(); } }
+    property int modelIdSignals: 0
+    property int destroyedReplaced: 0
+    Connections { target: engine; function onCurrentModelIdChanged() { probe.modelIdSignals++; } }
     function after(ms, fn) { step.fn = fn; step.interval = ms; step.restart(); }
     function roles() { return conversation.messageIDs.map(id => conversation.messageByID[id].role); }
     function lastText() { return conversation.messageByID[conversation.messageIDs[conversation.messageIDs.length - 1]]?.content ?? ""; }
@@ -238,7 +245,9 @@ ShellRoot {
         probe.check("extra: /model reply", (probe.messages[0] ?? "").startsWith("Model set to"), true);
         Persistent.states.ai.model = "remote";
 
-        // a discovered model that took one of our ids survives the next reload
+        // a discovered model that took one of our ids survives the next reload;
+        // the object we had made for that id is destroyed, not leaked
+        registry.models["probe-discovered"].Component.destruction.connect(() => { probe.destroyedReplaced++; });
         registry.addModel("probe-discovered", { "model": "probe-discovered", "description": "discovered", "endpoint": "http://localhost:11434/v1/chat/completions", "requires_key": false });
         registry.extraModels.load();
         probe.check("extra: reload keeps the discovered model under the taken id", registry.models["probe-discovered"]?.description, "discovered");
@@ -304,6 +313,8 @@ ShellRoot {
     }
 
     function gateChecks() {
+        // destroy() lands at the end of the event loop, so this is read a tick later
+        probe.check("extra: our object under the taken id was destroyed on reload", probe.destroyedReplaced, 1);
         probe.check("gate: still nothing running", requester.running, false);
         probe.check("gate: user turn kept", probe.roles().slice(-2).join(","), "user,interface"); // retry mode has the dropped turn before
         probe.check("gate: one interface message", probe.messages.length, 1);
@@ -325,22 +336,61 @@ ShellRoot {
         probe.finish();
     }
 
-    // a send deferred on the keyring is dropped when the chat is cleared or the
-    // model changes meanwhile
+    // The keyring answers after 2 s here. Meanwhile: a deferred send survives a
+    // models reassignment, is dropped (with a note) by a clear and by a real
+    // switch, keeps its slot against a compaction, and a deferred compaction
+    // gives its slot to a send.
     function dropCase() {
+        const gate = requester.keyGate;
+        engine.currentModelId = Qt.binding(() => registry.currentModelId);
+        probe.modelIdSignals = 0;
         probe.messages = [];
-        requester.sendUserMessage("turn dropped by a clear");
+        requester.sendUserMessage("turn A, survives discovery");
+        probe.check("survive: send deferred", gate._deferred?.kind, "send");
+        registry.addModel("noise-probe", { "model": "noise", "endpoint": "http://localhost:11434/v1/chat/completions", "requires_key": false });
+        probe.check("survive: currentModelId still remote", engine.currentModelId, "remote");
+        // measured: a var property does not re-emit on a same-value re-evaluation
+        // here, so the same-id signal the guard is for is raised by hand
+        engine.currentModelIdChanged();
+        probe.check("survive: a same-id currentModelIdChanged reached the gate", probe.modelIdSignals > 0, true);
+        probe.check("survive: still deferred", gate._deferred?.kind, "send");
+        probe.check("survive: no note", probe.messages.length, 0);
+
         conversation.clearMessages(false);
-        requester.sendUserMessage("turn dropped by a model change");
+        probe.check("drop by clear: slot empty", gate._deferred, null);
+        probe.check("drop by clear: no note inside the clear itself", probe.messages.length, 0);
+        probe.after(50, probe.dropCase2); // the note lands after the clear, on the next tick
+    }
+
+    function dropCase2() {
+        const gate = requester.keyGate;
+        probe.check("drop by clear: one note after the clear", probe.messages.length, 1);
+        probe.check("drop by clear: the note says why", (probe.messages[0] ?? "").includes("the chat was cleared before the keyring answered"), true);
+        probe.check("drop by clear: the note is a whole message", probe.roles().join(","), "interface");
+
+        probe.messages = [];
+        requester.sendUserMessage("turn B, dropped by a model change");
         engine.currentModelId = "test/extra-1";
+        probe.check("drop by switch: slot empty", gate._deferred, null);
+        probe.check("drop by switch: one note", probe.messages.length, 1);
+        probe.check("drop by switch: the note says why", (probe.messages[0] ?? "").includes("the model changed before the keyring answered"), true);
         engine.currentModelId = "remote";
-        probe.after(1000, () => {
+        probe.check("drop by switch: switching back with nothing waiting adds no note", probe.messages.length, 1);
+
+        for (let i = 0; i < 3; i++) conversation.addMessage("filler turn " + i, "user");
+        probe.messages = [];
+        conversation.compact(null);
+        probe.check("slot: a compaction defers", gate._deferred?.kind, "compact");
+        requester.sendUserMessage("hello without a key");
+        probe.check("slot: a send displaces the deferred compaction", gate._deferred?.kind, "send");
+        conversation.compact(null);
+        probe.check("slot: a compaction does not displace the deferred send", gate._deferred?.kind, "send");
+        probe.check("slot: not compacting", conversation.compacting, false);
+        probe.check("slot: no note for the skipped compaction", probe.messages.length, 0);
+
+        probe.after(3000, () => {
             probe.check("drop: keyring loaded meanwhile", registry.apiKeysLoaded, true);
-            probe.check("drop: no reply at all", probe.messages.length, 0);
-            probe.check("drop: only the second user turn is in the chat", probe.roles().join(","), "user");
             probe.check("drop: nothing running", requester.running, false);
-            probe.messages = [];
-            requester.sendUserMessage("hello without a key");
             probe.gateChecks();
             probe.retryCase();
         });
@@ -367,7 +417,8 @@ ShellRoot {
         probe.check("retry: key stored", registry.apiKeys.oxalpha, "sk-test-fake");
         requester.retryRequest();
         probe.after(1500, () => {
-            probe.check("retry: request went out", probe.roles().join(","), "user,user,interface,interface,assistant");
+            probe.check("retry: request went out", probe.roles().slice(-3).join(","), "interface,interface,assistant");
+            probe.check("retry: exactly one assistant turn", probe.roles().filter(r => r === "assistant").length, 1);
             probe.check("retry: request finished", requester.running, false);
             probe.finish();
         });
@@ -431,7 +482,8 @@ run_probe() {
     # XDG_RUNTIME_DIR is where the request script goes, so the live shell's is left
     # alone; the compositor socket is reached by absolute path instead
     out="$(cd "$WORK/shell" && PATH="$WORK/bin:$PATH" PROBE_EXPECT_REMOTE="$expect_remote" PROBE_EXPECT_ENDPOINT="$expect_endpoint" \
-        PROBE_MODE="${PROBE_MODE:-}" PROBE_KEYRING_LOCKED="${PROBE_KEYRING_LOCKED:-}" CURL_LOG="$xdg/curl.log" LITERT_LM_DIR="$xdg/litert" \
+        PROBE_MODE="${PROBE_MODE:-}" PROBE_KEYRING_LOCKED="${PROBE_KEYRING_LOCKED:-}" PROBE_KEYRING_DELAY="${PROBE_KEYRING_DELAY:-0}" \
+        CURL_LOG="$xdg/curl.log" LITERT_LM_DIR="$xdg/litert" \
         WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-1}" XDG_RUNTIME_DIR="$xdg/runtime" \
         XDG_CONFIG_HOME="$xdg/config" XDG_STATE_HOME="$xdg/state" XDG_CACHE_HOME="$xdg/cache" \
         timeout 60 qs -p remote_default_probe.qml 2>&1)"
@@ -492,7 +544,7 @@ while read -r strategy template; do
     echo "ok   $strategy header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one"
 done < <(sed -n 's/^AUTH_TEMPLATE //p' <<< "$gate_out")
 
-retry_out="$(PROBE_MODE=retry run_probe retry "stealth/ox-alpha" "$OXALPHA_ENDPOINT")" || exit 1
+retry_out="$(PROBE_MODE=retry PROBE_KEYRING_DELAY=2 run_probe retry "stealth/ox-alpha" "$OXALPHA_ENDPOINT")" || exit 1
 echo "$retry_out"
 retry_log="$WORK/xdg-retry/curl.log"
 [[ "$(wc -l < "$retry_log")" == "1" ]] || { cat "$retry_log" >&2; fail "expected exactly one curl after /key + retry, got $(wc -l < "$retry_log")"; }

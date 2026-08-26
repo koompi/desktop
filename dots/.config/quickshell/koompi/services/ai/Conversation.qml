@@ -581,7 +581,7 @@ QtObject {
         const model = root.engine.models[root.engine.currentModelId];
         // Same gate as a turn: without a key the 401 would land as an empty summary
         // and the turn would be lost. Refused (keyring read, no key): nothing changes.
-        if (!root.engine.requester.keyGate.admit(model, () => root.compact(onDone))) {
+        if (!root.engine.requester.keyGate.admit(model, () => root.compact(onDone), "compact")) {
             if (root.engine.requester.keyGate.keyringReady)
                 root.addMessage(Translation.tr("Compaction skipped: no API key for %1. The conversation is kept as it is.").arg(model.name), root.engine.interfaceRole);
             return;
