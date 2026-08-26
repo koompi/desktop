@@ -102,10 +102,14 @@ follow_prod_branch() {
     return 0
 }
 
+# true when this run left HEAD somewhere other than where it found it
+PULL_MOVED=false
+
 # A pull that would clobber local edits is the one thing an updater must never
 # do quietly: the hypr/custom slots exist precisely so people edit this tree.
 update_pull() {
     step "Updating the checkout"
+    PULL_MOVED=false
 
     if ! have git || [[ ! -d "$REPO_ROOT/.git" ]]; then
         info "not a git checkout; updating from the files already here"
@@ -125,6 +129,8 @@ update_pull() {
         return 0
     fi
 
+    local entry_head
+    entry_head="$(git -C "$REPO_ROOT" rev-parse HEAD)"
     follow_prod_branch "$branch"
 
     local before after pulled=false skipped=false reply
@@ -156,6 +162,7 @@ update_pull() {
         run git -C "$REPO_ROOT" submodule update --init --recursive
     fi
     after="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+    [[ "$after" != "$entry_head" ]] && PULL_MOVED=true
 
     if [[ "$pulled" != true ]]; then
         warn "not pulled; installing from the tree as it stands (${before:0:8})"
@@ -165,6 +172,42 @@ update_pull() {
         ok "updated ${before:0:8} -> ${after:0:8}"
         info "$(git -C "$REPO_ROOT" log --oneline "$before..$after" | wc -l) new commit(s)"
     fi
+}
+
+# bash parsed every installer function before the pull, so without this an
+# update runs the logic the user already had and any change to it lands one
+# update late (J49 F1: the sysctl fix needed two consecutive updates). Re-exec
+# once from the tree just pulled; KOOMPI_UPDATE_REEXEC makes it at most once.
+rerun_from_pulled_tree() {
+    local pre_defaults="$1"
+    local -a again=()
+
+    [[ "$PULL_MOVED" == true ]] || return 0
+    if [[ "${KOOMPI_UPDATE_REEXEC:-}" == 1 ]]; then
+        info "the checkout moved again; continuing with the code already loaded"
+        return 0
+    fi
+    if [[ ! -x "$REPO_ROOT/setup" ]]; then
+        warn "no runnable setup in the pulled tree; continuing with the code already loaded"
+        return 0
+    fi
+
+    # rebuilt from what setup parsed, not from "$@": run_update never sees argv.
+    # tests/test_update_prod_branch.sh fails if setup grows an option this drops.
+    [[ "$DO_DEPS"     == true ]] || again+=(--no-deps)
+    [[ "$DO_APPS"     == true ]] || again+=(--no-apps)
+    [[ "$DO_SETUPS"   == true ]] || again+=(--no-setups)
+    [[ "$DO_FILES"    == true ]] || again+=(--no-files)
+    [[ "$SKIP_BACKUP" == true ]] && again+=(--no-backup)
+    [[ "$ASSUME_YES"  == true ]] && again+=(--yes)
+    [[ "$DRY_RUN"     == true ]] && again+=(--dry-run)
+
+    export KOOMPI_UPDATE_REEXEC=1
+    # the pre-pull dump is the only record of what the user was running; without
+    # it the child would diff the pulled tree against itself and migrate nothing
+    [[ -n "$pre_defaults" ]] && export KOOMPI_UPDATE_PRE_DEFAULTS="$pre_defaults"
+    info "the checkout moved; re-running this update from the tree it just pulled"
+    exec "$REPO_ROOT/setup" update "${again[@]}"
 }
 
 # The update engine shipped with this checkout: it owns the defaults dump and
@@ -219,7 +262,9 @@ run_update() {
 
     # Capture the defaults the user is running NOW, before the checkout moves.
     local pre_defaults=""
-    if have qs && [[ -x "$UPDATE_TOOL" ]]; then
+    if [[ -s "${KOOMPI_UPDATE_PRE_DEFAULTS:-}" ]]; then
+        pre_defaults="$KOOMPI_UPDATE_PRE_DEFAULTS"
+    elif have qs && [[ -x "$UPDATE_TOOL" ]]; then
         pre_defaults="$(mktemp "${TMPDIR:-/tmp}/koompi-pre.XXXXXX")"
         "$UPDATE_TOOL" dump-defaults \
             "$REPO_ROOT/dots/.config/quickshell/koompi" "$pre_defaults" \
@@ -229,6 +274,7 @@ run_update() {
     fi
 
     update_pull
+    rerun_from_pulled_tree "$pre_defaults"
 
     if $DO_DEPS || $DO_SETUPS; then
         sudo_start

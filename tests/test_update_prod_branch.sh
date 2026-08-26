@@ -64,6 +64,10 @@ promote_prod() {
     git -C "$seed" push -q origin main:"refs/heads/$PROD_BRANCH"
 }
 
+# update_pull sets PULL_MOVED; a command substitution would run it in a subshell
+# and lose it, so the cases that read it capture through a file instead.
+do_pull() { update_pull < /dev/null > "$T/pull.out" 2>&1; out="$(cat "$T/pull.out")"; }
+
 branch_of()   { git -C "$1" rev-parse --abbrev-ref HEAD; }
 head_of()     { git -C "$1" rev-parse HEAD; }
 upstream_of() { git -C "$1" rev-parse --abbrev-ref '@{u}' 2>/dev/null; }
@@ -221,5 +225,79 @@ out="$(update_pull < /dev/null 2>&1)"
 grep -q "is not upstream's" <<<"$out" || fail "no reason was given: $out"
 pass "a local $PROD_BRANCH branch of somebody's own is not taken over"
 
+
+# --- an update must run the code it just pulled, not the code it started with --
+# J49 F1: bash parsed every installer function before the pull, so the sysctl fix
+# took two consecutive updates to take effect on a real machine.
+mkdir -p "$T/d/koompi"
+reexec_origin="$T/d/koompi/koompi-hd.git"
+git init -q --bare "$reexec_origin"
+git clone -q "$reexec_origin" "$T/d/seed" 2>/dev/null
+seed="$T/d/seed"
+write_setup() {
+    cat > "$seed/setup" <<SETUP
+#!/usr/bin/env bash
+printf 'setup v%s ran: %s\n' "$1" "\$*"
+printf 'REEXEC=%s PRE=%s\n' "\${KOOMPI_UPDATE_REEXEC:-}" "\${KOOMPI_UPDATE_PRE_DEFAULTS:-}"
+SETUP
+    chmod +x "$seed/setup"
+    git -C "$seed" add setup
+    git -C "$seed" commit -qm "setup v$1"
+    git -C "$seed" push -q origin HEAD:main
+}
+write_setup 1
+work="$T/d/machine"
+git clone -q "$reexec_origin" "$work"
+write_setup 2
+REPO_ROOT="$work"
+DO_DEPS=false; DO_APPS=true; DO_SETUPS=true; DO_FILES=true; SKIP_BACKUP=false
+ASSUME_YES=true
+do_pull
+grep -q 'updated ' <<<"$out" || fail "the re-exec fixture did not pull: $out"
+[[ "$PULL_MOVED" == true ]] || fail "a pull that moved HEAD did not set PULL_MOVED: $out"
+out="$(rerun_from_pulled_tree /tmp/koompi-pre-fixture 2>&1)"
+grep -q 'setup v2 ran' <<<"$out" \
+    || fail "the update did not re-run the setup it had just pulled: $out"
+grep -q 'setup v2 ran: update --no-deps --yes' <<<"$out" \
+    || fail "the re-exec did not carry the options this run was given: $out"
+grep -q 'REEXEC=1 PRE=/tmp/koompi-pre-fixture' <<<"$out" \
+    || fail "the re-exec lost the guard or the pre-pull defaults dump: $out"
+pass "an update re-runs the installer code it just pulled"
+
+# --- and does it at most once, whatever happens -------------------------------
+out="$(export KOOMPI_UPDATE_REEXEC=1; rerun_from_pulled_tree "" 2>&1)"
+grep -q 'setup v2 ran' <<<"$out" && fail "the re-exec guard did not hold: $out"
+grep -q 'already loaded' <<<"$out" || fail "the second pass said nothing: $out"
+pass "the re-exec happens at most once"
+
+# --- a run that pulled nothing does not re-exec -------------------------------
+do_pull
+[[ "$PULL_MOVED" == false ]] || fail "a no-op pull claimed HEAD moved: $out"
+out="$(rerun_from_pulled_tree "" 2>&1)"
+grep -q 'setup v2 ran' <<<"$out" && fail "an update with nothing to pull re-executed: $out"
+pass "an update that pulled nothing runs straight through"
+
+# --- run_update still calls it, and after the pull ----------------------------
+body="$(sed -n '/^run_update()/,/^}/p' "$ROOT/sdata/install/update.sh")"
+l_pull="$(grep -n '^    update_pull$' <<<"$body" | cut -d: -f1)"
+l_again="$(grep -n 'rerun_from_pulled_tree' <<<"$body" | cut -d: -f1)"
+[[ -n "$l_pull" && -n "$l_again" ]] || fail "run_update no longer pulls and re-runs: $body"
+(( l_pull < l_again )) || fail "the re-exec is not after the pull (lines $l_pull, $l_again)"
+pass "run_update re-runs from the pulled tree, after the pull"
+
+# --- the rebuilt argv cannot silently drop an option setup grows --------------
+# run_update never sees argv, so the re-exec rebuilds it from the parsed flags.
+mapfile -t setup_opts < <(sed -n '/^parse_install_options()/,/^}/p' "$ROOT/setup" \
+    | grep -oE -- '--[a-z-]+' | sort -u)
+(( ${#setup_opts[@]} > 5 )) || fail "could not read setup's options: ${setup_opts[*]}"
+rebuild="$(sed -n '/^rerun_from_pulled_tree()/,/^}/p' "$ROOT/sdata/install/update.sh")"
+# --only-* is exactly the matching set of --no-*, and --help is not a state
+ignored=' --only-deps --only-apps --only-setups --only-files --help '
+for opt in "${setup_opts[@]}"; do
+    [[ "$ignored" == *" $opt "* ]] && continue
+    grep -qF -- "$opt" <<<"$rebuild" \
+        || fail "./setup update takes $opt but the re-exec would drop it"
+done
+pass "every option setup takes survives the re-exec"
 
 exit 0

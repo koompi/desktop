@@ -69,6 +69,11 @@ git config koompi.followprod false       # this checkout, every run
 place, `PROD_BRANCH` in `sdata/install/update.sh`; the SD flavour gets its own when there
 is one to have.
 
+An update also re-runs itself once from the tree it just pulled, so a change to installer
+logic takes effect on the run that pulls it rather than the one after. If you are writing
+something that must not happen twice in one update, `KOOMPI_UPDATE_REEXEC=1` is set in the
+second pass.
+
 ## Ownership quick reference
 
 | Path | Owner | Never edit if |
