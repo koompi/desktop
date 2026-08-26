@@ -1,0 +1,90 @@
+ok   static: LauncherSearch.qml is 508 lines, wired in one line, still answers an empty query with recents
+ok   static: every new or touched QML file outside the allow-list is under 400 lines
+ok   static: no timer anywhere, one one-shot probe, nothing spawned per keystroke
+ok   static: a leaf is a LauncherSearchResult with group, heading and state; Enter is unchanged
+ok   qmllint: the seven touched files parse without errors
+--- neither a reader nor a crash report ---
+PASS entries: the first set is 15 to 20 leaves  got=[true,true,17]
+PASS entries: every leaf has an id, a label, a group and something to run  got=[]
+PASS entries: every group is one of the declared headings  got=[]
+PASS entries: no id collides  got=17
+PASS entries: every optional condition is a function  got=[]
+PASS when: the fingerprint row follows the reader  got=false
+PASS when: the crash row follows a written report  got=false
+PASS when: available is a subset of the entry set  got=[]
+VIEW  flat 'nig':
+VIEW     | Night light | off | Toggles
+VIEW     | Dark mode | on | Toggles
+PASS flat: 'nig' reaches night light first  got="Night light"
+PASS flat: the row carries its group as a trailing label  got="Toggles"
+PASS flat: a flat row has no heading  got=""
+PASS flat: the row shows the switch's state  got=true
+PASS flat: the leaves cannot crowd out the app list  got=true
+PASS flat: an empty unprefixed query adds nothing, so recents stand  got=[]
+PASS flat: a query already inside another scope gets no leaves  got=[0,0,0,0,0,0,0,0,0]
+VIEW  action scope, empty:
+VIEW    Toggles | Night light | off | 
+VIEW     | Keep awake | off | 
+VIEW     | Do not disturb | off | 
+VIEW     | Dark mode | on | 
+VIEW     | Battery charge limit | 80% | 
+VIEW    Display | Text bigger | 16 px | 
+VIEW     | Text smaller | 16 px | 
+VIEW    Session | Start screensaver |  | 
+VIEW     | Lock screen |  | 
+VIEW    System | Reload desktop |  | 
+VIEW     | Create system snapshot |  | 
+VIEW     | Install updates |  | 
+PASS grouped: every available leaf is listed  got=12
+PASS grouped: the headings are the declared groups in order  got=["Toggles","Display","Session","System"]
+PASS grouped: a heading opens its group and repeats nowhere  got=4
+PASS grouped: a headed row does not also carry the trailing label  got=0
+PASS grouped: the first heading is the first declared group  got="Toggles"
+PASS scoped: '/nig' answers with the same leaf  got="Night light"
+PASS scoped: a typed scope row keeps its group label  got="Toggles"
+PASS row: a leaf is a LauncherSearchResult with a verb and an icon  got=["Run","bedtime","function"]
+PROBE OK
+--- a reader and a crash report on the machine ---
+PASS entries: the first set is 15 to 20 leaves  got=[true,true,17]
+PASS entries: every leaf has an id, a label, a group and something to run  got=[]
+PASS entries: every group is one of the declared headings  got=[]
+PASS entries: no id collides  got=17
+PASS entries: every optional condition is a function  got=[]
+PASS when: the fingerprint row follows the reader  got=true
+PASS when: the crash row follows a written report  got=true
+PASS when: available is a subset of the entry set  got=[]
+VIEW  flat 'nig':
+VIEW     | Night light | off | Toggles
+VIEW     | Dark mode | on | Toggles
+PASS flat: 'nig' reaches night light first  got="Night light"
+PASS flat: the row carries its group as a trailing label  got="Toggles"
+PASS flat: a flat row has no heading  got=""
+PASS flat: the row shows the switch's state  got=true
+PASS flat: the leaves cannot crowd out the app list  got=true
+PASS flat: an empty unprefixed query adds nothing, so recents stand  got=[]
+PASS flat: a query already inside another scope gets no leaves  got=[0,0,0,0,0,0,0,0,0]
+VIEW  action scope, empty:
+VIEW    Toggles | Night light | off | 
+VIEW     | Keep awake | off | 
+VIEW     | Do not disturb | off | 
+VIEW     | Dark mode | on | 
+VIEW     | Battery charge limit | 80% | 
+VIEW    Display | Text bigger | 16 px | 
+VIEW     | Text smaller | 16 px | 
+VIEW    Session | Start screensaver |  | 
+VIEW     | Lock screen |  | 
+VIEW    System | Reload desktop |  | 
+VIEW     | Create system snapshot |  | 
+VIEW     | Install updates |  | 
+VIEW     | Latest crash report | 1 | 
+VIEW     | Set up fingerprint |  | 
+PASS grouped: every available leaf is listed  got=14
+PASS grouped: the headings are the declared groups in order  got=["Toggles","Display","Session","System"]
+PASS grouped: a heading opens its group and repeats nowhere  got=4
+PASS grouped: a headed row does not also carry the trailing label  got=0
+PASS grouped: the first heading is the first declared group  got="Toggles"
+PASS scoped: '/nig' answers with the same leaf  got="Night light"
+PASS scoped: a typed scope row keeps its group label  got="Toggles"
+PASS row: a leaf is a LauncherSearchResult with a verb and an icon  got=["Run","bedtime","function"]
+PROBE OK
+ok   command tree: 17 leaves load with a group and a label, no id collides, a false when removes the row, 'nig' reaches night light flat and scoped, and the action scope's empty query groups them under their headings
