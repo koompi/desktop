@@ -1,5 +1,7 @@
 # Building on Smithay — what it takes, and what Otto already did
 
+> **Parked 2026-08-26. KOOMPI HD is the active work.** Resume notes: [koompi-sd.md](koompi-sd.md#picking-this-back-up).
+
 A gap analysis for [KOOMPI SD](koompi-sd.md), researched 2026-08-26 against upstream Smithay and against the SD tree as it stood at tag `koompi-sd-0.16.0`.
 
 **The short version: do not write a compositor.**

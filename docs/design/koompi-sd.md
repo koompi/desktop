@@ -3,6 +3,27 @@
 Revised 2026-08-26, after `koompi/otto` was brought into scope.
 The earlier draft assumed SD's compositor had to be written; it does not — see [the Smithay study](smithay-study.md).
 
+> **Parked 2026-08-26. KOOMPI HD is the active work.**
+> Design is finished and committed; nothing is in flight. See [Picking this back up](#picking-this-back-up) before touching anything.
+
+## Picking this back up
+
+Everything SD lives on branch `koompi-sd` in this repo — five commits, **not pushed** — plus one archive outside it.
+
+**The compositor tree is not on disk.** It was removed on 2026-08-26 and archived whole:
+
+```sh
+tar -xzf ~/workspace/otto-archive-20260826.tar.gz -C ~/workspace
+```
+
+That restores the clone with its history, all nine tags and the untracked files. `github.com/koompi/otto` still holds everything on `origin/koompi` **except** commit `72e9dbc` (the session audit, since copied here as [`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md)) and the tag `koompi-sd-0.16.0`, which exist only in that archive.
+
+**Do this first, before any code.** The `layers` licence ask, and the Smithay patch offer, are one conversation with one maintainer — and the hard fork removes the standing to have it. It gates cutting `koompi/layers` at all. See [Licence](sd-hardfork.md#licence).
+
+**Then, in order:** the session smoke test, the `/etc/skel` package split, the session identity move. Those three improve HD too, and none of them needs the compositor tree restored. Full sequence in [the hard fork plan](sd-hardfork.md#order-of-operations).
+
+**Known state:** `sdata/dist-arch/koompi-sd/PKGBUILD` is correct but unbuildable — it sources tag `koompi-sd-0.16.0`, which is only inside the archive. That resolves when the repo restart creates `koompi/koompi-sd`.
+
 ## Scope
 
 **SD is** a stacking desktop for KOOMPI OS: **Otto** as its Wayland compositor, Otto's Rust components as its shell, KOOMPI's Zig daemons behind them, running GTK and Qt applications natively.

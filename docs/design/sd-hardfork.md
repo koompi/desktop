@@ -1,5 +1,7 @@
 # Retiring Otto — the hard fork
 
+> **Parked 2026-08-26. KOOMPI HD is the active work.** Resume notes: [koompi-sd.md](koompi-sd.md#picking-this-back-up).
+
 Rithy's call, 2026-08-26: hard fork Otto at its current commit, stop tracking upstream, and make it KOOMPI's own.
 This document is how that is done without breaking the session, and what KOOMPI takes on by doing it.
 
