@@ -11,7 +11,7 @@
 # BUILD NOTE: via the existing sdata/dist-arch flow (plain makepkg in-tree) this
 # reads ../../../dots through $startdir. For clean-chroot / repo builds (devtools,
 # the koompi pacman repo), that relative tree is absent — switch `source` to a
-# pinned git tag of this repo and copy from "$srcdir/koompi-hd/dots".
+# pinned git tag of this repo and copy from "$srcdir/koompi-desktop/dots".
 groups=(koompi)
 pkgname=koompi-shell
 pkgver=1.1

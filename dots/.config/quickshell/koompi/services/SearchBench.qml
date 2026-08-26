@@ -25,7 +25,7 @@ import Quickshell.Io
 // from — is where keystroke.ndjson below lands, so launch from the repo
 // root to get it under .work/):
 //
-//   cd /path/to/koompi-hd
+//   cd /path/to/koompi-desktop
 //   KOOMPI_SEARCH_BENCH=1 setsid env QT_QPA_PLATFORM=wayland qs -c koompi &
 //
 // Once running:

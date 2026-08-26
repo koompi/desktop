@@ -105,4 +105,4 @@ In-tree `makepkg` works locally because the `*-config` packages reach
 (devtools / `makechrootpkg`), where that relative tree is absent. Before building
 under devtools, switch the `source` of `koompi-hyprland-config` and
 `koompi-kde-config` to a **pinned git tag** of this repo and copy from
-`$srcdir/koompi-hd/dots` — see the `BUILD NOTE` headers in those PKGBUILDs.
+`$srcdir/koompi-desktop/dots` — see the `BUILD NOTE` headers in those PKGBUILDs.

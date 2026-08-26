@@ -21,7 +21,7 @@ pkgver=1.1
 pkgrel=1
 pkgdesc='KOOMPI star as a single font glyph at U+100000, for the Super key and text contexts'
 arch=(any)
-url='https://github.com/koompi/koompi-hd'
+url='https://github.com/koompi/koompi-desktop'
 license=('custom')
 # fontconfig owns the cache the shell resolves "KOOMPI Star" through. Arch's
 # fontconfig hook rebuilds it on install, so no .install file is needed.

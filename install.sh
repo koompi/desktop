@@ -4,10 +4,10 @@
 
 set -euo pipefail
 
-REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/koompi-hd.git}"
+REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/koompi-desktop.git}"
 PROD_REF='prod-hd'
 REPO_REF="${KOOMPI_REF:-}"
-DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-hd}"
+DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-desktop}"
 
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
     C_BOLD=$'\e[1m'; C_RED=$'\e[31m'; C_CYAN=$'\e[36m'; C_RST=$'\e[0m'

@@ -1,4 +1,4 @@
-# Working on koompi-hd
+# Working on koompi-desktop
 
 For an AI agent editing this repo. Read `UPSTREAM.md` and `CONTEXT.md` first; they're
 not restated here.
