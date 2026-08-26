@@ -25,8 +25,8 @@ origin_is_koompi() {
     url="$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null)" || return 1
     # Every slug this repo has ever carried: koompi/desktop is what machines
     # installed before the 2026-08-26 renames still have as origin, and the
-    # koomi-hd spelling covers clones made during the one-day window. A false
-    # negative here would make koomi update quietly stop following prod-hd.
+    # koompi-hd spelling covers clones made during the one-day window. A false
+    # negative here would make koompi update quietly stop following prod-hd.
     [[ "$url" =~ [:/]koompi/(desktop|koompi-hd|koompi-desktop)(\.git)?/?$ ]]
 }
 
