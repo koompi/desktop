@@ -198,4 +198,15 @@ grep -Fq 'systemctl restart systemd-sysctl.service' <<< "$sudo_log" \
 grep -Fq 'systemctl restart systemd-oomd.service' <<< "$sudo_log" \
     || fail "the oomd drop-ins were copied but the daemon was never restarted"
 
+# Every `import gi` in the shipped tree is a runtime dependency, and the route
+# that reaches a user installs the dependency metas, not koompi-shell. So the
+# dep has to sit in a meta this route installs or the import fails on a machine
+# where everything looks installed.
+mapfile -t gi_importers < <(grep -rl '^import gi$' \
+    "$ROOT/dots" "$ROOT/scripts" 2>/dev/null || true)
+if (( ${#gi_importers[@]} )); then
+    grep -Eq '^[[:space:]]*python-gobject$' "$ROOT/sdata/dist-arch/koompi-python/PKGBUILD" \
+        || fail "${#gi_importers[@]} shipped file(s) import gi but no dependency meta installs python-gobject: ${gi_importers[*]}"
+fi
+
 echo "ok test_update_from_git.sh"

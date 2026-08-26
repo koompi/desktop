@@ -1,7 +1,7 @@
 groups=(koompi)
 pkgname=koompi-python
 pkgver=1.1
-pkgrel=5
+pkgrel=6
 pkgdesc='KOOMPI Python Dependencies'
 arch=(any)
 license=(None)
@@ -13,4 +13,10 @@ depends=(
   libsoup3
   libportal-gtk4
   gobject-introspection
+  # gobject-introspection is the typelib compiler; `import gi` is this package.
+  # Both shipped importers are reached on the from-git route, which installs
+  # this meta and not koompi-shell (where the dep also sits):
+  #   dots/.local/bin/koompi-remotedesktop-portal
+  #   dots/.config/quickshell/koompi/scripts/thumbnails/thumbgen.py
+  python-gobject
 )
