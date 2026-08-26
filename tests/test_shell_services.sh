@@ -8,11 +8,9 @@
 # source-level checks still run in that case, since a file is present whether or
 # not anything can compile it.
 #
-# The demos are deliberately not run. They connect to the live session and
-# several stream until killed; clippy --all-targets already proves they compile.
-# The #[ignore]d tests stay ignored for the same reason: they want a private
-# dbus-daemon, a live inhibitor or the user's seat, and the tray watcher ones
-# would take the tray off the desktop of whoever runs ./tests/run.sh.
+# The #[ignore]d tests stay ignored: they want a private dbus-daemon, a live
+# inhibitor or the user's seat, and the tray watcher ones would take the tray off
+# the desktop of whoever runs ./tests/run.sh.
 set -uo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -112,26 +110,17 @@ if ! diff -q "$tmp/free_expected" "$tmp/free_actual" > /dev/null; then
 fi
 
 while read -r member; do
-    hits="$(grep -rn 'Command::new' "$WS/$member/src" "$WS/$member/examples" 2> /dev/null)"
+    hits="$(grep -rn 'Command::new' "$WS/$member/src" 2> /dev/null)"
     [[ -z "$hits" ]] \
         || fail "koompi-$member spawns a subprocess again, and removing one is what the crate was for: $hits"
 done < "$tmp/free_actual"
-
-# koompi-service is the shared shape and reads nothing, so it has no demo, and
-# shelld is a daemon rather than a library: running it against a real session is
-# what it does. Every crate that talks to the system has one.
-while read -r member; do
-    [[ "$member" == service || "$member" == shelld ]] && continue
-    [[ -f "$WS/$member/examples/demo.rs" ]] \
-        || fail "koompi-$member has no examples/demo.rs, so nothing shows it against a real session"
-done < "$tmp/present"
 
 # The daemon is the only member the shell actually spawns, so its wire format is a
 # consumer-visible contract in a way the crates' APIs are not.
 [[ -f "$WS/shelld/PROTOCOL.md" ]] \
     || fail "shelld has no PROTOCOL.md, and the document rather than the Rust is what a consumer implements against"
 
-echo "ok   structure: members, no cross-crate deps, no subprocesses, demos present"
+echo "ok   structure: members, no cross-crate deps, no subprocesses"
 
 if ! command -v cargo > /dev/null; then
     skip "no cargo; the workspace was not built, tested or linted"

@@ -8,8 +8,8 @@
 //! [`NotificationService::serve`] exports the object and takes nothing;
 //! [`NotificationService::own_name`] claims the name, and on a seat where the shell already
 //! has it that call fails rather than displacing it, because a second owner means the user
-//! stops seeing notifications at all. The demo runs under `dbus-run-session` for that
-//! reason, and so does every test in here that touches a bus.
+//! stops seeing notifications at all. Every test in here that touches a bus runs under
+//! `dbus-run-session` for that reason.
 //!
 //! Images are forwarded exactly as the application sent them: dimensions, stride and bytes.
 //! Nothing here decodes, rescales or writes an image, which is what keeps a drawing crate

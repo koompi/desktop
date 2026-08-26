@@ -259,8 +259,9 @@ mod tests {
     type Props = HashMap<String, Value<'static>>;
 
     /// The `GetLayout` reply Telegram Desktop gave this machine, byte for byte off the
-    /// bus. `cargo run -p koompi-tray --example demo -- capture TelegramDesktop <file>`
-    /// wrote it; `busctl call ... GetLayout` shows the same tree.
+    /// bus, captured while the crate was written. `busctl call org.kde.StatusNotifierItem-*
+    /// /MenuBar com.canonical.dbusmenu GetLayout 0 -1 0` against a running Telegram shows
+    /// the same tree.
     const TELEGRAM: &[u8] = include_bytes!("../tests/data/telegram-getlayout.bin");
 
     fn props(pairs: &[(&str, Value<'static>)]) -> Props {
