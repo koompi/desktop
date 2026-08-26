@@ -12,7 +12,7 @@
 groups=(koompi)
 pkgname=koompi-sysdefaults
 pkgver=1.0
-pkgrel=2
+pkgrel=3
 pkgdesc='KOOMPI OS system defaults: zram swap, systemd-oomd scoped to apps, 5 s stop timeout, ufw profiles'
 arch=(any)
 url='https://github.com/koompi/desktop'
