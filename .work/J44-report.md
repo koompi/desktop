@@ -372,3 +372,79 @@ docs/agents/ai.md                                  |  18 ++-
  tests/test_ai_remote_default.sh                    | 150 ++++++++++++++++++---
  7 files changed, 273 insertions(+), 88 deletions(-)
 ```
+
+## Round 3 (lead's review of the round-2 branch, main 16a827d7)
+
+All three items done; gates green.
+
+1. **Deferred send vs. `currentModelIdChanged`**: `admit` now records `modelId` with the wait and the handler drops only when `engine.currentModelId` really differs. Every drop posts one interface message: "Your message was not sent: the model changed / the chat was cleared before the keyring answered. Send it again." (a dropped compaction says "Compaction skipped: … before the keyring answered."). Measured on the way: in this Qt a `var` property does **not** re-emit its change signal on a same-value re-evaluation or a same-value write (standalone qs check: `models` reassigned → 0 signals on the `var` chain; `x = x` → 0). So the startup scenario as described does not fire here, but the guard is free and the probe raises a same-id `currentModelIdChanged()` by hand: the wait survives, no note. A real switch drops it with the note.
+   Found and fixed while probing: the clear-drop fired *inside* `clearMessages` (ids empty before the map does), so the note it appended had an id with no message behind it and `compact()` hit `TypeError: Cannot read property 'role' of undefined`. The slot is freed synchronously and the note is appended on the next tick, after the clear.
+2. **One slot, two kinds**: `admit(model, send, kind)`; a compaction never displaces a waiting send (skipped, logged, the turn decides again after it), a send displaces a waiting compaction. Probed both directions.
+3. **`ExtraModels.load()`**: the object this loader made is destroyed whether or not the id was taken since; only the map entry is conditional. Probed with `Component.destruction` on the replaced object (count 1 on the next tick).
+
+### Probe rows
+
+```
+PASS extra: our object under the taken id was destroyed on reload  got=1
+--- curl shim log (gate): 0 bytes
+PASS gate: keyring not loaded before the first send  got=false
+engine message: turn A, survives discovery
+PASS survive: send deferred  got="send"
+PASS survive: currentModelId still remote  got="remote"
+PASS survive: a same-id currentModelIdChanged reached the gate  got=true
+PASS survive: still deferred  got="send"
+PASS survive: no note  got=0
+PASS drop by clear: slot empty  got=null
+PASS drop by clear: no note inside the clear itself  got=0
+engine message: Your message was not sent: the chat was cleared before the keyring answered. Send it again.
+PASS drop by clear: one note after the clear  got=1
+PASS drop by clear: the note says why  got=true
+PASS drop by clear: the note is a whole message  got="interface"
+engine message: turn B, dropped by a model change
+engine message: Your message was not sent: the model changed before the keyring answered. Send it again.
+PASS drop by switch: slot empty  got=null
+PASS drop by switch: one note  got=1
+PASS drop by switch: the note says why  got=true
+PASS drop by switch: switching back with nothing waiting adds no note  got=1
+PASS slot: a compaction defers  got="compact"
+engine message: hello without a key
+PASS slot: a send displaces the deferred compaction  got="send"
+PASS slot: a compaction does not displace the deferred send  got="send"
+PASS slot: not compacting  got=false
+PASS slot: no note for the skipped compaction  got=0
+PASS drop: keyring loaded meanwhile  got=true
+PASS drop: nothing running  got=false
+PASS gate: still nothing running  got=false
+PASS gate: user turn kept  got="user,interface"
+PASS gate: one interface message  got=1
+PASS gate: advice names /key  got=true
+PASS gate: advice carries the key link  got=true
+PASS retry: key stored  got="sk-test-fake"
+PASS retry: request went out  got="interface,interface,assistant"
+PASS retry: exactly one assistant turn  got=1
+PASS retry: request finished  got=false
+PROBE OK
+--- curl shim log (retry): --no-buffer --max-time 180 https://tokenra.io/v1/chat/completions -H Content-Type: application/json -H Authorization: Bearer sk-test-fake ...
+```
+
+### Gates
+
+```
+$ nice -n 19 ionice -c 3 tests/test_ai_remote_default.sh
+ok   source: default is stealth/ox-alpha, no gemini fallback, icon file present, no key material
+ok   source: both strategies wrap the bearer in ${KEY:+...}, the compactor passes the model, the send path goes through KeyGate
+ok   remote default: stealth/ox-alpha infers tokenra/openai/oxalpha with its key link, regressions hold, a stored remoteModel survives, a missing one takes the default, /model with no argument keeps the state
+ok   openai header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one
+ok   mistral header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one
+ok   key gate: no key -> advice, user turn kept, no curl (send and compaction); a wait dropped on model change; a locked keyring ends the wait with a message; /key + retry -> one curl with the bearer; extraModels load with their fields, ids lower-cased, a malformed or colliding entry warns; windows: hosted 131072, local and LAN 8192, entry's context_window wins
+$ nice -n 19 ionice -c 3 bash tests/test_ai_threads.sh
+ok: 3 threads created, reloaded from disk and read back without crossing
+$ nice -n 19 ionice -c 3 bash tests/test_services_qml_bugs.sh
+ok   services: cliphist queue, checkupdates exit codes, xkb variants, wallpaper dir validation, easyeffects readback, emoji sloppy search, latex argv and exit code
+$ nice -n 19 ionice -c 3 bash tests/test_file_length.sh
+ok: 936 files under cap, 34 allow-listed and not grown
+$ nice -n 19 ionice -c 3 bash tests/test_ai_request_privacy.sh
+ok: request body, compactor, attachments, screen grabs and clipboard decodes stay in the user's runtime directory
+```
+
+qmllint: KeyGate, ExtraModels, Conversation — rc=0, 0 errors. Lines: KeyGate 113, ExtraModels 97, Conversation 729 (unchanged count), no JS `ReferenceError|TypeError` in any probe run.
