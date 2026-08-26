@@ -5,6 +5,103 @@
 # application set again, and reloads the running session at the end instead of
 # telling you to log out. Everything it calls is idempotent.
 
+# prod-hd only ever fast-forwards from main and is never authored on, so its
+# history is a prefix of main's and the pull below stays an ordinary --ff-only
+PROD_BRANCH='prod-hd'
+
+follow_prod_wanted() {
+    case "${KOOMPI_FOLLOW_PROD:-}" in
+        0|false|no) return 1 ;;
+        1|true|yes) return 0 ;;
+    esac
+    case "$(git -C "$REPO_ROOT" config --get koompi.followprod 2>/dev/null)" in
+        0|false|no) return 1 ;;
+    esac
+    return 0
+}
+
+origin_is_koompi() {
+    local url
+    url="$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null)" || return 1
+    # koompi-desktop: pre-rename url, still origin on machines installed before it
+    [[ "$url" =~ [:/]koompi/koompi-(hd|desktop)(\.git)?/?$ ]]
+}
+
+# managed = the checkout this machine updates from, carrying nothing of its own.
+# anything else is a tree somebody works in; hijacking its branch is worse than
+# doing nothing, so it is left where it is and told why. always returns 0: a
+# checkout that cannot move is still one to pull.
+follow_prod_branch() {
+    local branch="$1"
+    local -a checkout=(checkout "$PROD_BRANCH")
+
+    [[ "$branch" == "$PROD_BRANCH" ]] && return 0
+
+    if ! follow_prod_wanted; then
+        info "staying on '$branch': following $PROD_BRANCH is switched off here"
+        return 0
+    fi
+    if [[ "$branch" != main ]]; then
+        info "on '$branch', not main: leaving this checkout on its own branch"
+        return 0
+    fi
+    if ! origin_is_koompi; then
+        info "origin is not the KOOMPI repo: leaving this checkout on '$branch'"
+        return 0
+    fi
+    if ! git -C "$REPO_ROOT" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+        info "'$branch' tracks no upstream: leaving this checkout on it"
+        return 0
+    fi
+    if ! git -C "$REPO_ROOT" merge-base --is-ancestor HEAD '@{u}' 2>/dev/null; then
+        info "'$branch' carries commits upstream does not have: leaving this checkout on it"
+        return 0
+    fi
+
+    # not pushed yet, or offline: today's behaviour, and no error text at them
+    git -C "$REPO_ROOT" ls-remote --exit-code --heads origin "$PROD_BRANCH" >/dev/null 2>&1 \
+        || return 0
+
+    if [[ "$DRY_RUN" == true ]]; then
+        info "(dry run: this checkout would move from '$branch' to $PROD_BRANCH)"
+        return 0
+    fi
+
+    # install.sh clones --depth 1 --branch main: prod-hd is in neither the
+    # refspec nor the history
+    if ! git -C "$REPO_ROOT" config --get-all remote.origin.fetch 2>/dev/null \
+        | grep -qxF "+refs/heads/$PROD_BRANCH:refs/remotes/origin/$PROD_BRANCH"; then
+        git -C "$REPO_ROOT" config --add remote.origin.fetch \
+            "+refs/heads/$PROD_BRANCH:refs/remotes/origin/$PROD_BRANCH" \
+            || { warn "could not track $PROD_BRANCH here; staying on '$branch'"; return 0; }
+    fi
+    try git -C "$REPO_ROOT" fetch --quiet origin \
+        "+refs/heads/$PROD_BRANCH:refs/remotes/origin/$PROD_BRANCH" \
+        || { warn "could not fetch $PROD_BRANCH; staying on '$branch'"; return 0; }
+
+    if git -C "$REPO_ROOT" rev-parse --verify --quiet "refs/heads/$PROD_BRANCH" >/dev/null; then
+        # a local prod-hd upstream's does not contain is somebody's own branch
+        if ! git -C "$REPO_ROOT" merge-base --is-ancestor \
+                "refs/heads/$PROD_BRANCH" "refs/remotes/origin/$PROD_BRANCH" 2>/dev/null; then
+            info "the local '$PROD_BRANCH' here is not upstream's: leaving this checkout on '$branch'"
+            return 0
+        fi
+    else
+        checkout=(checkout -b "$PROD_BRANCH" --track "origin/$PROD_BRANCH")
+    fi
+
+    # a shallow graft cuts the parent a later ff-only pull needs
+    if [[ "$(git -C "$REPO_ROOT" rev-parse --is-shallow-repository 2>/dev/null)" == true ]]; then
+        try git -C "$REPO_ROOT" fetch --quiet --unshallow origin \
+            || { warn "could not deepen this shallow checkout; staying on '$branch'"; return 0; }
+    fi
+
+    try git -C "$REPO_ROOT" "${checkout[@]}" \
+        || { warn "could not check out $PROD_BRANCH; staying on '$branch'"; return 0; }
+    ok "moved from '$branch' to $PROD_BRANCH, the line KOOMPI releases from"
+    return 0
+}
+
 # A pull that would clobber local edits is the one thing an updater must never
 # do quietly: the hypr/custom slots exist precisely so people edit this tree.
 update_pull() {
@@ -27,6 +124,8 @@ update_pull() {
         info "commit or stash them, then re-run; installing from the tree as it stands"
         return 0
     fi
+
+    follow_prod_branch "$branch"
 
     local before after pulled=false skipped=false reply
     before="$(git -C "$REPO_ROOT" rev-parse HEAD)"

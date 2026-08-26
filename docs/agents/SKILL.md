@@ -44,6 +44,31 @@ Read `docs/navigation.md` and `docs/conventions.md` before adding a new surface 
 naming something — they fix the shell's UX and naming model, and disagreeing with them
 without updating them first is a defect, not a variant.
 
+## Which branch a machine follows
+
+Installed machines track `prod-hd`, not `main`.
+`prod-hd` is only ever fast-forwarded from `main` and nothing is authored on it, so its
+history is a prefix of `main`'s: a school laptop lands only on a commit somebody blessed.
+`install.sh` clones it by default (`KOOMPI_REF` still overrides), and `./setup update`
+moves a checkout onto it — but only a *managed* one.
+
+Managed means the checkout carries nothing of its own: a clean tree, on `main`, an
+`origin` that is the KOOMPI repo, and no commit `origin/main` does not already have.
+Anything else — a dirty tree, your own branch, one local commit, a fork — is left exactly
+where it is, with the reason on one line. Before `origin/prod-hd` exists, or offline, the
+update is the ordinary one it always was and says nothing about branches at all.
+
+To keep tracking `main` deliberately:
+
+```sh
+KOOMPI_FOLLOW_PROD=0 ./setup update      # this run
+git config koompi.followprod false       # this checkout, every run
+```
+
+`KOOMPI_FOLLOW_PROD=1` overrides the config the other way. The name lives in exactly one
+place, `PROD_BRANCH` in `sdata/install/update.sh`; the SD flavour gets its own when there
+is one to have.
+
 ## Ownership quick reference
 
 | Path | Owner | Never edit if |
