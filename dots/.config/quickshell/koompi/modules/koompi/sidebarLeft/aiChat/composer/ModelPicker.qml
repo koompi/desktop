@@ -26,6 +26,8 @@ FocusScope {
     signal dismissed()
 
     implicitHeight: sheet.implicitHeight
+    Accessible.role: Accessible.List
+    Accessible.name: Translation.tr("Which model answers")
 
     function indexOf(id) {
         for (let i = 0; i < root.models.length; i++) {
@@ -69,8 +71,14 @@ FocusScope {
             list.contentY = row.y + row.height - list.height;
     }
 
-    onVisibleChanged: {
-        if (visible) {
+    // A Connections block, not `onVisibleChanged`: the owner sets its own
+    // onVisibleChanged on the instance (to hand focus over), and an instance
+    // handler replaces the component's, which would leave the highlight unseeded.
+    Connections {
+        target: root
+        function onVisibleChanged() {
+            if (!root.visible)
+                return;
             root.selectedIndex = Math.max(0, root.indexOf(root.currentId));
             Qt.callLater(root.revealRow, root.selectedIndex);
         }
@@ -184,8 +192,10 @@ FocusScope {
                             focusPolicy: Qt.NoFocus
                             colBackground: selected ? Appearance.colors.colSecondaryContainerHover : "transparent"
                             colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-                            Accessible.name: row.modelData.name
+                            Accessible.role: Accessible.ListItem
+                            Accessible.name: row.isCurrent ? Translation.tr("%1, current").arg(row.modelData.name) : row.modelData.name
                             Accessible.description: row.modelData.description ?? ""
+                            Accessible.selected: row.selected
 
                             contentItem: RowLayout {
                                 id: rowContent

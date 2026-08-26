@@ -107,3 +107,53 @@ Line counts of every touched QML file (cap 400):
 - `ModelRegistry.setModel`'s own usage line says `/model remote NAME`, but `setModel("remote")` ignores anything after it and
   `args[0]` never carried it; unchanged here (J44 owns the registry). The picker only ever passes a bare id.
 - `/model` completion (`CommandCompletion.qml`) is unchanged and still lists `Ai.modelList`; no edit was needed.
+
+## Round 2 (lead's review of `444d9c9d`)
+1. **Seeding survived the owner's handler.** `ModelPicker.qml` seeded `selectedIndex` in `onVisibleChanged`, and
+   `AiChat.qml` sets `onVisibleChanged` on the instance to hand focus over, which replaced it: nothing highlighted on open,
+   Enter a no-op, Down to row 0. The seeding now lives in a `Connections { target: root }` block inside the component, which
+   an instance handler cannot replace; `revealRow` runs from there too. The probe instantiates the picker with the same
+   instance-level `onVisibleChanged: if (visible) Qt.callLater(picker.focusFirst)` that `AiChat.qml` uses, so "highlight
+   starts on the current row" and "reopen: highlight follows currentId" now exercise the real wiring; a static check fails the
+   test if a top-level `onVisibleChanged:` ever comes back into `ModelPicker.qml`.
+2. **Accessibility.** Root: `Accessible.role: Accessible.List`, `Accessible.name: "Which model answers"`. Rows:
+   `Accessible.role: Accessible.ListItem`, `Accessible.name` (with ", current" on the marked one), `Accessible.description`,
+   `Accessible.selected` bound to the highlight, so Up/Down announce the row. Rows keep `focusPolicy: NoFocus` (keys are
+   handled by the scope); the probe checks `Accessible.selected` follows the highlight and the role and name are set.
+
+Gates (`nice -n 19 ionice -c 3`, all exit 0):
+```
+ok   static: chip and status-bar name open the picker, neither names Settings > AI
+ok   static: no-key button reads Set key and prefills /key
+ok   static: /key takes the whole line, /model alone opens the picker, moved notes gone
+ok   static: picker takes models, reports picked, knows no Ai, seeds without onVisibleChanged, has list roles; every touched file under 400 lines
+ok   qmllint: the six touched files parse without errors
+PASS open: three rows  got=3
+PASS open: row names  got=["Alpha","Beta","Gamma"]
+PASS open: only the current row is marked  got=[false,true,false]
+PASS open: highlight starts on the current row  got=1
+PASS open: rows read as list items with the highlight selected  got=[false,true,false]
+PASS open: current row says so to a screen reader  got="Beta, current"
+PASS open: the sheet is a named list  got=[true,true]
+PASS down: highlight moves to 2  got=2
+PASS down: Accessible.selected follows  got=[false,false,true]
+PASS down: stops at the last row  got=2
+PASS enter: picked carries the highlighted id  got=["gamma"]
+PASS up: highlight moves to 0  got=0
+PASS up: stops at the first row  got=0
+PASS click: picked carries the row's id  got=["gamma","alpha"]
+PASS reopen: mark follows currentId  got=[false,false,true]
+PASS reopen: highlight follows currentId  got=2
+PASS nothing dismissed it  got=0
+PROBE OK
+ok   model picker: three rows, the current one marked, keys and a click report the id through picked
+== test_ai_threads exit=0
+PROBE OK
+ok: 3 threads created, reloaded from disk and read back without crossing
+== test_file_length exit=0
+ok: 934 files under cap, 34 allow-listed and not grown
+== test_keybind_descriptions exit=0
+keybind descriptions: all 149 binds described or hidden
+```
+qmllint: 0 errors in the six files (the test's step). `ModelPicker.qml` is 244 lines; the other touched files are unchanged
+since round 1. Still unverified live: what a screen reader actually announces under the sidebar's layer-shell window.

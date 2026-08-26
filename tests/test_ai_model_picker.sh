@@ -63,11 +63,17 @@ grep -q 'Ai\.' "$PICKER" && fail "ModelPicker.qml reaches for the Ai singleton"
 grep -qE 'Qt\.Key_(Up|Down)' "$PICKER" && grep -q 'Qt.Key_Return' "$PICKER" && grep -q 'Qt.Key_Escape' "$PICKER" \
     || fail "ModelPicker.qml does not handle Up, Down, Enter and Escape"
 grep -q 'Ai.setModel(id)' "$AICHAT" || fail "AiChat.qml does not wire picked to Ai.setModel"
+# The owner sets onVisibleChanged on the instance, so the component must seed its
+# highlight some other way or the instance handler silently replaces it.
+grep -q '^    onVisibleChanged:' "$PICKER" && fail "ModelPicker.qml seeds through onVisibleChanged, which AiChat.qml overrides"
+grep -q 'Accessible.role: Accessible.List$' "$PICKER" || fail "ModelPicker.qml root has no Accessible.role List"
+grep -q 'Accessible.role: Accessible.ListItem' "$PICKER" || fail "ModelPicker.qml rows have no Accessible.role ListItem"
+grep -q 'Accessible.selected: row.selected' "$PICKER" || fail "ModelPicker.qml rows do not report Accessible.selected"
 for f in "$COMPOSER" "$STATUSBAR" "$PICKER" "$COMMANDS" "$TRANSCRIPT" "$AICHAT"; do
     lines="$(wc -l < "$f")"
     (( lines <= 400 )) || fail "$(basename -- "$f") is $lines lines, cap is 400"
 done
-echo "ok   static: picker takes models, reports picked, knows no Ai; every touched file under 400 lines"
+echo "ok   static: picker takes models, reports picked, knows no Ai, seeds without onVisibleChanged, has list roles; every touched file under 400 lines"
 
 # /usr/bin/qmllint is Qt 5 and rejects list<var> and pragma ComponentBehavior
 QMLLINT=/usr/lib/qt6/bin/qmllint
@@ -125,6 +131,8 @@ ShellRoot {
             id: picker
             width: 320
             visible: false
+            // the same instance-level handler AiChat.qml sets; the seeding must survive it
+            onVisibleChanged: if (visible) Qt.callLater(picker.focusFirst)
             models: [
                 { id: "alpha", name: "Alpha", description: "first fake model" },
                 { id: "beta", name: "Beta", description: "second fake model" },
@@ -144,10 +152,14 @@ ShellRoot {
             probe.check("open: row names", [0, 1, 2].map(i => picker.rowAt(i).modelData.name), ["Alpha", "Beta", "Gamma"]);
             probe.check("open: only the current row is marked", [0, 1, 2].map(i => picker.rowAt(i).isCurrent), [false, true, false]);
             probe.check("open: highlight starts on the current row", picker.selectedIndex, 1);
+            probe.check("open: rows read as list items with the highlight selected", [0, 1, 2].map(i => picker.rowAt(i).Accessible.selected), [false, true, false]);
+            probe.check("open: current row says so to a screen reader", picker.rowAt(1).Accessible.name, "Beta, current");
+            probe.check("open: the sheet is a named list", [picker.Accessible.role === Accessible.List, picker.Accessible.name.length > 0], [true, true]);
 
             // what Down, Down, Enter do
             picker.moveSelection(1);
             probe.check("down: highlight moves to 2", picker.selectedIndex, 2);
+            probe.check("down: Accessible.selected follows", [0, 1, 2].map(i => picker.rowAt(i).Accessible.selected), [false, false, true]);
             picker.moveSelection(1);
             probe.check("down: stops at the last row", picker.selectedIndex, 2);
             picker.activateSelected();
