@@ -6,6 +6,9 @@
 # shimming koompi-hw-fingerprint and XDG_STATE_HOME so the two conditions that
 # are not already held by a service can be driven both ways.
 set -uo pipefail
+# extglob so the ANSI escapes qs colours its log with can be stripped by a bash
+# replacement instead of a sed round trip.
+shopt -s extglob
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 SHELL_ROOT="$REPO_ROOT/dots/.config/quickshell/koompi"
@@ -218,12 +221,12 @@ for run in 0 1; do
         label="neither a reader nor a crash report"; state="$WORK/noreader"
     fi
     out="$(run_probe "$run" "$state")"
-    clean="$(sed 's/\x1b\[[0-9;]*m//g' <<< "$out" | sed -n 's/^ DEBUG qml: //p')"
+    plain="${out//$'\e'\[*([0-9;])m/}"
     printf -- '--- %s ---\n' "$label"
-    grep -E '^(PASS|FAIL|VIEW|PROBE)' <<< "$clean" || true
-    if ! grep -q "PROBE OK" <<< "$out"; then
+    grep -E '^ DEBUG qml: (PASS|FAIL|VIEW|PROBE)' <<< "$plain" | sed 's/^ DEBUG qml: //' || true
+    if ! grep -q "PROBE OK" <<< "$plain"; then
         echo "--- probe output ---" >&2
-        sed 's/\x1b\[[0-9;]*m//g' <<< "$out" | grep -vE "qmlscanner|^\s*$" >&2
+        grep -vE "qmlscanner|^\s*$" <<< "$plain" >&2
         fail "the CommandTree probe did not pass with $label"
     fi
 done
