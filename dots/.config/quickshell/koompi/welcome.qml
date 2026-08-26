@@ -449,14 +449,14 @@ ApplicationWindow {
                             materialIcon: "help"
                             mainText: Translation.tr("Usage")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/koompi/desktop");
+                                Qt.openUrlExternally("https://github.com/koompi/koompi-hd");
                             }
                         }
                         RippleButtonWithIcon {
                             materialIcon: "construction"
                             mainText: Translation.tr("Configuration")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/koompi/desktop#configuration");
+                                Qt.openUrlExternally("https://github.com/koompi/koompi-hd#configuration");
                             }
                         }
                     }
@@ -474,21 +474,21 @@ ApplicationWindow {
                             nerdIcon: "󰊤"
                             mainText: Translation.tr("Source code")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/koompi/desktop");
+                                Qt.openUrlExternally("https://github.com/koompi/koompi-hd");
                             }
                         }
                         RippleButtonWithIcon {
                             materialIcon: "bug_report"
                             mainText: Translation.tr("Report an issue")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/koompi/desktop/issues");
+                                Qt.openUrlExternally("https://github.com/koompi/koompi-hd/issues");
                             }
                         }
                         RippleButtonWithIcon {
                             materialIcon: "forum"
                             mainText: Translation.tr("Discussions")
                             onClicked: {
-                                Qt.openUrlExternally("https://github.com/koompi/desktop/discussions");
+                                Qt.openUrlExternally("https://github.com/koompi/koompi-hd/discussions");
                             }
                         }
                         RippleButtonWithIcon {

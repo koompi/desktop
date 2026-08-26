@@ -13,7 +13,7 @@ pkgver=1.0
 pkgrel=1
 pkgdesc='KOOMPI OS first-boot user provisioning for cidata OEM/deferred installs'
 arch=(any)
-url='https://github.com/koompi/desktop'
+url='https://github.com/koompi/koompi-hd'
 license=('custom')
 depends=(systemd shadow)
 

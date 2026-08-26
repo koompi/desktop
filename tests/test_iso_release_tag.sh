@@ -47,7 +47,7 @@ chmod +x "$tmp/bin/gh"
 : > "$tmp/out/SHA256SUMS"
 
 publish() {
-    ( cd "$tmp/out" && PATH="$tmp/bin:$PATH" GITHUB_REPOSITORY=koompi/desktop GITHUB_SHA="$1" bash "$tmp/publish.sh" )
+    ( cd "$tmp/out" && PATH="$tmp/bin:$PATH" GITHUB_REPOSITORY=koompi/koompi-hd GITHUB_SHA="$1" bash "$tmp/publish.sh" )
 }
 
 publish 0123456789abcdef0123456789abcdef01234567 > "$tmp/run1.log" 2>&1 \
@@ -65,7 +65,7 @@ grep -q '^release upload iso-koompi-2026.08.25-x86_64-89abcde .*--clobber' "$tmp
     || fail "re-running the same commit did not upload over its own release"
 (( $(grep -c '^release create' "$tmp/gh.log") == 2 )) \
     || fail "expected exactly two 'release create' calls, got: $(grep -c '^release create' "$tmp/gh.log")"
-grep -q -- '--repo koompi/desktop' "$tmp/gh.log" || fail "the repo flag was lost"
+grep -q -- '--repo koompi/koompi-hd' "$tmp/gh.log" || fail "the repo flag was lost"
 grep -q -- 'koompi-2026.08.25-x86_64.iso SHA256SUMS' "$tmp/gh.log" || fail "the ISO and checksum are not both attached"
 
 (( failed == 0 )) || exit 1

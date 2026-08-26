@@ -17,7 +17,7 @@ pkgver=1.0
 pkgrel=6
 pkgdesc='KOOMPI OS branding: wallpapers, logo, plymouth/grub/sddm themes, login enablement'
 arch=(any)
-url='https://github.com/koompi/desktop'
+url='https://github.com/koompi/koompi-hd'
 license=('custom')
 # The greeter is QML: qt6-declarative for QtQuick/Controls/Effects and
 # Qt.labs.folderlistmodel (the random wallpaper pick), qt6-5compat for
@@ -37,9 +37,9 @@ package() {
   # 2026-07-23): the brand wallpapers stay in git and install from the repo;
   # the curated library ships as a release tarball built by
   # wallpapers/build-tarball.sh. When the first tarball is published to a
-  # wallpapers-v<N> release on github.com/koompi/desktop, add it to this
+  # wallpapers-v<N> release on github.com/koompi/koompi-hd, add it to this
   # PKGBUILD as:
-  #   source=("https://github.com/koompi/desktop/releases/download/wallpapers-v<N>/koompi-wallpapers-<N>.tar.zst")
+  #   source=("https://github.com/koompi/koompi-hd/releases/download/wallpapers-v<N>/koompi-wallpapers-<N>.tar.zst")
   #   sha256sums=('<from build-tarball.sh output>')
   # and install "$srcdir/koompi-wallpapers/"*/ into the same target below.
   install -dm755 "$pkgdir/usr/share/backgrounds/koompi"

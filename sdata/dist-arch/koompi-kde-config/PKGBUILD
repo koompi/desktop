@@ -8,14 +8,14 @@
 #
 # BUILD NOTE: like koompi-hyprland-config, the in-tree makepkg flow reads the repo
 # via $startdir; clean-chroot/devtools builds must switch source to a pinned git
-# tag and copy from "$srcdir/koompi-desktop/dots".
+# tag and copy from "$srcdir/koompi-hd/dots".
 groups=(koompi)
 pkgname=koompi-kde-config
 pkgver=1.0
 pkgrel=1
 pkgdesc='KOOMPI Plasma (KDE) layout + shared theming, installed into /etc/skel'
 arch=(any)
-url='https://github.com/koompi/desktop'
+url='https://github.com/koompi/koompi-hd'
 license=('custom')
 depends=(koompi-plasma)
 conflicts=('koompi-hyprland-config')

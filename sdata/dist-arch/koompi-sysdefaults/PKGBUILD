@@ -15,7 +15,7 @@ pkgver=1.0
 pkgrel=3
 pkgdesc='KOOMPI OS system defaults: zram swap, systemd-oomd scoped to apps, 5 s stop timeout, ufw profiles'
 arch=(any)
-url='https://github.com/koompi/desktop'
+url='https://github.com/koompi/koompi-hd'
 license=(GPL-3.0-only)
 # zram-generator reads the zram drop-in, ufw the profile; without them the
 # files are inert.

@@ -30,8 +30,8 @@ set -uo pipefail
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/koompi"
 REPO_PATH_FILE="$STATE_DIR/repo-path"
 DEFAULTS_SNAPSHOT="$STATE_DIR/config-defaults.json"
-UPSTREAM_REPO="https://github.com/koompi/desktop"
-CLONE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/koompi-desktop"
+UPSTREAM_REPO="https://github.com/koompi/koompi-hd"
+CLONE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/koompi-hd"
 
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=update-lib.sh
@@ -472,8 +472,14 @@ resolve_checkout() {
         return 0
     fi
     # A checkout that moved, or an install from before this file existed.
-    # koompi-hyprland is the pre-rename name, still on disk for older installs.
-    for guess in "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
+    # Every name below stays so a stale state file still finds the checkout
+    # it names instead of cloning a second one over it: the koompi-hd forms
+    # are what a clone of the current koompi/koompi-hd repo is called,
+    # koompi-desktop was the directory name under the repo's previous name,
+    # koompi-hyprland predates even that, and koompi-os older still.
+    for guess in "$HOME/koompi-hd" "$HOME/workspace/koompi-hd" \
+                 "$HOME/src/koompi-hd" "$HOME/.local/share/koompi-hd" \
+                 "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
                  "$HOME/src/koompi-desktop" "$HOME/.local/share/koompi-desktop" \
                  "$HOME/koompi-hyprland" "$HOME/workspace/koompi-hyprland" \
                  "$HOME/src/koompi-hyprland" "$HOME/.local/share/koompi-hyprland" \
@@ -569,7 +575,7 @@ update_packaged() {
     if [[ "$delivered" != true ]]; then
         warn "the packaged route delivered nothing of ours: no [koompi] repo is configured and no koompi-* package changed"
         local repo
-        repo="$(resolve_checkout)" || die "cannot find or fetch a koompi-desktop checkout; install git and retry"
+        repo="$(resolve_checkout)" || die "cannot find or fetch a koompi-hd checkout; install git and retry"
         info "falling back to the git route: updating from $repo"
         require_free_space "$repo"
         refuse_git_route_if_locked
@@ -597,9 +603,9 @@ update_packaged() {
 update_from_git() {
     local repo
     repo="$(resolve_checkout)" || die \
-"cannot find the koompi-desktop checkout this desktop was installed from.
+"cannot find the koompi-hd checkout this desktop was installed from.
   Record the path:
-    mkdir -p $STATE_DIR && echo /path/to/koompi-desktop > $REPO_PATH_FILE"
+    mkdir -p $STATE_DIR && echo /path/to/koompi-hd > $REPO_PATH_FILE"
 
     step "Updating from $repo"
     info "route: from-git (the checkout owns the installed config)"

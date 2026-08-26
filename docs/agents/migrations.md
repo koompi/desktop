@@ -85,7 +85,7 @@ reaches only new users.
 
 ```sh
 $ dots/.local/bin/koompi-migrate new hypridle-lock-cmd
-/home/me/workspace/koompi-desktop/sdata/migrations/1787652228-hypridle-lock-cmd.sh
+/home/me/workspace/koompi-hd/sdata/migrations/1787652228-hypridle-lock-cmd.sh
 ```
 
 Body:
