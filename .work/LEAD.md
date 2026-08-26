@@ -69,9 +69,8 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 Nothing live. Lead sits in the main checkout `/home/userx/workspace/koompi-desktop`, pane `w5:p28`;
 `lead-verify` (detached) is the verification worktree. The four job workspaces (`w6`-`w9`), their
 worktrees and their branches were removed at close-out on 2026-08-26.
-Still open and not the lead's to close: the old lead's panes `w5:p11` and `w5:p27`, which hold the
-locked `j18-shell-services-bugs` worktree open — close that tab, then `git worktree unlock` +
-`git worktree remove --force`. `tokens` is not ours. Uncommitted in the main checkout, Rithy's work
+The old lead's tab `w5:tS` was closed and its `j18-shell-services-bugs` worktree unlocked and
+removed on 2026-08-26 (clean, and detached at `ca2c492b`, an ancestor of main). `tokens` is not ours. Uncommitted in the main checkout, Rithy's work
 in progress, leave it: `sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
 
 ## Decided
