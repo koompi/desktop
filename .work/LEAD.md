@@ -72,18 +72,19 @@ to the newest release tag, and `v0.1` tagged and released — each confirmed in 
 | J47 | claude | verified | 11 chapters, 752 lines, ch.01 "Coming from Mac or Windows"; `tests/test_manual_references.sh` resolves 84 keybinds (130 literal chords + 38 loop-generated), 11 `koompi` subcommands and every `koompi-*` name against the tree, and caps chapter count and length. Lead: test ok, shellcheck + `-x` clean, README pointer is one line, spot-checked two semantic claims the test cannot (dock defaults off — `Config.qml:476`; `Super+Alt+Space` floats — `keybinds.lua:261`); ff-merged. **Draft: the voice is Rithy's to approve** |
 | J48 | claude | verified | 17 leaves in `services/commandTree/Entries.qml` behind `CommandTree.qml`; `LauncherSearch.qml` still exactly 508 (4 lines changed), `SearchItem.qml` carries the heading and the state column. Groups as headings in the action scope's empty query, flat rows with a `· Group` label otherwise. Lead: probe green in both condition states, qmllint 0 errors ×6, file-length 34 rows, shellcheck + `-x` clean, capture viewed and it matches Rithy's sketch; ff-merged `713fd6ba`. Lead added the CI allow-list line (`0a2b1f60`) — the probe needs a live `qs` |
 | J49 | claude | live | prove the git route in a clean Arch container and fix the sysctl-apply gap. Pane `wA:p1`, worktree/branch `j49-git-route` |
-| J50 | opencode | live | rename sweep koompi/desktop → koompi/koompi-hd; 17 repo-identity lines change, 49 package-name lines must not. Pane `wB:p1`, worktree/branch `j50-rename-koompi-hd` |
-| J51 | — | after J50 | `koompi update` follows the newest `v*` tag instead of `main`. Contract written; same file as J50 (`libexec/update`), so strictly serial |
+| J50 | opencode | verified | 74 occurrences classified 17/49/8 and only the 17 changed; every `koompi/desktop` URL now `koompi/koompi-hd`; `CLONE_DIR` and `install.sh` `DEST` moved to `koompi-hd` with every old directory name kept in `resolve_checkout`'s guess list, proven by a new `tests/test_resolve_checkout_paths.sh`. Lead: that test, iso_release_tag, packaged tools 38, qmllint 0 ×3, `zig build test`, shellcheck + `-x`, suite 100/3/0, and a grep showing only the `koompi-desktop-history` references left; ff-merged `20ff3400`. Re-running the bootstrap on an old install makes a second directory rather than adopting the old one — harmless, because `setup:248` records the new path, so `koompi update` follows |
+| J51 | claude | live | `koompi update` follows the **`prod-hd` branch**, not a tag (Rithy's call, rewritten contract). Pane `wC:p1`, worktree/branch `j51-prod-hd-branch` |
 
 ## Live now
 
 Two jobs dispatched 2026-08-26 for the v0.1 campaign, each in its own herdr workspace and worktree:
 
 - J49 `wA:p1`, claude — `sdata/install/setups/system.sh`, `tests/test_sysdefaults.sh`, new `tests/test_update_from_git.sh`.
-- J50 `wB:p1`, **opencode** — every file carrying a repo-identity occurrence or a `koompi/desktop` URL.
+- J51 `wC:p1`, claude — `sdata/install/update.sh`, `install.sh` (`REPO_REF` only), both workflow branch triggers, new `tests/test_update_prod_branch.sh`.
 
-J51 is written and waits for J50 to merge (both own `dots/.local/share/koompi/libexec/update`).
-Lead sits in the main checkout, pane `w5:p28`; `lead-verify` (detached) is the verification worktree.
+J50 is merged. **The main checkout is no longer the lead's**: Rithy is working in it on branch `koompi-sd`
+(the Otto/Smithay stacking flavour) with uncommitted files. Every lead git operation — merges, commits,
+pushes — now happens in `lead-verify`. The lead's pane is `w5:p28`; `lead-verify` (detached) is the verification worktree.
 `tokens` is not ours. Uncommitted in the main checkout, Rithy's work in progress, leave it:
 `sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
 
@@ -176,6 +177,9 @@ Lead sits in the main checkout, pane `w5:p28`; `lead-verify` (detached) is the v
 - Rename done by the lead before dispatch (`gh repo rename`), so the tree's old URLs keep resolving through GitHub's redirect while J50 sweeps. `origin` re-pointed. Not renamed: `koompi/koompi-desktop-history`, a different repo that still exists under that name.
 - The delivery sweep's finding that made J49 worth doing: the git route already delivers new tools and QML (directory rsyncs, not manifests — `files.sh:322`, `files.sh:31,307-313`) and copies the sysdefaults files, but **nothing in the tree ever runs `sysctl --system`**. Packaged installs get Arch's `25-systemd-sysctl.hook`; a git-route user's swappiness sits inert until reboot. That asymmetry is the one real gap.
 - v0.1 judged worth cutting: 481 commits since 2026-07-29, 99 tests, both workflows green. It is a source-level track and does not collide with the ISO date-tags (`iso-koompi-2026.08.25-x86_64`).
+
+- 2026-08-26 Rithy: the release line is a **`prod-hd` branch**, not a tag, and it is the better call. The repo is going two-flavour (`docs/design/koompi-sd.md`: HD on Hyprland, SD on Otto/Smithay), so the stable line is named per flavour and `prod-sd` follows later. A branch is also something `pull --ff-only` already tracks, so `update_pull` keeps its detached-HEAD and dirty-tree guards instead of learning to sit on a tag. Lead's three conditions, written into J51: prod-hd only ever fast-forwards from main and never carries its own commit; the `v0.1` tag still marks the commit, because a release needs a ref that does not move; `install.sh` `REPO_REF` defaults to prod-hd and both workflows run on it.
+- Lead slip, twice in one session, same root: **the main checkout is not the lead's workspace.** A `commit -am` swept Rithy's WIP (fixed in `9f52d345`), and a `git add -f` + commit put the J51 rewrite onto Rithy's `koompi-sd` branch (undone with a mixed reset, cherry-picked to main as `7e208052`, working tree restored). Rule now: the lead commits, merges and pushes **only in `lead-verify`**, and reads the main checkout without writing to it.
 
 ## Next action
 
