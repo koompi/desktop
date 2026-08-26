@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# koompi-sysdefaults is three defaults in seven vendor drop-ins: swap on zram,
-# systemd-oomd allowed to kill only the user manager's app.slice, and a 5 s stop
-# timeout. Each is inert if its file is misnamed, lands in the wrong directory,
-# or carries a key systemd does not know (systemd logs "Unknown key" and moves
-# on), so the checks here are on the built package and on what systemd makes of
-# it, not on the source tree alone.
+# koompi-sysdefaults is four defaults in eight vendor files: swap on zram,
+# systemd-oomd allowed to kill only the user manager's app.slice, a 5 s stop
+# timeout, and sysctls tuned for swap that lives in compressed RAM. Each is
+# inert if its file is misnamed, lands in the wrong directory, or carries a
+# key the reader does not know (systemd logs "Unknown key" and moves on;
+# sysctl -w rejects an unknown key outright), so the checks here are on the
+# built package and on what the readers make of it, not on the source tree
+# alone.
 #
 # Builds the package into a temp dir when makepkg is here; touches nothing on
 # the machine.
@@ -31,7 +33,8 @@ OOMD_CONF=systemd/oomd.conf.d/10-koompi.conf
 STOP_SYSTEM=systemd/system.conf.d/10-koompi-faster-shutdown.conf
 STOP_USER=systemd/system/user@.service.d/10-koompi-faster-shutdown.conf
 PRESET=systemd/system-preset/80-koompi-sysdefaults.preset
-SHIPPED=("$ZRAM" "$ZSWAP" "$OOMD_SLICE" "$OOMD_CONF" "$STOP_SYSTEM" "$STOP_USER" "$PRESET")
+SYSCTL=sysctl.d/90-koompi.conf
+SHIPPED=("$ZRAM" "$ZSWAP" "$OOMD_SLICE" "$OOMD_CONF" "$STOP_SYSTEM" "$STOP_USER" "$PRESET" "$SYSCTL")
 
 # 1. Every file says exactly what it must. Whole-line matches: a key with a
 #    typo or a stray suffix is what systemd ignores.
@@ -52,7 +55,44 @@ expect "$STOP_USER" 'TimeoutStopSec=5s'
 expect "$PRESET" 'enable systemd-oomd.service'
 expect "$PRESET" 'enable ufw.service'
 expect "$PRESET" 'enable fwupd-refresh.timer'
+expect "$SYSCTL" 'vm.swappiness = 150'
+expect "$SYSCTL" 'vm.vfs_cache_pressure = 50'
+expect "$SYSCTL" 'vm.page-cluster = 0'
+expect "$SYSCTL" 'vm.watermark_boost_factor = 0'
+expect "$SYSCTL" 'vm.watermark_scale_factor = 125'
+expect "$SYSCTL" 'vm.dirty_background_bytes = 67108864'
+expect "$SYSCTL" 'vm.dirty_bytes = 268435456'
+expect "$SYSCTL" 'vm.dirty_writeback_centisecs = 1500'
+expect "$SYSCTL" 'fs.inotify.max_user_watches = 524288'
+expect "$SYSCTL" 'net.ipv4.tcp_mtu_probing = 1'
 [[ -f "$PKG_DIR/files/$UFW_PROFILE" ]] || fail "$UFW_PROFILE is not in the package source"
+
+# 1b. Every key the sysctl file sets is a key this kernel actually knows.
+#     Read-only: sysctl -n prints one value and writes nothing. An unknown
+#     key is not an error downstream - systemd-sysctl writes what it can
+#     and logs the rest away - so nothing would ever fail except here.
+keys="$(grep -Ev '^[[:space:]]*(#|$)' "$FILES/$SYSCTL" | sed 's/[[:space:]=].*//')"
+[[ -n "$keys" ]] || fail "$SYSCTL sets no keys"
+while IFS= read -r key; do
+    sysctl -n "$key" >/dev/null 2>&1 \
+        || fail "this kernel does not know '$key' from $SYSCTL"
+done <<< "$keys"
+
+# 1c. Every key carries its reason: the line above each setting is a
+#     comment, so the why ships with the number or not at all.
+prev=''
+while IFS= read -r line; do
+    case $line in
+        '#'*) prev=$line ;;
+        '')
+            ;;
+        *)
+            [[ "$prev" == '#'* ]] \
+                || fail "$SYSCTL sets '$line' with no comment above it"
+            prev=$line
+            ;;
+    esac
+done < "$FILES/$SYSCTL"
 
 # 2. Kill candidacy is set on app.slice and nowhere else. Hyprland and the
 #    shell run in the login session's scope; any candidacy on user@.service,
@@ -96,7 +136,7 @@ grep -Fq 'systemctl restart systemd-oomd.service' <<< "$fn" \
 grep -Fq 'systemctl --user daemon-reload' <<< "$fn" \
     || fail "the user manager reports app.slice candidacy only after a reload"
 
-# 4. The built package: the seven files at their /usr/lib paths, the ufw
+# 4. The built package: the eight files at their /usr/lib paths, the ufw
 #    profile at its /etc path, nothing else, and the dependency recorded in
 #    the artifact.
 analyze_root="$tmp/root"
@@ -109,11 +149,18 @@ if command -v makepkg >/dev/null 2>&1; then
     pkg="$(find "$tmp/pkgs" -name 'koompi-sysdefaults-*.pkg.tar.*' ! -name '*-debug-*' | head -n 1)"
     [[ -n "$pkg" ]] || fail "makepkg produced no koompi-sysdefaults package"
 
+    # The package manager's own view of the artifact, alongside the tar
+    # listing: this is what pacman -Qlp shows an installer.
+    qlist="$(pacman -Qlp "$pkg")" \
+        || fail "pacman -Qlp cannot read $(basename -- "$pkg")"
+    grep -Fxq 'koompi-sysdefaults /usr/lib/sysctl.d/90-koompi.conf' <<< "$qlist" \
+        || fail "pacman -Qlp does not list usr/lib/sysctl.d/90-koompi.conf"
+
     bsdtar -tf "$pkg" > "$tmp/listing"
     { printf 'usr/lib/%s\n' "${SHIPPED[@]}"; printf '%s\n' "$UFW_PROFILE"; } | sort > "$tmp/want"
     grep -v '/$' "$tmp/listing" | grep -v '^\.' | sort > "$tmp/got"
     diff -u "$tmp/want" "$tmp/got" >&2 \
-        || fail "the package does not ship exactly the seven drop-ins and the ufw profile"
+        || fail "the package does not ship exactly the eight drop-ins and the ufw profile"
     bsdtar -xOf "$pkg" .PKGINFO | grep -Fxq 'depend = zram-generator' \
         || fail "the built package does not record the zram-generator dependency"
 
