@@ -167,8 +167,9 @@ The one place a pin could survive is upstream Smithay, if KOOMPI rebases onto it
 
 ## Order of operations
 
-1. **Land the packaging as `koompi-sd`.** `sdata/dist-arch/koompi-sd/`, versioned off a tag — see [No more pinning](#no-more-pinning). `provides=(otto)` and `conflicts=(otto otto-bin otto-git)` retained only until the binaries themselves are renamed in step 5. Today the recipe is `PKGBUILD-koompi`, untracked, in the otto tree. Reproducible build before anything else moves.
-2. **Session smoke test** in `tests/`: portal colour scheme, bar count against output count, SNI count, and that `otto-bar`, `otto-islands` and the polkit agent are alive. This is what makes step 5 safe, and the audit notes it would have caught three of its four blockers.
+1. ~~**Land the packaging as `koompi-sd`.**~~ **Done 2026-08-26.** `sdata/dist-arch/koompi-sd/PKGBUILD`, sourcing the tag `koompi-sd-0.16.0`, no `_commit`, no `pkgver()`. Declares `LicenseRef-koompi-sd-undeclared` for the reason in [Licence](#licence), and `provides`/`conflicts`/`replaces` the otto names until step 5 renames the binaries.
+   The tag is cut on `koompi/otto` locally and **not yet pushed**; until it is, `makepkg` cannot fetch it: `git -C ~/workspace/otto push origin koompi-sd-0.16.0`.
+2. **Session smoke test** in `tests/` — next: portal colour scheme, bar count against output count, SNI count, and that `otto-bar`, `otto-islands` and the polkit agent are alive. This is what makes step 5 safe, and the audit notes it would have caught three of its four blockers.
 3. **Cut the dependency forks.** `koompi/smithay` and `koompi/layers`, both tagged. Repoint every `Cargo.toml` off the `nongio` branches — three files reference `layers`, two reference `smithay`. After this, no build depends on an account KOOMPI does not control. **Gated on the `layers` licence being resolved**, since this step publishes a copy of it.
 4. **Restart the repo.** `koompi/koompi-sd`, single root commit, `koompi/otto-history` archived, `UPSTREAM.md` written.
 5. **Rename**, one commit, against the checklist above, smoke test green before and after.

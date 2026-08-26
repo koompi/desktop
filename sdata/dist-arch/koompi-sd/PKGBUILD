@@ -1,0 +1,114 @@
+# koompi-sd — the compositor and components the KOOMPI SD (stacking desktop)
+# session runs on. Built from koompi/otto's `koompi` branch, which is being hard
+# forked: no upstream tracking, no rebases, no pinned SHA to bump. See
+# docs/design/sd-hardfork.md.
+#
+# NAMING: the package is koompi-sd; the binaries are still named otto* because
+# the internal rename (D-Bus names, protocol XML, config paths, PAM stack) is a
+# single mechanical commit that waits on the session smoke test — a wrong portal
+# backend name does not error, it falls through to GTK and the desktop comes up
+# light. provides/conflicts otto until that lands.
+#
+# VERSIONING: sources a tag, never a commit. `pkgver` is the release; cutting one
+# means tagging koompi/otto and bumping this field. No pkgver() — dist-arch's
+# README forbids it, because makepkg rewrites the tracked PKGBUILD.
+#
+# BUILD NOTE: upstream's own recipes cannot be used as they are. PKGBUILD-git's
+# pkgver() returns empty on a shallow clone (its `git describe | sed` pipeline
+# exits 0, so the fallback after `||` never runs) and its package() installs an
+# otto-rdp that its build() never builds. The prebuilt release and "nightly"
+# tarballs are further behind still: neither knows `exec_once`, and both ship
+# only the compositor + the portal backend, no bar, lock, islands or greeter.
+groups=(koompi)
+pkgname=koompi-sd
+pkgver=0.16.0
+pkgrel=1
+pkgdesc='KOOMPI SD — stacking Wayland compositor and desktop components'
+arch=(x86_64)
+url='https://github.com/koompi/otto'
+# The tree is MIT (© 2024 Riccardo Canalicchio, installed below). The binaries
+# are not distributable under it: they statically link nongio/layers, which
+# ships no LICENSE file, no Cargo.toml license field, and reports null from the
+# GitHub API — so there is no grant covering redistribution. Declared the way
+# koompi-kiri declares its own undeclared upstream, and it stays this way until
+# a licence lands on layers. See docs/design/sd-hardfork.md.
+license=('LicenseRef-koompi-sd-undeclared')
+provides=(otto)
+conflicts=(otto otto-bin otto-git koompi-otto)
+replaces=(koompi-otto)
+depends=(libdrm systemd-libs mesa libxkbcommon wayland libinput dbus seatd
+         pipewire freetype2 fontconfig pixman noto-fonts gstreamer
+         gst-plugins-base-libs)
+makedepends=(git rust cargo libdisplay-info clang)
+optdepends=('xdg-desktop-portal: desktop integration'
+            'fprintd: fingerprint unlock for the locker and greeter'
+            'greetd: login manager `otto --login` hosts a greeter for'
+            'gst-plugin-pipewire: otto-rdp video capture'
+            'gst-plugins-bad: otto-rdp hardware H.264 (VA-API)'
+            'cliphist: clipboard history the session autostarts'
+            'wlsunset: night shift, via the gamma-control protocol')
+_tag=koompi-sd-0.16.0
+source=("git+https://github.com/koompi/otto.git#tag=$_tag")
+sha256sums=(SKIP)
+backup=(etc/otto/config.toml etc/pam.d/otto-lock)
+
+build() {
+  cd otto
+  unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+  # otto-rdp's gstreamer 0.25 resolves kstring to a version that wants a newer
+  # rustc than the toolchain pinned here. Nothing else in the tree pulls kstring.
+  cargo update -p kstring --precise 2.0.2
+  cargo build --release
+  cargo build --release -p otto-bar
+  cargo build --release -p otto-islands
+  cargo build --release -p otto-lock
+  cargo build --release -p otto-greeter
+  cargo build --release -p otto-rdp
+  cargo build --release -p xdg-desktop-portal-otto
+}
+
+package() {
+  cd otto
+
+  # Every component is part of the session: bar for the topbar, islands for
+  # notifications and the screenshare dialog, lock for the locker, greeter for
+  # `otto --login`, rdp for the remote bridge.
+  #
+  # apps-manager is skipped. The README calls it the application launcher; its
+  # main() is a foreign-toplevel-list dump to stdout.
+  install -Dm755 target/release/otto "$pkgdir/usr/bin/otto"
+  install -Dm755 target/release/otto-bar "$pkgdir/usr/bin/otto-bar"
+  install -Dm755 target/release/otto-islands "$pkgdir/usr/bin/otto-islands"
+  install -Dm755 target/release/otto-lock "$pkgdir/usr/bin/otto-lock"
+  install -Dm755 target/release/otto-greeter "$pkgdir/usr/bin/otto-greeter"
+  install -Dm755 target/release/otto-rdp "$pkgdir/usr/bin/otto-rdp"
+  install -Dm755 target/release/xdg-desktop-portal-otto \
+    "$pkgdir/usr/libexec/xdg-desktop-portal-otto"
+
+  # MIT, and it stays regardless of what the tree is renamed to — dropping the
+  # copyright notice is the one thing here that would actually be wrong.
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 otto_config.example.toml "$pkgdir/etc/otto/config.toml"
+  # PAM stack otto-lock authenticates against; without it PAM falls through to
+  # `other`, which denies everything.
+  install -Dm644 components/otto-lock/otto-lock.pam "$pkgdir/etc/pam.d/otto-lock"
+
+  # No wayland-sessions entry: the greeter reads only the koompi directory, and
+  # koompi-sd.desktop (koompi-session's business) is what belongs in it.
+  install -Dm644 components/xdg-desktop-portal-otto/otto.portal \
+    "$pkgdir/usr/share/xdg-desktop-portal/portals/otto.portal"
+  install -Dm644 \
+    components/xdg-desktop-portal-otto/org.freedesktop.impl.portal.desktop.otto.service \
+    "$pkgdir/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.otto.service"
+  # The D-Bus service file above names this unit. Without it on disk, D-Bus
+  # answers "unknown unit" and xdg-desktop-portal falls back to another backend,
+  # which is how a dark desktop ends up telling every app it is light.
+  install -Dm644 \
+    components/xdg-desktop-portal-otto/xdg-desktop-portal-otto.service \
+    "$pkgdir/usr/lib/systemd/user/xdg-desktop-portal-otto.service"
+
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+  install -Dm644 components/xdg-desktop-portal-otto/portals.conf.example \
+    "$pkgdir/usr/share/doc/$pkgname/portals.conf.example"
+  install -Dm644 -t "$pkgdir/usr/share/doc/$pkgname/user" docs/user/*.md
+}

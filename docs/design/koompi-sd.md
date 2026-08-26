@@ -168,7 +168,7 @@ The cost of that settlement is named in the study: two upstreams to track, a one
 `otto/docs/otto-plan.md` is the authority on what Otto itself needs, audited live on 2026-08-03, and it should not be restated here.
 What belongs to *this* repo is the flavour work:
 
-1. **Land the packaging as `koompi-sd`.** It exists only as `PKGBUILD-koompi`, untracked, in the otto tree, while `otto-plan.md` refers to `sdata/dist-arch/koompi-otto/` — a path that will not exist, because nothing named otto ships. Until `sdata/dist-arch/koompi-sd/` lands here, SD is not reproducible from the packaging tree. Do this first — everything below assumes it.
+1. ~~**Land the packaging as `koompi-sd`.**~~ **Done** — `sdata/dist-arch/koompi-sd/PKGBUILD`, sourcing a tag rather than a pinned SHA. The tag still needs pushing to `koompi/otto` before anyone else can build it.
 2. **Package split.** Break the `/etc/skel` conflict into shared plus per-flavour config packages, so HD and SD can sit on one disk.
 3. **Session identity.** Move HD to `KOOMPI-hd:KOOMPI:Hyprland` and add `KOOMPI-sd:KOOMPI`, with the SD entry in `/usr/share/koompi/wayland-sessions`. Fixes the portal-directory trap the Otto audit hit, where a curated `XDG_DESKTOP_PORTAL_DIR` from the Hyprland era made `otto.portal` invisible.
 4. **Shared theming.** Add SD's colours as a `[templates.*]` entry in `dots/.config/matugen/config.toml` so one `koompi theme` call moves both flavours, and SD's `theme_scheme` follows the same source as HD.
