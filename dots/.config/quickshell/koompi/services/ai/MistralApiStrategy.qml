@@ -57,7 +57,7 @@ ApiStrategy {
     function buildAuthorizationHeader(apiKeyEnvVarName: string, model: AiModel): string {
         if (!model?.requires_key) return "";
         // bash's ${VAR:+word}: the whole header is dropped when the key is empty, so
-        // no request can carry "Authorization: Bearer " with nothing after it
+        // bash drops the whole -H when the key is empty: no request carries an empty bearer
         return `\$\{${apiKeyEnvVarName}:+-H "Authorization: Bearer \$\{${apiKeyEnvVarName}\}"\}`;
     }
 
