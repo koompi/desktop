@@ -40,11 +40,11 @@ REPO_ROOT="$T"
 # shellcheck source=../sdata/install/update.sh disable=SC1091
 source "$ROOT/sdata/install/update.sh"
 
-# An origin under a koompi/koompi-hd path so the "is this the KOOMPI repo?"
+# An origin under a koompi/koompi-desktop path so the "is this the KOOMPI repo?"
 # check sees what it sees on a real machine. main is one commit ahead of
 # prod-hd, the normal state: prod-hd is where main was last blessed.
 new_origin() {
-    local dir="$1" with_prod="$2" origin="$1/koompi/koompi-hd.git" seed="$1/seed"
+    local dir="$1" with_prod="$2" origin="$1/koompi/koompi-desktop.git" seed="$1/seed"
     mkdir -p "$dir/koompi"
     git init -q --bare "$origin"
     git clone -q "$origin" "$seed" 2>/dev/null
@@ -61,7 +61,7 @@ new_origin() {
 # The remote moves prod-hd up to where main already is: the fast-forward-only
 # promotion this whole scheme rests on.
 promote_prod() {
-    local origin="$1" seed="${1%/koompi/koompi-hd.git}/seed"
+    local origin="$1" seed="${1%/koompi/koompi-desktop.git}/seed"
     git -C "$seed" push -q origin main:"refs/heads/$PROD_BRANCH"
 }
 
@@ -138,15 +138,40 @@ pass "a clean, fully pushed feature branch is left alone"
 
 # --- a fork or a mirror is not touched ----------------------------------------
 mkdir -p "$T/a/someone"
-git clone -q --bare "$origin" "$T/a/someone/koompi-hd.git" 2>/dev/null
+git clone -q --bare "$origin" "$T/a/someone/koompi-desktop.git" 2>/dev/null
 work="$T/a/fork"
-git clone -q "$T/a/someone/koompi-hd.git" "$work"
+git clone -q "$T/a/someone/koompi-desktop.git" "$work"
 git -C "$work" checkout -q main
 REPO_ROOT="$work"
 out="$(update_pull < /dev/null 2>&1)"
 [[ "$(branch_of "$work")" == main ]] || fail "a fork was moved onto $PROD_BRANCH: $out"
 grep -q 'not the KOOMPI repo' <<<"$out" || fail "no reason was given: $out"
 pass "a checkout whose origin is not the KOOMPI repo is left alone"
+
+# --- every origin generation a real machine can carry counts as ours ----------
+# The repo was renamed twice on 2026-08-26: koompi/desktop, then the one-day
+# koompi-hd spelling, then koompi-desktop. Machines installed before then, updated during the
+# one-day window, or cloned since carry different slugs as origin. A false
+# negative here makes koompi update quietly stop following prod-hd.
+gen="$T/a/generations"
+git init -q "$gen"
+gh="git@github.com" https="https://github.com" org="koompi"
+hdslug="koompi-hd"
+cur="koompi-desktop"
+for url in \
+    "$gh:$org/desktop.git" \
+    "$https/$org/desktop" \
+    "$https/$org/desktop/" \
+    "$gh:$org/$hdslug.git" \
+    "$https/$org/$hdslug" \
+    "$https/$org/$cur.git" \
+    "$https/$org/$cur/"; do
+    git -C "$gen" remote remove origin 2>/dev/null
+    git -C "$gen" remote add origin "$url"
+    REPO_ROOT="$gen"
+    origin_is_koompi || fail "an origin at $url was disowned"
+done
+pass "every origin generation a real machine can have is still the KOOMPI repo"
 
 # --- the opt-out keeps a user on main, this run and every run -----------------
 work="$T/a/optout"
@@ -229,7 +254,7 @@ pass "a local $PROD_BRANCH branch of somebody's own is not taken over"
 # J49 F1: bash parsed every installer function before the pull, so the sysctl fix
 # took two consecutive updates to take effect on a real machine.
 mkdir -p "$T/d/koompi"
-reexec_origin="$T/d/koompi/koompi-hd.git"
+reexec_origin="$T/d/koompi/koompi-desktop.git"
 git init -q --bare "$reexec_origin"
 git clone -q "$reexec_origin" "$T/d/seed" 2>/dev/null
 seed="$T/d/seed"
@@ -310,7 +335,7 @@ install_into() {
 }
 # a repo whose ./setup is a stub: install.sh hands over to it and stops there
 stub_repo() {
-    local dir="$1" with_prod="$2" origin="$1/koompi/koompi-hd.git" seed="$1/seed"
+    local dir="$1" with_prod="$2" origin="$1/koompi/koompi-desktop.git" seed="$1/seed"
     mkdir -p "$dir/koompi"; git init -q --bare "$origin"
     git clone -q "$origin" "$seed" 2>/dev/null
     printf '#!/usr/bin/env bash\nprintf "stub setup ran: %%s\\n" "$*"\n' > "$seed/setup"

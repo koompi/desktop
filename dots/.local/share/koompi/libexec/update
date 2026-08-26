@@ -474,11 +474,9 @@ resolve_checkout() {
     # A checkout that moved, or an install from before this file existed.
     # Every name below stays so a stale state file still finds the checkout
     # it names instead of cloning a second one over it: the koompi-desktop
-    # forms are what a clone of the current koompi/koompi-desktop repo is
-    # called (and the name installs from before rename day already have),
-    # koompi-hd is what the repo was called for one day, so machines that
-    # updated in that window have it; koompi-hyprland predates even that,
-    # and koompi-os older still.
+    # forms are what clones of the current koompi/koompi-desktop repo are
+    # called (installs from before today already have that name), koompi-hd
+    # was the name for one day, koompi-hyprland predates it, koompi-os older.
     for guess in "$HOME/koompi-desktop" "$HOME/workspace/koompi-desktop" \
                  "$HOME/src/koompi-desktop" "$HOME/.local/share/koompi-desktop" \
                  "$HOME/koompi-hd" "$HOME/workspace/koompi-hd" \
