@@ -23,9 +23,10 @@ Then log out and pick **KOOMPI** at your display manager. It is installed as
 an additional Hyprland-based session; existing KDE Plasma and GNOME sessions
 stay installed and selectable.
 
-The keyboard map, the gestures, and which panel owns what are in
-[`docs/navigation.md`](docs/navigation.md). `Super+/` shows the same bindings
-from inside the session.
+New to it? Read [`docs/manual/`](docs/manual/README.md), which starts with
+coming from Mac or Windows. The keyboard map, the gestures, and which panel owns
+what are specified in [`docs/navigation.md`](docs/navigation.md). `Super+/` shows
+the same bindings from inside the session.
 
 ## What `./setup` does
 
