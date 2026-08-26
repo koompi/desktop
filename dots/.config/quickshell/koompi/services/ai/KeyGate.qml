@@ -4,11 +4,11 @@ import qs.services
 import QtQuick
 
 /**
- * The gate in front of every curl the Requester builds. A model that needs a key
- * goes out only when the keyring has loaded and holds one; a missing key answers
- * with the /key advice instead of a request carrying an empty bearer. A keyring
- * that has not loaded yet is "unknown", not "missing": the send waits for it.
- * `engine` is the Ai facade.
+ * The gate in front of every curl the Requester and the compactor build. A model
+ * that needs a key goes out only when the keyring has loaded and holds one; a
+ * missing key answers with the /key advice instead of a request carrying an empty
+ * bearer. A keyring that has not loaded yet is "unknown", not "missing": the send
+ * waits for it. `engine` is the Ai facade.
  */
 QtObject {
     id: root
@@ -21,11 +21,14 @@ QtObject {
     // unanswered forever.
     property int keyringWaitMs: 10000
 
+    // `loaded` and `keyringData` are set from two different signals of the fetch
+    readonly property bool keyringReady: KeyringStorage.loaded && KeyringStorage.keyringData != null
+
     // True when the request may be built now. False when it was refused (advice
     // posted) or deferred: `send` runs by itself once the keyring reports in.
     function admit(model, send): bool {
         if (!model?.requires_key) return true;
-        if (!root.engine.apiKeysLoaded) {
+        if (!root.keyringReady) {
             root._deferred = send;
             root.waitTimer.restart();
             KeyringStorage.fetchKeyringData();
@@ -37,14 +40,34 @@ QtObject {
         return false;
     }
 
-    readonly property Connections keyringWatch: Connections {
-        target: KeyringStorage
-        function onLoadedChanged() {
-            if (!KeyringStorage.loaded || !root._deferred) return;
-            const send = root._deferred;
-            root._deferred = null;
-            root.waitTimer.stop();
-            send();
+    // The wait was for this model and this chat. A switch or a clear while the
+    // keyring loads drops it; the user's turn stays in the transcript for a retry.
+    function drop(reason: string) {
+        if (!root._deferred) return;
+        root._deferred = null;
+        root.waitTimer.stop();
+        console.log(`[AI] a send waiting on the keyring was dropped: ${reason}`);
+    }
+
+    // callLater: whichever of the two keyring signals came second has landed
+    onKeyringReadyChanged: {
+        if (!root.keyringReady || !root._deferred) return;
+        const send = root._deferred;
+        root._deferred = null;
+        root.waitTimer.stop();
+        Qt.callLater(send);
+    }
+
+    readonly property Connections modelWatch: Connections {
+        target: root.engine
+        ignoreUnknownSignals: true
+        function onCurrentModelIdChanged() { root.drop("the model changed"); }
+    }
+    readonly property Connections chatWatch: Connections {
+        target: root.engine?.conversation ?? null
+        ignoreUnknownSignals: true
+        function onMessageIDsChanged() {
+            if (root.engine.conversation.messageIDs.length === 0) root.drop("the chat was cleared");
         }
     }
 

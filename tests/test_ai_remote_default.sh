@@ -22,8 +22,11 @@
 #            modelList with their fields, a malformed one is skipped with a
 #            warning; the context window is 131072 for an unknown hosted model,
 #            8192 for an unknown local one, the entry's context_window when set
-#   retry -> the same refusal, then /key and a plain retry send for real: the
-#            log carries the endpoint and the bearer with the fake key
+#   retry -> a send deferred on the keyring is dropped when the model changes;
+#            then the same refusal, then /key and a plain retry send for real:
+#            the log carries the endpoint and the bearer with the fake key
+#   locked-> the keyring never answers (secret-tool empty, busctl says locked):
+#            the wait ends with a message, nothing is sent
 # Static half: neither OpenAI nor Mistral strategy can emit an empty bearer.
 set -uo pipefail
 
@@ -74,10 +77,12 @@ printf '#!/usr/bin/env bash\nexit 1\n' > "$WORK/bin/ollama"
 cat > "$WORK/bin/secret-tool" <<'SH'
 #!/usr/bin/env bash
 case "${1:-}" in
-    lookup) printf '%s\n' "${PROBE_KEYRING:-{\"apiKeys\":{}}}" ;;
+    lookup) [[ "${PROBE_KEYRING_LOCKED:-}" == "1" ]] && exit 1; printf '%s\n' "${PROBE_KEYRING:-{\"apiKeys\":{}}}" ;;
     *) cat > /dev/null ;;
 esac
 SH
+# only reached by try_lookup.sh when secret-tool answered nothing: "locked"
+printf '#!/usr/bin/env bash\necho "b true"\n' > "$WORK/bin/busctl"
 # every curl the shell would run lands here instead of on the network
 cat > "$WORK/bin/curl" <<'SH'
 #!/usr/bin/env bash
@@ -90,6 +95,7 @@ import qs.modules.common
 import qs.services.ai
 import Quickshell
 import QtQuick
+import "services/ai/endpoints.js" as Endpoints
 
 ShellRoot {
     id: probe
@@ -152,6 +158,7 @@ ShellRoot {
     Timer { id: step; repeat: false; property var fn: null; onTriggered: { const f = step.fn; step.fn = null; f(); } }
     function after(ms, fn) { step.fn = fn; step.interval = ms; step.restart(); }
     function roles() { return conversation.messageIDs.map(id => conversation.messageByID[id].role); }
+    function lastText() { return conversation.messageByID[conversation.messageIDs[conversation.messageIDs.length - 1]]?.content ?? ""; }
 
     Component.onCompleted: {
         probe.check("infer endpoint stealth/ox-alpha", registry.inferEndpointForModel("stealth/ox-alpha"), "https://tokenra.io/v1/chat/completions");
@@ -196,6 +203,7 @@ ShellRoot {
             probe.check("current model id", registry.currentModelId, "remote");
             if (probe.mode === "empty") probe.emptyArgCase();
             else if (probe.mode === "gate" || probe.mode === "retry") probe.extraModelsCase();
+            else if (probe.mode === "locked") probe.lockedCase();
             else probe.finish();
         }
     }
@@ -217,10 +225,39 @@ ShellRoot {
         probe.check("extra: icon", extra?.icon, "spark-symbolic");
         probe.check("extra: description", extra?.description, "Probe | extra");
         probe.check("extra: contextWindow", extra?.contextWindow, 200000);
+        probe.check("extra: capitalised id stored lower-cased", registry.modelList.indexOf("test/extra-caps") !== -1, true);
+        probe.check("extra: capitalised id not stored verbatim", registry.modelList.indexOf("Test/Extra-Caps") !== -1, false);
+        probe.check("extra: requires_key \"true\" (string) is true", registry.models["test/extra-caps"]?.requires_key, true);
+        probe.check("extra: requires_key false is false", registry.models["test/nokey"]?.requires_key, false);
+        probe.check("extra: requires_key absent on a LAN endpoint is true", registry.models["test/lan"]?.requires_key, true);
+        probe.check("extra: requires_key absent on ::1 is false", registry.models["test/v6"]?.requires_key, false);
+        probe.messages = [];
+        registry.setModel("Test/Extra-Caps");
+        probe.check("extra: /model with the capitalised id selects it", Persistent.states.ai.model, "test/extra-caps");
+        probe.check("extra: /model with the capitalised id keeps remoteEndpoint", Persistent.states.ai.remoteEndpoint, "");
+        probe.check("extra: /model reply", (probe.messages[0] ?? "").startsWith("Model set to"), true);
+        Persistent.states.ai.model = "remote";
+
+        // a discovered model that took one of our ids survives the next reload
+        registry.addModel("probe-discovered", { "model": "probe-discovered", "description": "discovered", "endpoint": "http://localhost:11434/v1/chat/completions", "requires_key": false });
+        registry.extraModels.load();
+        probe.check("extra: reload keeps the discovered model under the taken id", registry.models["probe-discovered"]?.description, "discovered");
+        probe.check("extra: reload keeps our other entries", registry.models["test/extra-1"]?.name, "Probe Extra");
+
+        probe.check("endpoints: localhost is local", Endpoints.isLocal("http://localhost:11434/v1/chat/completions"), true);
+        probe.check("endpoints: scheme-less localhost is local", Endpoints.isLocal("localhost:11434/v1"), true);
+        probe.check("endpoints: [::1] is local", Endpoints.isLocal("http://[::1]:8080/v1"), true);
+        probe.check("endpoints: localhost in the query is not local", Endpoints.isLocal("https://example.test/?q=localhost"), false);
+        probe.check("endpoints: 192.168 is self-hosted, not local", [Endpoints.isSelfHosted("http://192.168.1.5:8000/v1"), Endpoints.isLocal("http://192.168.1.5:8000/v1")].join(), "true,false");
+        probe.check("endpoints: 172.31 is self-hosted", Endpoints.isSelfHosted("http://172.31.0.9/v1"), true);
+        probe.check("endpoints: 172.32 is not", Endpoints.isSelfHosted("http://172.32.0.9/v1"), false);
 
         registry.addModel("litert-probe", { "model": "probe-e4b", "endpoint": "http://127.0.0.1:9379/v1/chat/completions", "requires_key": false });
         registry.addModel("ollama-probe", { "model": "gemma3:4b", "endpoint": "http://localhost:11434/v1/chat/completions", "requires_key": false });
         registry.addModel("hosted-probe", { "model": "gpt-4o", "endpoint": "https://api.openai.com/v1/chat/completions", "requires_key": true });
+        registry.addModel("lan-host", { "model": "whatever", "endpoint": "http://myhost:8000/v1/chat/completions", "requires_key": false });
+        registry.addModel("lan-mdns", { "model": "whatever", "endpoint": "http://box.local:8000/v1/chat/completions", "requires_key": false });
+        registry.addModel("hosted-unknown", { "model": "whatever", "endpoint": "https://api.example.test/v1/chat/completions", "requires_key": true });
         probe.check("window: shipped contextWindow config is 0", conversation.configuredWindow, 0);
         engine.currentModelId = "remote";
         probe.check("window: remote stealth/ox-alpha", conversation.contextWindow, 131072);
@@ -234,6 +271,15 @@ ShellRoot {
         probe.check("window: local gemma keeps the model default", conversation.contextWindow, 8192);
         engine.currentModelId = "hosted-probe";
         probe.check("window: hosted gpt-4o keeps the model default", conversation.contextWindow, 128000);
+        engine.currentModelId = "test/lan";
+        probe.check("window: 192.168.1.5:8000 is self-hosted", conversation.contextWindow, 8192);
+        probe.check("window: 192.168.1.5:8000 source", conversation.contextWindowSource, "fallback (local)");
+        engine.currentModelId = "lan-host";
+        probe.check("window: bare hostname is self-hosted", conversation.contextWindow, 8192);
+        engine.currentModelId = "lan-mdns";
+        probe.check("window: *.local is self-hosted", conversation.contextWindow, 8192);
+        engine.currentModelId = "hosted-unknown";
+        probe.check("window: unknown hosted name", conversation.contextWindow, 131072);
         engine.currentModelId = "remote";
 
         console.log("AUTH_TEMPLATE openai " + registry.apiStrategies.openai.buildAuthorizationHeader("API_KEY", registry.remoteModelObj));
@@ -245,18 +291,73 @@ ShellRoot {
     // no key and answers with the advice; the user's turn stays, curl never runs
     function gateCase() {
         probe.check("gate: keyring not loaded before the first send", registry.apiKeysLoaded, false);
+        conversation.clearMessages(false); // the /model replies above are not part of these transcripts
+        if (probe.mode === "retry") { probe.dropCase(); return; }
         probe.messages = [];
         requester.sendUserMessage("hello without a key");
         probe.check("gate: nothing running while the keyring loads", requester.running, false);
         probe.after(1000, () => {
             probe.check("gate: keyring loaded by the wait", registry.apiKeysLoaded, true);
-            probe.check("gate: still nothing running", requester.running, false);
-            probe.check("gate: user turn kept", probe.roles().join(","), "user,interface");
-            probe.check("gate: one interface message", probe.messages.length, 1);
-            probe.check("gate: advice names /key", (probe.messages[0] ?? "").includes("/key"), true);
-            probe.check("gate: advice carries the key link", (probe.messages[0] ?? "").includes("https://oxalpha.io/ox-alpha-api.html"), true);
-            if (probe.mode === "retry") probe.retryCase();
-            else probe.finish();
+            probe.gateChecks();
+            probe.compactCase();
+        });
+    }
+
+    function gateChecks() {
+        probe.check("gate: still nothing running", requester.running, false);
+        probe.check("gate: user turn kept", probe.roles().slice(-2).join(","), "user,interface"); // retry mode has the dropped turn before
+        probe.check("gate: one interface message", probe.messages.length, 1);
+        probe.check("gate: advice names /key", (probe.messages[0] ?? "").includes("/key"), true);
+        probe.check("gate: advice carries the key link", (probe.messages[0] ?? "").includes("https://oxalpha.io/ox-alpha-api.html"), true);
+    }
+
+    // the compactor goes through the same gate: no key, nothing sent, chat intact
+    function compactCase() {
+        for (let i = 0; i < 3; i++) conversation.addMessage("filler turn " + i, "user");
+        const before = conversation.messageIDs.length;
+        probe.messages = [];
+        conversation.compact(null);
+        probe.check("compact: not compacting", conversation.compacting, false);
+        probe.check("compact: chat kept plus the notes", conversation.messageIDs.length, before + 2);
+        probe.check("compact: the advice", (probe.messages[0] ?? "").includes("/key"), true);
+        probe.check("compact: then the skip note", probe.lastText().startsWith("Compaction skipped: no API key for stealth/ox-alpha"), true);
+        probe.check("compact: still nothing running", requester.running, false);
+        probe.finish();
+    }
+
+    // a send deferred on the keyring is dropped when the chat is cleared or the
+    // model changes meanwhile
+    function dropCase() {
+        probe.messages = [];
+        requester.sendUserMessage("turn dropped by a clear");
+        conversation.clearMessages(false);
+        requester.sendUserMessage("turn dropped by a model change");
+        engine.currentModelId = "test/extra-1";
+        engine.currentModelId = "remote";
+        probe.after(1000, () => {
+            probe.check("drop: keyring loaded meanwhile", registry.apiKeysLoaded, true);
+            probe.check("drop: no reply at all", probe.messages.length, 0);
+            probe.check("drop: only the second user turn is in the chat", probe.roles().join(","), "user");
+            probe.check("drop: nothing running", requester.running, false);
+            probe.messages = [];
+            requester.sendUserMessage("hello without a key");
+            probe.gateChecks();
+            probe.retryCase();
+        });
+    }
+
+    // the keyring never answers: the wait ends with a message, nothing is sent
+    function lockedCase() {
+        requester.keyGate.keyringWaitMs = 500;
+        probe.messages = [];
+        requester.sendUserMessage("hello with a locked keyring");
+        probe.after(1500, () => {
+            probe.check("locked: keyring never loaded", registry.apiKeysLoaded, false);
+            probe.check("locked: user turn kept", probe.roles().join(","), "user,interface");
+            probe.check("locked: one message", probe.messages.length, 1);
+            probe.check("locked: it says the keyring did not answer", (probe.messages[0] ?? "").startsWith("The keyring did not answer"), true);
+            probe.check("locked: nothing running", requester.running, false);
+            probe.finish();
         });
     }
 
@@ -266,7 +367,7 @@ ShellRoot {
         probe.check("retry: key stored", registry.apiKeys.oxalpha, "sk-test-fake");
         requester.retryRequest();
         probe.after(1500, () => {
-            probe.check("retry: request went out", probe.roles().join(","), "user,interface,interface,assistant");
+            probe.check("retry: request went out", probe.roles().join(","), "user,user,interface,interface,assistant");
             probe.check("retry: request finished", requester.running, false);
             probe.finish();
         });
@@ -309,7 +410,12 @@ CONFIG_JSON='{"ai":{"memory":{"enable":false},"extraModels":[
   {"model":"test/extra-1","name":"Probe Extra","endpoint":"https://example.test/v1/chat/completions","api_format":"openai",
    "key_id":"extra","requires_key":true,"key_get_link":"https://example.test/keys","icon":"spark-symbolic",
    "description":"Probe | extra","context_window":200000},
-  {"model":"test/broken","name":"No endpoint"}
+  {"model":"test/broken","name":"No endpoint"},
+  {"model":"Test/Extra-Caps","endpoint":"https://example.test/v1/chat/completions","requires_key":"true"},
+  {"model":"test/nokey","endpoint":"https://example.test/v1/chat/completions","requires_key":false},
+  {"model":"test/lan","endpoint":"http://192.168.1.5:8000/v1/chat/completions"},
+  {"model":"test/v6","endpoint":"http://[::1]:8080/v1/chat/completions"},
+  {"model":"probe-discovered","endpoint":"https://example.test/v1/chat/completions"}
 ]}}'
 
 # run_probe <label> <expected remoteModel> <expected endpoint> [states.json body]
@@ -325,11 +431,15 @@ run_probe() {
     # XDG_RUNTIME_DIR is where the request script goes, so the live shell's is left
     # alone; the compositor socket is reached by absolute path instead
     out="$(cd "$WORK/shell" && PATH="$WORK/bin:$PATH" PROBE_EXPECT_REMOTE="$expect_remote" PROBE_EXPECT_ENDPOINT="$expect_endpoint" \
-        PROBE_MODE="${PROBE_MODE:-}" CURL_LOG="$xdg/curl.log" LITERT_LM_DIR="$xdg/litert" \
+        PROBE_MODE="${PROBE_MODE:-}" PROBE_KEYRING_LOCKED="${PROBE_KEYRING_LOCKED:-}" CURL_LOG="$xdg/curl.log" LITERT_LM_DIR="$xdg/litert" \
         WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/${WAYLAND_DISPLAY:-wayland-1}" XDG_RUNTIME_DIR="$xdg/runtime" \
         XDG_CONFIG_HOME="$xdg/config" XDG_STATE_HOME="$xdg/state" XDG_CACHE_HOME="$xdg/cache" \
         timeout 60 qs -p remote_default_probe.qml 2>&1)"
     echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\(DEBUG\|WARN\) qml: //p' | grep -E '^(PASS|FAIL|PROBE|engine message|AUTH_TEMPLATE|\[AI\] ai.extraModels)' || true
+    if grep -qE 'ReferenceError|TypeError' <<< "$out"; then
+        echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'ReferenceError|TypeError' >&2
+        fail "probe '$label' hit a JS error"
+    fi
     if ! grep -q "PROBE OK" <<< "$out"; then
         echo "--- probe output ($label) ---" >&2
         echo "$out" | sed 's/\x1b\[[0-9;]*m//g' | grep -vE "qmlscanner|^\s*$" >&2
@@ -364,10 +474,11 @@ echo "ok   remote default: stealth/ox-alpha infers tokenra/openai/oxalpha with i
 # leave a curl log and a warning line behind
 probe_out() { echo "$1" | sed 's/\x1b\[[0-9;]*m//g' | sed -n 's/^ *\(DEBUG\|WARN\) qml: //p'; }
 
-gate_out="$(PROBE_MODE=gate run_probe gate "stealth/ox-alpha" "$OXALPHA_ENDPOINT")"
+gate_out="$(PROBE_MODE=gate run_probe gate "stealth/ox-alpha" "$OXALPHA_ENDPOINT")" || exit 1
 echo "$gate_out"
 grep -q '^\[AI\] ai.extraModels\[1\] skipped' <<< "$gate_out" || fail "the malformed extraModels entry produced no warning naming index 1"
-[[ ! -s "$WORK/xdg-gate/curl.log" ]] || { cat "$WORK/xdg-gate/curl.log" >&2; fail "a curl ran for a keyed model with no key"; }
+grep -q '^\[AI\] ai.extraModels\[6\] skipped: the id "probe-discovered" is already taken' <<< "$gate_out" || fail "the colliding extraModels entry produced no warning naming index 6"
+[[ ! -s "$WORK/xdg-gate/curl.log" ]] || { cat "$WORK/xdg-gate/curl.log" >&2; fail "a curl ran for a keyed model with no key (send or compaction)"; }
 echo "--- curl shim log (gate): $(wc -c < "$WORK/xdg-gate/curl.log") bytes"
 
 # the header template the strategies emit, run through bash with and without a key
@@ -381,7 +492,7 @@ while read -r strategy template; do
     echo "ok   $strategy header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one"
 done < <(sed -n 's/^AUTH_TEMPLATE //p' <<< "$gate_out")
 
-retry_out="$(PROBE_MODE=retry run_probe retry "stealth/ox-alpha" "$OXALPHA_ENDPOINT")"
+retry_out="$(PROBE_MODE=retry run_probe retry "stealth/ox-alpha" "$OXALPHA_ENDPOINT")" || exit 1
 echo "$retry_out"
 retry_log="$WORK/xdg-retry/curl.log"
 [[ "$(wc -l < "$retry_log")" == "1" ]] || { cat "$retry_log" >&2; fail "expected exactly one curl after /key + retry, got $(wc -l < "$retry_log")"; }
@@ -391,4 +502,9 @@ grep -q '"model":"stealth/ox-alpha"' "$retry_log" || { cat "$retry_log" >&2; fai
 grep -q 'hello without a key' "$retry_log" || { cat "$retry_log" >&2; fail "the retried request body does not carry the user's turn"; }
 echo "--- curl shim log (retry): $(sed 's/\(Bearer sk-test-fake\).*/\1 .../' "$retry_log")"
 
-echo "ok   key gate: no key -> advice, user turn kept, no curl; /key + retry -> one curl with the bearer; extraModels load with their fields, a malformed entry warns; windows: hosted 131072, local 8192, entry's context_window wins"
+locked_out="$(PROBE_MODE=locked PROBE_KEYRING_LOCKED=1 run_probe locked "stealth/ox-alpha" "$OXALPHA_ENDPOINT")" || exit 1
+echo "$locked_out"
+[[ ! -s "$WORK/xdg-locked/curl.log" ]] || { cat "$WORK/xdg-locked/curl.log" >&2; fail "a curl ran while the keyring never answered"; }
+echo "--- curl shim log (locked): $(wc -c < "$WORK/xdg-locked/curl.log") bytes"
+
+echo "ok   key gate: no key -> advice, user turn kept, no curl (send and compaction); a wait dropped on model change; a locked keyring ends the wait with a message; /key + retry -> one curl with the bearer; extraModels load with their fields, ids lower-cased, a malformed or colliding entry warns; windows: hosted 131072, local and LAN 8192, entry's context_window wins"

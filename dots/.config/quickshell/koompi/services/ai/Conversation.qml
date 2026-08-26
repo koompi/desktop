@@ -6,6 +6,7 @@ import qs.services
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "endpoints.js" as Endpoints
 
 /**
  * The chat itself: the message store, its persistence, and the compaction that
@@ -490,7 +491,7 @@ QtObject {
     readonly property int configuredWindow: Config.options?.ai?.memory?.contextWindow ?? 0
     // Hosted models are 128k+ today. Over-estimating delays compaction, under-
     // estimating throws context away, so an unknown remote model gets the former.
-    readonly property bool localModel: /localhost|127\.0\.0\.1/.test(root.currentModel?.endpoint ?? "")
+    readonly property bool localModel: Endpoints.isSelfHosted(root.currentModel?.endpoint ?? "")
     readonly property int fallbackWindow: root.localModel ? 8192 : 131072
 
     readonly property int contextWindow:
@@ -577,6 +578,14 @@ QtObject {
             .map(id => root.messageByID[id])
             .filter(m => m.role !== root.engine.interfaceRole);
         if (msgList.length < 4) return;
+        const model = root.engine.models[root.engine.currentModelId];
+        // Same gate as a turn: without a key the 401 would land as an empty summary
+        // and the turn would be lost. Refused (keyring read, no key): nothing changes.
+        if (!root.engine.requester.keyGate.admit(model, () => root.compact(onDone))) {
+            if (root.engine.requester.keyGate.keyringReady)
+                root.addMessage(Translation.tr("Compaction skipped: no API key for %1. The conversation is kept as it is.").arg(model.name), root.engine.interfaceRole);
+            return;
+        }
 
         root.compacting = true;
         root._compactionDone = onDone ?? null;
@@ -589,16 +598,12 @@ QtObject {
             return `${label}: ${body}`;
         }).join("\n\n---\n\n");
 
-        const tmpMsg = root.engine.aiMessageComponent.createObject(root, {
-            "role": "user", "content": chatText, "rawContent": chatText,
-            "thinking": false, "done": true
-        });
-        const model = root.engine.models[root.engine.currentModelId];
+        const tmpMsg = root.engine.aiMessageComponent.createObject(root,
+            { "role": "user", "content": chatText, "rawContent": chatText, "thinking": false, "done": true });
         root.engine.currentApiStrategy.reset();
         const endpoint = root.engine.currentApiStrategy.buildEndpoint(model);
-        const noTools = root.engine.tools[model.api_format]["none"] ?? [];
         const data = root.engine.currentApiStrategy.buildRequestData(
-            model, [tmpMsg], root.compactionSystemPrompt, 0.3, noTools, "");
+            model, [tmpMsg], root.compactionSystemPrompt, 0.3, root.engine.tools[model.api_format]["none"] ?? [], "");
         const authHeader = root.engine.currentApiStrategy.buildAuthorizationHeader(root.engine.apiKeyEnvVarName, model);
         const scriptBody = `#!/usr/bin/env bash\ncurl --no-buffer "${endpoint}" `
             + `-H 'Content-Type: application/json' `
@@ -606,15 +611,10 @@ QtObject {
             + `--data '${CF.StringUtils.shellSingleQuoteEscape(JSON.stringify(data))}'` + "\n";
         const scriptContent = root.engine.currentApiStrategy.finalizeScriptContent(scriptBody);
 
-        if (model.requires_key && root.engine.apiKeys) {
-            compactor.environment[root.engine.apiKeyEnvVarName] = root.engine.apiKeys[model.key_id] ?? "";
-        }
-        compactor._msg = root.engine.aiMessageComponent.createObject(root, {
-            "role": "assistant", "content": "", "rawContent": "",
-            "thinking": false, "done": false
-        });
-        if (compactorScriptFile.path === "")
-            compactorScriptFile.path = root.compactorScriptPath;
+        if (model.requires_key) compactor.environment[root.engine.apiKeyEnvVarName] = root.engine.apiKeys?.[model.key_id] ?? "";
+        compactor._msg = root.engine.aiMessageComponent.createObject(root,
+            { "role": "assistant", "content": "", "rawContent": "", "thinking": false, "done": false });
+        if (compactorScriptFile.path === "") compactorScriptFile.path = root.compactorScriptPath;
         compactorScriptFile.setText(scriptContent);
         compactor.running = true;
     }

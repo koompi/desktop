@@ -5,6 +5,7 @@ import qs.services
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "endpoints.js" as Endpoints
 
 /**
  * Which brains are available and which one is answering: the model slots, the
@@ -70,7 +71,7 @@ QtObject {
             const stored = Persistent.states?.ai?.remoteEndpoint ?? "";
             return stored.length > 0 ? stored : root.inferEndpointForModel(model);
         }
-        requires_key: !endpoint.includes("localhost") && !endpoint.includes("127.0.0.1")
+        requires_key: !Endpoints.isLocal(endpoint)
         key_id: root.inferKeyIdForModel(model)
         key_get_link: root.inferProvider(model).key_get_link
         api_format: {
@@ -303,7 +304,7 @@ QtObject {
         // Ollama auto-discovered models (any key other than "remote"/"local")
         if (modelId !== "remote" && root.modelList.indexOf(modelId) !== -1) {
             const model = root.models[modelId];
-            if (Config.options.policies.ai === 2 && !model.endpoint.includes("localhost")) {
+            if (Config.options.policies.ai === 2 && !Endpoints.isLocal(model.endpoint)) {
                 root.engine.addMessage(
                     Translation.tr("Online models disallowed\n\nControlled by `policies.ai` config option"),
                     root.engine.interfaceRole
