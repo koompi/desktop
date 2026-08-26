@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           pacman -Syu --noconfirm --needed \
             base-devel git sudo rsync jq nodejs bun python python-evdev python-yaml \
-            qt6-declarative dbus pipewire zig rust lua ufw shellcheck
+            qt6-declarative dbus pipewire zig rust lua ufw shellcheck python-gobject
           # base-devel   : makepkg's helpers (fakeroot) for the sourced PKGBUILDs, gcc for cargo
           # sudo         : to run the suite as the unprivileged user created below
           # rsync        : ./setup's files step and the two PKGBUILDs under test
@@ -50,6 +50,7 @@ jobs:
           # lua          : test_touch_output.sh runs the Hyprland lua config
           # ufw          : test_firewall_defaults.sh reads the profile through the python ufw module
           # shellcheck   : test_hardware_quirks.sh lints the quirk scripts
+          # python-gobject : the global-menu conformance suite's mock apps speak D-Bus through Gio
 
       - uses: actions/checkout@v4
         with:

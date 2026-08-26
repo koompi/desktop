@@ -26,6 +26,10 @@ grep -q 'GLOBAL_MENU_DAEMON' "$SUITE" \
 
 command -v python3 > /dev/null || { skip "no python3; cannot run the conformance suite"; exit 0; }
 command -v dbus-run-session > /dev/null || { skip "no dbus-run-session; the suite needs a session bus"; exit 0; }
+# The mock applications the suite drives speak D-Bus through Gio, so without
+# python-gobject they die at import and the daemon is blamed for it.
+python3 -c 'import gi; gi.require_version("Gio", "2.0"); from gi.repository import Gio' 2> /dev/null \
+    || fail "python-gobject is not installed; the conformance suite's mock apps need Gio"
 
 ran=0
 
