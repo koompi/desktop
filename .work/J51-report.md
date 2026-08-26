@@ -1,13 +1,17 @@
 # J51 report — `koompi update` follows `prod-hd`, and runs the code it pulled
 
-Branch `j51-prod-hd-branch`, four commits.
+Branch `j51-prod-hd-branch`, six commits. Round 2 folded in.
 Files touched: `install.sh`, `sdata/install/update.sh`, new `tests/test_update_prod_branch.sh`,
 `docs/agents/SKILL.md`, `.github/workflows/tests.yml`, `.github/workflows/installer.yml`, this report.
 `dots/.local/share/koompi/libexec/update` was read and not edited: both routes reach `update_pull`
 through `"$repo/setup" update`, so nothing there needed restructuring.
 
-The lead's addendum (J49 F1 — an update runs the installer code it sourced before its own pull) is
-fixed here too, in `rerun_from_pulled_tree`, and is item 9 below.
+Two items beyond the original brief are in here:
+
+- the lead's addendum, J49 F1 — an update ran the installer code it sourced before its own pull.
+  Fixed in `rerun_from_pulled_tree`; item 9.
+- round 2's hazard — `install.sh` defaulting to a branch that does not exist yet would have killed
+  the public one-liner. Fixed in `install.sh` itself, not by an ordering instruction; item 10.
 
 ## The rule, which is the deliverable
 
@@ -35,7 +39,7 @@ itself frames the opt-out around, and it loses nothing, since everything there i
 
 Two things the brief did not name that the fixtures forced:
 
-- `install.sh` clones `--depth 1 --branch main`, so a real machine has `prod-hd` in neither
+- `install.sh` clones `--depth 1 --branch <ref>`, so a real machine has `prod-hd` in neither
   `remote.origin.fetch` nor its history. `git checkout -b prod-hd --track origin/prod-hd` fails there
   with *"starting point 'origin/prod-hd' is not a branch"*. The refspec is added and the branch fetched.
 - On a shallow clone, checking out a `prod-hd` that is behind the grafted tip leaves a later
@@ -64,9 +68,13 @@ PASS: the re-exec happens at most once
 PASS: an update that pulled nothing runs straight through
 PASS: run_update re-runs from the pulled tree, after the pull
 PASS: every option setup takes survives the re-exec
+PASS: install.sh clones prod-hd when the remote has it
+PASS: install.sh falls back to main when the remote has no prod-hd
+PASS: KOOMPI_REF still overrides the choice
+PASS: a re-run over an existing checkout stays on prod-hd
 ```
 
-rc 0.
+rc 0. Twenty cases: eleven on the branch rule, five on the re-exec, four on `install.sh`.
 
 ### 2. The fixture transcript for the developer-checkout case
 
@@ -76,7 +84,7 @@ Three shapes of developer tree, each left where it was. `git status -sb` is prin
 ############ CASE A: a developer's checkout, one local commit, dirty tree
 --- before
   $ git status -sb  ->  ## my-feature
-30830fa my work
+6b4566c my work
 --- ./setup update (update_pull)
 
 ==> Updating the checkout
@@ -84,39 +92,39 @@ Three shapes of developer tree, each left where it was. `git status -sb` is prin
   -> commit or stash them, then re-run; installing from the tree as it stands
 --- after
   $ git status -sb  ->  ## my-feature
-30830fa my work
+6b4566c my work
 
 ############ CASE A2: same developer, edit committed and branch pushed
 --- before
   $ git status -sb  ->  ## my-feature...origin/my-feature
-8332b38 scratch
+987b3bf scratch
 --- ./setup update (update_pull)
 
 ==> Updating the checkout
   -> on 'my-feature', not main: leaving this checkout on its own branch
-     $ git -C "/home/userx/.tmp/tmp.nls88BhSn1/a/dev" pull --ff-only
+     $ git -C "/home/userx/.tmp/tmp.nOUpMgCzQe/a/dev" pull --ff-only
 Already up to date.
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/a/dev submodule update --init --recursive
-  ok already up to date at 8332b383
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/a/dev submodule update --init --recursive
+  ok already up to date at 987b3bf6
 --- after
   $ git status -sb  ->  ## my-feature...origin/my-feature
-8332b38 scratch
+987b3bf scratch
 
 ############ CASE A3: a developer on main with one commit not yet pushed
 --- before
   $ git status -sb  ->  ## main...origin/main [ahead 1]
-76d85ca not pushed yet
+d160148 not pushed yet
 --- ./setup update (update_pull)
 
 ==> Updating the checkout
   -> 'main' carries commits upstream does not have: leaving this checkout on it
-     $ git -C "/home/userx/.tmp/tmp.nls88BhSn1/a/dev-main" pull --ff-only
+     $ git -C "/home/userx/.tmp/tmp.nOUpMgCzQe/a/dev-main" pull --ff-only
 Already up to date.
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/a/dev-main submodule update --init --recursive
-  ok already up to date at 76d85cab
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/a/dev-main submodule update --init --recursive
+  ok already up to date at d1601489
 --- after
   $ git status -sb  ->  ## main...origin/main [ahead 1]
-76d85ca not pushed yet
+d160148 not pushed yet
 ```
 
 ### 3. The no-`prod-hd`-yet case
@@ -127,21 +135,21 @@ An ordinary update: it pulls, and the word `prod-hd` never appears.
 ############ CASE B: origin has no prod-hd yet (every machine, today)
 --- before
   $ git status -sb  ->  ## main...origin/main [behind 1]
-fd4d05a v1
+24f2d56 v1
 --- ./setup update (update_pull)
 
 ==> Updating the checkout
-     $ git -C "/home/userx/.tmp/tmp.nls88BhSn1/b/machine" pull --ff-only
-Updating fd4d05a..975625a
+     $ git -C "/home/userx/.tmp/tmp.nOUpMgCzQe/b/machine" pull --ff-only
+Updating 24f2d56..d346a8c
 Fast-forward
  file | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/b/machine submodule update --init --recursive
-  ok updated fd4d05a7 -> 975625a6
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/b/machine submodule update --init --recursive
+  ok updated 24f2d564 -> d346a8c4
   -> 1 new commit(s)
 --- after
   $ git status -sb  ->  ## main...origin/main
-975625a v2
+d346a8c v2
 --- lines mentioning prod-hd:      0
 --- lines reading as an error/warn: 0
 ```
@@ -155,38 +163,63 @@ For contrast, the managed checkout on the same fixture origin:
 --- ./setup update (update_pull)
 
 ==> Updating the checkout
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/a/managed fetch --quiet origin +refs/heads/prod-hd:refs/remotes/origin/prod-hd
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/a/managed checkout -b prod-hd --track origin/prod-hd
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/a/managed fetch --quiet origin +refs/heads/prod-hd:refs/remotes/origin/prod-hd
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/a/managed checkout -b prod-hd --track origin/prod-hd
 Switched to a new branch 'prod-hd'
 branch 'prod-hd' set up to track 'origin/prod-hd'.
   ok moved from 'main' to prod-hd, the line KOOMPI releases from
-     $ git -C "/home/userx/.tmp/tmp.nls88BhSn1/a/managed" pull --ff-only
+     $ git -C "/home/userx/.tmp/tmp.nOUpMgCzQe/a/managed" pull --ff-only
 Already up to date.
-     $ git -C /home/userx/.tmp/tmp.nls88BhSn1/a/managed submodule update --init --recursive
-  ok already up to date at 1d64c7c4
+     $ git -C /home/userx/.tmp/tmp.nOUpMgCzQe/a/managed submodule update --init --recursive
+  ok already up to date at 24f2d564
 --- after
   $ git status -sb  ->  ## prod-hd...origin/prod-hd
 ```
 
 ### 4. `git diff` on `install.sh`
 
+Round 1 changed the default alone. Round 2 replaced that default with a resolve, which is item 10;
+the whole file diff is:
+
 ```diff
 diff --git a/install.sh b/install.sh
-index 40e224b6..3c774fb0 100755
+index 40e224b6..2f408a2c 100755
 --- a/install.sh
 +++ b/install.sh
-@@ -5,7 +5,7 @@
+@@ -5,7 +5,8 @@
  set -euo pipefail
  
  REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/koompi-hd.git}"
 -REPO_REF="${KOOMPI_REF:-main}"
-+REPO_REF="${KOOMPI_REF:-prod-hd}"
++PROD_REF='prod-hd'
++REPO_REF="${KOOMPI_REF:-}"
  DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-hd}"
  
  if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
+@@ -33,6 +34,19 @@ bootstrap_git() {
+ 
+ bootstrap_git
+ 
++# prod-hd is the release line, main is where it comes from. A mirror that
++# carries only main, or this repo before the branch was ever pushed, must still
++# install rather than die on "Remote branch prod-hd not found".
++if [[ -n "$REPO_REF" ]]; then
++    say "tracking $REPO_REF (KOOMPI_REF)"
++elif git ls-remote --exit-code --heads "$REPO_URL" "$PROD_REF" >/dev/null 2>&1; then
++    REPO_REF="$PROD_REF"
++    say "tracking $PROD_REF, the line KOOMPI releases from"
++else
++    REPO_REF=main
++    say "$REPO_URL has no $PROD_REF branch; tracking main"
++fi
++
+ if [[ -d "$DEST/.git" ]]; then
+     say "updating $DEST"
+     git -C "$DEST" remote set-url origin "$REPO_URL"
 ```
 
-Nothing else in the file. `KOOMPI_REF` still overrides.
+`KOOMPI_REF` still overrides, and is now honoured verbatim rather than falling back — an explicit ref
+that does not exist should fail loudly rather than quietly install something else.
 
 ### 5. The workflow diff, and the YAML
 
@@ -228,18 +261,39 @@ index 63580a28..ed8c994b 100644
 
 ### 6. `shellcheck` and `shellcheck -x`
 
+Each file on its own, which is how round 2's SC2034 report was produced — the earlier run passed all
+three files in one invocation, where shellcheck reads the sourced `update.sh` as an input and sees
+the variables used, so it never fired.
+
 ```
-$ shellcheck sdata/install/update.sh install.sh tests/test_update_prod_branch.sh
-(no output)
+$ shellcheck install.sh
 rc=0
 
-$ shellcheck -x sdata/install/update.sh install.sh tests/test_update_prod_branch.sh
-(no output)
+$ shellcheck sdata/install/update.sh
+rc=0
+
+$ shellcheck tests/test_update_prod_branch.sh
 rc=0
 ```
 
-`setup` is unmodified and still clean under `shellcheck -x` alongside them, which is how CI lints it
-(`installer.yml:42`).
+```
+$ shellcheck -x install.sh
+rc=0
+
+$ shellcheck -x sdata/install/update.sh
+rc=0
+
+$ shellcheck -x tests/test_update_prod_branch.sh
+rc=0
+
+$ shellcheck -x setup
+rc=0
+```
+
+Every one rc 0. The test now carries a single file-level `# shellcheck disable=SC2034` with the
+reason above it: every bare global in the file is one `./setup` sets and the sourced `update.sh`
+reads. The per-line disables it replaces did not cover a compound assignment line
+(`DO_DEPS=false; DO_APPS=true; ...`), which is where the four remaining warnings came from.
 
 ### 7. `bash tests/run.sh` tail
 
@@ -272,7 +326,7 @@ Before, at the start of this job:
 ?? dots/.config/quickshell/koompi/modules/koompi/sidebarRight/ChargeLimitRow.qml
 ```
 
-After, with every check above run:
+After both rounds, with every check above run:
 
 ```
 ## koompi-sd
@@ -294,15 +348,15 @@ the checkout has setup v1; origin/main now has v2
 --- $ ./setup update --no-deps --yes   (one invocation)
 
 ==> Updating the checkout
-     $ git -C "/home/userx/.tmp/tmp.jIhVvyS1nb/machine" pull --ff-only
-From /home/userx/.tmp/tmp.jIhVvyS1nb/koompi/koompi-hd
-   9e09e09..b098a5e  main       -> origin/main
-Updating 9e09e09..b098a5e
+     $ git -C "/home/userx/.tmp/tmp.bsabNNX5tw/machine" pull --ff-only
+From /home/userx/.tmp/tmp.bsabNNX5tw/koompi/koompi-hd
+   1986ec6..ca58ab7  main       -> origin/main
+Updating 1986ec6..ca58ab7
 Fast-forward
  setup | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-     $ git -C /home/userx/.tmp/tmp.jIhVvyS1nb/machine submodule update --init --recursive
-  ok updated 9e09e094 -> b098a5ef
+     $ git -C /home/userx/.tmp/tmp.bsabNNX5tw/machine submodule update --init --recursive
+  ok updated 1986ec69 -> ca58ab73
   -> 1 new commit(s)
 PULL_MOVED=true
   -> the checkout moved; re-running this update from the tree it just pulled
@@ -332,6 +386,57 @@ Three details the shape needed:
 `setup` itself is untouched; the argv rebuild is what avoids reaching into a file this round has no
 owner for, the same call J49 made.
 
+### 10. (round 2) `install.sh` resolves the ref instead of assuming it
+
+The hazard, run rather than described. `install-before.sh` is this file as round 1 left it, against a
+remote that carries only `main` — a mirror, or this repo until `prod-hd` is first pushed:
+
+```
+############ a remote that has only main (a mirror, or this repo before prod-hd is pushed)
+--- round 1's install.sh (REPO_REF defaulted straight to prod-hd)
+==> cloning file:///home/userx/.tmp/tmp.N0e1ik45nd/mirror/koompi/koompi-hd.git (prod-hd)
+Cloning into '/home/userx/.tmp/tmp.N0e1ik45nd/d1'...
+fatal: Remote branch prod-hd not found in upstream origin
+rc=128
+
+--- this round's install.sh
+==> file:///home/userx/.tmp/tmp.N0e1ik45nd/mirror/koompi/koompi-hd.git has no prod-hd branch; tracking main
+==> cloning file:///home/userx/.tmp/tmp.N0e1ik45nd/mirror/koompi/koompi-hd.git (main)
+Cloning into '/home/userx/.tmp/tmp.N0e1ik45nd/d2'...
+==> handing over to ./setup install
+stub setup ran: install
+rc=0  branch: main
+
+############ a remote that has prod-hd
+==> tracking prod-hd, the line KOOMPI releases from
+==> cloning file:///home/userx/.tmp/tmp.N0e1ik45nd/full/koompi/koompi-hd.git (prod-hd)
+Cloning into '/home/userx/.tmp/tmp.N0e1ik45nd/d3'...
+==> handing over to ./setup install
+stub setup ran: install
+rc=0  branch: prod-hd
+
+############ KOOMPI_REF still wins
+==> tracking main (KOOMPI_REF)
+==> cloning file:///home/userx/.tmp/tmp.N0e1ik45nd/full/koompi/koompi-hd.git (main)
+Cloning into '/home/userx/.tmp/tmp.N0e1ik45nd/d4'...
+==> handing over to ./setup install
+stub setup ran: install
+rc=0  branch: main
+```
+
+`fatal: Remote branch prod-hd not found in upstream origin`, rc 128, before the clone directory even
+exists: the one-liner dies with nothing installed and nothing to retry from. The same remote now
+falls back and installs, saying which line it took, and a remote that has `prod-hd` still gets
+`prod-hd`.
+
+The probe is `git ls-remote --exit-code --heads "$REPO_URL" prod-hd`, which needs no clone and costs
+one round trip on a path that is about to clone anyway. It runs after `bootstrap_git`, because on a
+machine with no git there is nothing to probe with yet.
+
+This does mean the branch name is now written in two places, `PROD_REF` in `install.sh` and
+`PROD_BRANCH` in `sdata/install/update.sh`. `install.sh` is piped from the internet and cannot source
+anything, so there is no third option; both are single assignments at the top of their file.
+
 ## Mutation evidence
 
 Each mutation is applied to a throwaway copy of the tree, never to the branch.
@@ -347,27 +452,34 @@ rc=1  FAIL: run_update no longer pulls and re-runs: run_update() {
 rc=1  FAIL: the re-exec guard did not hold:   -> the checkout moved; re-running this update from the tree it just pulled
 --- mutation: the rebuilt argv drops --yes
 rc=1  FAIL: the re-exec did not carry the options this run was given:   -> the checkout moved; re-running this update from the tree it just pulled
+--- mutation: install.sh loses the fallback and demands prod-hd
+rc=1  FAIL: install.sh did not say which line it took: ==> cloning file:///home/userx/.tmp/tmp.zz4ij5bBz7/e/koompi/koompi-hd.git (prod-hd)
+--- mutation: install.sh never finds prod-hd and always takes main
+rc=1  FAIL: install.sh did not clone prod-hd when the remote has it: ==> file:///home/userx/.tmp/tmp.oa6j0vwVN8/e/koompi/koompi-hd.git has no prod-hd branch; tracking main
+--- mutation: install.sh ignores KOOMPI_REF
+rc=1  FAIL: KOOMPI_REF=main was overridden: ==> tracking prod-hd, the line KOOMPI releases from
 ```
 
-## What the lead has to do next, in this order
+## What the lead has to do next
 
 1. Merge this.
-2. Push `prod-hd` at the merge commit, and tag `v0.1` there.
+2. Push `prod-hd`, and tag `v0.1` at the same commit.
 
-Until step 2, `install.sh`'s default `--branch prod-hd` has nothing to clone: a fresh
-`curl | bash` install fails while `prod-hd` does not exist. Updates are unaffected — check 6 keeps
-every existing machine on today's behaviour, silently. It is only the window between merging and
-pushing the branch, and it is the reason those two steps belong together.
+The order no longer matters and nothing breaks in between. Before the branch exists a fresh install
+takes `main` and says so, and every existing machine keeps updating exactly as it does today, in
+silence. After it exists, new installs land on it and managed checkouts move themselves.
 
 ## Out of scope, untouched
 
 `prod-hd` and `v0.1` are not created here and nothing pushes. The pacman repo, the ISO,
-`setups/system.sh` and the rename were left alone, and no SD-flavour work was done: `PROD_BRANCH` in
-`sdata/install/update.sh` is the single place the branch name lives, which is all `prod-sd` will need.
+`setups/system.sh` and the rename were left alone, and no SD-flavour work was done: the branch name
+lives in one assignment per file, which is all `prod-sd` will need.
 
 ## Commits
 
 ```
+39172d2a install: resolve prod-hd, fall back to main, say which line it took
+75c48f51 work: J51 report — prod-hd follow, the managed-checkout rule, and J49 F1 closed
 6309ae27 ci: say why the workflow triggers carry no branch filter
 2de70281 update: re-run the installer from the tree the update just pulled
 b472091f update: a managed checkout follows prod-hd
