@@ -18,6 +18,7 @@
 name: Tests
 
 on:
+  # unfiltered on purpose: every branch, prod-hd and main alike, runs the suite
   push:
   pull_request:
   workflow_dispatch: {}

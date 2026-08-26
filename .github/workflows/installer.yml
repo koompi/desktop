@@ -5,6 +5,7 @@
 name: Installer
 
 on:
+  # unfiltered by branch on purpose: prod-hd and main alike run this
   push:
     paths:
       - 'setup'
