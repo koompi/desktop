@@ -74,16 +74,21 @@ to the newest release tag, and `v0.1` tagged and released — each confirmed in 
 | J49 | claude | verified | proved the route in an Arch container **and** a KVM VM, installing from the pre-fix tree so the before/after is one a user lives through: all ten sysctl keys live with no reboot (`vm.swappiness` 60 → 150, same boot). Built the VM because a rootless container cannot write a non-namespaced sysctl at all. Fixed: the drop-in was copied but never applied (`systemctl restart systemd-sysctl`), and fwupd was never installed from git. Also exercised the **packaged fallback** with `koompi-shell` installed — the path every KOOMPI OS user is on — exit 0. Lead: both tests, shellcheck + `-x`, suite 101/3/0; ff-merged. Findings: F1 (→ J51) and the `python-gobject` gap (lead fixed, `c79b53d7`) |
 | J50 | opencode | verified | 74 occurrences classified 17/49/8 and only the 17 changed; every `koompi/desktop` URL now `koompi/koompi-hd`; `CLONE_DIR` and `install.sh` `DEST` moved to `koompi-hd` with every old directory name kept in `resolve_checkout`'s guess list, proven by a new `tests/test_resolve_checkout_paths.sh`. Lead: that test, iso_release_tag, packaged tools 38, qmllint 0 ×3, `zig build test`, shellcheck + `-x`, suite 100/3/0, and a grep showing only the `koompi-desktop-history` references left; ff-merged `20ff3400`. Re-running the bootstrap on an old install makes a second directory rather than adopting the old one — harmless, because `setup:248` records the new path, so `koompi update` follows |
 | J51 | claude | verified | two rounds. `follow_prod_branch` moves only a *managed* checkout (on main, origin is ours, upstream exists, no commits of its own, clean) and handles what install.sh's `--depth 1 --branch main` leaves behind — missing refspec, shallow graft, someone's own local `prod-hd`. J49's F1 closed by re-execing `./setup update` from the pulled tree once, carrying the pre-pull defaults dump across so the child does not diff the tree against itself. Round 2 for a hazard the worker missed: `install.sh` defaulting to `prod-hd` would have broken the public one-liner until the branch existed, so it now resolves prod-hd → main and says which it took. Lead: 16+4 PASS, shellcheck + `-x`, YAML parses, suite 102/3/0, real checkout untouched; ff-merged `d821f8c0` |
+| J52 | opencode | verified | second rename, koompi/koompi-hd → koompi/koompi-desktop, J50's map in reverse. `resolve_checkout` now finds all four generations (`koompi-desktop` first, then `koompi-hd`, `koompi-hyprland`, `koompi-os`) and `origin_is_koompi()` accepts all three slugs the repo has carried, so a machine cloned during the one-hour `koompi-hd` window is found rather than cloned over and keeps following `prod-hd`. Lead: four named tests rc 0, shellcheck + `-x`, qmllint 0 ×2, `zig build test`, suite 102/3/0, greps clean; ff-merged `dde3ffca`; lead fixed two `koomi` typos in the new comment (`90d754f0`) |
 
 ## Live now
 
-Nothing live. **v0.1 is released.** `main`, `prod-hd` and the `v0.1` tag all sit at `d821f8c0`,
-all three green in CI. Release: https://github.com/koompi/koompi-hd/releases/tag/v0.1
+Nothing live. **v0.1.1 is released** and is the current release line.
+`main`, `prod-hd` and `v0.1.1` all sit at `90d754f0`. `v0.1` stays where it was published, at
+`d821f8c0`; its notes were edited to the new URLs, the tag was not moved.
+Releases: https://github.com/koompi/koompi-desktop/releases
 
-The lead works only in `lead-verify`. The main checkout is Rithy's: branch `koompi-sd`
-(the Otto/Smithay stacking flavour) with uncommitted work — read it, never write to it.
-`tokens` is not ours. All four v0.1 job workspaces were closed and their branches deleted
-after `git cherry` confirmed every commit was upstream.
+Repo is `koompi/koompi-desktop`. Both earlier slugs redirect. `origin` is re-pointed, and because
+linked worktrees share one config that covered the main checkout without touching its files.
+
+The lead works only in `lead-verify`. The main checkout is Rithy's: branch `koompi-sd` with
+uncommitted work — read it, never write to it. `tokens` is not ours. Every v0.1 job workspace is
+closed and its branch deleted after `git cherry` confirmed the commits were upstream.
 
 ## Decided
 
@@ -182,6 +187,11 @@ after `git cherry` confirmed every commit was upstream.
 - **`prod-hd` only ever fast-forwards from `main`, at release points.** Doc commits and day-to-day merges do not move it. It is at `d821f8c0` with `v0.1`.
 - The lead's own fix this round: `python-gobject` sat only in `koompi-shell`, which the from-git route deliberately does not install, so two shipped tools (`koompi-remotedesktop-portal`, `scripts/thumbnails/thumbgen.py`) failed at `import gi` on a machine where everything looked installed. Moved to `koompi-python` (pkgrel 6) with a check in `test_update_from_git.sh` that fails when a shipped file imports `gi` and no dependency meta carries it — proved red before green.
 - Still not delivered, and said plainly in the release notes: the `[koompi]` pacman repo (J12), so `pacman -Syu` moves nothing of ours and ISO/packaged installs wait. Everything reaches users through the git route.
+
+- 2026-08-26 second rename, Rithy: `koompi-hd` names one flavour and the repo will carry two, so the flavour lives in the branch (`prod-hd`, later `prod-sd`) and the repo is `koompi/koompi-desktop`. The name was held by a dormant 2021 repo; Rithy first said delete it, then asked whether to push our code there instead. Neither: pushing would have needed a force push onto an unrelated history and would have abandoned our releases and CI, so the 2021 repo was **renamed** to `koompi/koompi-desktop-2021` and described as archived. Nothing deleted, its redirect intact.
+- Renaming twice in one day is only safe because of the compatibility surface: the checkout resolver knows four directory generations and the origin matcher knows three slugs. Anything that drops one strands a machine, which is why J52's test covers `koompi-hd` explicitly.
+- `v0.1.1` supersedes rather than moves `v0.1`. A published tag is not re-pointed; the old notes were corrected in place and say so.
+- **Known CI flake, evidenced not assumed:** `test_shell_services.sh` failed once on `refs/tags/v0.1.1` with `cargo: failed to remove file target/debug/examples/demo (No such file or directory)`, while `main` and `prod-hd` ran the **same commit** green. Cargo's calls in that script are sequential and each run has its own runner, so the likely cause is the container's overlayfs, unproven. Re-run before reading it as a regression; if it recurs, it earns a job (probable fix: `CARGO_TARGET_DIR` off the overlay).
 
 ## Next action
 
