@@ -62,6 +62,7 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 | J46 | opencode | live | sysctl defaults for the zram machine (J14 finding d). Pane `w6:p1`, worktree/branch `j46-sysctl-defaults` |
 | J47 | claude | live | user manual, chapter 01 "Coming from Mac or Windows" (O19); capped at 12 chapters, grounded by a link test. Pane `w8:p1`, worktree/branch `j47-user-manual` |
+| J48 | claude | live | O05 Search command tree, hybrid shape (Rithy's pick). Pane `w9:p1`, worktree/branch `j48-search-commands` |
 
 ## Live now
 
@@ -71,6 +72,7 @@ Three jobs dispatched 2026-08-26 from Rithy's four-way pick, each in its own her
 - J46 `w6:p1`, **opencode** (Rithy: "assign some work to opencode") — `koompi-sysdefaults` sysctl drop-in, its PKGBUILD install line, `tests/test_sysdefaults.sh`.
 - J38 `w7:p1`, claude — `koompi-factory-reset`, `koompi-snapshot` baseline lookup, `koompi-shell` `_tools` row, `tests/test_factory_reset.sh`.
 - J47 `w8:p1`, claude — `docs/manual/**`, the `README.md:26-28` pointer line, `tests/test_manual_references.sh`.
+- J48 `w9:p1`, claude — new `services/CommandTree.qml` + `services/commandTree/**`, `LauncherSearch.qml` (wiring, ≤ 508), `overview/SearchWidget.qml` + `SearchItem.qml`, `tests/test_search_commands.sh`.
 
 No two own a file. Workers leave `pkgrel` alone; the lead bumps at merge.
 The old lead's pane `w5:p11` (plus `w5:p27`) is still open in the locked `j18-shell-services-bugs`
@@ -156,10 +158,11 @@ worktree; `tokens` is not ours. Uncommitted in the main checkout, not the lead's
 - 2026-08-26 Rithy picked all four remaining candidates at once (J38, O05, J14 (d) sysctl, O19 manual). Three went out immediately; O05 is held one more turn because its shape is a design call that decides the code.
 - J38 unblocked as (b) root + home. (c) is out: KOOMPI OS does not install LUKS-encrypted by default (worker to confirm in `installer/src/config.zig`). The contract's real subject is the refusal — rolling root back to `@baseline` *and* deleting every human user can leave a laptop with no way to log in; `koompi-useradd` is a Settings flow behind pkexec, not a first-boot path.
 - J46 runs on opencode at Rithy's ask; it is the J11-shaped job (shell + packaging + a shim test), which is what opencode did well before.
+- O05 shape = hybrid: one flat index so three letters wins, groups as headings, no drilling. Two things the sketch left open and the contract decided: the grouped view is the **action scope's** empty state (that prefix and its `scopeHints` already exist), and the unprefixed empty state keeps showing recent apps rather than being replaced by groups. First set capped at 15-20 verified entries so the job fits one pane; the rest is a follow-up.
+- `LauncherSearch.qml` sits on the allow-list at 508, so J48 builds in a new `CommandTree` sibling and may only wire — the same rule `keybinds.lua` and `libexec/update` live under.
 - Herdr detection did not register either claude worker within the 60 s `agent start` timeout (three agents booting at once). Both are alive and prompted through `pane run` + `send-keys enter`; `agent prompt --wait` only works for J46. Read the claude panes with `pane read`, not `agent get`.
 
 ## Next action
 
-Watch `w6:p1` (opencode), `w7:p1`, `w8:p1`; verify each in `lead-verify` at the job's commit, ff-merge, push, then read `gh run list`.
-Then dispatch J48 (O05 Search command tree) once Rithy picks its shape — flat verb rows / nested groups / hybrid (hybrid recommended).
+Watch `w6:p1` (opencode, J46), `w7:p1` (J38), `w8:p1` (J47), `w9:p1` (J48); verify each in `lead-verify` at the job's commit, ff-merge, push, then read `gh run list`.
 Rithy's own items are unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, J12 repo hosting, the sudo installs (`koompi-shell` -11, `koompi-base` -2, `koompi-desktop-hyprland` -2, `koompi-sysdefaults` 1.0-2, `koompi-basic` 1.0-7, `koompi-screencapture` 1.0-4, `systemctl enable --now systemd-oomd`), Bluetooth symptom, fingerprint check, the system-prompt-to-remote privacy call (`10-machine.md`).
