@@ -27,6 +27,12 @@ trap 'rm -rf "$tmp"' EXIT
 clean_env=(env -u XDG_BIN_HOME -u XDG_CACHE_HOME -u XDG_CONFIG_HOME
            -u XDG_DATA_HOME -u XDG_STATE_HOME -u BACKUP_ROOT NO_COLOR=1)
 
+# install_files' own exclude list, as a find(1) filter: a stray .pyc left in
+# dots/ by another test is not a file the route is supposed to deliver.
+artefacts=(! -path '*/.git/*' ! -name '.git' ! -name '.gitignore' ! -name '.qmlls.ini'
+           ! -path '*/zig-out/*' ! -path '*/.zig-cache/*'
+           ! -path '*/__pycache__/*' ! -name '*.pyc')
+
 # A checkout that owns dots/ and sdata/ without being a git repository.
 repo="$tmp/repo"
 mkdir -p "$repo"
@@ -112,7 +118,7 @@ while IFS= read -r -d '' tool; do
         || fail "~/.local/bin/$rel was not delivered"
     cmp -s -- "$tool" "$home/.local/bin/$rel" \
         || fail "~/.local/bin/$rel differs from the checkout's copy"
-done < <(find "$ROOT/dots/.local/bin" -type f -print0)
+done < <(find "$ROOT/dots/.local/bin" -type f "${artefacts[@]}" -print0)
 [[ -x "$home/.local/bin/koompi-factory-reset" ]] \
     || fail "koompi-factory-reset is not executable in ~/.local/bin"
 
@@ -123,9 +129,7 @@ while IFS= read -r -d '' qml; do
     rel="${qml#"$shell_src/"}"
     cmp -s -- "$qml" "$shell_dst/$rel" \
         || fail "~/.config/quickshell/koompi/$rel is missing or stale"
-done < <(find "$shell_src" -type f \
-    ! -path '*/zig-out/*' ! -path '*/.zig-cache/*' ! -path '*/__pycache__/*' \
-    ! -name '*.pyc' ! -name '.qmlls.ini' ! -name '.gitignore' -print0)
+done < <(find "$shell_src" -type f "${artefacts[@]}" -print0)
 
 # The three destination classes, on a second run: the shell tree is mirrored
 # (a file the user added is removed), ~/.local/bin is merged (a file the user
