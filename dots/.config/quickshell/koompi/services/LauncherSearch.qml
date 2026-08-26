@@ -473,8 +473,8 @@ Singleton {
             result.push(webSearchResultObject);
         }
 
-        //////////////// Apps //////////////////
-        result = result.concat(appResultObjects);
+        //////// Command tree, then apps ///////
+        result = result.concat(CommandTree.results(root.query), appResultObjects);
 
         // Windows and settings are small in-memory sets, so they answer without a prefix.
         // Files need a disk search and stay behind theirs.

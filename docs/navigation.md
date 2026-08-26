@@ -21,6 +21,9 @@ Six roles, and nothing else may claim a primary gesture or a bare `Super` chord.
 | Quickwork | "do this for me" | not built | `Super+O`, reserved and unbound | none yet |
 
 Search is the primary app launcher.
+It is also how the desktop's own switches are reached: three letters find a command like night light or create system snapshot in the same flat list as the apps, and the action scope (`/`) with nothing typed after it lists every one of them under its group heading.
+Groups are headings, not levels, so there is no drilling and no back key, and a command the machine cannot run is absent rather than greyed — a laptop with no fingerprint reader never sees the enrolment row.
+An empty query with no prefix still answers with recent apps.
 Launchpad is deliberately gesture-only and takes no keyboard binding, so the two never compete for the same reflex.
 
 One role is named for where it is going, not for what it is today.

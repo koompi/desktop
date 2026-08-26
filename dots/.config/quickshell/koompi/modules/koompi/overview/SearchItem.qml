@@ -34,6 +34,17 @@ RippleButton {
     property string materialSymbol: entry.iconType === LauncherSearchResult.IconType.Material ? entry?.iconName ?? "" : ""
     property string cliphistRawString: entry?.rawValue ?? ""
     property bool blurImage: entry?.blurImage ?? false
+
+    // Rows out of the command tree carry three fields no other provider sets
+    // (services/commandTree/CommandResult.qml). Read through a var so the
+    // lookup stays dynamic on every row that has none of them.
+    readonly property var commandFields: root.entry
+    readonly property string itemGroup: root.commandFields?.group ?? ""
+    readonly property string itemState: root.commandFields?.stateText ?? ""
+    // Set on the first row of each group in the action scope's grouped view, so
+    // a heading costs no extra row and the arrow keys still only meet leaves.
+    readonly property string itemHeading: root.commandFields?.heading ?? ""
+    readonly property real headingHeight: root.itemHeading === "" ? 0 : headingText.implicitHeight + root.buttonVerticalPadding * 2
     
     visible: root.entryShown
     property int horizontalMargin: 10
@@ -42,7 +53,7 @@ RippleButton {
     property bool keyboardDown: false
     readonly property bool selected: (root.hovered || root.focus)
 
-    implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2
+    implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2 + root.headingHeight
     implicitWidth: rowLayout.implicitWidth + root.buttonHorizontalPadding * 2
     buttonRadius: Appearance.rounding.normal
     colBackground: (root.down || root.keyboardDown) ? Appearance.colors.colPrimaryContainerActive : 
@@ -101,6 +112,22 @@ RippleButton {
         anchors.fill: root
         anchors.leftMargin: root.horizontalMargin
         anchors.rightMargin: root.horizontalMargin
+        // The heading belongs to the group, not to the row, so the highlight
+        // and the ripple start below it.
+        anchors.topMargin: root.headingHeight
+    }
+
+    StyledText {
+        id: headingText
+        visible: root.itemHeading !== ""
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.topMargin: root.buttonVerticalPadding
+        anchors.leftMargin: root.horizontalMargin + root.buttonHorizontalPadding
+        text: root.itemHeading
+        font.pixelSize: Appearance.font.pixelSize.smaller
+        font.weight: Font.DemiBold
+        color: Appearance.colors.colSubtext
     }
 
     onClicked: {
@@ -131,6 +158,7 @@ RippleButton {
         id: rowLayout
         spacing: iconLoader.sourceComponent === null ? 0 : 10
         anchors.fill: parent
+        anchors.topMargin: root.headingHeight
         anchors.leftMargin: root.horizontalMargin + root.buttonHorizontalPadding
         anchors.rightMargin: root.horizontalMargin + root.buttonHorizontalPadding
 
@@ -239,6 +267,27 @@ RippleButton {
                     blur: root.blurImage
                 }
             }
+        }
+
+        // What the switch is doing right now: "off", "16 px", "3".
+        StyledText {
+            Layout.fillWidth: false
+            visible: root.itemState !== ""
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: root.selected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+            horizontalAlignment: Text.AlignRight
+            text: root.itemState
+        }
+
+        // Groups are headings, not levels, so a leaf found in the flat search
+        // says which one it came from instead of being reached through it.
+        StyledText {
+            Layout.fillWidth: false
+            visible: root.itemGroup !== ""
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: root.selected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+            horizontalAlignment: Text.AlignRight
+            text: `· ${root.itemGroup}`
         }
 
         // Action text
