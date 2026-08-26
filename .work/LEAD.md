@@ -62,24 +62,17 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J22 | claude | verified | lead reviewed: packaged hypridle.service unit replaces the /dev/null exec, execs.lua + setup_services diff clean, journal shows Got Lock from dbus; J15 finding 3 closed as not-a-bug; round 2 made the live lock test opt-in (KOOMPI_TEST_LIVE_LOCK=1); suite 77/3/0 rebased; ff-merged | contract `453598b3` (hypridle logged / provable Lock) |
 | J46 | opencode | verified | ten keys, each with its reason in the file; `/usr/lib/sysctl.d/90-koompi.conf` so `/etc` still overrides. Test grew three checks: every key is one this kernel knows (read-only `sysctl -n`), every key has a comment above it, and the file is in the built package. Lead: test ok, shellcheck + `-x` clean, file-length 34 rows, `procps-ng` is required by `base` so `sysctl` exists in the CI container; ff-merged, pkgrel 1.0-3 (lead) |
 | J47 | claude | verified | 11 chapters, 752 lines, ch.01 "Coming from Mac or Windows"; `tests/test_manual_references.sh` resolves 84 keybinds (130 literal chords + 38 loop-generated), 11 `koompi` subcommands and every `koompi-*` name against the tree, and caps chapter count and length. Lead: test ok, shellcheck + `-x` clean, README pointer is one line, spot-checked two semantic claims the test cannot (dock defaults off — `Config.qml:476`; `Super+Alt+Space` floats — `keybinds.lua:261`); ff-merged. **Draft: the voice is Rithy's to approve** |
-| J48 | claude | live | O05 Search command tree, hybrid shape (Rithy's pick). Pane `w9:p1`, worktree/branch `j48-search-commands` |
+| J48 | claude | verified | 17 leaves in `services/commandTree/Entries.qml` behind `CommandTree.qml`; `LauncherSearch.qml` still exactly 508 (4 lines changed), `SearchItem.qml` carries the heading and the state column. Groups as headings in the action scope's empty query, flat rows with a `· Group` label otherwise. Lead: probe green in both condition states, qmllint 0 errors ×6, file-length 34 rows, shellcheck + `-x` clean, capture viewed and it matches Rithy's sketch; ff-merged `713fd6ba`. Lead added the CI allow-list line (`0a2b1f60`) — the probe needs a live `qs` |
 
 ## Live now
 
-Lead sits in the main checkout `/home/userx/workspace/koompi-desktop`, pane `w5:p28`.
-Three jobs dispatched 2026-08-26 from Rithy's four-way pick, each in its own herdr workspace and worktree:
-
-- J46 `w6:p1`, **opencode** (Rithy: "assign some work to opencode") — `koompi-sysdefaults` sysctl drop-in, its PKGBUILD install line, `tests/test_sysdefaults.sh`.
-- J38 `w7:p1`, claude — `koompi-factory-reset`, `koompi-snapshot` baseline lookup, `koompi-shell` `_tools` row, `tests/test_factory_reset.sh`.
-- J47 `w8:p1`, claude — `docs/manual/**`, the `README.md:26-28` pointer line, `tests/test_manual_references.sh`.
-- J48 `w9:p1`, claude — new `services/CommandTree.qml` + `services/commandTree/**`, `LauncherSearch.qml` (wiring, ≤ 508), `overview/SearchWidget.qml` + `SearchItem.qml`, `tests/test_search_commands.sh`.
-
-No two own a file. Workers leave `pkgrel` alone; the lead bumps at merge.
-The old lead's pane `w5:p11` (plus `w5:p27`) is still open in the locked `j18-shell-services-bugs`
-worktree, so that worktree cannot be removed yet: close the pane first, then
-`git worktree unlock` + `git worktree remove --force`. `lead-verify` (detached) is the verification
-worktree; `tokens` is not ours. Uncommitted in the main checkout, not the lead's:
-`sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml` — Rithy's work in progress, leave it.
+Nothing live. Lead sits in the main checkout `/home/userx/workspace/koompi-desktop`, pane `w5:p28`;
+`lead-verify` (detached) is the verification worktree. The four job workspaces (`w6`-`w9`), their
+worktrees and their branches were removed at close-out on 2026-08-26.
+Still open and not the lead's to close: the old lead's panes `w5:p11` and `w5:p27`, which hold the
+locked `j18-shell-services-bugs` worktree open — close that tab, then `git worktree unlock` +
+`git worktree remove --force`. `tokens` is not ours. Uncommitted in the main checkout, Rithy's work
+in progress, leave it: `sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
 
 ## Decided
 
@@ -162,7 +155,13 @@ worktree; `tokens` is not ours. Uncommitted in the main checkout, not the lead's
 - `LauncherSearch.qml` sits on the allow-list at 508, so J48 builds in a new `CommandTree` sibling and may only wire — the same rule `keybinds.lua` and `libexec/update` live under.
 - Herdr detection did not register either claude worker within the 60 s `agent start` timeout (three agents booting at once). Both are alive and prompted through `pane run` + `send-keys enter`; `agent prompt --wait` only works for J46. Read the claude panes with `pane read`, not `agent get`.
 
+- 2026-08-26 slip, and the rule that follows: a `git commit -am` for the pkgrel bump swept Rithy's uncommitted `SidebarRightContent.qml` edit onto main, which also left main referencing `ChargeLimitRow` without carrying the file. Reverted forward in `9f52d345` and restored to the working tree. **The lead never uses `commit -a` in the main checkout**; name the paths.
+- J48's worker printed DONE twice with nothing committed. The second cause was real and worth keeping: `.work/` is gitignored, so `git add .work/JNN-report.md` silently does nothing — every contract's "commit your report" needs `git add -f`. Check a worker's branch tip, not its DONE line.
+- A new test that needs a live `qs` must be added to the CI allow-list in `.github/workflows/tests.yml` in the same push, or the "Only the tests that need a live desktop skipped" step fails. Validated by parsing the workflow before pushing, not after.
+
 ## Next action
 
-Watch `w6:p1` (opencode, J46), `w7:p1` (J38), `w8:p1` (J47), `w9:p1` (J48); verify each in `lead-verify` at the job's commit, ff-merge, push, then read `gh run list`.
-Rithy's own items are unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, J12 repo hosting, the sudo installs (`koompi-shell` -11, `koompi-base` -2, `koompi-desktop-hyprland` -2, `koompi-sysdefaults` 1.0-2, `koompi-basic` 1.0-7, `koompi-screencapture` 1.0-4, `systemctl enable --now systemd-oomd`), Bluetooth symptom, fingerprint check, the system-prompt-to-remote privacy call (`10-machine.md`).
+Queue is empty again; J12 is the only row still blocked-on-user.
+Decisions waiting on Rithy: J38's open question (i)-(iv) in `.work/J38-report.md` — factory reset refuses on every stock install until one of them lands, worker recommends (iii); the J47 manual's voice, chapter by chapter; the system-prompt-to-remote privacy call (`10-machine.md`).
+Rithy's own machine items, unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, J12 repo hosting, the sudo installs (`koompi-shell` -12, `koompi-sysdefaults` 1.0-3, `koompi-base` -2, `koompi-desktop-hyprland` -2, `koompi-basic` 1.0-7, `koompi-screencapture` 1.0-4, `systemctl enable --now systemd-oomd`), Bluetooth symptom, fingerprint check.
+Candidates for the next wave: the rest of the O05 entry set (the contract capped this one at 20), and the follow-up J38 named for arming a first-boot path.
