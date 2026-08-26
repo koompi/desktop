@@ -1,0 +1,391 @@
+#!/usr/bin/env bash
+# koompi-factory-reset - hand a KOOMPI machine to its next owner.
+#
+# Rolls the root subvolume back to the @baseline snapshot the installer pinned
+# (installer/src/post_install.sh pin_baseline) AND removes every human account
+# with `userdel -r`, because /home is a separate btrfs subvolume (@home,
+# installer/src/archinstall.zig) that a root rollback does not touch. Deleting
+# the accounts without the rollback leaves the previous owner's system settings;
+# rolling back without deleting the accounts leaves their files.
+#
+# It stages the rollback and stops. It never reboots, and it never runs
+# unattended: the real run needs --apply plus a word typed on the tty.
+#
+# It refuses, loudly and non-zero, rather than doing half a reset. See
+# docs/agents/factory-reset.md and `--help` for the refusal codes.
+#
+# Two hooks exist for tests/test_factory_reset.sh only; leave them unset:
+#   KOOMPI_RESET_ROOT  path prefix for every file this reads (default: none)
+#   KOOMPI_RESET_TTY   where the typed confirmation is read (default: /dev/tty)
+set -euo pipefail
+
+readonly CONFIRM_WORD="RESET"
+readonly SYS_UID_MAX=999   # Arch's UID_MIN is 1000; below it is a system account.
+readonly NOBODY_UID=65534
+
+RESET_ROOT="${KOOMPI_RESET_ROOT:-}"
+CONFIRM_TTY="${KOOMPI_RESET_TTY:-/dev/tty}"
+
+# Exit codes, also documented in usage(). Distinct so a caller (and the tests)
+# can tell a refusal from a crash and one refusal from another.
+readonly EX_USAGE=1
+readonly EX_NO_WAY_IN=2      # would leave nobody able to get an account
+readonly EX_NOT_PRISTINE=3   # @baseline carries the previous owner's accounts
+readonly EX_GUARD=4          # not root / not btrfs / no snapper / no baseline
+readonly EX_DECLINED=5       # the confirmation word was not typed
+readonly EX_SESSION=6        # an account in the plan is still logged in
+readonly EX_FAILED=7         # a step of the real run failed
+
+say()  { printf '%s\n' "$*"; }
+warn() { printf 'koompi-factory-reset: %s\n' "$*" >&2; }
+die()  { local code="$1"; shift; warn "$*"; exit "$code"; }
+
+usage() {
+    cat <<'USAGE'
+Usage: koompi-factory-reset [--dry-run | --apply] [--help]
+
+Hands this machine to its next owner: rolls the root subvolume back to the
+@baseline snapshot the installer pinned, and removes every human account and
+home directory (UID >= 1000) with `userdel -r`. System accounts and root are
+never touched. It stages the rollback and prints the reboot step; it never
+reboots by itself.
+
+  (no arguments)  Same as --dry-run.
+  --dry-run       Print the plan - the baseline snapshot, every account and home
+                  directory that would go, what @baseline restores, and the
+                  reboot step - and change nothing.
+  --apply         Print the same plan, then ask for the word RESET to be typed
+                  on the terminal before doing any of it. There is no -y.
+  --help          This text.
+
+Exit codes:
+  0  the plan was printed, or the reset was staged
+  1  usage error
+  2  refused: nobody would be able to get an account afterwards
+  3  refused: @baseline still carries the previous owner's accounts
+  4  refused: not root, not btrfs, no snapper 'root' config, or no @baseline
+  5  the confirmation word was not typed
+  6  refused: an account in the plan still has an open login session
+  7  a step of the real run failed
+USAGE
+}
+
+# --- guards, in the order of docs/agents/factory-reset.md -------------------
+
+require_root() {
+    [[ "$(id -u)" == "0" ]] \
+        || die "$EX_GUARD" "must run as root; try: sudo koompi-factory-reset ${MODE}"
+}
+
+require_btrfs_root() {
+    local fstype
+    fstype="$(findmnt -no FSTYPE / 2>/dev/null || true)"
+    [[ "$fstype" == "btrfs" ]] \
+        || die "$EX_GUARD" "/ is ${fstype:-not a mounted filesystem}, not btrfs; there is no @baseline to roll back to"
+}
+
+require_snapper() {
+    command -v snapper >/dev/null 2>&1 \
+        || die "$EX_GUARD" "snapper is not installed; this machine has no snapshots to reset to"
+    snapper list-configs 2>/dev/null | grep -qw root \
+        || die "$EX_GUARD" "no snapper 'root' config; the installer's post-install step never ran here"
+}
+
+# koompi-snapshot owns the "which snapshot is the baseline" question. Prefer the
+# copy next to this script so a from-git checkout tests itself, not /usr/bin.
+snapshot_tool() {
+    local dir
+    dir="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")"
+    if [[ -x "$dir/koompi-snapshot" ]]; then
+        printf '%s\n' "$dir/koompi-snapshot"
+    else
+        command -v koompi-snapshot 2>/dev/null
+    fi
+}
+
+# --- reading the machine ----------------------------------------------------
+
+# "human" is UID >= 1000 and not nobody. root and every system account are
+# excluded here, once, so no later step has to remember to exclude them.
+human_users() {
+    getent passwd 2>/dev/null | awk -F: -v lo="$SYS_UID_MAX" -v nb="$NOBODY_UID" \
+        '$3 > lo && $3 != nb && $1 != "root" { print $1 "\t" $3 "\t" $6 }'
+}
+
+# Members of wheel, both the secondary members and anyone whose primary group it
+# is. Used only to describe the plan and to answer "does an administrator remain".
+wheel_members() {
+    local line gid
+    line="$(getent group wheel 2>/dev/null || true)"
+    [[ -n "$line" ]] || return 0
+    gid="$(cut -d: -f3 <<<"$line")"
+    cut -d: -f4 <<<"$line" | tr ',' '\n' | grep -v '^$' || true
+    getent passwd 2>/dev/null | awk -F: -v g="$gid" '$4 == g { print $1 }'
+}
+
+logged_in_users() {
+    command -v loginctl >/dev/null 2>&1 || return 0
+    loginctl list-users --no-legend 2>/dev/null | awk '{ print $2 }' || true
+}
+
+# /home on its own subvolume is the whole reason this tool deletes accounts
+# instead of trusting the rollback. Report what is actually true here.
+home_subvolume_note() {
+    if command -v btrfs >/dev/null 2>&1 && btrfs subvolume show /home >/dev/null 2>&1; then
+        say "  /home               its own btrfs subvolume - the rollback does not touch it, so"
+        say "                      each home directory is removed with 'userdel -r'"
+    else
+        say "  /home               not a separate subvolume (or unreadable) - 'userdel -r' still"
+        say "                      removes each home directory before the rollback"
+    fi
+}
+
+# --- what @baseline restores ------------------------------------------------
+#
+# This is the fact the whole tool turns on. archinstall creates the first user
+# BEFORE post_install.sh pins @baseline, so on a normally installed machine the
+# baseline's /etc/passwd already holds that account and its password hash, and
+# the rollback puts it back at the next boot. Read it rather than assume it.
+
+baseline_tree() { printf '%s/.snapshots/%s/snapshot\n' "$RESET_ROOT" "$1"; }
+
+baseline_humans() {
+    local passwd="$1/etc/passwd"
+    [[ -r "$passwd" ]] || return 0
+    awk -F: -v lo="$SYS_UID_MAX" -v nb="$NOBODY_UID" \
+        '$3 > lo && $3 != nb && $1 != "root" { print $1 "\t" $3 }' "$passwd"
+}
+
+# ConditionFirstBoot=yes on koompi-oem-provision.service is evaluated against
+# /etc/machine-id, and the unit has to be enabled to be reached at all - so all
+# three are checked against the tree the rollback will restore, not against the
+# running system, which is about to be replaced.
+baseline_firstboot_armed() {
+    local snap="$1" mid
+    [[ -x "$snap/usr/bin/koompi-oem-provision" ]] || return 1
+    [[ -e "$snap/etc/systemd/system/multi-user.target.wants/koompi-oem-provision.service" ]] || return 1
+    mid="$(cat "$snap/etc/machine-id" 2>/dev/null || true)"
+    [[ -z "$mid" || "$mid" == "uninitialized" ]]
+}
+
+# --- the plan ---------------------------------------------------------------
+
+print_plan() {
+    local snapnum="$1"
+    say "KOOMPI factory reset - plan. Nothing has changed."
+    say
+    say "Roll the root subvolume back to @baseline and remove every human account, so"
+    say "the next person starts from first-boot user creation."
+    say
+    say "  Baseline snapshot   $snapnum"
+    say "  Root filesystem     btrfs"
+    home_subvolume_note
+    say
+
+    say "Accounts and home directories this removes (UID > $SYS_UID_MAX). root and every"
+    say "system account are never touched:"
+    say
+    if ((${#PLAN_USERS[@]} == 0)); then
+        say "  (none - this machine has no human account)"
+    else
+        local i
+        for i in "${!PLAN_USERS[@]}"; do
+            printf '  userdel -r %-16s uid %-7s %s%s%s\n' \
+                "${PLAN_USERS[$i]}" "${PLAN_UIDS[$i]}" "${PLAN_HOMES[$i]}" \
+                "$(in_list "${PLAN_USERS[$i]}" "${WHEEL[@]:-}" && printf '   [wheel]' || true)" \
+                "$(in_list "${PLAN_USERS[$i]}" "${ONLINE[@]:-}" && printf '   [logged in]' || true)"
+        done
+    fi
+    say
+
+    say "Accounts @baseline puts back at the next boot (the rollback restores /etc/passwd):"
+    say
+    if ((${#BASE_USERS[@]} == 0)); then
+        say "  (none - @baseline carries no human account)"
+    else
+        local u
+        for u in "${BASE_USERS[@]}"; do
+            say "  $u   - restored with the password it had when the machine was installed"
+        done
+    fi
+    say
+
+    say "First-boot user creation after the reboot:"
+    if $FIRSTBOOT_ARMED; then
+        say "  armed - @baseline has koompi-oem-provision, its unit is enabled, and its"
+        say "  /etc/machine-id is uninitialised, so it runs on the next boot"
+    else
+        say "  none - @baseline arms no first-boot user-creation path"
+    fi
+    say
+
+    say "Then, in this order:"
+    say
+    local step=1 u
+    for u in "${PLAN_USERS[@]:-}"; do
+        [[ -n "$u" ]] || continue
+        say "  $step. userdel -r $u"
+        step=$((step + 1))
+    done
+    say "  $step. snapper -c root rollback $snapnum   (staged; effective at the next boot)"
+    step=$((step + 1))
+    say "  $step. you reboot - this tool never does"
+    say
+}
+
+in_list() {
+    local needle="$1"; shift
+    local x
+    for x in "$@"; do [[ "$x" == "$needle" ]] && return 0; done
+    return 1
+}
+
+# --- refusals ---------------------------------------------------------------
+
+# An administrator that survives the reboot is one wheel member that the plan
+# does NOT delete and whose password in @baseline's shadow is usable. A locked
+# hash (! or *) or an empty one is not a way in, so it does not count.
+surviving_admin() {
+    local snap="$1" u hash
+    for u in "${WHEEL[@]:-}"; do
+        [[ -n "$u" ]] || continue
+        in_list "$u" "${PLAN_USERS[@]:-}" && continue
+        hash="$(awk -F: -v n="$u" '$1 == n { print $2 }' "$snap/etc/shadow" 2>/dev/null || true)"
+        [[ -n "$hash" && "$hash" != "!"* && "$hash" != "*"* ]] && { printf '%s\n' "$u"; return 0; }
+    done
+    return 1
+}
+
+check_refusals() {
+    local snap="$1" admin
+
+    # The stop condition this job was written around. @baseline is a snapshot of
+    # a FINISHED install, so on a stock machine it holds the first owner's
+    # account and hash; the rollback hands the next student a machine whose only
+    # login belongs to the previous student. That is not a factory reset, and
+    # doing it quietly would be worse than saying so.
+    if ((${#BASE_USERS[@]} > 0)); then
+        warn "refusing: @baseline is not a pristine image."
+        warn "  Rolling back restores ${BASE_USERS[*]} from @baseline's own /etc/passwd,"
+        warn "  with the password set when this machine was installed - the previous"
+        warn "  owner's account, not a fresh one. 'userdel -r' removes the home"
+        warn "  directories for good, but the accounts come back at the next boot."
+        warn "  The installer pins @baseline after archinstall has already created the"
+        warn "  first user (installer/src/archinstall.zig, installer/src/post_install.sh)."
+        exit "$EX_NOT_PRISTINE"
+    fi
+
+    if $FIRSTBOOT_ARMED; then
+        return 0
+    fi
+    if admin="$(surviving_admin "$snap")"; then
+        say "An administrator survives the reset: $admin. The next person logs in as that"
+        say "account and creates their own."
+        say
+        return 0
+    fi
+    warn "refusing: the reset would leave nobody able to get an account."
+    warn "  It removes every wheel administrator here (${WHEEL[*]:-none}), @baseline"
+    warn "  arms no first-boot user-creation path, and no other account with a usable"
+    warn "  password would remain. The machine would boot with no way to log in."
+    warn "  koompi-useradd needs an existing session, so it is not a way back in."
+    exit "$EX_NO_WAY_IN"
+}
+
+# --- the real run -----------------------------------------------------------
+
+confirm() {
+    [[ -r "$CONFIRM_TTY" ]] \
+        || die "$EX_DECLINED" "no terminal to ask on ($CONFIRM_TTY); run this from a console, not a script"
+    local typed=""
+    printf 'This erases every account above and cannot be undone.\n'
+    printf 'Type %s to go ahead, anything else to stop: ' "$CONFIRM_WORD"
+    read -r typed < "$CONFIRM_TTY" || true
+    printf '\n'
+    [[ "$typed" == "$CONFIRM_WORD" ]] \
+        || die "$EX_DECLINED" "not confirmed (you typed '${typed}'); nothing was changed"
+}
+
+apply() {
+    local snapnum="$1" u online=""
+
+    # userdel -r fails on a user with a live session, and half a deletion is
+    # exactly the state this tool exists to avoid, so check before touching
+    # anything rather than in the middle.
+    for u in "${PLAN_USERS[@]:-}"; do
+        [[ -n "$u" ]] || continue
+        if in_list "$u" "${ONLINE[@]:-}"; then
+            online+="$u "
+        fi
+    done
+    [[ -z "${online:-}" ]] || die "$EX_SESSION" \
+        "refusing: ${online% } still logged in. Log out of the desktop and run this from a text console (Ctrl+Alt+F2), where nothing was changed."
+
+    confirm
+
+    for u in "${PLAN_USERS[@]:-}"; do
+        [[ -n "$u" ]] || continue
+        say "removing $u and its home directory"
+        userdel -r "$u" || die "$EX_FAILED" \
+            "userdel -r $u failed; stopping here. No rollback was staged, so the machine is unchanged apart from any account already removed."
+    done
+
+    say "staging the rollback to snapshot $snapnum"
+    local tool
+    tool="$(snapshot_tool)" || die "$EX_FAILED" "koompi-snapshot is missing; cannot stage the rollback"
+    "$tool" rollback "$snapnum" || die "$EX_FAILED" \
+        "snapper rollback $snapnum failed; the accounts are gone but the root subvolume is unchanged. Roll back by hand or pick @baseline from the GRUB snapshot menu."
+
+    say
+    say "Done. The rollback takes effect at the next boot; nothing has been rebooted."
+    say "Reboot to finish:  systemctl reboot"
+}
+
+# --- main -------------------------------------------------------------------
+
+MODE="--dry-run"
+case "${1:-}" in
+    -h|--help|help) usage; exit 0 ;;
+    ""|--dry-run)   MODE="--dry-run" ;;
+    --apply)        MODE="--apply" ;;
+    *) warn "unknown argument '$1'"; usage >&2; exit "$EX_USAGE" ;;
+esac
+[[ $# -le 1 ]] || { warn "too many arguments"; usage >&2; exit "$EX_USAGE"; }
+
+require_root
+require_btrfs_root
+require_snapper
+
+SNAPSHOT_TOOL="$(snapshot_tool)" \
+    || die "$EX_GUARD" "koompi-snapshot is not installed; cannot find the @baseline snapshot"
+SNAPNUM="$("$SNAPSHOT_TOOL" baseline 2>/dev/null || true)"
+[[ "$SNAPNUM" =~ ^[0-9]+$ ]] \
+    || die "$EX_GUARD" "no @baseline snapshot on this system; there is no factory state to reset to (see: koompi-snapshot list)"
+
+SNAP="$(baseline_tree "$SNAPNUM")"
+[[ -d "$SNAP" ]] \
+    || die "$EX_GUARD" "cannot read snapshot $SNAPNUM at $SNAP; refusing to reset to a baseline whose contents cannot be checked"
+
+mapfile -t PLAN_USERS < <(human_users | cut -f1)
+mapfile -t PLAN_UIDS  < <(human_users | cut -f2)
+mapfile -t PLAN_HOMES < <(human_users | cut -f3)
+mapfile -t WHEEL      < <(wheel_members | sort -u)
+mapfile -t ONLINE     < <(logged_in_users | sort -u)
+mapfile -t BASE_USERS < <(baseline_humans "$SNAP" | cut -f1)
+
+FIRSTBOOT_ARMED=false
+baseline_firstboot_armed "$SNAP" && FIRSTBOOT_ARMED=true
+
+print_plan "$SNAPNUM"
+check_refusals "$SNAP"
+
+if [[ "$MODE" == "--dry-run" ]]; then
+    say "Nothing above has happened. To do it for real:"
+    say
+    say "  sudo koompi-factory-reset --apply"
+    say
+    say "which prints this same plan and then asks you to type $CONFIRM_WORD."
+    exit 0
+fi
+
+apply "$SNAPNUM"
