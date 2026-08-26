@@ -90,7 +90,7 @@ jobs:
             test_ai_threads.sh           needs a running quickshell (qs); runs its static checks
             test_services_qml_bugs.sh    needs a running quickshell (qs); qmllint half runs
             test_search_bench_parity.sh  only tests a bench-enabled live quickshell
-            test_globalmenu.sh           the daemons it drives are built by ./setup, not here
+            test_globalmenu.sh           the zig daemon is built by ./setup, not here; the rust half builds and runs
             test_shell_services.sh       builds, unit-tests and lints; the conformance suites need a live bus and PipeWire
             test_app_slice.sh            the cgroup half needs a user manager; a container has none
             test_config_merge.sh         the dump smoke test needs a running quickshell (qs)

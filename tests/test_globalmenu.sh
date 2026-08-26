@@ -62,6 +62,16 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 run_suite zig "$ZIG_BIN"
+# Build the rust daemon here when cargo can, so the conformance suite (and its
+# RegisterWindow timing check) runs from a clean checkout and in CI, and always
+# rebuilds so a stale target/ binary cannot stand in for the source. The fix
+# that check guards (3fc78fc3) was lost from main for a day while this test
+# skipped for want of a binary.
+if command -v cargo > /dev/null && [[ -f "$ROOT/globalmenu/Cargo.toml" ]]; then
+    printf -- '--- cargo build (rust daemon)\n'
+    ( cd "$ROOT/globalmenu" && cargo build --release --quiet -p koompi-globalmenu-daemon ) \
+        || fail "the rust daemon did not build"
+fi
 run_suite rust "$RUST_BIN"
 
 opens_empty zig "$ZIG_BIN"
