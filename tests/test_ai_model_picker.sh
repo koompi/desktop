@@ -69,6 +69,8 @@ grep -q '^    onVisibleChanged:' "$PICKER" && fail "ModelPicker.qml seeds throug
 grep -q 'Accessible.role: Accessible.List$' "$PICKER" || fail "ModelPicker.qml root has no Accessible.role List"
 grep -q 'Accessible.role: Accessible.ListItem' "$PICKER" || fail "ModelPicker.qml rows have no Accessible.role ListItem"
 grep -q 'Accessible.selected: row.selected' "$PICKER" || fail "ModelPicker.qml rows do not report Accessible.selected"
+grep -q 'onHoveredChanged' "$PICKER" && fail "ModelPicker.qml still selects from hovered, which the list scrolling under a resting pointer flips"
+grep -q 'onPositionChanged: mouse => root.noteHover(row.index' "$PICKER" || fail "ModelPicker.qml rows do not select from pointer movement"
 for f in "$COMPOSER" "$STATUSBAR" "$PICKER" "$COMMANDS" "$TRANSCRIPT" "$AICHAT"; do
     lines="$(wc -l < "$f")"
     (( lines <= 400 )) || fail "$(basename -- "$f") is $lines lines, cap is 400"
@@ -124,9 +126,20 @@ ShellRoot {
         if (!ok) probe.failures++;
     }
 
+    // twelve rows, the current one last: past maxHeight, so opening has to scroll
+    property var many: Array.from({ length: 12 }, (_, i) => ({ id: "m" + i, name: "Model " + i, description: "" }))
+
     Item {
         width: 320
         height: 480
+        ModelPicker {
+            id: tall
+            width: 320
+            visible: false
+            models: probe.many
+            currentId: "m11"
+            onVisibleChanged: if (visible) Qt.callLater(tall.focusFirst)
+        }
         ModelPicker {
             id: picker
             width: 320
@@ -181,6 +194,41 @@ ShellRoot {
             probe.check("reopen: highlight follows currentId", picker.selectedIndex, 2);
             probe.check("nothing dismissed it", probe.dismissals, 0);
 
+            // hover selects on pointer movement only
+            tall.visible = true;
+            tall.noteHover(0, Qt.point(10, 10));
+            probe.check("hover: a moved pointer selects the row under it", tall.selectedIndex, 0);
+            tall.moveSelection(3);
+            probe.check("keys: Down x3 from the hovered row", tall.selectedIndex, 3);
+            tall.noteHover(1, Qt.point(10, 10));
+            probe.check("hover: the list scrolling under a resting pointer keeps the key selection", tall.selectedIndex, 3);
+            tall.noteHover(1, Qt.point(10, 14));
+            probe.check("hover: the pointer moving again selects", tall.selectedIndex, 1);
+            tall.visible = false;
+            tall.visible = true;
+            afterOpen.start();
+        }
+    }
+
+    // the reveal runs from Qt.callLater and, without sizes, from the list's geometry
+    Timer {
+        id: afterOpen
+        interval: 200; repeat: false
+        onTriggered: {
+            probe.check("tall: twelve rows", tall.rowCount, 12);
+            probe.check("tall: highlight on the last (current) row", tall.selectedIndex, 11);
+            probe.check("tall: the current row opened inside the viewport", tall.rowInView(11), true);
+            probe.check("tall: the first row is scrolled out (the list is capped)", tall.rowInView(0), false);
+            probe.check("tall: no reveal left pending", tall.pendingReveal, -1);
+            tall.moveSelection(-11);
+            probe.check("tall: Up to the first row brings it into view", [tall.selectedIndex, tall.rowInView(0)], [0, true]);
+            // A reveal left pending (no sizes at callLater time) runs from the
+            // geometry that lands afterwards. No polish loop runs here, so the
+            // row's own height change stands in for the layout's.
+            tall.pendingReveal = 11;
+            tall.rowAt(11).height += 1;
+            probe.check("tall: a pending reveal runs on the row's next geometry change", [tall.pendingReveal, tall.rowInView(11)], [-1, true]);
+
             console.log(probe.failures === 0 ? "PROBE OK" : "PROBE FAILED " + probe.failures);
             Qt.quit();
         }
@@ -198,4 +246,4 @@ if ! grep -q "PROBE OK" <<< "$out"; then
     fail "the ModelPicker probe did not pass"
 fi
 
-echo "ok   model picker: three rows, the current one marked, keys and a click report the id through picked"
+echo "ok   model picker: three rows, the current one marked, keys and a click report the id through picked; a current row past the fold opens in view; hover selects only on pointer movement"

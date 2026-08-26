@@ -157,3 +157,73 @@ keybind descriptions: all 149 binds described or hidden
 ```
 qmllint: 0 errors in the six files (the test's step). `ModelPicker.qml` is 244 lines; the other touched files are unchanged
 since round 1. Still unverified live: what a screen reader actually announces under the sidebar's layer-shell window.
+
+## Round 3 (lead's review of `c6257495`)
+1. **Reveal after geometry.** `revealRow` now treats "no sizes yet" as not done: with `row.height` 0, `list.height` 0, or a row
+   past the first still at `y` 0, it records `pendingReveal` and returns. `retryReveal()` runs from the Flickable's
+   `heightChanged`/`contentHeightChanged` and from every row's `yChanged`/`heightChanged`, so whichever layout is polished
+   last (the sheet's column sizing the list, or the row column placing the rows) completes the reveal; the pending index is
+   cleared only once a reveal ran with real sizes. Seeding sets `pendingReveal` before the `Qt.callLater`, so a callLater
+   that lands early is never the last word.
+2. **Hover only on movement.** `onHoveredChanged` is gone. Each row has a `MouseArea` (`acceptedButtons: NoButton`,
+   `hoverEnabled`) whose `onPositionChanged` calls `noteHover(index, point)` with the pointer mapped into the picker's own
+   coordinates; `noteHover` ignores a point equal to the last one seen. The list scrolling under a resting pointer re-hovers
+   a row at the same picker-relative point, so an arrow key's selection stays; a real pointer move selects as before.
+
+Probe additions (a second picker with 12 fake models, current one last, opened with the owner's instance-level
+`onVisibleChanged`): after open the current row is inside the viewport and row 0 is not, `pendingReveal` is -1, Up×11 brings
+row 0 into view; a forced pending reveal runs on a row geometry change; `noteHover` at a moved point selects, Down×3 then the
+same point again keeps 3, a new point selects. What the probe cannot do: run the layout polish loop (no window), so the first-open
+zero-geometry moment is exercised through the forced pending reveal and the row-geometry retry, not by observing the live race;
+and it cannot move a real pointer, so the hover rule is checked through `noteHover` with the static check that the rows call it
+from `onPositionChanged` and never from `hovered`.
+
+Gates (`nice -n 19 ionice -c 3`, all exit 0):
+```
+ok   static: chip and status-bar name open the picker, neither names Settings > AI
+ok   static: no-key button reads Set key and prefills /key
+ok   static: /key takes the whole line, /model alone opens the picker, moved notes gone
+ok   static: picker takes models, reports picked, knows no Ai, seeds without onVisibleChanged, has list roles; every touched file under 400 lines
+ok   qmllint: the six touched files parse without errors
+PASS open: three rows  got=3
+PASS open: row names  got=["Alpha","Beta","Gamma"]
+PASS open: only the current row is marked  got=[false,true,false]
+PASS open: highlight starts on the current row  got=1
+PASS open: rows read as list items with the highlight selected  got=[false,true,false]
+PASS open: current row says so to a screen reader  got="Beta, current"
+PASS open: the sheet is a named list  got=[true,true]
+PASS down: highlight moves to 2  got=2
+PASS down: Accessible.selected follows  got=[false,false,true]
+PASS down: stops at the last row  got=2
+PASS enter: picked carries the highlighted id  got=["gamma"]
+PASS up: highlight moves to 0  got=0
+PASS up: stops at the first row  got=0
+PASS click: picked carries the row's id  got=["gamma","alpha"]
+PASS reopen: mark follows currentId  got=[false,false,true]
+PASS reopen: highlight follows currentId  got=2
+PASS nothing dismissed it  got=0
+PASS hover: a moved pointer selects the row under it  got=0
+PASS keys: Down x3 from the hovered row  got=3
+PASS hover: the list scrolling under a resting pointer keeps the key selection  got=3
+PASS hover: the pointer moving again selects  got=1
+PASS tall: twelve rows  got=12
+PASS tall: highlight on the last (current) row  got=11
+PASS tall: the current row opened inside the viewport  got=true
+PASS tall: the first row is scrolled out (the list is capped)  got=false
+PASS tall: no reveal left pending  got=-1
+PASS tall: Up to the first row brings it into view  got=[0,true]
+PASS tall: a pending reveal runs on the row's next geometry change  got=[-1,true]
+PROBE OK
+ok   model picker: three rows, the current one marked, keys and a click report the id through picked; a current row past the fold opens in view; hover selects only on pointer movement
+== test_ai_threads exit=0
+PROBE OK
+ok: 3 threads created, reloaded from disk and read back without crossing
+== test_keybind_descriptions exit=0
+keybind descriptions: all 149 binds described or hidden
+== test_file_length exit=0
+ok: 934 files under cap, 34 allow-listed and not grown
+```
+qmllint: 0 errors in the six files (the test's step). `ModelPicker.qml` is 282 lines; the other touched files are unchanged
+since round 1. Live check for the lead after `koompi reload`: with a long Ollama list and the current model at the bottom, the
+chip opens the sheet already scrolled to it; press Down a few times with the mouse resting over the list and the highlight does
+not jump back.

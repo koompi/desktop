@@ -21,6 +21,11 @@ FocusScope {
     property int selectedIndex: -1
     property real maxHeight: 260
     readonly property int rowCount: rows.count
+    // A reveal asked for before the list had a size; retried when it gets one.
+    property int pendingReveal: -1
+    // Where the pointer last was, in the picker's own coordinates. The list
+    // scrolling under a resting pointer re-hovers a row without moving it.
+    property point lastPointer: Qt.point(-1, -1)
 
     signal picked(string id)
     signal dismissed()
@@ -60,15 +65,41 @@ FocusScope {
     }
 
     // Keep the highlighted row inside the viewport when the list is taller than
-    // the sheet allows.
+    // the sheet allows. On the first open the layouts may not have been polished
+    // yet (a row past the first still sits at y 0, the list has no height), so
+    // the reveal stays pending and runs again from the geometry that lands last.
     function revealRow(index) {
         const row = rows.itemAt(index);
         if (!row)
             return;
+        if (row.height === 0 || list.height === 0 || (index > 0 && row.y === 0)) {
+            root.pendingReveal = index;
+            return;
+        }
+        root.pendingReveal = -1;
         if (row.y < list.contentY)
             list.contentY = row.y;
         else if (row.y + row.height > list.contentY + list.height)
             list.contentY = row.y + row.height - list.height;
+    }
+
+    function retryReveal() {
+        if (root.visible && root.pendingReveal >= 0)
+            root.revealRow(root.pendingReveal);
+    }
+
+    function rowInView(index) {
+        const row = rows.itemAt(index);
+        return !!row && row.y >= list.contentY && row.y + row.height <= list.contentY + list.height;
+    }
+
+    // Hover selects only when the pointer itself moved: the same point seen
+    // again is the list scrolling underneath it after an arrow key.
+    function noteHover(index, point) {
+        if (point.x === root.lastPointer.x && point.y === root.lastPointer.y)
+            return;
+        root.lastPointer = point;
+        root.selectedIndex = index;
     }
 
     // A Connections block, not `onVisibleChanged`: the owner sets its own
@@ -80,6 +111,7 @@ FocusScope {
             if (!root.visible)
                 return;
             root.selectedIndex = Math.max(0, root.indexOf(root.currentId));
+            root.pendingReveal = root.selectedIndex;
             Qt.callLater(root.revealRow, root.selectedIndex);
         }
     }
@@ -170,6 +202,8 @@ FocusScope {
                 contentWidth: width
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
+                onHeightChanged: root.retryReveal()
+                onContentHeightChanged: root.retryReveal()
 
                 ColumnLayout {
                     id: rowColumn
@@ -196,6 +230,8 @@ FocusScope {
                             Accessible.name: row.isCurrent ? Translation.tr("%1, current").arg(row.modelData.name) : row.modelData.name
                             Accessible.description: row.modelData.description ?? ""
                             Accessible.selected: row.selected
+                            onYChanged: root.retryReveal()
+                            onHeightChanged: root.retryReveal()
 
                             contentItem: RowLayout {
                                 id: rowContent
@@ -230,9 +266,11 @@ FocusScope {
                                 }
                             }
 
-                            onHoveredChanged: {
-                                if (row.hovered)
-                                    root.selectedIndex = row.index;
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.NoButton
+                                hoverEnabled: true
+                                onPositionChanged: mouse => root.noteHover(row.index, row.mapToItem(root, mouse.x, mouse.y))
                             }
                             onClicked: root.picked(row.modelData.id)
                         }
