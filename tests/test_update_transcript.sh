@@ -146,7 +146,13 @@ out="$(run_update --firmware)" || fail "--firmware failed: $out"
 [[ "$(grep -v '^$' "$T/order")" == "fwupdmgr update" ]] \
     || fail "--firmware must call fwupdmgr update and only that: $(cat "$T/order")"
 [[ "$(find "$LOGS" -type f | wc -l)" == "$before" ]] || fail "--firmware wrote a transcript"
-out="$(PATH="$(dirname "$(command -v bash)")" run_update --firmware)"
+# A PATH with everything but fwupdmgr. The system dir alone is not that: fwupd
+# is installed on the machines this runs on, so /usr/bin has the real one.
+nofw="$T/nofw"; mkdir -p "$nofw"
+ln -sf "$(dirname "$(command -v bash)")"/* "$nofw/"
+ln -sf "$T/bin"/* "$nofw/"
+rm -f "$nofw/fwupdmgr"
+out="$(PATH="$nofw" run_update --firmware)"
 rc=$?
 { [[ $rc -eq 1 ]] && grep -q 'fwupd package' <<<"$out"; } || fail "without fwupdmgr, --firmware must name the fwupd package (rc=$rc): $out"
 
