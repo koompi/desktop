@@ -21,6 +21,9 @@ Commands:
   list                          List existing snapshots (snapper -c root list).
   rollback <N>                  Roll back to snapshot N. Does not reboot; prints
                                  snapper's own instructions to finish the rollback.
+  baseline                      Print the number of the @baseline snapshot the
+                                 installer pinned (the factory-reset point).
+                                 Exits 1 when this system has no such snapshot.
   --pre-update                  Prune the pacman cache, then create a pre-update
                                  snapshot. Called by `koompi update` before a
                                  packaged upgrade. Prints the new snapshot number.
@@ -70,6 +73,33 @@ cmd_rollback() {
     snapper -c root rollback "$n"
 }
 
+cmd_baseline() {
+    # installer/src/post_install.sh pin_baseline() marks the factory-reset point
+    # with userdata "baseline=yes" and an empty cleanup algorithm. The userdata is
+    # the marker; the description is only a fallback for a snapshot pinned before
+    # the userdata was there. Never guess a number - a wrong one rolls the machine
+    # back to something that is not how the OS shipped.
+    local list
+    if ! list="$(snapper -c root list --columns number,description,userdata 2>/dev/null)"; then
+        list="$(snapper -c root list 2>/dev/null || true)"
+    fi
+    # snapper draws the table with either "|" or the box-drawing "\u2502"; sed rather
+    # than tr because that character is three bytes and tr would emit three pipes.
+    local normalised
+    normalised="$(printf '%s\n' "$list" | sed 's/\xe2\x94\x82/|/g')"
+
+    local n
+    n="$(awk -F'|' '/baseline=yes/ { gsub(/[^0-9]/, "", $1); if ($1 != "") { print $1; exit } }' <<<"$normalised")"
+    if [[ -z "$n" ]]; then
+        n="$(awk -F'|' '/@baseline/ { gsub(/[^0-9]/, "", $1); if ($1 != "") { print $1; exit } }' <<<"$normalised")"
+    fi
+    if [[ -z "$n" ]]; then
+        echo "koompi-snapshot: no @baseline snapshot on this system (the installer's pin_baseline step never ran)" >&2
+        return 1
+    fi
+    printf '%s\n' "$n"
+}
+
 cmd_pre_update() {
     # The rollback point is created FIRST. This used to prune the pacman cache
     # before snapshotting, but /var/cache/pacman/pkg is root-owned, so an
@@ -92,6 +122,9 @@ cmd_pre_update() {
     fi
     local pruned=false
     if command -v sudo >/dev/null 2>&1; then
+        # ponytail: A && B || C is deliberate and safe here - B is an assignment
+        # that cannot fail, so C only runs when the non-interactive sudo failed.
+        # shellcheck disable=SC2015
         sudo -n paccache -rk2 2>/dev/null && pruned=true \
             || { sudo paccache -rk2 && pruned=true; }
     else
@@ -107,6 +140,7 @@ case "$1" in
     create)     shift; cmd_create "$@" ;;
     list)       shift; cmd_list ;;
     rollback)   shift; cmd_rollback "${1:-}" ;;
+    baseline)   shift; cmd_baseline ;;
     --pre-update) cmd_pre_update ;;
     *) echo "koompi-snapshot: unknown command '$1'" >&2; usage >&2; exit 1 ;;
 esac
