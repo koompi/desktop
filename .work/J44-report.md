@@ -178,17 +178,17 @@ ok: 933 files under cap, 34 allow-listed and not grown
 ## Acceptance 4: diff stat and the schema section
 
 ```
- docs/agents/ai.md                                  |  73 [32m+++++++[m
- .../quickshell/koompi/modules/common/Config.qml    |  14 [32m+[m[31m-[m
- .../quickshell/koompi/services/ai/AiModel.qml      |   2 [32m+[m
- .../quickshell/koompi/services/ai/Conversation.qml |  28 [32m+[m[31m--[m
- .../quickshell/koompi/services/ai/ExtraModels.qml  |  84 [32m++++++++[m
- .../quickshell/koompi/services/ai/KeyGate.qml      |  62 [32m++++++[m
- .../koompi/services/ai/MistralApiStrategy.qml      |   4 [32m+[m[31m-[m
- .../koompi/services/ai/ModelRegistry.qml           |   6 [32m+[m[31m-[m
- .../koompi/services/ai/OpenAiApiStrategy.qml       |   4 [32m+[m[31m-[m
- .../quickshell/koompi/services/ai/Requester.qml    |  12 [32m+[m[31m-[m
- tests/test_ai_remote_default.sh                    | 213 [32m++++++++++++++++++++[m[31m-[m
+ docs/agents/ai.md                                  |  73 +++++++
+ .../quickshell/koompi/modules/common/Config.qml    |  14 +-
+ .../quickshell/koompi/services/ai/AiModel.qml      |   2 +
+ .../quickshell/koompi/services/ai/Conversation.qml |  28 +--
+ .../quickshell/koompi/services/ai/ExtraModels.qml  |  84 ++++++++
+ .../quickshell/koompi/services/ai/KeyGate.qml      |  62 ++++++
+ .../koompi/services/ai/MistralApiStrategy.qml      |   4 +-
+ .../koompi/services/ai/ModelRegistry.qml           |   6 +-
+ .../koompi/services/ai/OpenAiApiStrategy.qml       |   4 +-
+ .../quickshell/koompi/services/ai/Requester.qml    |  12 +-
+ tests/test_ai_remote_default.sh                    | 213 ++++++++++++++++++++-
  11 files changed, 461 insertions(+), 41 deletions(-)
 ```
 
@@ -240,3 +240,135 @@ With `policies.ai == 2` (local only) entries whose endpoint is not local are dro
 - `Conversation.qml` had no room, so two unrelated-looking rewrites made it: `currentModel` to one optional-chaining line and `modelDefaultWindow` to a `find`. Behaviour identical.
 - `tests/test_ai_threads.sh` is not executable on main (mode 644); ran it via `bash`.
 - No real endpoint was called: every curl in the tests goes to the shim and the log proves it.
+
+## Round 2 (lead's review of a7739026)
+
+All eight items done on the branch; the J44 gates re-run green.
+
+1. **KeyGate `Translation`**: did not reproduce. `Translation` is `services/Translation.qml`, a singleton in `qs.services`, which KeyGate already imports; the new `locked` probe run drives the 10 s timeout path for real (keyring shim answers nothing, `busctl` shim says locked → `try_lookup.sh` exit 2 → `loaded` never flips) and the message appears with no ReferenceError. The harness now fails on any `ReferenceError|TypeError` in a probe's raw output, so a missing import cannot pass again. No import added: it would be unused.
+2. **Compaction through the gate**: `Conversation.compact()` calls `requester.keyGate.admit(model, () => compact(onDone))` before building anything. Refused with the keyring read: nothing sent, `compacting` stays false, the chat is kept, one note ("Compaction skipped: no API key for …") after the gate's own advice. Deferred on an unread keyring: the gate re-enters `compact` once it loads. Probe: 5 messages, no key → `compacting=false`, chat kept, curl log still 0 bytes.
+3. **One local rule**: new `services/ai/endpoints.js` (`.pragma library`, like `feedbackRules.js`). `isLocal(url)` parses the host and is true for `localhost`, `127.0.0.1`, `[::1]` only (a `localhost` in the query string no longer counts); used by the remote slot's `requires_key`, `setModel`'s policy check and the loader. ModelRegistry 399 → 400 (main: 401).
+4. **Ids lower-cased** at load; `/model Test/Extra-Caps` now selects `test/extra-caps` and leaves `remoteEndpoint` alone. Documented in the schema table.
+5. **Loader robustness**: `_added` is now id → object, so a reload only takes back objects the loader created; an id a discovered model took since stays theirs and the entry is skipped with a warning ("already taken"). Each entry's creation is in try/catch; a throw skips that entry with a warning and the rest still load.
+6. **`requires_key`**: absent → `!isLocal(endpoint)`; present → only a literal `false` is false (`"true"`, `1` are true). Probe rows for `"true"`, `false`, absent-on-LAN (true), absent-on-`::1` (false).
+7. **Self-hosted window**: `endpoints.js` `isSelfHosted` = local, `10.x`, `192.168.x`, `172.16-31.x`, bare hostname, `*.local` → `8192`; everything else `131072`. Probe rows: `http://192.168.1.5:8000/…` 8192, `http://myhost:8000` 8192, `http://box.local:8000` 8192, `https://api.example.test` 131072, `172.31` yes / `172.32` no.
+8. **Deferred send invalidation**: `KeyGate.drop()` on `engine.currentModelIdChanged` and on the conversation emptying (`messageIDs.length === 0`), logged. Readiness is `KeyringStorage.loaded && keyringData != null` (`keyringReady`), released via `Qt.callLater` so whichever of the two keyring signals came second has landed. Probe: a send deferred then cleared, and one deferred then model-switched, produce no reply and no curl; the next send after that gets the advice as before.
+
+### A bug in the round-1 harness
+
+`gate_out="$(run_probe …)"` ran the probe in a command substitution, so `fail`'s `exit 1` ended the subshell and the script carried on to print `ok` with rc=0. Round 1's probes did pass (their `PROBE OK` lines are in the round-1 paste), but the gate could not have caught a failure. Every `x_out="$(…)"` is `|| exit 1` now; verified by watching it stop on a probe I had mis-specified mid-round.
+
+### Gate run, the new rows
+
+```
+[AI] ai.extraModels[1] skipped: an entry needs a "model" id (not remote/local) and an "endpoint"
+PASS extra: requires_key  got=true
+PASS extra: capitalised id stored lower-cased  got=true
+PASS extra: capitalised id not stored verbatim  got=false
+PASS extra: requires_key "true" (string) is true  got=true
+PASS extra: requires_key false is false  got=false
+PASS extra: requires_key absent on a LAN endpoint is true  got=true
+PASS extra: requires_key absent on ::1 is false  got=false
+PASS extra: /model with the capitalised id selects it  got="test/extra-caps"
+PASS extra: /model with the capitalised id keeps remoteEndpoint  got=""
+PASS extra: /model reply  got=true
+[AI] ai.extraModels[6] skipped: the id "probe-discovered" is already taken by another model
+PASS extra: reload keeps the discovered model under the taken id  got="discovered"
+PASS extra: reload keeps our other entries  got="Probe Extra"
+PASS endpoints: localhost is local  got=true
+PASS endpoints: scheme-less localhost is local  got=true
+PASS endpoints: [::1] is local  got=true
+PASS endpoints: localhost in the query is not local  got=false
+PASS endpoints: 192.168 is self-hosted, not local  got="true,false"
+PASS endpoints: 172.31 is self-hosted  got=true
+PASS endpoints: 172.32 is not  got=false
+PASS window: 192.168.1.5:8000 is self-hosted  got=8192
+PASS window: 192.168.1.5:8000 source  got="fallback (local)"
+PASS window: bare hostname is self-hosted  got=8192
+PASS window: *.local is self-hosted  got=8192
+PASS window: unknown hosted name  got=131072
+engine message: To set an API key, pass it with the /key command | To view the key, pass "get" with the command<br/> | ### For stealth/ox-alpha: | **Link**: https://oxalpha.io/ox-alpha-api.html | 
+engine message: To set an API key, pass it with the /key command | To view the key, pass "get" with the command<br/> | ### For stealth/ox-alpha: | **Link**: https://oxalpha.io/ox-alpha-api.html | 
+PASS compact: not compacting  got=false
+PASS compact: chat kept plus the notes  got=7
+PASS compact: the advice  got=true
+PASS compact: then the skip note  got=true
+PASS compact: still nothing running  got=false
+--- curl shim log (gate): 0 bytes
+```
+
+### Retry run (drop, then refusal, then /key + retry)
+
+```
+engine message: Model set to Test/extra (Caps)
+PASS gate: keyring not loaded before the first send  got=false
+engine message: turn dropped by a clear
+engine message: turn dropped by a model change
+PASS drop: keyring loaded meanwhile  got=true
+PASS drop: no reply at all  got=0
+PASS drop: only the second user turn is in the chat  got="user"
+PASS drop: nothing running  got=false
+engine message: hello without a key
+engine message: To set an API key, pass it with the /key command | To view the key, pass "get" with the command<br/> | ### For stealth/ox-alpha: | **Link**: https://oxalpha.io/ox-alpha-api.html | 
+PASS gate: still nothing running  got=false
+PASS gate: user turn kept  got="user,interface"
+PASS gate: one interface message  got=1
+PASS gate: advice names /key  got=true
+PASS gate: advice carries the key link  got=true
+engine message: API key set for stealth/ox-alpha
+PASS retry: key stored  got="sk-test-fake"
+PASS retry: request went out  got="user,user,interface,interface,assistant"
+PASS retry: request finished  got=false
+PROBE OK
+--- curl shim log (retry): --no-buffer --max-time 180 https://tokenra.io/v1/chat/completions -H Content-Type: application/json -H Authorization: Bearer sk-test-fake ...
+```
+
+### Locked run
+
+```
+engine message: hello with a locked keyring
+engine message: The keyring did not answer, so the API key could not be read and the message was not sent. Unlock the keyring and retry.
+PASS locked: keyring never loaded  got=false
+PASS locked: user turn kept  got="user,interface"
+PASS locked: one message  got=1
+PASS locked: it says the keyring did not answer  got=true
+PASS locked: nothing running  got=false
+PROBE OK
+--- curl shim log (locked): 0 bytes
+```
+
+### Gates
+
+```
+$ nice -n 19 ionice -c 3 tests/test_ai_remote_default.sh
+ok   source: default is stealth/ox-alpha, no gemini fallback, icon file present, no key material
+ok   source: both strategies wrap the bearer in ${KEY:+...}, the compactor passes the model, the send path goes through KeyGate
+ok   remote default: stealth/ox-alpha infers tokenra/openai/oxalpha with its key link, regressions hold, a stored remoteModel survives, a missing one takes the default, /model with no argument keeps the state
+ok   openai header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one
+ok   mistral header: nothing with an empty key, '-H' 'Authorization: Bearer <key>' with one
+ok   key gate: no key -> advice, user turn kept, no curl (send and compaction); a wait dropped on model change; a locked keyring ends the wait with a message; /key + retry -> one curl with the bearer; extraModels load with their fields, ids lower-cased, a malformed or colliding entry warns; windows: hosted 131072, local and LAN 8192, entry's context_window wins
+$ nice -n 19 ionice -c 3 bash tests/test_ai_threads.sh
+PROBE OK
+ok: 3 threads created, reloaded from disk and read back without crossing
+$ nice -n 19 ionice -c 3 bash tests/test_services_qml_bugs.sh
+PROBE OK
+ok   services: cliphist queue, checkupdates exit codes, xkb variants, wallpaper dir validation, easyeffects readback, emoji sloppy search, latex argv and exit code
+$ nice -n 19 ionice -c 3 bash tests/test_file_length.sh
+ok: 935 files under cap, 34 allow-listed and not grown
+$ nice -n 19 ionice -c 3 bash tests/test_ai_request_privacy.sh
+ok: request body, compactor, attachments, screen grabs and clipboard decodes stay in the user's runtime directory
+```
+
+qmllint (`-I <tmp with qs symlink> -I /usr/lib/qt6/qml`): KeyGate, ExtraModels, ModelRegistry, Conversation, Requester, OpenAiApiStrategy, MistralApiStrategy, AiModel, Config — rc=0, 0 errors each.
+Lines: ModelRegistry 400 (main 401), Conversation 729, Requester 390, Config 827; KeyGate 85, ExtraModels 98, endpoints.js 27.
+
+```
+docs/agents/ai.md                                  |  18 ++-
+ .../quickshell/koompi/services/ai/Conversation.qml |  34 ++---
+ .../quickshell/koompi/services/ai/ExtraModels.qml  |  76 ++++++-----
+ .../quickshell/koompi/services/ai/KeyGate.qml      |  51 +++++--
+ .../koompi/services/ai/ModelRegistry.qml           |   5 +-
+ .../quickshell/koompi/services/ai/endpoints.js     |  27 ++++
+ tests/test_ai_remote_default.sh                    | 150 ++++++++++++++++++---
+ 7 files changed, 273 insertions(+), 88 deletions(-)
+```
