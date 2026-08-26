@@ -22,7 +22,11 @@ That restores the clone with its history, all nine tags and the untracked files.
 
 **Then, in order:** the session smoke test, the `/etc/skel` package split, the session identity move. Those three improve HD too, and none of them needs the compositor tree restored. Full sequence in [the hard fork plan](sd-hardfork.md#order-of-operations).
 
-**Known state:** `sdata/dist-arch/koompi-sd/PKGBUILD` is correct but unbuildable — it sources tag `koompi-sd-0.16.0`, which is only inside the archive. That resolves when the repo restart creates `koompi/koompi-sd`.
+**Known state:**
+
+- `sdata/dist-arch/koompi-sd/PKGBUILD` is correct but unbuildable — it sources tag `koompi-sd-0.16.0`, which is only inside the archive. That resolves when the repo restart creates `koompi/koompi-sd`.
+- The branch is behind `main` (11 commits at the time of parking) and was left that way, because the working tree held unrelated HD changes. It touches only `docs/design/` and `sdata/dist-arch/koompi-sd/`, so a rebase cannot conflict — do it on resume.
+- `main` is checked out in the herdr worktree `lead-verify`, so this clone stays on `koompi-sd`. HD work happens in the worktrees.
 
 ## Scope
 
