@@ -3,7 +3,7 @@
 Rithy's call, 2026-08-26: hard fork Otto at its current commit, stop tracking upstream, and make it KOOMPI's own.
 This document is how that is done without breaking the session, and what KOOMPI takes on by doing it.
 
-One thing worth saying once: upstream is small but not dead — roughly 26 commits in three months — and five of the fixes from the [live audit](../../../otto/docs/otto-plan.md) were headed upstream as clean commits. After the fork those are KOOMPI's to carry alone. That is the price of owning the stack, and it is a reasonable one to pay.
+One thing worth saying once: upstream is small but not dead — roughly 26 commits in three months — and five of the fixes from the [live audit](sd-audit-2026-08-03.md) were headed upstream as clean commits. After the fork those are KOOMPI's to carry alone. That is the price of owning the stack, and it is a reasonable one to pay.
 
 ## The fork has to cut three upstreams, not one
 
@@ -69,7 +69,7 @@ Rules that follow:
 
 ### The dependency tree is permissive-clean
 
-Scanned `otto/Cargo.lock`: 895 packages, 821 with a resolvable licence field.
+Scanned `Cargo.lock` in the SD tree: 895 packages, 821 with a resolvable licence field.
 
 | licence | count |
 | --- | --- |
@@ -163,12 +163,12 @@ The hard fork removes the upstream, so it removes the machinery: **`koompi-sd` i
 
 The one place a pin could survive is upstream Smithay, if KOOMPI rebases onto it rather than forking it. That is the argument for forking it, made above.
 
-`otto/docs/otto-plan.md` carried the old instruction — "bump `_commit` … after each `git rebase upstream/main`" — and has been marked superseded in place.
+[`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md) carried the old instruction — "bump `_commit` … after each `git rebase upstream/main`" — and has been marked superseded in place.
 
 ## Order of operations
 
 1. ~~**Land the packaging as `koompi-sd`.**~~ **Done 2026-08-26.** `sdata/dist-arch/koompi-sd/PKGBUILD`, sourcing the tag `koompi-sd-0.16.0`, no `_commit`, no `pkgver()`. Declares `LicenseRef-koompi-sd-undeclared` for the reason in [Licence](#licence), and `provides`/`conflicts`/`replaces` the otto names until step 5 renames the binaries.
-   The tag is cut on `koompi/otto` locally and **not yet pushed**; until it is, `makepkg` cannot fetch it: `git -C ~/workspace/otto push origin koompi-sd-0.16.0`.
+   **The tag is not on any remote.** It was cut locally, and the clone was removed on 2026-08-26 — the only copy is the archive `~/workspace/otto-archive-20260826.tar.gz`. `makepkg` cannot fetch the source until the tag is restored and pushed, which is what step 4's repo restart does. Until then this PKGBUILD is correct but unbuildable, and that is deliberate: the source URL it needs (`koompi/koompi-sd`) does not exist yet either.
 2. **Session smoke test** in `tests/` — next: portal colour scheme, bar count against output count, SNI count, and that `otto-bar`, `otto-islands` and the polkit agent are alive. This is what makes step 5 safe, and the audit notes it would have caught three of its four blockers.
 3. **Cut the dependency forks.** `koompi/smithay` and `koompi/layers`, both tagged. Repoint every `Cargo.toml` off the `nongio` branches — three files reference `layers`, two reference `smithay`. After this, no build depends on an account KOOMPI does not control. **Gated on the `layers` licence being resolved**, since this step publishes a copy of it.
 4. **Restart the repo.** `koompi/koompi-sd`, single root commit, `koompi/otto-history` archived, `UPSTREAM.md` written.

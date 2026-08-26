@@ -165,7 +165,7 @@ The cost of that settlement is named in the study: two upstreams to track, a one
 
 ## Staging
 
-`otto/docs/otto-plan.md` is the authority on what Otto itself needs, audited live on 2026-08-03, and it should not be restated here.
+[`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md) is the authority on what Otto itself needs, audited live on 2026-08-03, and it should not be restated here.
 What belongs to *this* repo is the flavour work:
 
 1. ~~**Land the packaging as `koompi-sd`.**~~ **Done** — `sdata/dist-arch/koompi-sd/PKGBUILD`, sourcing a tag rather than a pinned SHA. The tag still needs pushing to `koompi/otto` before anyone else can build it.

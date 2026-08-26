@@ -1,6 +1,6 @@
 # Building on Smithay — what it takes, and what Otto already did
 
-A gap analysis for [KOOMPI SD](koompi-sd.md), researched 2026-08-26 against upstream Smithay and against `koompi/otto` as checked out at `/home/userx/workspace/otto`.
+A gap analysis for [KOOMPI SD](koompi-sd.md), researched 2026-08-26 against upstream Smithay and against the SD tree as it stood at tag `koompi-sd-0.16.0`.
 
 **The short version: do not write a compositor.**
 KOOMPI already has a Smithay-based stacking compositor — Otto — forked, patched, packaged and run live on this hardware.
@@ -15,14 +15,14 @@ niri is scrollable-tiling and is not a model for SD.
 | --- | --- |
 | Upstream | [`nongio/otto`](https://github.com/nongio/otto), MIT, 0.15.0, one maintainer |
 | KOOMPI fork | `koompi/otto`, branch `koompi` — 13 commits on top of `main`, rebasable |
-| Working copy | `/home/userx/workspace/otto` |
+| Local clone | removed 2026-08-26; archived at `~/workspace/otto-archive-20260826.tar.gz` |
 | Size | ~92,000 lines across `src/`, `components/`, `protocols/` |
 | Base | a **fork** of Smithay — `nongio/smithay`, branch `feat/dmabuf-scanout` (dmabuf scanout plus XWM focus) |
 | Rendering | LayersEngine (`nongio/layers`) with Skia — not iced, not libcosmic |
-| Packaging | `PKGBUILD-koompi` in the otto tree — lands here as `koompi-sd`, versioned off a tag |
+| Packaging | `sdata/dist-arch/koompi-sd/`, sourcing tag `koompi-sd-0.16.0` |
 
 It is a stacking window manager with a dock, a topbar, workspaces per output, Exposé, an app switcher, animated minimise, half-screen snap, session lock and a greeter.
-Not a prototype: it was audited live on tty1 across two 1920×1200 outputs on 2026-08-03, and the findings are written up in `otto/docs/otto-plan.md`.
+Not a prototype: it was audited live on tty1 across two 1920×1200 outputs on 2026-08-03, and the findings are written up in [`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md).
 
 ## What Smithay gives you
 
@@ -103,7 +103,7 @@ That is the argument for adopting it rather than starting again, and it is worth
 
 ## What is actually left
 
-From the live audit in `otto/docs/otto-plan.md`, which is the authority here and should not be duplicated:
+From the live audit in [`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md), which is the authority here and should not be duplicated:
 
 **Blockers** — the bar exists on one output only; no application publishes a global menu, because Otto implements no `org_kde_kwin_appmenu_manager`.
 
@@ -129,14 +129,13 @@ That answers the first two items below and converts the rest into things KOOMPI 
 Smithay removes the genuinely hard part — DRM/KMS, buffer allocation, input, forty protocol implementations — and then leaves a whole desktop, most of which no existing project could be copied for because none of them stacks.
 
 Otto did that work.
-The question for SD is therefore not "what do we need to build on Smithay" but "what do we finish on Otto", and that list is short, already audited, and already written down in `otto/docs/otto-plan.md`.
+The question for SD is therefore not "what do we need to build on Smithay" but "what do we finish on Otto", and that list is short, already audited, and already written down in [`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md).
 
-One loose end worth closing early: the recipe is `PKGBUILD-koompi`, untracked, in the otto tree.
-Until it lands here as `koompi-sd` — nothing named otto ships, and it versions off a tag rather than a pinned SHA — SD is not reproducible from the packaging tree. That is step 1 of [the hard fork plan](sd-hardfork.md).
+The packaging has since landed as `sdata/dist-arch/koompi-sd/`, sourcing a tag rather than a pinned SHA — step 1 of [the hard fork plan](sd-hardfork.md).
 
 ## Sources
 
 - [Smithay crate docs](https://docs.rs/smithay/latest/smithay/) and [crates.io](https://crates.io/crates/smithay) — module inventory, release dates
 - [anvil README](https://github.com/Smithay/smithay/blob/master/anvil/README.md)
 - [niri](https://github.com/niri-wm/niri), [cosmic-comp](https://deepwiki.com/pop-os/cosmic-comp), [cosmic-epoch](https://github.com/pop-os/cosmic-epoch) — evidence of Smithay's gaps
-- [Otto](https://github.com/nongio/otto); `koompi/otto`; `otto/docs/otto-plan.md` (live audit, 2026-08-03)
+- [Otto](https://github.com/nongio/otto); `koompi/otto`; [`sd-audit-2026-08-03.md`](sd-audit-2026-08-03.md) (live audit, 2026-08-03)
