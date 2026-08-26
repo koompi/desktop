@@ -71,22 +71,19 @@ to the newest release tag, and `v0.1` tagged and released — each confirmed in 
 | J46 | opencode | verified | ten keys, each with its reason in the file; `/usr/lib/sysctl.d/90-koompi.conf` so `/etc` still overrides. Test grew three checks: every key is one this kernel knows (read-only `sysctl -n`), every key has a comment above it, and the file is in the built package. Lead: test ok, shellcheck + `-x` clean, file-length 34 rows, `procps-ng` is required by `base` so `sysctl` exists in the CI container; ff-merged, pkgrel 1.0-3 (lead) |
 | J47 | claude | verified | 11 chapters, 752 lines, ch.01 "Coming from Mac or Windows"; `tests/test_manual_references.sh` resolves 84 keybinds (130 literal chords + 38 loop-generated), 11 `koompi` subcommands and every `koompi-*` name against the tree, and caps chapter count and length. Lead: test ok, shellcheck + `-x` clean, README pointer is one line, spot-checked two semantic claims the test cannot (dock defaults off — `Config.qml:476`; `Super+Alt+Space` floats — `keybinds.lua:261`); ff-merged. **Draft: the voice is Rithy's to approve** |
 | J48 | claude | verified | 17 leaves in `services/commandTree/Entries.qml` behind `CommandTree.qml`; `LauncherSearch.qml` still exactly 508 (4 lines changed), `SearchItem.qml` carries the heading and the state column. Groups as headings in the action scope's empty query, flat rows with a `· Group` label otherwise. Lead: probe green in both condition states, qmllint 0 errors ×6, file-length 34 rows, shellcheck + `-x` clean, capture viewed and it matches Rithy's sketch; ff-merged `713fd6ba`. Lead added the CI allow-list line (`0a2b1f60`) — the probe needs a live `qs` |
-| J49 | claude | live | prove the git route in a clean Arch container and fix the sysctl-apply gap. Pane `wA:p1`, worktree/branch `j49-git-route` |
+| J49 | claude | verified | proved the route in an Arch container **and** a KVM VM, installing from the pre-fix tree so the before/after is one a user lives through: all ten sysctl keys live with no reboot (`vm.swappiness` 60 → 150, same boot). Built the VM because a rootless container cannot write a non-namespaced sysctl at all. Fixed: the drop-in was copied but never applied (`systemctl restart systemd-sysctl`), and fwupd was never installed from git. Also exercised the **packaged fallback** with `koompi-shell` installed — the path every KOOMPI OS user is on — exit 0. Lead: both tests, shellcheck + `-x`, suite 101/3/0; ff-merged. Findings: F1 (→ J51) and the `python-gobject` gap (lead fixed, `c79b53d7`) |
 | J50 | opencode | verified | 74 occurrences classified 17/49/8 and only the 17 changed; every `koompi/desktop` URL now `koompi/koompi-hd`; `CLONE_DIR` and `install.sh` `DEST` moved to `koompi-hd` with every old directory name kept in `resolve_checkout`'s guess list, proven by a new `tests/test_resolve_checkout_paths.sh`. Lead: that test, iso_release_tag, packaged tools 38, qmllint 0 ×3, `zig build test`, shellcheck + `-x`, suite 100/3/0, and a grep showing only the `koompi-desktop-history` references left; ff-merged `20ff3400`. Re-running the bootstrap on an old install makes a second directory rather than adopting the old one — harmless, because `setup:248` records the new path, so `koompi update` follows |
-| J51 | claude | live | `koompi update` follows the **`prod-hd` branch**, not a tag (Rithy's call, rewritten contract). Pane `wC:p1`, worktree/branch `j51-prod-hd-branch` |
+| J51 | claude | verified | two rounds. `follow_prod_branch` moves only a *managed* checkout (on main, origin is ours, upstream exists, no commits of its own, clean) and handles what install.sh's `--depth 1 --branch main` leaves behind — missing refspec, shallow graft, someone's own local `prod-hd`. J49's F1 closed by re-execing `./setup update` from the pulled tree once, carrying the pre-pull defaults dump across so the child does not diff the tree against itself. Round 2 for a hazard the worker missed: `install.sh` defaulting to `prod-hd` would have broken the public one-liner until the branch existed, so it now resolves prod-hd → main and says which it took. Lead: 16+4 PASS, shellcheck + `-x`, YAML parses, suite 102/3/0, real checkout untouched; ff-merged `d821f8c0` |
 
 ## Live now
 
-Two jobs dispatched 2026-08-26 for the v0.1 campaign, each in its own herdr workspace and worktree:
+Nothing live. **v0.1 is released.** `main`, `prod-hd` and the `v0.1` tag all sit at `d821f8c0`,
+all three green in CI. Release: https://github.com/koompi/koompi-hd/releases/tag/v0.1
 
-- J49 `wA:p1`, claude — `sdata/install/setups/system.sh`, `tests/test_sysdefaults.sh`, new `tests/test_update_from_git.sh`.
-- J51 `wC:p1`, claude — `sdata/install/update.sh`, `install.sh` (`REPO_REF` only), both workflow branch triggers, new `tests/test_update_prod_branch.sh`.
-
-J50 is merged. **The main checkout is no longer the lead's**: Rithy is working in it on branch `koompi-sd`
-(the Otto/Smithay stacking flavour) with uncommitted files. Every lead git operation — merges, commits,
-pushes — now happens in `lead-verify`. The lead's pane is `w5:p28`; `lead-verify` (detached) is the verification worktree.
-`tokens` is not ours. Uncommitted in the main checkout, Rithy's work in progress, leave it:
-`sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
+The lead works only in `lead-verify`. The main checkout is Rithy's: branch `koompi-sd`
+(the Otto/Smithay stacking flavour) with uncommitted work — read it, never write to it.
+`tokens` is not ours. All four v0.1 job workspaces were closed and their branches deleted
+after `git cherry` confirmed every commit was upstream.
 
 ## Decided
 
@@ -181,8 +178,13 @@ pushes — now happens in `lead-verify`. The lead's pane is `w5:p28`; `lead-veri
 - 2026-08-26 Rithy: the release line is a **`prod-hd` branch**, not a tag, and it is the better call. The repo is going two-flavour (`docs/design/koompi-sd.md`: HD on Hyprland, SD on Otto/Smithay), so the stable line is named per flavour and `prod-sd` follows later. A branch is also something `pull --ff-only` already tracks, so `update_pull` keeps its detached-HEAD and dirty-tree guards instead of learning to sit on a tag. Lead's three conditions, written into J51: prod-hd only ever fast-forwards from main and never carries its own commit; the `v0.1` tag still marks the commit, because a release needs a ref that does not move; `install.sh` `REPO_REF` defaults to prod-hd and both workflows run on it.
 - Lead slip, twice in one session, same root: **the main checkout is not the lead's workspace.** A `commit -am` swept Rithy's WIP (fixed in `9f52d345`), and a `git add -f` + commit put the J51 rewrite onto Rithy's `koompi-sd` branch (undone with a mixed reset, cherry-picked to main as `7e208052`, working tree restored). Rule now: the lead commits, merges and pushes **only in `lead-verify`**, and reads the main checkout without writing to it.
 
+- v0.1 shipped 2026-08-26 in this order, and the order matters: merge J51 → push `main` → push `prod-hd` at the same commit → tag `v0.1` → write the release. `prod-hd` had to exist before `install.sh`'s new default reached a user, which is the hazard round 2 removed properly by making the script resolve the ref instead of trusting the lead's ordering.
+- **`prod-hd` only ever fast-forwards from `main`, at release points.** Doc commits and day-to-day merges do not move it. It is at `d821f8c0` with `v0.1`.
+- The lead's own fix this round: `python-gobject` sat only in `koompi-shell`, which the from-git route deliberately does not install, so two shipped tools (`koompi-remotedesktop-portal`, `scripts/thumbnails/thumbgen.py`) failed at `import gi` on a machine where everything looked installed. Moved to `koompi-python` (pkgrel 6) with a check in `test_update_from_git.sh` that fails when a shipped file imports `gi` and no dependency meta carries it — proved red before green.
+- Still not delivered, and said plainly in the release notes: the `[koompi]` pacman repo (J12), so `pacman -Syu` moves nothing of ours and ISO/packaged installs wait. Everything reaches users through the git route.
+
 ## Next action
 
-Verify J49 and J50 in `lead-verify`, ff-merge, push, read `gh run list`. Dispatch J51 the moment J50 is merged.
-Then, and only then, tag `v0.1` and write the release from the J01-J48 ledger — the first thing users are moved to must already carry the rename and the fixes. Say plainly in the notes what the git route delivers and what it does not: the `[koompi]` pacman repo, and so ISO and packaged installs, remain J12.
-Rithy's own items, unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, the sudo installs, Bluetooth symptom, fingerprint check, J38's open decision (i)-(iv), the J47 manual's voice, the system-prompt-to-remote privacy call (`10-machine.md`).
+Queue is empty; v0.1 is out. J12 is the only row still blocked-on-user.
+Rithy's own items: run `koompi update` + `koompi reload` here — today's work is unverified on screen anywhere, because neither guest had a compositor; the 0xAlpha credit + `/key`; J38's open decision (i)-(iv), which is what makes factory reset work on a stock install; the J47 manual's voice; LocalSend AUR; the sudo installs; Bluetooth symptom; fingerprint check; the system-prompt-to-remote privacy call (`10-machine.md`).
+Candidates for the next campaign: the `[koompi]` repo (J12 — needs a signing key and a publish target), the rest of the O05 entry set, and whatever the `koompi-sd` flavour needs once its design settles.
