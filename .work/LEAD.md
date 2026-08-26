@@ -12,6 +12,14 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 `tests/test_file_length.sh` green with a trimmed allow-list, `tests/run.sh`, both
 `zig build test`, and shellcheck no worse than baseline, all confirmed in the lead's pane.
 
+**Campaign 2, from 2026-08-26 (current):** ship v0.1. Rithy: "make sure `koompi update` for any
+koompi existing users got new update to work the same as our live system... write a v0.1 release...
+change the repo name from desktop to koompi-hd". Everything J01-J48 is merged and has reached
+nobody: `[koompi]` is a skeleton, so the only path to a user is the git route
+(`libexec/update:571-583` falls back to `"$repo/setup" update`). Gate that ends it: the git route
+proved end to end in a clean container, the tree carrying its new name, `koompi update` moving users
+to the newest release tag, and `v0.1` tagged and released — each confirmed in the lead's pane.
+
 ## Ledger
 
 | id | runner | state | verdict |
@@ -63,15 +71,21 @@ Gate that ends the campaign: every file in AUDIT.md rows D1-D8 under cap or shru
 | J46 | opencode | verified | ten keys, each with its reason in the file; `/usr/lib/sysctl.d/90-koompi.conf` so `/etc` still overrides. Test grew three checks: every key is one this kernel knows (read-only `sysctl -n`), every key has a comment above it, and the file is in the built package. Lead: test ok, shellcheck + `-x` clean, file-length 34 rows, `procps-ng` is required by `base` so `sysctl` exists in the CI container; ff-merged, pkgrel 1.0-3 (lead) |
 | J47 | claude | verified | 11 chapters, 752 lines, ch.01 "Coming from Mac or Windows"; `tests/test_manual_references.sh` resolves 84 keybinds (130 literal chords + 38 loop-generated), 11 `koompi` subcommands and every `koompi-*` name against the tree, and caps chapter count and length. Lead: test ok, shellcheck + `-x` clean, README pointer is one line, spot-checked two semantic claims the test cannot (dock defaults off — `Config.qml:476`; `Super+Alt+Space` floats — `keybinds.lua:261`); ff-merged. **Draft: the voice is Rithy's to approve** |
 | J48 | claude | verified | 17 leaves in `services/commandTree/Entries.qml` behind `CommandTree.qml`; `LauncherSearch.qml` still exactly 508 (4 lines changed), `SearchItem.qml` carries the heading and the state column. Groups as headings in the action scope's empty query, flat rows with a `· Group` label otherwise. Lead: probe green in both condition states, qmllint 0 errors ×6, file-length 34 rows, shellcheck + `-x` clean, capture viewed and it matches Rithy's sketch; ff-merged `713fd6ba`. Lead added the CI allow-list line (`0a2b1f60`) — the probe needs a live `qs` |
+| J49 | claude | live | prove the git route in a clean Arch container and fix the sysctl-apply gap. Pane `wA:p1`, worktree/branch `j49-git-route` |
+| J50 | opencode | live | rename sweep koompi/desktop → koompi/koompi-hd; 17 repo-identity lines change, 49 package-name lines must not. Pane `wB:p1`, worktree/branch `j50-rename-koompi-hd` |
+| J51 | — | after J50 | `koompi update` follows the newest `v*` tag instead of `main`. Contract written; same file as J50 (`libexec/update`), so strictly serial |
 
 ## Live now
 
-Nothing live. Lead sits in the main checkout `/home/userx/workspace/koompi-desktop`, pane `w5:p28`;
-`lead-verify` (detached) is the verification worktree. The four job workspaces (`w6`-`w9`), their
-worktrees and their branches were removed at close-out on 2026-08-26.
-The old lead's tab `w5:tS` was closed and its `j18-shell-services-bugs` worktree unlocked and
-removed on 2026-08-26 (clean, and detached at `ca2c492b`, an ancestor of main). `tokens` is not ours. Uncommitted in the main checkout, Rithy's work
-in progress, leave it: `sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
+Two jobs dispatched 2026-08-26 for the v0.1 campaign, each in its own herdr workspace and worktree:
+
+- J49 `wA:p1`, claude — `sdata/install/setups/system.sh`, `tests/test_sysdefaults.sh`, new `tests/test_update_from_git.sh`.
+- J50 `wB:p1`, **opencode** — every file carrying a repo-identity occurrence or a `koompi/desktop` URL.
+
+J51 is written and waits for J50 to merge (both own `dots/.local/share/koompi/libexec/update`).
+Lead sits in the main checkout, pane `w5:p28`; `lead-verify` (detached) is the verification worktree.
+`tokens` is not ours. Uncommitted in the main checkout, Rithy's work in progress, leave it:
+`sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit to `SidebarRightContent.qml`.
 
 ## Decided
 
@@ -158,9 +172,13 @@ in progress, leave it: `sidebarRight/ChargeLimitRow.qml` (new) + a 2-line edit t
 - J48's worker printed DONE twice with nothing committed. The second cause was real and worth keeping: `.work/` is gitignored, so `git add .work/JNN-report.md` silently does nothing — every contract's "commit your report" needs `git add -f`. Check a worker's branch tip, not its DONE line.
 - A new test that needs a live `qs` must be added to the CI allow-list in `.github/workflows/tests.yml` in the same push, or the "Only the tests that need a live desktop skipped" step fails. Validated by parsing the workflow before pushing, not after.
 
+- 2026-08-26 Rithy's four calls for v0.1: (1) fix and prove the **git route**, not the pacman repo — J12 stays shut; (2) after v0.1, `koompi update` follows the **newest release tag**, not `main`, so school laptops only land on blessed points; (3) rename **GitHub only** — the local checkout stays at `/home/userx/workspace/koompi-desktop`; (4) package signing deferred until the repo track is actually taken up.
+- Rename done by the lead before dispatch (`gh repo rename`), so the tree's old URLs keep resolving through GitHub's redirect while J50 sweeps. `origin` re-pointed. Not renamed: `koompi/koompi-desktop-history`, a different repo that still exists under that name.
+- The delivery sweep's finding that made J49 worth doing: the git route already delivers new tools and QML (directory rsyncs, not manifests — `files.sh:322`, `files.sh:31,307-313`) and copies the sysdefaults files, but **nothing in the tree ever runs `sysctl --system`**. Packaged installs get Arch's `25-systemd-sysctl.hook`; a git-route user's swappiness sits inert until reboot. That asymmetry is the one real gap.
+- v0.1 judged worth cutting: 481 commits since 2026-07-29, 99 tests, both workflows green. It is a source-level track and does not collide with the ISO date-tags (`iso-koompi-2026.08.25-x86_64`).
+
 ## Next action
 
-Queue is empty again; J12 is the only row still blocked-on-user.
-Decisions waiting on Rithy: J38's open question (i)-(iv) in `.work/J38-report.md` — factory reset refuses on every stock install until one of them lands, worker recommends (iii); the J47 manual's voice, chapter by chapter; the system-prompt-to-remote privacy call (`10-machine.md`).
-Rithy's own machine items, unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, J12 repo hosting, the sudo installs (`koompi-shell` -12, `koompi-sysdefaults` 1.0-3, `koompi-base` -2, `koompi-desktop-hyprland` -2, `koompi-basic` 1.0-7, `koompi-screencapture` 1.0-4, `systemctl enable --now systemd-oomd`), Bluetooth symptom, fingerprint check.
-Candidates for the next wave: the rest of the O05 entry set (the contract capped this one at 20), and the follow-up J38 named for arming a first-boot path.
+Verify J49 and J50 in `lead-verify`, ff-merge, push, read `gh run list`. Dispatch J51 the moment J50 is merged.
+Then, and only then, tag `v0.1` and write the release from the J01-J48 ledger — the first thing users are moved to must already carry the rename and the fixes. Say plainly in the notes what the git route delivers and what it does not: the `[koompi]` pacman repo, and so ISO and packaged installs, remain J12.
+Rithy's own items, unchanged: `koompi update` + `koompi reload` here, 0xAlpha credit + `/key`, LocalSend AUR, the sudo installs, Bluetooth symptom, fingerprint check, J38's open decision (i)-(iv), the J47 manual's voice, the system-prompt-to-remote privacy call (`10-machine.md`).
