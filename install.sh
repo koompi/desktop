@@ -5,7 +5,7 @@
 set -euo pipefail
 
 REPO_URL="${KOOMPI_REPO:-https://github.com/koompi/koompi-hd.git}"
-REPO_REF="${KOOMPI_REF:-main}"
+REPO_REF="${KOOMPI_REF:-prod-hd}"
 DEST="${KOOMPI_DEST:-$HOME/.local/share/koompi-hd}"
 
 if [[ -t 1 ]] && [[ -z "${NO_COLOR:-}" ]]; then
