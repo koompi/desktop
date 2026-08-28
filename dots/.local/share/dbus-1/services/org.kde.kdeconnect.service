@@ -1,0 +1,13 @@
+[D-BUS Service]
+# Overrides /usr/share/dbus-1/services/org.kde.kdeconnect.service.
+#
+# env.lua sets QT_QPA_PLATFORM=wayland session wide so Qt apps export their menubar
+# over D-Bus for the global menu. kdeconnectd inherits it from the systemd user
+# environment, and mousepadplugin.cpp picks its input backend from
+# QGuiApplication::platformName(): on xcb it takes X11RemoteInput, whose XTest
+# events reach only the Xwayland pointer and never Hyprland's, so Remote Input
+# from the phone moves nothing. On wayland it takes WaylandRemoteInput, which
+# drives the RemoteDesktop portal that koompi-remotedesktop-portal serves.
+# The daemon has no menubar, so it loses nothing by leaving xcb.
+Name=org.kde.kdeconnect
+Exec=/usr/bin/env QT_QPA_PLATFORM=wayland /usr/bin/kdeconnectd

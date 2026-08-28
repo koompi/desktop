@@ -36,7 +36,24 @@ unit="$(sed -n 's/^SystemdService=//p' "$dbus_service")"
 [[ -f "$DOTS/.config/systemd/user/$unit" ]] \
     || fail "$dbus_service activates $unit, which dots/ does not ship"
 
-# 4. setup_portals removes the override.
+# 4. A Qt client on xcb never reaches the portal at all.
+#    mousepadplugin.cpp picks its input backend from QGuiApplication::platformName():
+#    on xcb it takes X11RemoteInput, whose XTest events move the Xwayland pointer only.
+#    env.lua forces xcb session wide, so kdeconnectd needs its own override or KDE
+#    Connect's Remote Input silently does nothing under Hyprland.
+env_lua="$DOTS/.config/hypr/hyprland/env.lua"
+qt_platform="$(sed -n 's/.*hl\.env("QT_QPA_PLATFORM", *"\([^"]*\)").*/\1/p' "$env_lua")"
+if [[ -n "$qt_platform" && "$qt_platform" != wayland* ]]; then
+    kdeconnect_service="$DOTS/.local/share/dbus-1/services/org.kde.kdeconnect.service"
+    [[ -f "$kdeconnect_service" ]] \
+        || fail "env.lua sets QT_QPA_PLATFORM=$qt_platform, so $kdeconnect_service must pin kdeconnectd to wayland; KDE Connect Remote Input is dead without it"
+    grep -q '^Exec=.*QT_QPA_PLATFORM=wayland.*kdeconnectd' "$kdeconnect_service" \
+        || fail "$kdeconnect_service no longer pins QT_QPA_PLATFORM=wayland for kdeconnectd"
+    grep -q '^Name=org\.kde\.kdeconnect$' "$kdeconnect_service" \
+        || fail "$kdeconnect_service does not override the org.kde.kdeconnect name, so the system file still wins"
+fi
+
+# 5. setup_portals removes the override.
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
