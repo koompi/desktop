@@ -21,8 +21,12 @@ hl.window_rule({match = {class = telegramClass }, float = true})
 local function isTelegramClass(w)
     return w.class == "TelegramDesktop" or w.class == "org.telegram.desktop"
 end
+-- Exact, not a prefix: the context menu is a transient titled "TelegramDesktop",
+-- and "^Telegram" took it for the main window, resized it to the panel and
+-- broke every right-click.
 local function isTelegramMain(w)
-    return isTelegramClass(w) and (w.initial_title or ""):match("^Telegram") ~= nil
+    local t = w.initial_title or ""
+    return isTelegramClass(w) and (t == "Telegram" or t:match("^Telegram %(%d+%)$") ~= nil)
 end
 local function isTelegramPopup(w)
     return isTelegramClass(w) and (w.initial_title or ""):match("^TelegramDesktop") ~= nil
