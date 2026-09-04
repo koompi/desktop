@@ -74,6 +74,8 @@ Singleton {
         id: usageFileView
         path: root.filePath
         watchChanges: true
+        // Missing until the first regeneration writes it; onLoadFailed handles that.
+        printErrors: false
         onFileChanged: reload()
         onLoadedChanged: root.parseUsage(usageFileView.text())
         onLoadFailed: error => {

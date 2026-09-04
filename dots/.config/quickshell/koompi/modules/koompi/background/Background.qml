@@ -366,7 +366,7 @@ Variants {
                         asynchronous: true
                         retainWhileLoading: true
                         visible: opacity > 0
-                        opacity: ((status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
+                        opacity: (source != "" && (status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
                 }
 
@@ -377,7 +377,7 @@ Variants {
                     height: wallpaperPan.height
                     clip: true
 
-                    // Not StyledImage, same reason as the outgoing cell above.
+                    // Not StyledImage, same reason as above. source != "": an empty cell matches its own empty readySource.
                     Image {
                         id: cellBImage
                         property url readySource
@@ -395,7 +395,7 @@ Variants {
                         asynchronous: true
                         retainWhileLoading: true
                         visible: opacity > 0
-                        opacity: ((status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
+                        opacity: (source != "" && (status === Image.Ready || source === readySource) && !bgRoot.wallpaperIsVideo && !bgRoot.wallpaperSafetyTriggered) ? 1 : 0
                     }
                 }
             }

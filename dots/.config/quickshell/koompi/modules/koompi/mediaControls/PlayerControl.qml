@@ -78,15 +78,23 @@ Item { // Player instance
 
     Process { // Cover art downloader
         id: coverArtDownloader
-        property string targetFile: root.artUrl
+        property string targetFile: root.artUrl ?? ""
         property string artFilePath: root.artFilePath
-        command: [ "bash", "-c", `[ -f '${artFilePath}' ] || curl -4 -sSLf '${StringUtils.shellSingleQuoteEscape(targetFile)}' -o '${artFilePath}'` ]
+        // Browser and Telegram players hand the art over as a data: URL, which
+        // curl cannot fetch; those are decoded in place. The URL and path travel
+        // as arguments so no quoting of either is ever needed.
+        command: [ "bash", "-c", `[ -f "$2" ] && exit 0
+case "$1" in
+    data:*\;base64,*) printf '%s' "\${1#*,}" | base64 -d > "$2.part" ;;
+    data:*) exit 1 ;;
+    *) curl -4 -sSLf "$1" -o "$2.part" ;;
+esac && mv "$2.part" "$2" || { rm -f "$2.part"; exit 1; }`, "cover-art", targetFile, artFilePath ]
         onExited: (exitCode, exitStatus) => {
             // Without -f a 404 page lands in the cache file with exit 0 and is
             // then served as the cover forever.
             root.downloaded = exitCode === 0
             if (exitCode !== 0)
-                console.warn(`[PlayerControl] Cover art download failed (exit ${exitCode}): ${targetFile}`)
+                console.warn(`[PlayerControl] Cover art download failed (exit ${exitCode}): ${targetFile.slice(0, 80)}`)
         }
     }
 
@@ -144,7 +152,7 @@ Item { // Player instance
         WaveVisualizer {
             id: visualizerCanvas
             anchors.fill: parent
-            live: root.player?.isPlaying
+            live: root.player?.isPlaying ?? false
             points: root.visualizerPoints
             maxVisualizerValue: root.maxVisualizerValue
             smoothing: root.visualizerSmoothing
@@ -208,7 +216,7 @@ Item { // Player instance
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     color: blendedColors.colSubtext
                     elide: Text.ElideRight
-                    text: root.player?.trackArtist
+                    text: root.player?.trackArtist ?? ""
                     animateChange: true
                     animationDistanceX: 6
                     animationDistanceY: 0
@@ -269,7 +277,7 @@ Item { // Player instance
                                 }
                                 active: !(root.player?.canSeek ?? false)
                                 sourceComponent: StyledProgressBar { 
-                                    wavy: root.player?.isPlaying
+                                    wavy: root.player?.isPlaying ?? false
                                     highlightColor: blendedColors.colPrimary
                                     trackColor: blendedColors.colSecondaryContainer
                                     value: root.player?.position / root.player?.length
