@@ -38,6 +38,15 @@ end
 local function isTelegramOverlay(w)
     return isTelegramClass(w) and w.initial_title == "Media viewer"
 end
+-- Telegram's file choosers ("Choose Files", "Save File") are modal X11
+-- transients Hyprland already centres over the main window at their own size.
+-- Squeezed into the right panel the mouse cannot pick a file in them, and the
+-- user expects a popup over Telegram anyway. Titles, since the Lua window has
+-- no transient or modal field to read.
+local function isTelegramDialog(w)
+    local t = w.initial_title or ""
+    return isTelegramClass(w) and (t:match("^Choose ") or t:match("^Save ") or t:match("^Select ") or t:match("^Open ")) ~= nil
+end
 local function hasTag(w, tag)
     for _, t in ipairs(w.tags or {}) do
         if t == tag then return true end
@@ -82,7 +91,7 @@ hl.on("window.open", function(w)
     if ws.name == "special:telegram" then
         if isTelegramMain(w) then
             placeTelegramPanel(w, m, true)
-        elseif isTelegramPopup(w) or isTelegramOverlay(w) then
+        elseif isTelegramPopup(w) or isTelegramOverlay(w) or isTelegramDialog(w) then
             return
         elseif isTelegramClass(w) then
             placeTelegramPanel(w, m, false)
@@ -91,7 +100,7 @@ hl.on("window.open", function(w)
             hl.dispatch(hl.dsp.window.move({ workspace = m.active_workspace.name, window = w }))
             hl.dispatch(hl.dsp.focus({ window = w }))
         end
-    elseif isTelegramClass(w) and not isTelegramMain(w) and not isTelegramPopup(w) and not isTelegramOverlay(w) then
+    elseif isTelegramClass(w) and not isTelegramMain(w) and not isTelegramPopup(w) and not isTelegramOverlay(w) and not isTelegramDialog(w) then
         -- Call panel or mini app with the widget hidden: at its own size, centred.
         hl.dispatch(hl.dsp.window.center({ window = w }))
         hl.dispatch(hl.dsp.focus({ window = w }))
