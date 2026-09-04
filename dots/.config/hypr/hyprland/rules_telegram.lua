@@ -27,6 +27,13 @@ end
 local function isTelegramPopup(w)
     return isTelegramClass(w) and (w.initial_title or ""):match("^TelegramDesktop") ~= nil
 end
+-- The media viewer is Telegram's own full-screen overlay for photos, videos and
+-- document previews. It sizes itself to the monitor and closes on a click
+-- outside the picture; squeezed into the side panel it reads as a file that
+-- neither scrolls nor survives a click. Leave it alone.
+local function isTelegramOverlay(w)
+    return isTelegramClass(w) and w.initial_title == "Media viewer"
+end
 local function hasTag(w, tag)
     for _, t in ipairs(w.tags or {}) do
         if t == tag then return true end
@@ -69,13 +76,13 @@ hl.on("window.open", function(w)
     if ws.name == "special:telegram" then
         if isTelegramMain(w) then
             placeTelegramPanel(w, m, true)
-        elseif isTelegramPopup(w) then
+        elseif isTelegramPopup(w) or isTelegramOverlay(w) then
             return
         elseif isTelegramClass(w) or not w.floating then
             placeTelegramPanel(w, m, false)
             hl.dispatch(hl.dsp.focus({ window = w }))
         end
-    elseif isTelegramClass(w) and not isTelegramMain(w) and not isTelegramPopup(w) then
+    elseif isTelegramClass(w) and not isTelegramMain(w) and not isTelegramPopup(w) and not isTelegramOverlay(w) then
         -- Call panel or mini app with the widget hidden: at its own size, centred.
         hl.dispatch(hl.dsp.window.center({ window = w }))
         hl.dispatch(hl.dsp.focus({ window = w }))
