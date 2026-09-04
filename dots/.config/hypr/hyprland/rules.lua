@@ -31,6 +31,11 @@ hl.window_rule({match = {title = "^(.*)(wants to save)$" },                  cen
 hl.window_rule({match = {title = "^(.*)(wants to save)$" },                  float = true})
 hl.window_rule({match = {title = "^(.*)(wants to open)$" },                  center = true})
 hl.window_rule({match = {title = "^(.*)(wants to open)$" },                  float = true})
+-- Chromium's profile error box ("Something went wrong when opening your
+-- profile") is a bare toplevel with no app_id, so only the title can match it.
+-- Tiled it stretches a two-line message across the whole monitor.
+hl.window_rule({match = {title = "^(Profile error occurred)$" },             center = true})
+hl.window_rule({match = {title = "^(Profile error occurred)$" },             float = true})
 -- Portal file choosers by CLASS: apps pass their own dialog titles (Zed's
 -- "Open Folder", localized titles), so the title list above cannot cover them.
 hl.window_rule({match = {class = "^(xdg-desktop-portal-gtk)$" },             float = true})
