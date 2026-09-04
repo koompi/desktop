@@ -62,12 +62,14 @@ local function placeTelegramPanel(w, m, left)
     hl.dispatch(hl.dsp.window.resize({ x = right - x, y = math.floor(height), "exact", window = w }))
     hl.dispatch(hl.dsp.window.move({ x = m.x + x, y = math.floor(m.y + y), window = w }))
 end
--- Telegram's own secondary windows (mini apps, the media viewer) and the apps it
--- hands files to open tiled on special:telegram, under the floating panel. No rule
--- can name them: the class is Telegram's own or anyone's, and all they share is
--- where they land. Telegram's own arrivals float by the rule above and are
--- placed all the same; any other arrival already floating is a dialog and
--- keeps its own size.
+-- Telegram's own secondary windows (mini apps) open tiled on special:telegram,
+-- under the floating panel. No rule can name them: they share Telegram's class
+-- and all that sets them apart is where they land. They float by the rule above
+-- and take the right panel. An app Telegram hands a file to (Okular for a PDF)
+-- lands there too, with a class of its own: it goes to the monitor's regular
+-- workspace, tiled, as if launched from anywhere, and focusing it hides the
+-- widget until SUPER + Y. Floated into the right panel it would not scroll.
+-- Any other arrival already floating is a dialog and keeps its own place.
 hl.on("window.open", function(w)
     local ws = w.workspace
     if not ws then return end
@@ -78,8 +80,11 @@ hl.on("window.open", function(w)
             placeTelegramPanel(w, m, true)
         elseif isTelegramPopup(w) or isTelegramOverlay(w) then
             return
-        elseif isTelegramClass(w) or not w.floating then
+        elseif isTelegramClass(w) then
             placeTelegramPanel(w, m, false)
+            hl.dispatch(hl.dsp.focus({ window = w }))
+        elseif not w.floating and m.active_workspace then
+            hl.dispatch(hl.dsp.window.move({ workspace = m.active_workspace.name, window = w }))
             hl.dispatch(hl.dsp.focus({ window = w }))
         end
     elseif isTelegramClass(w) and not isTelegramMain(w) and not isTelegramPopup(w) and not isTelegramOverlay(w) then
