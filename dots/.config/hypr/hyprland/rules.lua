@@ -61,16 +61,7 @@ hl.window_rule({match = {title = "^(KOOMPI Settings)$" },                    cen
 hl.window_rule({match = {title = ".*Shell conflicts.*" },                    float = true})
 hl.window_rule({match = {class = "^(Zotero)$" },                             float = true})
 hl.window_rule({match = {class = "^(Zotero)$" },                             size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
--- Both Telegram classes on purpose: env.lua forces QT_QPA_PLATFORM=xcb session wide,
--- so Qt apps come up on XWayland and Hyprland reports the X11 WM_CLASS, not the
--- Wayland app_id. Any rule keyed on a Qt app's app_id has the same problem.
--- initial_title as well: the reaction popup is a transient sharing the class.
-local telegramClass = "^(org\\.telegram\\.desktop|TelegramDesktop)$"
-local telegramTitle = "^Telegram( \\([0-9]+\\))?$"
-hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, workspace = "special:telegram silent"})
-hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, float = true})
-hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, size = {overlayW, overlayH} })
-hl.window_rule({match = {class = telegramClass, initial_title = telegramTitle }, center = true})
+-- Telegram (SUPER + Y): rules_telegram.lua, its own file for the file-length cap.
 -- Discord: SUPER + SHIFT + D
 hl.window_rule({match = {class = "^(discord)$" },                            workspace = "special:discord silent"})
 hl.window_rule({match = {class = "^(discord)$" },                            float = true})

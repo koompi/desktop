@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Open in the active browser
+Comment=Opens a link in the browser that already has a window, then raises it
+Exec=koompi-open-url %u
+NoDisplay=true
+MimeType=x-scheme-handler/http;x-scheme-handler/https;

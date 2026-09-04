@@ -56,7 +56,7 @@ hl.bind("SUPER + SHIFT + W", app("brave", "brave"), { description = "App: Brave 
 hl.bind("SUPER + SHIFT + E", app("koompi-signature", "koompi-signature capture"), { description = "App: Capture signature" })
 hl.bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(appScratch .. " discord 'discord' koompi-launch --id discord discord"), { description = "App: Discord widget" })
 hl.bind("SUPER + H", hl.dsp.exec_cmd(appScratch .. " whatsapp 'web.whatsapp.com' koompi-launch --id whatsapp " .. hyprScripts .. "/launch_whatsapp_web.sh"), { description = "App: WhatsApp widget" })
-hl.bind("SUPER + Y", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' koompi-launch --id telegram Telegram"), { description = "App: Telegram widget" })
+hl.bind("SUPER + Y", hl.dsp.exec_cmd(appScratch .. " telegram 'org\\.telegram\\.desktop|TelegramDesktop' koompi-launch --id telegram " .. hyprScripts .. "/launch_telegram.sh"), { description = "App: Telegram widget" })
 hl.bind("SUPER + grave", hl.dsp.exec_cmd(appScratch .. " term 'term-scratch' 'koompi-launch --id term-scratch wezterm start --class term-scratch'"), { description = "App: Terminal widget" })
 hl.bind("SUPER + backslash", hl.dsp.exec_cmd(appScratch .. " sysmon 'sysmon-scratch' koompi-launch --id sysmon " .. hyprScripts .. "/launch_sysmon.sh"), { description = "App: System monitor widget" })
 -- SUPER + O is reserved for Quickwork and stays unbound until it exists.
