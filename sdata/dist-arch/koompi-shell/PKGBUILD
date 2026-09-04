@@ -55,6 +55,7 @@ _tools=(
   koompi-logout
   koompi-migrate
   koompi-notify-send
+  koompi-open-url
   koompi-osd
   koompi-plugin
   koompi-quicklook

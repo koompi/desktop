@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# Opens a URL in the browser already in use: the browser window focused most
+# recently, else the session default. Then focuses that window. A link clicked
+# in the Telegram widget otherwise opened under the widget's special workspace
+# with nothing on screen to show for it.
+#
+# Reached through koompi-widget-mimeapps.list: launch_telegram.sh prefixes
+# XDG_CURRENT_DESKTOP with koompi-widget and GIO reads that desktop's mimeapps
+# list first, so only widget processes route here. The prefix comes off below
+# before the default browser is looked up, or the answer would be this script.
+set -euo pipefail
+
+die() {
+    printf 'koompi-open-url: %s\n' "$1" >&2
+    notify-send "Open link" "$1" 2>/dev/null || true
+    exit 1
+}
+
+url=${1:-}
+[[ $url =~ ^https?:// ]] || die "expected an http(s) URL, got '$url'"
+
+XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-}
+XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP#koompi-widget:}
+XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP#koompi-widget}
+export XDG_CURRENT_DESKTOP
+
+# Window class -> desktop entry, the browsers rules.lua treats as browsers.
+# A chrome --app widget has class chrome-<host>__-Default and never matches.
+declare -A entry_for_class=(
+    [google-chrome]=google-chrome.desktop
+    [google-chrome-stable]=google-chrome.desktop
+    [chromium]=chromium.desktop
+    [brave-browser]=brave-browser.desktop
+    [firefox]=firefox.desktop
+    [zen]=zen.desktop
+    [zen-browser]=zen.desktop
+    [microsoft-edge]=microsoft-edge.desktop
+    [opera]=opera.desktop
+    [librewolf]=librewolf.desktop
+)
+
+entry_exists() {
+    local dir
+    local IFS=:
+    for dir in "${XDG_DATA_HOME:-$HOME/.local/share}" ${XDG_DATA_DIRS:-/usr/local/share:/usr/share}; do
+        [[ -f $dir/applications/$1 ]] && return 0
+    done
+    return 1
+}
+
+focus() {
+    hyprctl dispatch "hl.dsp.focus({ window = \"address:$1\" })" >/dev/null
+}
+
+classes=$(printf '%s\n' "${!entry_for_class[@]}" | jq -R . | jq -sc .)
+# focusHistoryID 0 is the focused window, so the lowest is the most recent.
+picked=$(hyprctl clients -j | jq -r --argjson classes "$classes" '
+    [.[] | select(.mapped and ((.class as $c | $classes | index($c)) != null))]
+    | sort_by(.focusHistoryID) | .[0] // empty | "\(.class) \(.address)"')
+
+entry='' address=''
+if [[ -n $picked ]]; then
+    read -r class address <<<"$picked"
+    entry=${entry_for_class[$class]}
+    entry_exists "$entry" || { entry=''; address=''; }
+fi
+if [[ -z $entry ]]; then
+    entry=$(xdg-settings get default-web-browser 2>/dev/null || true)
+    [[ -n $entry && $entry != koompi-open-url.desktop ]] || die "no browser window open and no default browser set"
+    entry_exists "$entry" || die "default browser $entry has no desktop entry"
+fi
+
+seen=$(hyprctl clients -j | jq -c '[.[].address]')
+koompi-launch "$entry" "$url" &
+
+if [[ -n $address ]]; then
+    focus "$address"
+    exit 0
+fi
+
+# A fresh browser: wait for its first window. Prefer the classes that map to the
+# entry; a browser this script does not know is any new window off a special.
+wanted=$(for c in "${!entry_for_class[@]}"; do [[ ${entry_for_class[$c]} == "$entry" ]] && printf '%s\n' "$c"; done | jq -R . | jq -sc .)
+for _ in $(seq 1 100); do
+    new=$(hyprctl clients -j | jq -r --argjson seen "$seen" --argjson wanted "$wanted" '
+        [.[] | select(.mapped
+            and ((.address as $a | $seen | index($a)) == null)
+            and (.workspace.name | startswith("special:") | not)
+            and (($wanted | length) == 0 or ((.class as $c | $wanted | index($c)) != null)))]
+        | .[0].address // empty')
+    if [[ -n $new ]]; then
+        focus "$new"
+        exit 0
+    fi
+    sleep 0.1
+done
+printf 'koompi-open-url: %s opened no window within 10s, nothing to focus\n' "$entry" >&2
