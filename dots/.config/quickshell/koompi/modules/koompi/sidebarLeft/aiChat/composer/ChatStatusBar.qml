@@ -1,3 +1,4 @@
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -88,11 +89,14 @@ ColumnLayout {
         }
     }
 
+    // Only while the sidebar is open: the local backend is socket-activated and
+    // idle-exits, so a probe from a closed sidebar starts a 1 GB server at login
+    // and keeps it resident forever.
     Timer {
         id: probeTimer
         interval: 15000
         repeat: true
-        running: root.active && root.onThisMachine
+        running: root.active && root.onThisMachine && GlobalStates.sidebarLeftOpen
         triggeredOnStart: true
         onTriggered: root.probeNow()
     }
