@@ -6,7 +6,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 
 import qs.modules.koompi.bar
 import qs.modules.koompi.bar.weather
@@ -27,7 +26,6 @@ Item {
     id: root
     property int sidebarWidth: Appearance.sizes.sidebarWidthRight
     property int sidebarPadding: Appearance.spacing.normal
-    property string settingsQmlPath: Quickshell.shellPath("settings.qml")
     property bool showAudioOutputDialog: false
     property bool showAudioInputDialog: false
     property bool showBluetoothDialog: false
@@ -280,6 +278,8 @@ Item {
                     text: Translation.tr("Edit quick toggles") + (root.editMode ? Translation.tr("\nLMB to enable/disable\nRMB to toggle size\nScroll to swap position") : "")
                 }
             }
+
+            ChargeLimitRow {}
 
             Item {
                 Layout.fillHeight: true
