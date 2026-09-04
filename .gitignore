@@ -17,9 +17,6 @@ __pycache__/
 *~
 .nimmit/
 
-# graphify knowledge-graph output
-/graphify-out/
-
 # global-menu zig build artifacts
 /dots/.config/quickshell/koompi/scripts/global-menu/.zig-cache/
 /dots/.config/quickshell/koompi/scripts/global-menu/zig-out/

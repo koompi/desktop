@@ -26,7 +26,7 @@ fail() { printf 'FAIL: %s\n' "$1" >&2; failed=1; }
 # path -> cap, or nothing when the file is not one we measure.
 cap_for() {
     case "/$1" in
-        /installer/zig-pkg/*|*/graphify-out/*|*/translations/*|*/tests/*) return 1 ;;
+        /installer/zig-pkg/*|*/translations/*|*/tests/*) return 1 ;;
     esac
     case "$1" in
         *.qml) echo 400 ;;
