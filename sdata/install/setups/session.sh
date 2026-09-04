@@ -1,6 +1,16 @@
 # shellcheck shell=bash
 # Sourced by sdata/install/setups.sh. The system-wide login session entry display managers discover before login.
 
+# pre-marker entries claim KOOMPI via DesktopNames only; skipping them strands
+# the session on start-hyprland, with no ~/.local/bin on PATH and no app launch
+koompi_session_entry_is_ours() {
+    local entry=$1
+    [[ -e "$entry" ]] || return 0
+    grep -q '^X-KOOMPI-Managed=true$' "$entry" 2>/dev/null && return 0
+    grep -qE '^DesktopNames=(.*;)?KOOMPI(;.*)?$' "$entry" 2>/dev/null && return 0
+    return 1
+}
+
 setup_system_session() {
     step "System login session"
 
@@ -24,9 +34,15 @@ setup_system_session() {
         warn "$launcher exists and is not KOOMPI-managed; not overwriting it"
         return 0
     fi
-    if [[ -e "$entry" ]] && ! grep -q '^X-KOOMPI-Managed=true$' "$entry" 2>/dev/null; then
+    if ! koompi_session_entry_is_ours "$entry"; then
         warn "$entry exists and is not KOOMPI-managed; not overwriting it"
         return 0
+    fi
+
+    # never written by this installer, so it can carry a local edit
+    if [[ -e "$entry" ]] && ! grep -q '^X-KOOMPI-Managed=true$' "$entry" 2>/dev/null; then
+        warn "upgrading $entry from an older KOOMPI installer"
+        run sudo cp -a "$entry" "$entry.pre-koompi-managed"
     fi
 
     local staged_entry
